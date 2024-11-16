@@ -229,7 +229,11 @@ export const CellValue = ({ value, property }) => {
    }
 
    if (value !== null && typeof value !== "undefined") {
-      return <span className={twMerge("line-clamp-2", value_mono && "font-mono")}>{value}</span>;
+      return (
+         <span className={twMerge("line-clamp-2", value_mono && "font-mono break-all")}>
+            {value}
+         </span>
+      );
    }
 
    return <span className="opacity-10 font-mono">null</span>;

@@ -188,7 +188,7 @@ export function Canvas({
       >
          {backgroundStyle === "lines" && (
             <Background
-               color={theme === "light" ? "rgba(0,0,0,.1)" : "rgba(255,255,255,.1)"}
+               color={theme === "light" ? "rgba(0,0,0,.05)" : "rgba(255,255,255,.1)"}
                gap={[50, 50]}
                variant={BackgroundVariant.Lines}
             />

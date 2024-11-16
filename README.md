@@ -1,5 +1,4 @@
-# bknd 
-**Feature-rich backend built to run anywhere.**  
+![bknd](https://raw.githubusercontent.com/bknd-io/bknd/refs/heads/main/app/src/ui/assets/poster.png)
 
 bknd simplifies backend development by providing powerful tools for data management, workflows, authentication, and media handling—all seamlessly integrated into a developer-friendly platform.
 
