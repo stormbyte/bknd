@@ -1,0 +1,128 @@
+import type { PrimaryFieldType } from "core";
+import { encodeSearch } from "core/utils";
+import { atom, useSetAtom } from "jotai";
+import { useEffect, useState } from "react";
+import { useLocation } from "wouter";
+import { useBaseUrl } from "../client";
+import { useBknd } from "../client/BkndProvider";
+
+export const routes = {
+   data: {
+      root: () => "/data",
+      entity: {
+         list: (entity: string) => `/entity/${entity}`,
+         create: (entity: string) => `/entity/${entity}/create`,
+         edit: (entity: string, id: PrimaryFieldType) => `/entity/${entity}/edit/${id}`
+      },
+      schema: {
+         root: () => "/schema",
+         entity: (entity: string) => `/schema/entity/${entity}`
+      }
+   },
+   auth: {
+      root: () => "/auth",
+      users: {
+         list: () => "/users",
+         edit: (id: PrimaryFieldType) => `/users/edit/${id}`
+      },
+      roles: {
+         list: () => "/roles",
+         edit: (role: string) => `/roles/edit/${role}`
+      },
+      settings: () => "/settings",
+      strategies: () => "/strategies"
+   },
+   flows: {
+      root: () => "/flows",
+      flows: {
+         list: () => "/",
+         edit: (id: PrimaryFieldType) => `/flow/${id}`
+      }
+   },
+   settings: {
+      root: () => "/settings",
+      path: (path: string[]) => `/settings/${path.join("/")}`
+   }
+};
+
+export function withQuery(url: string, query: object) {
+   const search = encodeSearch(query, { encode: false });
+   return `${url}?${search}`;
+}
+
+export function withAbsolute(url: string) {
+   const { app } = useBknd();
+   const basepath = app.getAdminConfig().basepath;
+   return `~/${basepath}/${url}`.replace(/\/+/g, "/");
+}
+
+export function useNavigate() {
+   const [location, navigate] = useLocation();
+   const { app } = useBknd();
+   const basepath = app.getAdminConfig().basepath;
+   return [
+      (
+         url: string,
+         options?: { query?: object; absolute?: boolean; replace?: boolean; state?: any }
+      ) => {
+         const _url = options?.absolute ? `~/${basepath}${url}`.replace(/\/+/g, "/") : url;
+         navigate(options?.query ? withQuery(_url, options?.query) : _url, {
+            replace: options?.replace,
+            state: options?.state
+         });
+      },
+      location
+   ] as const;
+}
+
+export function useGoBack(
+   fallback: string | (() => void) = "/",
+   options?: {
+      native?: boolean;
+      absolute?: boolean;
+   }
+) {
+   const { app } = useBknd();
+   const basepath = app.getAdminConfig().basepath;
+   const [navigate] = useNavigate();
+   const referrer = document.referrer;
+   const history_length = window.history.length;
+   const same = referrer.length === 0;
+   const canGoBack = (same && history_length > 1) || !!same;
+
+   /*console.log("debug", {
+      referrer,
+      history_length,
+      same,
+      canGoBack
+   });*/
+
+   function goBack() {
+      if (same && history_length > 2) {
+         //console.log("used history");
+         window.history.back();
+      } else {
+         //console.log("used fallback");
+         if (typeof fallback === "string") {
+            const _fallback = options?.absolute
+               ? `~/${basepath}${fallback}`.replace(/\/+/g, "/")
+               : fallback;
+            //console.log("fallback", _fallback);
+
+            if (options?.native) {
+               window.location.href = _fallback;
+            } else {
+               navigate(_fallback);
+            }
+         } else if (typeof fallback === "function") {
+            fallback();
+         }
+      }
+   }
+
+   return {
+      same,
+      canGoBack,
+      goBack
+   };
+}

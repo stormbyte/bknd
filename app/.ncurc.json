@@ -1,0 +1,3 @@
+{
+  "reject": ["react-icons", "@tabler/icons-react", "@tanstack/react-form"]
+}

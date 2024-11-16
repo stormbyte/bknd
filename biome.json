@@ -1,0 +1,74 @@
+{
+  "$schema": "https://biomejs.dev/schemas/1.8.3/schema.json",
+  "organizeImports": {
+    "enabled": true
+  },
+  "vcs": {
+    "defaultBranch": "main"
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "ignore": ["**/package.json"]
+  },
+  "javascript": {
+    "formatter": {
+      "indentWidth": 3,
+      "lineWidth": 100,
+      "indentStyle": "space",
+      "trailingCommas": "none"
+    }
+  },
+  "files": {
+    "ignore": [
+      "**/node_modules/**",
+      "node_modules/**",
+      "**/.cache/**",
+      "**/.wrangler/**",
+      "**/build/**",
+      "**/dist/**",
+      "**/data.sqld/**",
+      "data.sqld/**",
+      "public/**",
+      ".history/**"
+    ]
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "a11y": {
+        "all": false
+      },
+      "correctness": {
+        "useExhaustiveDependencies": "off",
+        "noUnreachable": "warn",
+        "noChildrenProp": "off",
+        "noSwitchDeclarations": "warn"
+      },
+      "complexity": {
+        "noStaticOnlyClass": "off",
+        "noForEach": "off",
+        "useLiteralKeys": "warn",
+        "noBannedTypes": "off",
+        "useOptionalChain": "warn"
+      },
+      "suspicious": {
+        "noExplicitAny": "off",
+        "noArrayIndexKey": "off",
+        "noImplicitAnyLet": "warn",
+        "noConfusingVoidType": "off"
+      },
+      "style": {
+        "noNonNullAssertion": "off",
+        "noInferrableTypes": "off",
+        "useTemplate": "off",
+        "noUselessElse": "off",
+        "useConst": "warn",
+        "useImportType": "warn",
+        "noUnusedTemplateLiteral": "warn",
+        "useSelfClosingElements": "warn"
+      }
+    }
+  }
+}

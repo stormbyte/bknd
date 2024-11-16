@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "lib": ["ESNext", "DOM"],
+    "target": "ESNext",
+    "module": "ESNext",
+    "jsx": "react-jsx",
+    "allowJs": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": false,
+    "verbatimModuleSyntax": true,
+    "strict": true,
+    "outDir": "dist",
+    "declaration": true,
+    "skipLibCheck": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": false,
+    "noPropertyAccessFromIndexSignature": false
+  },
+  "include": ["index.ts", "loader.tsx", "components", "contexts"],
+  "exclude": ["@bknd/app", "@bknd/core", "dist", "node_modules", "build.ts"]
+}

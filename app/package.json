@@ -1,0 +1,175 @@
+{
+  "name": "bknd",
+  "type": "module",
+  "sideEffects": false,
+  "bin": "./dist/cli/index.js",
+  "version": "0.0.75",
+  "scripts": {
+    "build:all": "rm -rf dist && bun build:css && bun run build && bun build:vite && bun build:adapters && bun build:cli",
+    "dev": "vite",
+    "test": "ALL_TESTS=1 bun test --bail",
+    "build": "bun tsup && bun build:types",
+    "watch": "bun tsup --watch --onSuccess 'bun run build:types'",
+    "types": "bun tsc --noEmit",
+    "build:types": "tsc --emitDeclarationOnly",
+    "build:css": "bun tailwindcss -i ./src/ui/styles.css -o ./dist/styles.css",
+    "watch:css": "bun tailwindcss --watch -i ./src/ui/styles.css -o ./dist/styles.css",
+    "build:vite": "vite build",
+    "build:adapters": "bun tsup.adapters.ts --minify",
+    "watch:adapters": "bun tsup.adapters.ts --watch",
+    "updater": "bun x npm-check-updates -ui",
+    "build:cli": "bun build src/cli/index.ts --target node --outdir dist/cli --minify",
+    "cli": "LOCAL=1 bun src/cli/index.ts"
+  },
+  "dependencies": {
+    "@cfworker/json-schema": "^2.0.1",
+    "@codemirror/lang-html": "^6.4.9",
+    "@codemirror/lang-json": "^6.0.1",
+    "@codemirror/lang-liquid": "^6.2.1",
+    "@dagrejs/dagre": "^1.1.4",
+    "@hello-pangea/dnd": "^17.0.0",
+    "@hono/typebox-validator": "^0.2.4",
+    "@hono/zod-validator": "^0.2.2",
+    "@hookform/resolvers": "^3.9.1",
+    "@libsql/client": "^0.14.0",
+    "@libsql/kysely-libsql": "^0.4.1",
+    "@mantine/core": "^7.13.4",
+    "@mantine/hooks": "^7.13.4",
+    "@mantine/modals": "^7.13.4",
+    "@mantine/notifications": "^7.13.5",
+    "@radix-ui/react-scroll-area": "^1.2.0",
+    "@rjsf/core": "^5.22.2",
+    "@sinclair/typebox": "^0.32.34",
+    "@tabler/icons-react": "3.18.0",
+    "@tanstack/react-form": "0.19.2",
+    "@tanstack/react-query": "^5.59.16",
+    "@uiw/react-codemirror": "^4.23.6",
+    "@xyflow/react": "^12.3.2",
+    "aws4fetch": "^1.0.18",
+    "codemirror-lang-liquid": "^1.0.0",
+    "dayjs": "^1.11.13",
+    "fast-xml-parser": "^4.4.0",
+    "hono": "^4.4.12",
+    "jose": "^5.6.3",
+    "jotai": "^2.10.1",
+    "kysely": "^0.27.4",
+    "liquidjs": "^10.15.0",
+    "lodash-es": "^4.17.21",
+    "oauth4webapi": "^2.11.1",
+    "react-hook-form": "^7.53.1",
+    "react-icons": "5.2.1",
+    "react-json-view-lite": "^2.0.1",
+    "reactflow": "^11.11.4",
+    "tailwind-merge": "^2.5.4",
+    "tailwindcss-animate": "^1.0.7",
+    "wouter": "^3.3.5",
+    "zod": "^3.23.8",
+    "zod-to-json-schema": "^3.23.2"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-s3": "^3.613.0",
+    "@hono/node-server": "^1.13.3",
+    "@hono/vite-dev-server": "^0.16.0",
+    "@tanstack/react-query-devtools": "^5.59.16",
+    "@types/diff": "^5.2.3",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3",
+    "autoprefixer": "^10.4.20",
+    "node-fetch": "^3.3.2",
+    "openapi-types": "^12.1.3",
+    "postcss": "^8.4.47",
+    "postcss-preset-mantine": "^1.17.0",
+    "postcss-simple-vars": "^7.0.1",
+    "tailwindcss": "^3.4.14",
+    "tsup": "^8.3.5",
+    "vite": "^5.4.10",
+    "vite-plugin-static-copy": "^2.0.0",
+    "vite-tsconfig-paths": "^5.0.1"
+  },
+  "tsup": {
+    "entry": ["src/index.ts", "src/ui/index.ts", "src/data/index.ts", "src/core/index.ts", "src/core/utils/index.ts"],
+    "minify": true,
+    "outDir": "dist",
+    "external": ["bun:test"],
+    "sourcemap": true,
+    "metafile": true,
+    "platform": "browser",
+    "format": ["esm", "cjs"],
+    "splitting": false,
+    "loader": {
+      ".svg": "dataurl"
+    }
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./ui": {
+      "types": "./dist/ui/index.d.ts",
+      "import": "./dist/ui/index.js",
+      "require": "./dist/ui/index.cjs"
+    },
+    "./data": {
+      "types": "./dist/data/index.d.ts",
+      "import": "./dist/data/index.js",
+      "require": "./dist/data/index.cjs"
+    },
+    "./core": {
+      "types": "./dist/core/index.d.ts",
+      "import": "./dist/core/index.js",
+      "require": "./dist/core/index.cjs"
+    },
+    "./utils": {
+      "types": "./dist/core/utils/index.d.ts",
+      "import": "./dist/core/utils/index.js",
+      "require": "./dist/core/utils/index.cjs"
+    },
+    "./cli": {
+      "types": "./dist/cli/index.d.ts",
+      "import": "./dist/cli/index.js",
+      "require": "./dist/cli/index.cjs"
+    },
+    "./adapter/cloudflare": {
+      "types": "./dist/adapter/cloudflare/index.d.ts",
+      "import": "./dist/adapter/cloudflare/index.js",
+      "require": "./dist/adapter/cloudflare/index.cjs"
+    },
+    "./adapter/vite": {
+      "types": "./dist/adapter/vite/index.d.ts",
+      "import": "./dist/adapter/vite/index.js",
+      "require": "./dist/adapter/vite/index.cjs"
+    },
+    "./adapter/nextjs": {
+      "types": "./dist/adapter/nextjs/index.d.ts",
+      "import": "./dist/adapter/nextjs/index.js",
+      "require": "./dist/adapter/nextjs/index.cjs"
+    },
+    "./adapter/remix": {
+      "types": "./dist/adapter/remix/index.d.ts",
+      "import": "./dist/adapter/remix/index.js",
+      "require": "./dist/adapter/remix/index.cjs"
+    },
+    "./adapter/bun": {
+      "types": "./dist/adapter/bun/index.d.ts",
+      "import": "./dist/adapter/bun/index.js",
+      "require": "./dist/adapter/bun/index.cjs"
+    },
+    "./dist/static/manifest.json": "./dist/static/.vite/manifest.json",
+    "./dist/styles.css": "./dist/styles.css",
+    "./dist/index.html": "./dist/static/index.html"
+  },
+  "files": [
+    "dist",
+    "!dist/*.tsbuildinfo",
+    "!dist/*.map",
+    "!dist/**/*.map",
+    "!dist/metafile*"
+  ]
+}

@@ -1,0 +1,66 @@
+---
+title: Introduction
+---
+
+Glad you're here! This is about **bknd**, a feature-rich backend that is so lightweight it could
+run on your toaster (probably).
+
+<Note>
+   The documentation is currently a work in progress and not complete. Updates will be made soon.
+</Note>
+
+## Quickstart
+Enter the following command to spin up an instance:
+<CodeGroup>
+   ```bash npm
+   npx bknd run
+   ```
+
+   ```bash bun
+   bunx bknd run
+   ```
+</CodeGroup>
+
+
+## Start with a Framework/Runtime
+Start by using the integration guide for these popular frameworks/runtimes. There will be more
+in the future, so stay tuned!
+
+<CardGroup cols={2}>
+  <Card
+    title="Next.js"
+    icon={<div className="text-primary-light">
+       <svg xmlns="http://www.w3.org/2000/svg" width="28px" height="28px"
+          viewBox="0 0 24 24"><path fill="none" stroke="currentColor"
+          stroke-linecap="round" stroke-linejoin="round"
+       stroke-width="2" d="M9 15V9l7.745 10.65A9 9 0 1 1 19 17.657M15 12V9"/></svg></div>}
+    href="/integration/nextjs"
+  />
+  <Card
+    title="Remix"
+    icon={<div className="text-primary-light">
+       <svg xmlns="http://www.w3.org/2000/svg"  width="24px" height="24px"
+          viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M19.932
+       17.424c.18 2.31.18 3.394.18 4.576h-5.35c0-.258.004-.493.009-.732c.014-.743.03-1.517-.09-3.081c-.16-2.29-1.147-2.799-2.961-2.799H3.305v-4.166h8.67c2.291 0 3.437-.696 3.437-2.54c0-1.623-1.146-2.605-3.437-2.605h-8.67V2h9.624c5.189 0 7.767 2.449 7.767 6.36c0 2.926-1.814 4.834-4.265 5.152c2.069.413 3.278 1.59 3.501 3.912" clip-rule="evenodd"/><path fill="currentColor" d="M3.305 22v-3.106h5.657c.945 0 1.15.7 1.15 1.118V22z"/></svg>
+    </div>}
+    href="/integration/remix"
+  />
+   <Card
+      title="Cloudflare"
+      icon={<div className="text-primary-light">
+         <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 128 128">
+            <path fill="currentColor" d="M30.743 116.257a15.5 15.5 0 0 1-3.42-4.107L4.068 71.752a15.56 15.56 0 0 1 0-15.503L27.323 15.85a15.5 15.5 0 0 1 3.417-4.084l15.601 28.166l-11.266 20.282a7.75 7.75 0 0 0 0 7.543l11.277 20.349zM100.665 15.85l23.255 40.398a15.49 15.49 0 0 1 0 15.503l-23.255 40.398a15.5 15.5 0 0 1-13.416 7.752H68.994l28.92-52.145a7.75 7.75 0 0 0 0-7.513L68.994 8.099h18.255a15.5 15.5 0 0 1 13.416 7.751M36.119 9.139a15.5 15.5 0 0 1 5.562-1.041h21.255l28.92 52.145a7.75 7.75 0 0 1 0 7.513l-28.92 52.145H41.682c-2.062 0-4.124-.423-5.993-1.193L63.406 67.29c.894-1.61 1.002-4.738.107-6.348z"/>
+         </svg>
+      </div>}
+      href="/integration/cloudflare"
+   />
+   <Card
+      title="Bun"
+      icon={<div className="text-primary-light">
+         <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M12 22.596c6.628 0 12-4.338 12-9.688c0-3.318-2.057-6.248-5.219-7.986c-1.286-.715-2.297-1.357-3.139-1.89C14.058 2.025 13.08 1.404 12 1.404c-1.097 0-2.334.785-3.966 1.821a50 50 0 0 1-2.816 1.697C2.057 6.66 0 9.59 0 12.908c0 5.35 5.372 9.687 12 9.687zM10.599 4.715c.334-.759.503-1.58.498-2.409c0-.145.202-.187.23-.029c.658 2.783-.902 4.162-2.057 4.624c-.124.048-.199-.121-.103-.209a5.8 5.8 0 0 0 1.432-1.977m2.058-.102a5.8 5.8 0 0 0-.782-2.306v-.016c-.069-.123.086-.263.185-.172c1.962 2.111 1.307 4.067.556 5.051c-.082.103-.23-.003-.189-.126a5.85 5.85 0 0 0 .23-2.431m1.776-.561a5.7 5.7 0 0 0-1.612-1.806v-.014c-.112-.085-.024-.274.114-.218c2.595 1.087 2.774 3.18 2.459 4.407a.12.12 0 0 1-.049.071a.11.11 0 0 1-.153-.026a.12.12 0 0 1-.022-.083a5.9 5.9 0 0 0-.737-2.331m-5.087.561c-.617.546-1.282.76-2.063 1c-.117 0-.195-.078-.156-.181c1.752-.909 2.376-1.649 2.999-2.778c0 0 .155-.118.188.085c0 .304-.349 1.329-.968 1.874m4.945 11.237a2.96 2.96 0 0 1-.937 1.553c-.346.346-.8.565-1.286.62a2.18 2.18 0 0 1-1.327-.62a2.96 2.96 0 0 1-.925-1.553a.24.24 0 0 1 .064-.198a.23.23 0 0 1 .193-.069h3.965a.23.23 0 0 1 .19.07c.05.053.073.125.063.197m-5.458-2.176a1.86 1.86 0 0 1-2.384-.245a1.98 1.98 0 0 1-.233-2.447c.207-.319.503-.566.848-.713a1.84 1.84 0 0 1 1.092-.11c.366.075.703.261.967.531a1.98 1.98 0 0 1 .408 2.114a1.93 1.93 0 0 1-.698.869zm8.495.005a1.86 1.86 0 0 1-2.381-.253a1.96 1.96 0 0 1-.547-1.366c0-.384.11-.76.32-1.079c.207-.319.503-.567.849-.713a1.84 1.84 0 0 1 1.093-.108c.367.076.704.262.968.534a1.98 1.98 0 0 1 .4 2.117a1.93 1.93 0 0 1-.702.868"/>
+         </svg>
+      </div>}
+      href="/integration/bun"
+   />
+</CardGroup>

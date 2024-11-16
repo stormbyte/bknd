@@ -1,0 +1,183 @@
+import { typeboxResolver } from "@hookform/resolvers/typebox";
+import { Radio, TextInput } from "@mantine/core";
+import {
+   Default,
+   type Static,
+   StringEnum,
+   StringIdentifier,
+   Type,
+   transformObject
+} from "core/utils";
+import type { MediaFieldConfig } from "media/MediaField";
+import { useForm } from "react-hook-form";
+import { useBknd } from "ui/client";
+import { MantineNumberInput } from "ui/components/form/hook-form-mantine/MantineNumberInput";
+import { MantineRadio } from "ui/components/form/hook-form-mantine/MantineRadio";
+import { MantineSelect } from "ui/components/form/hook-form-mantine/MantineSelect";
+import {
+   ModalBody,
+   ModalFooter,
+   type TCreateModalSchema,
+   type TFieldCreate,
+   useStepContext
+} from "../../CreateModal";
+
+const schema = Type.Object({
+   entity: StringIdentifier,
+   cardinality_type: StringEnum(["single", "multiple"], { default: "multiple" }),
+   cardinality: Type.Optional(Type.Number({ minimum: 1 })),
+   name: StringIdentifier
+});
+type TCreateModalMediaSchema = Static<typeof schema>;
+
+export function TemplateMediaComponent() {
+   const { stepBack, setState, state, nextStep } = useStepContext<TCreateModalSchema>();
+   const {
+      register,
+      handleSubmit,
+      formState: { isValid },
+      setValue,
+      watch,
+      control
+   } = useForm({
+      resolver: typeboxResolver(schema),
+      defaultValues: Default(schema, {}) as TCreateModalMediaSchema
+   });
+
+   const { config } = useBknd();
+   const media_entity = config.media.entity_name ?? "media";
+   const entities = transformObject(config.data.entities ?? {}, (entity, name) =>
+      name !== media_entity ? entity : undefined
+   );
+   const data = watch();
+
+   async function handleCreate() {
+      if (isValid) {
+         console.log("data", data);
+         const { field, relation } = convert(media_entity, data);
+
+         console.log("state", { field, relation });
+         setState((prev) => ({
+            ...prev,
+            fields: { create: [field] },
+            relations: { create: [relation] }
+         }));
+
+         nextStep("create")();
+      }
+   }
+
+   return (
+      <>
+         <form onSubmit={handleSubmit(handleCreate)}>
+            <ModalBody>
+               <div className="flex flex-col gap-6">
+                  <MantineSelect
+                     name="entity"
+                     allowDeselect={false}
+                     control={control}
+                     size="md"
+                     label="Choose which entity to add media to"
+                     required
+                     data={Object.entries(entities).map(([name, entity]) => ({
+                        value: name,
+                        label: entity.config?.name ?? name
+                     }))}
+                  />
+                  <MantineRadio.Group
+                     name="cardinality_type"
+                     control={control}
+                     label="How many items can be attached?"
+                     size="md"
+                  >
+                     <div className="flex flex-col gap-1">
+                        <Radio label="Multiple items" value="multiple" />
+                        <Radio label="Single item" value="single" />
+                     </div>
+                  </MantineRadio.Group>
+                  {data.cardinality_type === "multiple" && (
+                     <MantineNumberInput
+                        name="cardinality"
+                        control={control}
+                        size="md"
+                        label="How many exactly?"
+                        placeholder="n"
+                        description="Leave empty for unlimited"
+                        inputWrapperOrder={["label", "input", "description", "error"]}
+                     />
+                  )}
+                  <TextInput
+                     size="md"
+                     label="Set a name for the property"
+                     required
+                     description={`A virtual property will be added to ${
+                        data.entity ? data.entity : "the entity"
+                     }.`}
+                     {...register("name")}
+                  />
+               </div>
+               {/*<p>step template media</p>
+               <pre>{JSON.stringify(state, null, 2)}</pre>
+               <pre>{JSON.stringify(data, null, 2)}</pre>*/}
+            </ModalBody>
+            <ModalFooter
+               next={{
+                  type: "submit",
+                  disabled: !isValid
+               }}
+               prev={{
+                  onClick: stepBack
+               }}
+               debug={{ state, data }}
+            />
+         </form>
+      </>
+   );
+}
+
+function convert(media_entity: string, data: TCreateModalMediaSchema) {
+   const field: {
+      entity: string;
+      name: string;
+      field: { type: "media"; config: MediaFieldConfig };
+   } = {
+      name: data.name,
+      entity: data.entity,
+      field: {
+         type: "media" as any,
+         config: {
+            required: false,
+            fillable: ["update"],
+            hidden: false,
+            mime_types: [],
+            virtual: true,
+            entity: data.entity
+         }
+      }
+   };
+
+   const relation = {
+      type: "poly",
+      source: data.entity,
+      target: media_entity,
+      config: {
+         mappedBy: data.name,
+         targetCardinality: data.cardinality_type === "single" ? 1 : undefined
+      }
+   };
+
+   if (data.cardinality_type === "multiple") {
+      if (data.cardinality && data.cardinality > 1) {
+         field.field.config.max_items = data.cardinality;
+         relation.config.targetCardinality = data.cardinality;
+      }
+   } else {
+      field.field.config.max_items = 1;
+      relation.config.targetCardinality = 1;
+   }
+
+   // force fix types
+   const _field = field as unknown as TFieldCreate;
+
+   return { field: _field, relation };
+}

@@ -1,0 +1,332 @@
+import { describe, expect, test } from "bun:test";
+import { SchemaObject } from "../../../src/core";
+import { Type } from "../../../src/core/utils";
+
+describe("SchemaObject", async () => {
+   test("basic", async () => {
+      const m = new SchemaObject(
+         Type.Object({ a: Type.String({ default: "b" }) }),
+         { a: "test" },
+         {
+            forceParse: true
+         }
+      );
+
+      expect(m.get()).toEqual({ a: "test" });
+      expect(m.default()).toEqual({ a: "b" });
+
+      // direct modification is not allowed
+      expect(() => {
+         m.get().a = "test2";
+      }).toThrow();
+   });
+
+   test("patch", async () => {
+      const m = new SchemaObject(
+         Type.Object({
+            s: Type.Object(
+               {
+                  a: Type.String({ default: "b" }),
+                  b: Type.Object(
+                     {
+                        c: Type.String({ default: "d" }),
+                        e: Type.String({ default: "f" })
+                     },
+                     { default: {} }
+                  )
+               },
+               { default: {}, additionalProperties: false }
+            )
+         })
+      );
+      expect(m.get()).toEqual({ s: { a: "b", b: { c: "d", e: "f" } } });
+
+      await m.patch("s.a", "c");
+
+      // non-existing path on no additional properties
+      expect(() => m.patch("s.s.s", "c")).toThrow();
+      // wrong type
+      expect(() => m.patch("s.a", 1)).toThrow();
+
+      // should have only the valid change applied
+      expect(m.get().s.b.c).toBe("d");
+      expect(m.get()).toEqual({ s: { a: "c", b: { c: "d", e: "f" } } });
+
+      await m.patch("s.b.c", "d2");
+      expect(m.get()).toEqual({ s: { a: "c", b: { c: "d2", e: "f" } } });
+   });
+
+   test("patch array", async () => {
+      const m = new SchemaObject(
+         Type.Object({
+            methods: Type.Array(Type.String(), { default: ["GET", "PATCH"] })
+         })
+      );
+      expect(m.get()).toEqual({ methods: ["GET", "PATCH"] });
+
+      // array values are fully overwritten, whether accessed by index ...
+      m.patch("methods[0]", "POST");
+      expect(m.get()).toEqual({ methods: ["POST"] });
+
+      // or by path!
+      m.patch("methods", ["GET", "DELETE"]);
+      expect(m.get()).toEqual({ methods: ["GET", "DELETE"] });
+   });
+
+   test("remove", async () => {
+      const m = new SchemaObject(
+         Type.Object({
+            s: Type.Object(
+               {
+                  a: Type.String({ default: "b" }),
+                  b: Type.Object(
+                     {
+                        c: Type.String({ default: "d" })
+                     },
+                     { default: {} }
+                  )
+               },
+               { default: {} }
+            )
+         })
+      );
+      expect(m.get()).toEqual({ s: { a: "b", b: { c: "d" } } });
+
+      // expect no change, because the default then applies
+      m.remove("s.a");
+      expect(m.get()).toEqual({ s: { a: "b", b: { c: "d" } } });
+
+      // adding another path, and then deleting it
+      m.patch("s.c", "d");
+      expect(m.get()).toEqual({ s: { a: "b", b: { c: "d" }, c: "d" } } as any);
+
+      // now it should be removed without applying again
+      m.remove("s.c");
+      expect(m.get()).toEqual({ s: { a: "b", b: { c: "d" } } });
+   });
+
+   test("set", async () => {
+      const m = new SchemaObject(
+         Type.Object({
+            methods: Type.Array(Type.String(), { default: ["GET", "PATCH"] })
+         })
+      );
+      expect(m.get()).toEqual({ methods: ["GET", "PATCH"] });
+
+      m.set({ methods: ["GET", "POST"] });
+      expect(m.get()).toEqual({ methods: ["GET", "POST"] });
+
+      // wrong type
+      expect(() => m.set({ methods: [1] as any })).toThrow();
+   });
+
+   test("listener", async () => {
+      let called = false;
+      let result: any;
+      const m = new SchemaObject(
+         Type.Object({
+            methods: Type.Array(Type.String(), { default: ["GET", "PATCH"] })
+         }),
+         undefined,
+         {
+            onUpdate: async (config) => {
+               await new Promise((r) => setTimeout(r, 10));
+               called = true;
+               result = config;
+            }
+         }
+      );
+
+      await m.set({ methods: ["GET", "POST"] });
+      expect(called).toBe(true);
+      expect(result).toEqual({ methods: ["GET", "POST"] });
+   });
+
+   test("throwIfRestricted", async () => {
+      const m = new SchemaObject(Type.Object({}), undefined, {
+         restrictPaths: ["a.b"]
+      });
+
+      expect(() => m.throwIfRestricted("a.b")).toThrow();
+      expect(m.throwIfRestricted("a.c")).toBeUndefined();
+      expect(() => m.throwIfRestricted({ a: { b: "c" } })).toThrow();
+      expect(m.throwIfRestricted({ a: { c: "d" } })).toBeUndefined();
+   });
+
+   test("restriction bypass", async () => {
+      const m = new SchemaObject(
+         Type.Object({
+            s: Type.Object(
+               {
+                  a: Type.String({ default: "b" }),
+                  b: Type.Object(
+                     {
+                        c: Type.String({ default: "d" })
+                     },
+                     { default: {} }
+                  )
+               },
+               { default: {} }
+            )
+         }),
+         undefined,
+         {
+            restrictPaths: ["s.b"]
+         }
+      );
+
+      expect(() => m.patch("s.b.c", "e")).toThrow();
+      expect(m.bypass().patch("s.b.c", "e")).toBeDefined();
+      expect(() => m.patch("s.b.c", "f")).toThrow();
+      expect(m.get()).toEqual({ s: { a: "b", b: { c: "e" } } });
+   });
+
+   const dataEntitiesSchema = Type.Object(
+      {
+         entities: Type.Object(
+            {},
+            {
+               additionalProperties: Type.Object({
+                  fields: Type.Object(
+                     {},
+                     {
+                        additionalProperties: Type.Object({
+                           type: Type.String(),
+                           config: Type.Optional(
+                              Type.Object({}, { additionalProperties: Type.String() })
+                           )
+                        })
+                     }
+                  ),
+                  config: Type.Optional(Type.Object({}, { additionalProperties: Type.String() }))
+               })
+            }
+         )
+      },
+      {
+         additionalProperties: false
+      }
+   );
+   test("patch safe object, overwrite", async () => {
+      const data = {
+         entities: {
+            some: {
+               fields: {
+                  a: { type: "string", config: { some: "thing" } }
+               }
+            }
+         }
+      };
+      const m = new SchemaObject(dataEntitiesSchema, data, {
+         forceParse: true,
+         overwritePaths: [/^entities\..*\.fields\..*\.config/]
+      });
+
+      m.patch("entities.some.fields.a", { type: "string", config: { another: "one" } });
+
+      expect(m.get()).toEqual({
+         entities: {
+            some: {
+               fields: {
+                  a: { type: "string", config: { another: "one" } }
+               }
+            }
+         }
+      });
+   });
+
+   test("patch safe object, overwrite 2", async () => {
+      const data = {
+         entities: {
+            users: {
+               fields: {
+                  email: { type: "string" },
+                  password: { type: "string" }
+               }
+            }
+         }
+      };
+      const m = new SchemaObject(dataEntitiesSchema, data, {
+         forceParse: true,
+         overwritePaths: [/^entities\..*\.fields\..*\.config\.html_config$/]
+      });
+
+      m.patch("entities.test", {
+         fields: {
+            content: {
+               type: "text"
+            }
+         }
+      });
+
+      expect(m.get()).toEqual({
+         entities: {
+            users: {
+               fields: {
+                  email: { type: "string" },
+                  password: { type: "string" }
+               }
+            },
+            test: {
+               fields: {
+                  content: {
+                     type: "text"
+                  }
+               }
+            }
+         }
+      });
+   });
+
+   test("patch safe object, overwrite 3", async () => {
+      const data = {
+         entities: {
+            users: {
+               fields: {
+                  email: { type: "string" },
+                  password: { type: "string" }
+               }
+            }
+         }
+      };
+      const m = new SchemaObject(dataEntitiesSchema, data, {
+         forceParse: true,
+         overwritePaths: [/^entities\..*\.fields\..*\.config\.html_config$/]
+      });
+
+      expect(m.patch("desc", "entities.users.config.sort_dir")).rejects.toThrow();
+
+      m.patch("entities.test", {
+         fields: {
+            content: {
+               type: "text"
+            }
+         }
+      });
+
+      m.patch("entities.users.config", {
+         sort_dir: "desc"
+      });
+
+      expect(m.get()).toEqual({
+         entities: {
+            users: {
+               fields: {
+                  email: { type: "string" },
+                  password: { type: "string" }
+               },
+               config: {
+                  sort_dir: "desc"
+               }
+            },
+            test: {
+               fields: {
+                  content: {
+                     type: "text"
+                  }
+               }
+            }
+         }
+      });
+   });
+});

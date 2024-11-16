@@ -1,0 +1,211 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "bknd",
+  "logo": {
+    "dark": "/_assets/logo/bknd_logo_white_test.svg",
+    "light": "/_assets/logo/light.svg"
+  },
+  "theme": "prism",
+  "layout": "sidenav",
+  "favicon": "/_assets/favicon.svg",
+  "background": {
+    "style": "grid"
+  },
+  "colors": {
+    "primary": "#0D9373",
+    "light": "#07C983",
+    "dark": "#0D9373",
+    "anchors": {
+      "from": "#0D9373",
+      "to": "#07C983"
+    }
+  },
+  "topbarLinks": [
+    {
+      "name": "Support",
+      "url": "mailto:hi@help.bknd.io"
+    }
+  ],
+  "topbarCtaButton": {
+    "type": "github",
+    "url": "https://github.com/bknd-io/bknd"
+  },
+  "primaryTab": {
+    "name": "Documentation"
+  },
+  "tabs": [
+    {
+      "name": "User Guide",
+      "url": "guide"
+    },
+    {
+      "name": "API Reference",
+      "url": "api-reference"
+    }
+  ],
+  "anchors": [
+    {
+      "name": "Web",
+      "icon": "globe",
+      "iconType": "solid",
+      "url": "https://bknd.io"
+    },
+    {
+      "name": "Docs",
+      "icon": "book-open-cover",
+      "iconType": "solid",
+      "url": "/"
+    },
+    {
+      "name": "Discord",
+      "icon": "discord",
+      "iconType": "solid",
+      "url": "https://discord.gg/bknd"
+    },
+    {
+      "name": "GitHub",
+      "icon": "github",
+      "iconType": "solid",
+      "url": "https://github.com/bknd-io/bknd"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Getting Started",
+      "pages": ["introduction", "installation"]
+    },
+    {
+      "group": "Modules",
+      "pages": [
+        "modules/overview",
+        "modules/server",
+        "modules/data",
+        "modules/auth",
+        "modules/media",
+        "modules/flows"
+      ]
+    },
+    {
+      "group": "Configuration",
+      "pages": [
+        "config/overview",
+        "config/migration",
+        {
+          "group": "Modules",
+          "pages": [
+            "config/modules/overview",
+            "config/modules/server",
+            "config/modules/data",
+            "config/modules/auth",
+            "config/modules/flows",
+            "config/modules/media"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Integration",
+      "pages": [
+        "integration/extending",
+        "integration/hono",
+        "integration/nextjs",
+        "integration/remix",
+        "integration/cloudflare",
+        "integration/bun",
+        "integration/vite",
+        "integration/express",
+        "integration/nodejs",
+        "integration/deno",
+        "integration/browser"
+      ]
+    },
+    {
+      "group": "Deployment",
+      "pages": [
+        "deployment/overview",
+        {
+          "group": "Providers",
+          "pages": [
+            "deployment/providers/cloudflare",
+            "deployment/providers/vercel",
+            "deployment/providers/aws"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "User Guide",
+      "pages": ["guide/introduction", "guide/setup", "guide/admin UI"]
+    },
+    {
+      "group": "Data",
+      "pages": [
+        "guide/data/entities",
+        "guide/data/fields",
+        "guide/data/relations",
+        "guide/data/indices"
+      ]
+    },
+    {
+      "group": "Auth",
+      "pages": [
+        "guide/auth/users",
+        "guide/auth/roles",
+        "guide/auth/permissions"
+      ]
+    },
+    {
+      "group": "Flows",
+      "pages": ["guide/flows/introduction"]
+    },
+    {
+      "group": "Media",
+      "pages": [
+        "guide/media/introduction",
+        "guide/media/overview",
+        "guide/media/transformations"
+      ]
+    },
+
+    {
+      "group": "API Documentation",
+      "pages": ["api-reference/introduction"]
+    },
+    {
+      "group": "System Endpoints",
+      "pages": [
+        "api-reference/system/ping",
+        "api-reference/system/config",
+        "api-reference/system/schema"
+      ]
+    },
+    {
+      "group": "Data Endpoints",
+      "pages": [
+        "api-reference/data/list",
+        "api-reference/data/create",
+        "api-reference/data/get",
+        "api-reference/data/update",
+        "api-reference/data/delete"
+      ]
+    },
+    {
+      "group": "Auth Endpoints",
+      "pages": [
+        "api-reference/auth/login",
+        "api-reference/auth/register",
+        "api-reference/auth/me",
+        "api-reference/auth/strategies"
+      ]
+    }
+  ],
+  "api": {
+    "baseUrl": "https://your-bknd.io",
+    "auth": {
+      "method": "bearer"
+    }
+  },
+  "footerSocials": {
+    "github": "https://github.com/bknd-io/bknd"
+  }
+}

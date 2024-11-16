@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <body>
+    <script type="module" src="/main.ts"></script>
+
+    <fieldset>
+      <legend>Params</legend>
+      <div>
+        <label for="entity">Entity:</label>
+        <select id="entity">
+          <option value="todos">Todos</option>
+          <option value="notes">Notes</option>
+        </select>
+      </div>
+      <div>
+        <div>
+          <label for="query">Query:</label>
+        </div>
+        <textarea id="query" rows="5">{"limit": 2}</textarea>
+      </div>
+
+      <br />
+      <button id="btn">Fetch</button>
+    </fieldset>
+
+    <fieldset>
+      <legend>Result</legend>
+      <pre id="out"></pre>
+    </fieldset>
+
+    <script>
+      const btn = document.getElementById('btn');
+      const query = document.getElementById('query');
+      query.onblur = function(e) {
+        try {
+          const formatted = JSON.stringify(JSON.parse(e.target.value), null, 2);
+          query.style.borderColor = '';
+          query.value = formatted
+          btn.disabled = false;
+        } catch (e) {
+          query.style.borderColor = 'red';
+          btn.disabled = true;
+        }
+      }
+
+      btn.addEventListener('click', async () => {
+        const entity = document.getElementById('entity').value;
+        const body = query.value;
+
+        const res = await fetch(`/api/data/${entity}/query`, {
+          method: 'POST',
+          body,
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        });
+        const data = await res.json();
+        document.getElementById('out').innerText = JSON.stringify(data, null, 2);
+      });
+    </script>
+  </body>
+</html>

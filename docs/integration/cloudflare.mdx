@@ -1,0 +1,96 @@
+---
+title: 'Cloudflare'
+description: 'Run bknd inside Cloudflare Worker'
+---
+import InstallBknd from '/snippets/install-bknd.mdx';
+
+## Installation
+Create a new cloudflare worker project by following the
+[official guide](https://developers.cloudflare.com/workers/get-started/guide/),
+and then install bknd as a dependency:
+
+<InstallBknd />
+
+## Serve the API
+
+``` ts
+import { serve } from "bknd/adapter/cloudflare";
+
+export default serve(
+   {
+      app: (env: Env) => ({
+         connection: {
+            type: "libsql",
+            config: {
+               url: env.DB_URL,
+               authToken: env.DB_TOKEN
+            }
+         }
+      })
+   }
+);
+```
+
+Now run the worker:
+```bash
+wrangler dev
+```
+
+And confirm it works by opening [http://localhost:8787](http://localhost:8787) in
+your browser.
+
+## Serve the Admin UI
+Now in order to also server the static admin files, you have to modify the `wrangler.toml` to
+include the static assets:
+```toml
+[site]
+bucket = "node_modules/bknd/dist/static"
+```
+
+And then modify the worker entry as follows:
+``` ts {2, 15, 17}
+import { serve } from "bknd/adapter/cloudflare";
+import manifest from "__STATIC_CONTENT_MANIFEST";
+
+export default serve(
+   {
+      app: (env: Env) => ({
+         connection: {
+            type: "libsql",
+            config: {
+               url: env.DB_URL,
+               authToken: env.DB_TOKEN
+            }
+         }
+      }),
+      setAdminHtml: true
+   },
+   manifest
+);
+```
+
+## Adding custom routes
+You can also add custom routes by defining them after the app has been built, like so:
+```ts {15-17}
+import { serve } from "bknd/adapter/cloudflare";
+import manifest from "__STATIC_CONTENT_MANIFEST";
+
+export default serve(
+   {
+      app: (env: Env) => ({
+         connection: {
+            type: "libsql",
+            config: {
+               url: env.DB_URL,
+               authToken: env.DB_TOKEN
+            }
+         }
+      }),
+      onBuilt: async (app) => {
+         app.modules.server.get("/hello", (c) => c.json({ hello: "world" }));
+      },
+      setAdminHtml: true
+   },
+   manifest
+);
+```

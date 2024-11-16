@@ -1,0 +1,150 @@
+Subject: [PATCH] event manager returning test
+---
+Index: app/__test__/core/EventManager.spec.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/__test__/core/EventManager.spec.ts b/app/__test__/core/EventManager.spec.ts
+--- a/app/__test__/core/EventManager.spec.ts	(revision f06777256f332766de4bc76c23183725c8c7d310)
++++ b/app/__test__/core/EventManager.spec.ts	(date 1731498680965)
+@@ -1,8 +1,8 @@
+ import { describe, expect, test } from "bun:test";
+-import { Event, EventManager, NoParamEvent } from "../../src/core/events";
++import { Event, EventManager, type ListenerHandler, NoParamEvent } from "../../src/core/events";
+ 
+ class SpecialEvent extends Event<{ foo: string }> {
+-   static slug = "special-event";
++   static override slug = "special-event";
+ 
+    isBar() {
+       return this.params.foo === "bar";
+@@ -10,7 +10,19 @@
+ }
+ 
+ class InformationalEvent extends NoParamEvent {
+-   static slug = "informational-event";
++   static override slug = "informational-event";
++}
++
++class ReturnEvent extends Event<{ foo: string }, number> {
++   static override slug = "return-event";
++   static override returning = true;
++
++   override setValidatedReturn(value: number) {
++      if (typeof value !== "number") {
++         throw new Error("Invalid return value");
++      }
++      this.params.foo = value.toString();
++   }
+ }
+ 
+ describe("EventManager", async () => {
+@@ -43,4 +55,22 @@
+ 
+       expect(true).toBe(true);
+    });
++
++   test.only("piping", async () => {
++      const emgr = new EventManager();
++      emgr.registerEvents([ReturnEvent, InformationalEvent]);
++
++      type T = ListenerHandler<ReturnEvent>;
++
++      // @ts-expect-error InformationalEvent has no return value
++      emgr.onEvent(InformationalEvent, async (event, name) => {
++         console.log("Event: ", name, event.params);
++         return 1;
++      });
++
++      emgr.onEvent(ReturnEvent, async (event, name) => {
++         console.log("Event: ", name, event.params);
++         return 1;
++      });
++   });
+ });
+Index: app/src/core/events/EventManager.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/core/events/EventManager.ts b/app/src/core/events/EventManager.ts
+--- a/app/src/core/events/EventManager.ts	(revision f06777256f332766de4bc76c23183725c8c7d310)
++++ b/app/src/core/events/EventManager.ts	(date 1731498680971)
+@@ -6,7 +6,7 @@
+ }
+ 
+ export type EventClass = {
+-   new (params: any): Event;
++   new (params: any): Event<any, any>;
+    slug: string;
+ };
+ 
+@@ -137,6 +137,9 @@
+          throw new Error(`Event "${slug}" not registered`);
+       }
+ 
++      // @ts-expect-error returning is static
++      const returning = Boolean(event.constructor.returning);
++
+       const listeners = this.listeners.filter((listener) => listener.event.slug === slug);
+       //console.log("---!-- emitting", slug, listeners.length);
+ 
+Index: app/src/core/events/EventListener.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/core/events/EventListener.ts b/app/src/core/events/EventListener.ts
+--- a/app/src/core/events/EventListener.ts	(revision f06777256f332766de4bc76c23183725c8c7d310)
++++ b/app/src/core/events/EventListener.ts	(date 1731498680968)
+@@ -4,10 +4,10 @@
+ export const ListenerModes = ["sync", "async"] as const;
+ export type ListenerMode = (typeof ListenerModes)[number];
+ 
+-export type ListenerHandler<E extends Event = Event> = (
++export type ListenerHandler<E extends Event<any, any>> = (
+    event: E,
+-   slug: string,
+-) => Promise<void> | void;
++   slug: string
++) => E extends Event<any, infer R> ? R | Promise<R> : never;
+ 
+ export class EventListener<E extends Event = Event> {
+    mode: ListenerMode = "async";
+Index: app/src/core/events/Event.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/core/events/Event.ts b/app/src/core/events/Event.ts
+--- a/app/src/core/events/Event.ts	(revision f06777256f332766de4bc76c23183725c8c7d310)
++++ b/app/src/core/events/Event.ts	(date 1731498680973)
+@@ -1,17 +1,25 @@
+-export abstract class Event<Params = any> {
++export abstract class Event<Params = any, Returning = void> {
+    /**
+     * Unique event slug
+     * Must be static, because registering events is done by class
+     */
+    static slug: string = "untitled-event";
+    params: Params;
++   _returning!: Returning;
++   static returning: boolean = false;
++
++   setValidatedReturn(value: Returning): void {
++      if (typeof value !== "undefined") {
++         throw new Error("Invalid event return value");
++      }
++   }
+ 
+    constructor(params: Params) {
+       this.params = params;
+    }
+ }
+ 
+-// @todo: current workaround: potentially there is none and that's the way
++// @todo: current workaround: potentially there is "none" and that's the way
+ export class NoParamEvent extends Event<null> {
+    static override slug: string = "noparam-event";
+ 

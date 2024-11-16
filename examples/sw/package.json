@@ -1,0 +1,19 @@
+{
+  "name": "sw",
+  "private": true,
+  "scripts": {
+    "dev": "vite dev",
+    "db": "turso dev --db-file test.db",
+    "bknd": "bknd run --db-url http://localhost:8080",
+    "bknd:local": "bknd run --db-url file:test.db",
+    "db:check": "sqlite3 test.db \"PRAGMA wal_checkpoint(FULL);\""
+  },
+  "type": "module",
+  "dependencies": {
+    "hono": "^4.6.9",
+    "bknd": "workspace:*"
+  },
+  "devDependencies": {
+    "vite": "^5.4.10"
+  }
+}

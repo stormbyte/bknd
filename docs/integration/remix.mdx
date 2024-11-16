@@ -1,0 +1,58 @@
+---
+title: 'Remix'
+description: 'Run bknd inside Remix'
+---
+import InstallBknd from '/snippets/install-bknd.mdx';
+
+<Note>
+   Remix SSR support is currently limited.
+</Note>
+
+## Installation
+Install bknd as a dependency:
+<InstallBknd />
+
+## Serve the API
+Create a new api splat route file at `app/routes/api.$.ts`:
+``` tsx
+// app/routes/api.$.ts
+import { serve } from "bknd/adapter/remix";
+
+const handler = serve({
+   connection: {
+      type: "libsql",
+      config: {
+         url: "http://localhost:8080"
+      }
+   }
+});
+
+export const loader = handler;
+export const action = handler;
+```
+
+## Enabling the Admin UI
+Create a new splat route file at `app/routes/admin.$.tsx`:
+```tsx
+// app/routes/admin.$.tsx
+import { Suspense, lazy, useEffect, useState } from "react";
+import "bknd/dist/styles.css";
+
+const Admin = lazy(() => import("bknd/ui")
+   .then((mod) => ({ default: mod.Admin })));
+
+export default function AdminPage() {
+   const [loaded, setLoaded] = useState(false);
+   useEffect(() => {
+      setLoaded(true);
+   }, []);
+   if (!loaded) return null;
+
+   return (
+      <Suspense>
+         <Admin withProvider />
+      </Suspense>
+   );
+}
+
+```

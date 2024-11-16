@@ -1,0 +1,19 @@
+import { describe, expect, test } from "bun:test";
+import { NumberField } from "../../../../src/data";
+import { runBaseFieldTests, transformPersist } from "./inc";
+
+describe("[data] NumberField", async () => {
+   test("transformPersist (config)", async () => {
+      const field = new NumberField("test", { minimum: 3, maximum: 5 });
+
+      expect(transformPersist(field, 2)).rejects.toThrow();
+      expect(transformPersist(field, 6)).rejects.toThrow();
+      expect(transformPersist(field, 4)).resolves.toBe(4);
+
+      const field2 = new NumberField("test");
+      expect(transformPersist(field2, 0)).resolves.toBe(0);
+      expect(transformPersist(field2, 10000)).resolves.toBe(10000);
+   });
+
+   runBaseFieldTests(NumberField, { defaultValue: 12, schemaType: "integer" });
+});

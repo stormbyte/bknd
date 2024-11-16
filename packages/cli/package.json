@@ -1,0 +1,33 @@
+{
+  "name": "bknd-cli",
+  "type": "module",
+  "bin": "./dist/cli/index.js",
+  "version": "0.0.7",
+  "scripts": {
+    "build": "rm -rf dist && mkdir -p dist/{static,cli} && cp -r ../../app/dist/static/ dist/static && cp -r ../../app/dist/cli/ dist/cli",
+    "cli": "node dist/cli/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "dependencies": {
+    "@libsql/client": "^0.14.0",
+    "hono": "^4.6.7"
+  },
+  "tsup": {
+    "entry": [
+      "src/index.ts"
+    ],
+    "minify": true,
+    "outDir": "dist",
+    "format": [
+      "esm"
+    ],
+    "platform": "neutral",
+    "splitting": false,
+    "loader": {
+      ".md": "copy"
+    }
+  }
+}

@@ -1,0 +1,40 @@
+---
+title: 'Bun'
+description: 'Run bknd inside Bun'
+---
+import InstallBknd from '/snippets/install-bknd.mdx';
+
+## Installation
+Install bknd as a dependency:
+<InstallBknd />
+
+## Serve the API & static files
+The `serve` function of the Bun adapter makes sure to also serve the static files required for
+the admin panel.
+
+``` tsx
+// index.ts
+import { serve } from "bknd/adapter/bun";
+
+const handler = serve({
+   connection: {
+      type: "libsql",
+      config: {
+         url: process.env.DB_URL!,
+         authToken: process.env.DB_AUTH_TOKEN!
+      }
+   }
+});
+
+Bun.serve({
+   port: 1337,
+   fetch: handler
+});
+
+console.log("Server running at http://localhost:1337");
+```
+
+Run the application using Bun by executing:
+```bash
+bun run index.ts
+```

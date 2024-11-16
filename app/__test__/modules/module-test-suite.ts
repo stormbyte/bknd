@@ -1,0 +1,43 @@
+import { beforeEach, describe, expect, it } from "bun:test";
+
+import { Hono } from "hono";
+import { Guard } from "../../src/auth";
+import { EventManager } from "../../src/core/events";
+import { Default, stripMark } from "../../src/core/utils";
+import { EntityManager } from "../../src/data";
+import type { Module, ModuleBuildContext } from "../../src/modules/Module";
+import { getDummyConnection } from "../helper";
+
+export function makeCtx(overrides?: Partial<ModuleBuildContext>): ModuleBuildContext {
+   const { dummyConnection } = getDummyConnection();
+   return {
+      connection: dummyConnection,
+      server: new Hono(),
+      em: new EntityManager([], dummyConnection),
+      emgr: new EventManager(),
+      guard: new Guard(),
+      ...overrides
+   };
+}
+
+export function moduleTestSuite(module: { new (): Module }) {
+   let ctx: ModuleBuildContext;
+
+   beforeEach(() => {
+      ctx = makeCtx();
+   });
+
+   describe("Module Tests", () => {
+      it("should build without exceptions", async () => {
+         const m = new module();
+         await m.setContext(ctx).build();
+         expect(m.toJSON()).toBeDefined();
+      });
+
+      it("uses the default config", async () => {
+         const m = new module();
+         await m.setContext(ctx).build();
+         expect(stripMark(m.toJSON())).toEqual(Default(m.getSchema(), {}));
+      });
+   });
+}

@@ -1,0 +1,57 @@
+---
+title: 'Next.js'
+description: 'Run bknd inside Next.js'
+---
+import InstallBknd from '/snippets/install-bknd.mdx';
+
+<Note>
+   Next.js support is currently experimental, this guide only covers adding bknd using `pages`
+   folder.
+</Note>
+
+## Installation
+Install bknd as a dependency:
+<InstallBknd />
+
+## Serve the API
+``` tsx
+// pages/api/[...route].ts
+import { serve } from "bknd/adapter/nextjs";
+import type { PageConfig } from "next";
+
+export const config: PageConfig = {
+   runtime: "edge"
+};
+
+export default serve({
+   connection: {
+      type: "libsql",
+      config: {
+         url: process.env.DB_URL!,
+         authToken: process.env.DB_AUTH_TOKEN!
+      }
+   }
+});
+```
+
+## Enabling the Admin UI
+Create a file `[[...admin]].tsx` inside the `pages/admin` folder:
+```tsx
+// pages/admin/[[...admin]].tsx
+import type { PageConfig } from "next";
+import dynamic from "next/dynamic";
+import "bknd/dist/styles.css";
+
+export const config: PageConfig = {
+  runtime: "experimental-edge",
+};
+
+const Admin = dynamic(
+  () => import("bknd/ui").then((mod) => mod.Admin),
+  { ssr: false },
+);
+
+export default function AdminPage() {
+  return <Admin />;
+}
+```

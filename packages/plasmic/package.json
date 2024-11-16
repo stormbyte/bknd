@@ -1,0 +1,48 @@
+{
+   "name": "@bknd/plasmic",
+   "type": "module",
+   "sideEffects": false,
+   "scripts": {
+      "build": "rm -rf dist && bun tsup && bun run build:types",
+      "watch": "bun tsup --watch --onSuccess 'bun run build:types'",
+      "build:only": "rm -rf dist && bun tsup",
+      "types": "bun tsc -p tsconfig.json --noEmit --skipLibCheck",
+      "build:types": "bun tsc --emitDeclarationOnly",
+      "updater": "bun x npm-check-updates -ui"
+   },
+   "dependencies": {
+      "wouter": "^3.3.5"
+   },
+   "devDependencies": {
+      "@types/bun": "latest",
+      "typescript": "^5.0.0"
+   },
+   "peerDependencies": {
+      "@plasmicapp/host": ">=1.0.0",
+      "bknd": "workspace:*",
+      "react": ">=18",
+      "react-dom": ">=18"
+   },
+   "tsup": {
+      "entry": ["index.ts"],
+      "minify": true,
+      "clean": true,
+      "external": ["react", "react-dom", "@plasmicapp/host", "@plasmicapp/loader-react", "@plasmicapp/loader-core"],
+      "format": ["esm"],
+      "platform": "browser",
+      "shims": true,
+      "bundle": true,
+      "metafile": true,
+      "splitting": false,
+      "sourceMap": true,
+      "outDir": "dist"
+   },
+   "exports": {
+      ".": {
+         "types": "./dist/index.d.ts",
+         "import": "./dist/index.js",
+         "require": "./dist/index.js"
+      }
+   },
+   "files": ["dist"]
+}
