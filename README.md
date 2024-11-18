@@ -13,7 +13,7 @@ deploying multiple separate services!
 
 ## ✨ Features
 **📊 Data**: Define, query, and control your data with ease. 
-- Define entities with fields and relationships, synced directly to your database.  
+  - Define entities with fields and relationships, synced directly to your database.  
   - Supported field types: `primary`, `text`, `number`, `date`, `boolean`, `enum`, `json`, `jsonschema`.  
   - Relationship types: `one-to-one`, `many-to-one`, `many-to-many`, and `polymorphic`.  
   - Advanced querying with the **Repository**: filtering, sorting, pagination, and relational data handling.
