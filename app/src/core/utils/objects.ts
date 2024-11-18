@@ -179,6 +179,7 @@ export function objectDepth(object: object): number {
 }
 
 export function objectCleanEmpty<Obj extends { [key: string]: any }>(obj: Obj): Obj {
+   if (!obj) return obj;
    return Object.entries(obj).reduce((acc, [key, value]) => {
       if (value && Array.isArray(value) && value.some((v) => typeof v === "object")) {
          const nested = value.map(objectCleanEmpty);

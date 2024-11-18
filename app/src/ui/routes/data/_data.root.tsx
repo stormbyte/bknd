@@ -121,7 +121,8 @@ export function DataEmpty() {
    const [navigate] = useNavigate();
 
    function handleButtonClick() {
-      navigate(routes.settings.path(["data", "entities"]), { absolute: true });
+      //navigate(routes.settings.path(["data", "entities"]), { absolute: true });
+      navigate(routes.data.schema.root());
    }
 
    return (
@@ -129,7 +130,7 @@ export function DataEmpty() {
          Icon={IconDatabase}
          title="No entity selected"
          description="Please select an entity from the left sidebar or create a new one to continue."
-         buttonText="Create Entity"
+         buttonText="Go to schema"
          buttonOnClick={handleButtonClick}
       />
    );

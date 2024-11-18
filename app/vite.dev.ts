@@ -11,7 +11,7 @@ registries.media.add("local", {
 
 const connection = new LibsqlConnection(
    createClient({
-      url: "file:.db/show.db"
+      url: "file:.db/new.db"
    })
 );
 
