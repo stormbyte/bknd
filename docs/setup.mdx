@@ -1,0 +1,61 @@
+---
+title: 'Setup'
+description: 'Preparing your environment for bknd'
+---
+import InstallBknd from '/snippets/install-bknd.mdx';
+
+In order to use **bknd**, you need to prepare access information to your database and install
+the dependencies.
+
+<Note>
+   Connections to the database are managed using Kysely. Therefore, all its dialects are
+   theoretically supported. However, only the `SQLite` dialect is implemented as of now.
+</Note>
+
+## Database
+### SQLite as file
+The easiest to get started is using SQLite as a file. When serving the API in the "Integrations",
+the function accepts an object with connection details. To use a file, use the following:
+```json
+{
+   "type": "sqlite",
+   "config": {
+      "file": "path/to/your/database.db"
+   }
+}
+```
+Please note that using SQLite as a file is only supported in server environments.
+
+### SQLite using LibSQL
+Turso offers a SQLite-fork called LibSQL that runs a server around your SQLite database. To
+point **bknd** to a local instance of LibSQL, [install Turso's CLI](https://docs.turso.tech/cli/introduction) and run the following command:
+```bash
+turso dev
+```
+
+The command will yield a URL. Use it in the connection object:
+```json
+{
+   "type": "libsql",
+   "config": {
+      "url": "http://localhost:8080"
+   }
+}
+```
+
+### SQLite using LibSQL on Turso
+If you want to use LibSQL on Turso, [sign up for a free account](https://turso.tech/), create a database and point your
+connection object to your new database:
+```json
+{
+   "type": "libsql",
+   "config": {
+      "url": "libsql://your-database-url.turso.io",
+      "authToken": "your-auth-token"
+   }
+}
+```
+
+## Installation
+To install **bknd**, run the following command:
+<InstallBknd />

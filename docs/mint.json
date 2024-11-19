@@ -72,7 +72,7 @@
   "navigation": [
     {
       "group": "Getting Started",
-      "pages": ["introduction", "installation"]
+      "pages": ["introduction", "setup"]
     },
     {
       "group": "Modules",
