@@ -1,4 +1,4 @@
-import { App, type CreateAppConfig } from "../../App";
+import { App, type CreateAppConfig } from "bknd";
 
 let app: App;
 export function serve(config: CreateAppConfig) {

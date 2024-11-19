@@ -3,7 +3,7 @@
   "type": "module",
   "sideEffects": false,
   "bin": "./dist/cli/index.js",
-  "version": "0.0.75",
+  "version": "0.0.13",
   "scripts": {
     "build:all": "rm -rf dist && bun build:css && bun run build && bun build:vite && bun build:adapters && bun build:cli",
     "dev": "vite",
@@ -14,13 +14,14 @@
     "build:types": "tsc --emitDeclarationOnly",
     "build:css": "bun tailwindcss -i ./src/ui/styles.css -o ./dist/styles.css",
     "watch:css": "bun tailwindcss --watch -i ./src/ui/styles.css -o ./dist/styles.css",
-    "build:vite": "vite build",
+    "build:vite": "NODE_ENV=production vite build",
     "build:adapters": "bun tsup.adapters.ts --minify",
     "watch:adapters": "bun tsup.adapters.ts --watch",
     "updater": "bun x npm-check-updates -ui",
     "build:cli": "bun build src/cli/index.ts --target node --outdir dist/cli --minify",
     "cli": "LOCAL=1 bun src/cli/index.ts"
   },
+  "license": "FSL-1.1-MIT",
   "dependencies": {
     "@cfworker/json-schema": "^2.0.1",
     "@codemirror/lang-html": "^6.4.9",
@@ -99,6 +100,9 @@
     "splitting": false,
     "loader": {
       ".svg": "dataurl"
+    },
+    "esbuild": {
+      "drop": ["console", "debugger"]
     }
   },
   "peerDependencies": {
@@ -167,6 +171,7 @@
   },
   "files": [
     "dist",
+    "README.md",
     "!dist/*.tsbuildinfo",
     "!dist/*.map",
     "!dist/**/*.map",

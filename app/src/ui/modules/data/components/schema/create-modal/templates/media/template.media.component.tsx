@@ -45,6 +45,7 @@ export function TemplateMediaComponent() {
    });
 
    const { config } = useBknd();
+   const media_enabled = config.media.enabled ?? false;
    const media_entity = config.media.entity_name ?? "media";
    const entities = transformObject(config.data.entities ?? {}, (entity, name) =>
       name !== media_entity ? entity : undefined
@@ -69,6 +70,11 @@ export function TemplateMediaComponent() {
 
    return (
       <>
+         {!media_enabled && (
+            <div className="px-5 py-4 bg-red-100 text-red-900">
+               Media is not enabled in the configuration. Please enable it to use this template.
+            </div>
+         )}
          <form onSubmit={handleSubmit(handleCreate)}>
             <ModalBody>
                <div className="flex flex-col gap-6">
@@ -123,7 +129,7 @@ export function TemplateMediaComponent() {
             <ModalFooter
                next={{
                   type: "submit",
-                  disabled: !isValid
+                  disabled: !isValid || !media_enabled
                }}
                prev={{
                   onClick: stepBack

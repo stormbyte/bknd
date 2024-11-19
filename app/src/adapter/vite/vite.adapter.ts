@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { serveStatic } from "@hono/node-server/serve-static";
 import type { BkndConfig } from "bknd";
-import { App } from "../../App";
+import { App } from "bknd";
 
 async function getHtml() {
    return readFile("index.html", "utf8");
