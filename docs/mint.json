@@ -72,7 +72,7 @@
   "navigation": [
     {
       "group": "Getting Started",
-      "pages": ["introduction", "setup", "sdk"]
+      "pages": ["introduction", "setup", "sdk", "cli"]
     },
     {
       "group": "Modules",

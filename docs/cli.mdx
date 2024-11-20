@@ -1,0 +1,66 @@
+---
+title: 'Using the CLI'
+description: 'How to start a bknd instance using the CLI.'
+---
+
+Instead of running **bknd** using a framework, you can also use the CLI to quickly spin up a
+full functional instance. To see all available options, run:
+
+```
+npx bknd
+```
+
+Here is the output:
+```
+$ npx bknd
+Usage: bknd [options] [command]
+
+bknd cli
+
+Options:
+  -V, --version     output the version number
+  -h, --help        display help for command
+
+Commands:
+  user <action>     create and update user (auth)
+  schema [options]  get schema
+  run [options]
+  config [options]  get default config
+  help [command]    display help for command
+```
+
+## Starting an instance (`run`)
+To see all available `run` options, execute `npx bknd run --help`.
+
+```
+$ npx bknd run --help
+Usage: bknd run [options]
+
+Options:
+  -p, --port <port>      port to run on (default: 1337, env: PORT)
+  -c, --config <config>  config file
+  --db-url <db>          database url, can be any valid libsql url
+  --db-token <db>        database token
+  --server <server>      server type (choices: "node", "bun", default: "node")
+  -h, --help             display help for command
+```
+
+### In-memory database
+To start an instance with an ephemeral in-memory database, run the following:
+```
+npx bknd run
+```
+Keep in mind that the database is not persisted and will be lost when the process is terminated.
+
+### File-based database
+To start an instance with a file-based database, run the following:
+```
+npx bknd run --db-url file:data.db
+```
+
+### Turso/LibSQL database
+To start an instance with a Turso/LibSQL database, run the following:
+```
+npx bknd run --db-url libsql://your-db.turso.io --db-token <your-token>
+```
+The `--db-token` option is optional and only required if the database is protected.
