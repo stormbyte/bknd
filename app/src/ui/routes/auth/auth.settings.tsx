@@ -21,6 +21,8 @@ export function AuthSettingsList() {
       navigate(app.getSettingsPath(["auth"]));
    }, []);
 
+   return null;
+
    /*useBknd({ withSecrets: true });
    return <AuthSettingsListInternal />;*/
 }
