@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { createClient } from "@libsql/client/node";
-import { App, type BkndConfig } from "./src";
+import { App, type BkndConfig, type CreateAppConfig } from "./src";
 import { LibsqlConnection } from "./src/data";
 import { StorageLocalAdapter } from "./src/media/storage/adapters/StorageLocalAdapter";
 import { registries } from "./src/modules/registries";
@@ -26,14 +26,14 @@ window.__vite_plugin_react_preamble_installed__ = true
 
 function createApp(config: BkndConfig, env: any) {
    const create_config = typeof config.app === "function" ? config.app(env) : config.app;
-   return App.create(create_config);
+   return App.create(create_config as CreateAppConfig);
 }
 
 function setAppBuildListener(app: App, config: BkndConfig, html: string) {
    app.emgr.on(
       "app-built",
       async () => {
-         await config.onBuilt?.(app);
+         await config.onBuilt?.(app as any);
          app.module.server.setAdminHtml(html);
          app.module.server.client.get("/assets/!*", serveStatic({ root: "./" }));
       },

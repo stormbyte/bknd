@@ -27,3 +27,9 @@ export async function checksum(s: any) {
    const o = typeof s === "string" ? s : JSON.stringify(s);
    return await digest("SHA-1", o);
 }
+
+export function secureRandomString(length: number): string {
+   const array = new Uint8Array(length);
+   crypto.getRandomValues(array);
+   return Array.from(array, (byte) => String.fromCharCode(33 + (byte % 94))).join("");
+}

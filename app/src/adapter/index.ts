@@ -16,6 +16,7 @@ export type CloudflareBkndConfig<Env = any> = {
    forceHttps?: boolean;
 };
 
+// @todo: move to App
 export type BkndConfig<Env = any> = {
    app: CreateAppConfig | ((env: Env) => CreateAppConfig);
    setAdminHtml?: boolean;

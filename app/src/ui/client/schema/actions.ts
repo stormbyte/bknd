@@ -1,4 +1,4 @@
-import { set } from "lodash-es";
+import { type NotificationData, notifications } from "@mantine/notifications";
 import type { ModuleConfigs } from "../../../modules";
 import type { AppQueryClient } from "../utils/AppQueryClient";
 
@@ -12,6 +12,25 @@ export type TSchemaActions = ReturnType<typeof getSchemaActions>;
 export function getSchemaActions({ client, setSchema }: SchemaActionsProps) {
    const baseUrl = client.baseUrl;
    const token = client.auth().state()?.token;
+
+   async function displayError(action: string, module: string, res: Response, path?: string) {
+      const notification_data: NotificationData = {
+         id: "schema-error-" + [action, module, path].join("-"),
+         title: `Config update failed${path ? ": " + path : ""}`,
+         message: "Failed to complete config update",
+         color: "red",
+         position: "top-right",
+         withCloseButton: true,
+         autoClose: false
+      };
+      try {
+         const { error } = (await res.json()) as any;
+         notifications.show({ ...notification_data, message: error });
+      } catch (e) {
+         notifications.show(notification_data);
+      }
+   }
+
    return {
       set: async <Module extends keyof ModuleConfigs>(
          module: keyof ModuleConfigs,
@@ -46,6 +65,8 @@ export function getSchemaActions({ client, setSchema }: SchemaActionsProps) {
             }
 
             return data.success;
+         } else {
+            await displayError("set", module, res);
          }
 
          return false;
@@ -80,6 +101,8 @@ export function getSchemaActions({ client, setSchema }: SchemaActionsProps) {
             }
 
             return data.success;
+         } else {
+            await displayError("patch", module, res, path);
          }
 
          return false;
@@ -114,6 +137,8 @@ export function getSchemaActions({ client, setSchema }: SchemaActionsProps) {
             }
 
             return data.success;
+         } else {
+            await displayError("overwrite", module, res, path);
          }
 
          return false;
@@ -149,6 +174,8 @@ export function getSchemaActions({ client, setSchema }: SchemaActionsProps) {
             }
 
             return data.success;
+         } else {
+            await displayError("add", module, res, path);
          }
 
          return false;
@@ -182,6 +209,8 @@ export function getSchemaActions({ client, setSchema }: SchemaActionsProps) {
             }
 
             return data.success;
+         } else {
+            await displayError("remove", module, res, path);
          }
 
          return false;

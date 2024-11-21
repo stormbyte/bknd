@@ -41,10 +41,11 @@ export interface UserPool<Fields = "id" | "email" | "username"> {
 export const jwtConfig = Type.Object(
    {
       // @todo: autogenerate a secret if not present. But it must be persisted from AppAuth
-      secret: Type.String({ default: "secret" }),
+      secret: Type.String({ default: "" }),
       alg: Type.Optional(Type.String({ enum: ["HS256"], default: "HS256" })),
       expiresIn: Type.Optional(Type.String()),
-      issuer: Type.Optional(Type.String())
+      issuer: Type.Optional(Type.String()),
+      fields: Type.Array(Type.String(), { default: ["id", "email", "role"] })
    },
    {
       default: {},
@@ -74,11 +75,6 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
       this.userResolver = userResolver ?? (async (a, s, i, p) => p as any);
       this.strategies = strategies as Strategies;
       this.config = parse(authenticatorConfig, config ?? {});
-
-      /*const secret = String(this.config.jwt.secret);
-      if (secret === "secret" || secret.length === 0) {
-         this.config.jwt.secret = randomString(64, true);
-      }*/
    }
 
    async resolve(

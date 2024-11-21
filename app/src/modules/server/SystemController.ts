@@ -66,10 +66,16 @@ export class SystemController implements ClassController {
             console.error(e);
 
             if (e instanceof TypeInvalidError) {
-               return c.json({ success: false, errors: e.errors }, { status: 400 });
+               return c.json(
+                  { success: false, type: "type-invalid", errors: e.errors },
+                  { status: 400 }
+               );
+            }
+            if (e instanceof Error) {
+               return c.json({ success: false, type: "error", error: e.message }, { status: 500 });
             }
 
-            return c.json({ success: false }, { status: 500 });
+            return c.json({ success: false, type: "unknown" }, { status: 500 });
          }
       }
 

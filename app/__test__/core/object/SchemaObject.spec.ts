@@ -65,11 +65,11 @@ describe("SchemaObject", async () => {
       expect(m.get()).toEqual({ methods: ["GET", "PATCH"] });
 
       // array values are fully overwritten, whether accessed by index ...
-      m.patch("methods[0]", "POST");
-      expect(m.get()).toEqual({ methods: ["POST"] });
+      await m.patch("methods[0]", "POST");
+      expect(m.get().methods[0]).toEqual("POST");
 
       // or by path!
-      m.patch("methods", ["GET", "DELETE"]);
+      await m.patch("methods", ["GET", "DELETE"]);
       expect(m.get()).toEqual({ methods: ["GET", "DELETE"] });
    });
 
@@ -93,15 +93,15 @@ describe("SchemaObject", async () => {
       expect(m.get()).toEqual({ s: { a: "b", b: { c: "d" } } });
 
       // expect no change, because the default then applies
-      m.remove("s.a");
+      await m.remove("s.a");
       expect(m.get()).toEqual({ s: { a: "b", b: { c: "d" } } });
 
       // adding another path, and then deleting it
-      m.patch("s.c", "d");
+      await m.patch("s.c", "d");
       expect(m.get()).toEqual({ s: { a: "b", b: { c: "d" }, c: "d" } } as any);
 
       // now it should be removed without applying again
-      m.remove("s.c");
+      await m.remove("s.c");
       expect(m.get()).toEqual({ s: { a: "b", b: { c: "d" } } });
    });
 
@@ -113,14 +113,14 @@ describe("SchemaObject", async () => {
       );
       expect(m.get()).toEqual({ methods: ["GET", "PATCH"] });
 
-      m.set({ methods: ["GET", "POST"] });
+      await m.set({ methods: ["GET", "POST"] });
       expect(m.get()).toEqual({ methods: ["GET", "POST"] });
 
       // wrong type
       expect(() => m.set({ methods: [1] as any })).toThrow();
    });
 
-   test("listener", async () => {
+   test("listener: onUpdate", async () => {
       let called = false;
       let result: any;
       const m = new SchemaObject(
@@ -140,6 +140,30 @@ describe("SchemaObject", async () => {
       await m.set({ methods: ["GET", "POST"] });
       expect(called).toBe(true);
       expect(result).toEqual({ methods: ["GET", "POST"] });
+   });
+
+   test("listener: onBeforeUpdate", async () => {
+      let called = false;
+      const m = new SchemaObject(
+         Type.Object({
+            methods: Type.Array(Type.String(), { default: ["GET", "PATCH"] })
+         }),
+         undefined,
+         {
+            onBeforeUpdate: async (from, to) => {
+               await new Promise((r) => setTimeout(r, 10));
+               called = true;
+               to.methods.push("OPTIONS");
+               return to;
+            }
+         }
+      );
+
+      const result = await m.set({ methods: ["GET", "POST"] });
+      expect(called).toBe(true);
+      expect(result).toEqual({ methods: ["GET", "POST", "OPTIONS"] });
+      const [, result2] = await m.patch("methods", ["GET", "POST"]);
+      expect(result2).toEqual({ methods: ["GET", "POST", "OPTIONS"] });
    });
 
    test("throwIfRestricted", async () => {
@@ -175,9 +199,9 @@ describe("SchemaObject", async () => {
          }
       );
 
-      expect(() => m.patch("s.b.c", "e")).toThrow();
-      expect(m.bypass().patch("s.b.c", "e")).toBeDefined();
-      expect(() => m.patch("s.b.c", "f")).toThrow();
+      expect(m.patch("s.b.c", "e")).rejects.toThrow();
+      expect(m.bypass().patch("s.b.c", "e")).resolves.toBeDefined();
+      expect(m.patch("s.b.c", "f")).rejects.toThrow();
       expect(m.get()).toEqual({ s: { a: "b", b: { c: "e" } } });
    });
 
@@ -222,7 +246,7 @@ describe("SchemaObject", async () => {
          overwritePaths: [/^entities\..*\.fields\..*\.config/]
       });
 
-      m.patch("entities.some.fields.a", { type: "string", config: { another: "one" } });
+      await m.patch("entities.some.fields.a", { type: "string", config: { another: "one" } });
 
       expect(m.get()).toEqual({
          entities: {
@@ -251,7 +275,7 @@ describe("SchemaObject", async () => {
          overwritePaths: [/^entities\..*\.fields\..*\.config\.html_config$/]
       });
 
-      m.patch("entities.test", {
+      await m.patch("entities.test", {
          fields: {
             content: {
                type: "text"
@@ -296,7 +320,7 @@ describe("SchemaObject", async () => {
 
       expect(m.patch("desc", "entities.users.config.sort_dir")).rejects.toThrow();
 
-      m.patch("entities.test", {
+      await m.patch("entities.test", {
          fields: {
             content: {
                type: "text"
@@ -304,7 +328,7 @@ describe("SchemaObject", async () => {
          }
       });
 
-      m.patch("entities.users.config", {
+      await m.patch("entities.users.config", {
          sort_dir: "desc"
       });
 

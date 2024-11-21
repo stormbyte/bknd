@@ -19,8 +19,21 @@ describe("AppAuth", () => {
       await auth.build();
 
       const config = auth.toJSON();
-      expect(config.jwt.secret).toBeUndefined();
+      expect(config.jwt).toBeUndefined();
       expect(config.strategies.password.config).toBeUndefined();
+   });
+
+   test("enabling auth: generate secret", async () => {
+      const auth = new AppAuth(undefined, ctx);
+      await auth.build();
+
+      const oldConfig = auth.toJSON(true);
+      //console.log(oldConfig);
+      await auth.schema().patch("enabled", true);
+      await auth.build();
+      const newConfig = auth.toJSON(true);
+      //console.log(newConfig);
+      expect(newConfig.jwt.secret).not.toBe(oldConfig.jwt.secret);
    });
 
    test("creates user on register", async () => {

@@ -51,15 +51,7 @@ export const authConfigSchema = Type.Object(
       enabled: Type.Boolean({ default: false }),
       basepath: Type.String({ default: "/api/auth" }),
       entity_name: Type.String({ default: "users" }),
-      jwt: Type.Composite(
-         [
-            jwtConfig,
-            Type.Object({
-               fields: Type.Array(Type.String(), { default: ["id", "email", "role"] })
-            })
-         ],
-         { default: {}, additionalProperties: false }
-      ),
+      jwt: jwtConfig,
       strategies: Type.Optional(
          StringRecord(strategiesSchema, {
             title: "Strategies",
