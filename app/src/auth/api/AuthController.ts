@@ -1,7 +1,6 @@
 import type { AppAuth } from "auth";
 import type { ClassController } from "core";
 import { Hono, type MiddlewareHandler } from "hono";
-import * as SystemPermissions from "modules/permissions";
 
 export class AuthController implements ClassController {
    constructor(private auth: AppAuth) {}
@@ -11,19 +10,8 @@ export class AuthController implements ClassController {
    }
 
    getMiddleware: MiddlewareHandler = async (c, next) => {
-      let token: string | undefined;
-      if (c.req.raw.headers.has("Authorization")) {
-         const bearerHeader = String(c.req.header("Authorization"));
-         token = bearerHeader.replace("Bearer ", "");
-      }
-
-      if (token) {
-         // @todo: don't extract user from token, but from the database or cache
-         await this.auth.authenticator.verify(token);
-         this.auth.ctx.guard.setUserContext(this.auth.authenticator.getUser());
-      } else {
-         this.auth.authenticator.__setUserNull();
-      }
+      const user = await this.auth.authenticator.resolveAuthFromRequest(c);
+      this.auth.ctx.guard.setUserContext(user);
 
       await next();
    };
@@ -31,7 +19,6 @@ export class AuthController implements ClassController {
    getController(): Hono<any> {
       const hono = new Hono();
       const strategies = this.auth.authenticator.getStrategies();
-      //console.log("strategies", strategies);
 
       for (const [name, strategy] of Object.entries(strategies)) {
          //console.log("registering", name, "at", `/${name}`);
@@ -44,6 +31,11 @@ export class AuthController implements ClassController {
          }
 
          return c.json({ user: null }, 403);
+      });
+
+      hono.get("/logout", async (c) => {
+         await this.auth.authenticator.logout(c);
+         return c.json({ ok: true });
       });
 
       hono.get("/strategies", async (c) => {

@@ -1,5 +1,5 @@
 import type { AuthAction, Authenticator, Strategy } from "auth";
-import { Exception } from "core";
+import { Exception, isDebug } from "core";
 import { type Static, StringEnum, type TSchema, Type, filterKeys, parse } from "core/utils";
 import { type Context, Hono } from "hono";
 import { getSignedCookie, setSignedCookie } from "hono/cookie";
@@ -173,7 +173,7 @@ export class OAuthStrategy implements Strategy {
       const config = await this.getConfig();
       const { client, as, type } = config;
       //console.log("config", config);
-      //console.log("callbackParams", callbackParams, options);
+      console.log("callbackParams", callbackParams, options);
       const parameters = oauth.validateAuthResponse(
          as,
          client, // no client_secret required
@@ -216,7 +216,7 @@ export class OAuthStrategy implements Strategy {
          expectedNonce
       );
       if (oauth.isOAuth2Error(result)) {
-         //console.log("callback.error", result);
+         console.log("callback.error", result);
          // @todo: Handle OAuth 2.0 response body error
          throw new OAuthCallbackException(result, "processAuthorizationCodeOpenIDResponse");
       }
@@ -317,10 +317,15 @@ export class OAuthStrategy implements Strategy {
       const secret = "secret";
       const cookie_name = "_challenge";
 
-      const setState = async (
-         c: Context,
-         config: { state: string; action: AuthAction; redirect?: string }
-      ): Promise<void> => {
+      type TState = {
+         state: string;
+         action: AuthAction;
+         redirect?: string;
+         mode: "token" | "cookie";
+      };
+
+      const setState = async (c: Context, config: TState): Promise<void> => {
+         console.log("--- setting state", config);
          await setSignedCookie(c, cookie_name, JSON.stringify(config), secret, {
             secure: true,
             httpOnly: true,
@@ -329,12 +334,18 @@ export class OAuthStrategy implements Strategy {
          });
       };
 
-      const getState = async (
-         c: Context
-      ): Promise<{ state: string; action: AuthAction; redirect?: string }> => {
-         const state = await getSignedCookie(c, secret, cookie_name);
+      const getState = async (c: Context): Promise<TState> => {
+         if (c.req.header("X-State-Challenge")) {
+            return {
+               state: c.req.header("X-State-Challenge"),
+               action: c.req.header("X-State-Action"),
+               mode: "token"
+            } as any;
+         }
+
+         const value = await getSignedCookie(c, secret, cookie_name);
          try {
-            return JSON.parse(state as string);
+            return JSON.parse(value as string);
          } catch (e) {
             throw new Error("Invalid state");
          }
@@ -345,22 +356,68 @@ export class OAuthStrategy implements Strategy {
          const params = new URLSearchParams(url.search);
 
          const state = await getState(c);
-         console.log("url", url);
+         console.log("state", state);
+
+         // @todo: add config option to determine if state.action is allowed
+         const redirect_uri =
+            state.mode === "cookie"
+               ? url.origin + url.pathname
+               : url.origin + url.pathname.replace("/callback", "/token");
 
          const profile = await this.callback(params, {
-            redirect_uri: url.origin + url.pathname,
+            redirect_uri,
             state: state.state
          });
 
-         const { user, token } = await auth.resolve(state.action, this, profile.sub, profile);
-         console.log("******** RESOLVED ********", { user, token });
+         try {
+            const data = await auth.resolve(state.action, this, profile.sub, profile);
+            console.log("******** RESOLVED ********", data);
 
-         if (state.redirect) {
-            console.log("redirect to", state.redirect + "?token=" + token);
-            return c.redirect(state.redirect + "?token=" + token);
+            if (state.mode === "cookie") {
+               return await auth.respond(c, data, state.redirect);
+            }
+
+            return c.json(data);
+         } catch (e) {
+            if (state.mode === "cookie") {
+               return await auth.respond(c, e, state.redirect);
+            }
+
+            throw e;
+         }
+      });
+
+      hono.get("/token", async (c) => {
+         const url = new URL(c.req.url);
+         const params = new URLSearchParams(url.search);
+
+         return c.json({
+            code: params.get("code") ?? null
+         });
+      });
+
+      hono.post("/:action", async (c) => {
+         const action = c.req.param("action") as AuthAction;
+         if (!["login", "register"].includes(action)) {
+            return c.notFound();
          }
 
-         return c.json({ user, token });
+         const url = new URL(c.req.url);
+         const path = url.pathname.replace(`/${action}`, "");
+         const redirect_uri = url.origin + path + "/callback";
+         const referer = new URL(c.req.header("Referer") ?? "/");
+
+         const state = oauth.generateRandomCodeVerifier();
+         const response = await this.request({
+            redirect_uri,
+            state
+         });
+         //console.log("_state", state);
+
+         await setState(c, { state, action, redirect: referer.toString(), mode: "cookie" });
+         console.log("--redirecting to", response.url);
+
+         return c.redirect(response.url);
       });
 
       hono.get("/:action", async (c) => {
@@ -371,31 +428,29 @@ export class OAuthStrategy implements Strategy {
 
          const url = new URL(c.req.url);
          const path = url.pathname.replace(`/${action}`, "");
-         const redirect_uri = url.origin + path + "/callback";
-         const q_redirect = (c.req.query("redirect") as string) ?? undefined;
+         const redirect_uri = url.origin + path + "/token";
 
-         const state = await oauth.generateRandomCodeVerifier();
+         const state = oauth.generateRandomCodeVerifier();
          const response = await this.request({
             redirect_uri,
             state
          });
-         //console.log("_state", state);
 
-         await setState(c, { state, action, redirect: q_redirect });
-
-         if (c.req.header("Accept") === "application/json") {
+         if (isDebug()) {
             return c.json({
                url: response.url,
                redirect_uri,
                challenge: state,
+               action,
                params: response.params
             });
          }
 
-         //return c.text(response.url);
-         console.log("--redirecting to", response.url);
-
-         return c.redirect(response.url);
+         return c.json({
+            url: response.url,
+            challenge: state,
+            action
+         });
       });
 
       return hono;

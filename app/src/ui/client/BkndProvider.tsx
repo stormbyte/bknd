@@ -40,7 +40,7 @@ export function BkndProvider({
       if (!res.ok) {
          if (errorShown.current) return;
          errorShown.current = true;
-         notifications.show({
+         /*notifications.show({
             title: "Failed to fetch schema",
             // @ts-ignore
             message: body.error,
@@ -48,7 +48,7 @@ export function BkndProvider({
             position: "top-right",
             autoClose: false,
             withCloseButton: true
-         });
+         });*/
       }
 
       const schema = res.ok

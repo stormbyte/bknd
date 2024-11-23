@@ -1,58 +1,17 @@
 import type { AppAuthOAuthStrategy } from "auth/auth-schema";
-import { Type, ucFirst, ucFirstAllSnakeToPascalWithSpaces } from "core/utils";
+import { ucFirstAllSnakeToPascalWithSpaces } from "core/utils";
 import { transform } from "lodash-es";
-import { useEffect, useState } from "react";
-import { useAuth } from "ui/client";
 import { useAuthStrategies } from "ui/client/schema/auth/use-auth";
 import { Button } from "ui/components/buttons/Button";
 import { Logo } from "ui/components/display/Logo";
 import { Link } from "ui/components/wouter/Link";
 import { useBrowserTitle } from "ui/hooks/use-browser-title";
-import { useSearch } from "ui/hooks/use-search";
 import { LoginForm } from "ui/modules/auth/LoginForm";
-import { useLocation } from "wouter";
 import * as AppShell from "../../layouts/AppShell/AppShell";
-
-const schema = Type.Object({
-   token: Type.String()
-});
 
 export function AuthLogin() {
    useBrowserTitle(["Login"]);
-   const [, navigate] = useLocation();
-   const search = useSearch(schema);
-   const token = search.value.token;
-   //console.log("search", token, "/api/auth/google?redirect=" + window.location.href);
-
-   const auth = useAuth();
    const { strategies, basepath, loading } = useAuthStrategies();
-   const [error, setError] = useState<string | null>(null);
-
-   useEffect(() => {
-      if (token) {
-         auth.setToken(token);
-      }
-   }, [token]);
-
-   async function handleSubmit(value: { email: string; password: string }) {
-      console.log("submit", value);
-      const { res, data } = await auth.login(value);
-      if (!res.ok) {
-         if (data && "error" in data) {
-            setError(data.error.message);
-         } else {
-            setError("An error occurred");
-         }
-      } else if (error) {
-         setError(null);
-      }
-      console.log("res:login", { res, data });
-   }
-
-   if (auth.user) {
-      console.log("user set", auth.user);
-      navigate("/", { replace: true });
-   }
 
    const oauth = transform(
       strategies ?? {},
@@ -63,7 +22,7 @@ export function AuthLogin() {
       },
       {}
    ) as Record<string, AppAuthOAuthStrategy>;
-   console.log("oauth", oauth, strategies);
+   //console.log("oauth", oauth, strategies);
 
    return (
       <AppShell.Root>
@@ -77,26 +36,26 @@ export function AuthLogin() {
                      <h1 className="text-xl font-bold">Sign in to your admin panel</h1>
                      <p className="text-primary/50">Enter your credentials below to get access.</p>
                   </div>
-                  {error && (
-                     <div className="bg-red-500/40 p-3 w-full rounded font-bold mb-1">
-                        <span>{error}</span>
-                     </div>
-                  )}
                   <div className="flex flex-col gap-4 w-full">
                      {Object.keys(oauth).length > 0 && (
                         <>
                            {Object.entries(oauth)?.map(([name, oauth], key) => (
-                              <Button
+                              <form
+                                 method="POST"
+                                 action={`${basepath}/${name}/login`}
                                  key={key}
-                                 size="large"
-                                 variant="outline"
-                                 className="justify-center"
-                                 onClick={() => {
-                                    window.location.href = `${basepath}/${name}/login?redirect=${window.location.href}`;
-                                 }}
+                                 className="w-full"
                               >
-                                 Continue with {ucFirstAllSnakeToPascalWithSpaces(oauth.name)}
-                              </Button>
+                                 <Button
+                                    key={key}
+                                    type="submit"
+                                    size="large"
+                                    variant="outline"
+                                    className="justify-center w-full"
+                                 >
+                                    Continue with {ucFirstAllSnakeToPascalWithSpaces(oauth.name)}
+                                 </Button>
+                              </form>
                            ))}
 
                            <div className="w-full flex flex-row items-center">
@@ -111,7 +70,8 @@ export function AuthLogin() {
                         </>
                      )}
 
-                     <LoginForm onSubmitted={handleSubmit} />
+                     <LoginForm action="/api/auth/password/login" />
+                     {/*<a href="/auth/logout">Logout</a>*/}
                   </div>
                </div>
             )}

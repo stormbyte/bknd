@@ -64,7 +64,7 @@ export abstract class ModuleApi<Options extends BaseModuleApiOptions> {
       }
 
       let body: any = _init?.body;
-      if (_init && "body" in _init && ["POST", "PATCH"].includes(method)) {
+      if (_init && "body" in _init && ["POST", "PATCH", "PUT"].includes(method)) {
          const requestContentType = (headers.get("Content-Type") as string) ?? undefined;
          if (!requestContentType || requestContentType.startsWith("application/json")) {
             body = JSON.stringify(_init.body);
@@ -134,6 +134,18 @@ export abstract class ModuleApi<Options extends BaseModuleApiOptions> {
          ..._init,
          body,
          method: "PATCH"
+      });
+   }
+
+   protected async put<Data = any>(
+      _input: string | (string | number | PrimaryFieldType)[],
+      body?: any,
+      _init?: RequestInit
+   ) {
+      return this.request<Data>(_input, undefined, {
+         ..._init,
+         body,
+         method: "PUT"
       });
    }
 

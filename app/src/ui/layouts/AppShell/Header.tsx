@@ -150,7 +150,8 @@ function UserMenu() {
 
    async function handleLogout() {
       await auth.logout();
-      navigate("/auth/login", { replace: true });
+      // @todo: grab from somewhere constant
+      window.location.href = "/auth/logout";
    }
 
    async function handleLogin() {

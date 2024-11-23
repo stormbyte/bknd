@@ -1,5 +1,5 @@
 import { Exception, Permission } from "core";
-import { type Static, Type, objectTransform } from "core/utils";
+import { objectTransform } from "core/utils";
 import { Role } from "./Role";
 
 export type GuardUserContext = {

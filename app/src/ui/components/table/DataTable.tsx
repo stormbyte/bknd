@@ -86,7 +86,7 @@ export function DataTable<Data extends Record<string, any> = Record<string, any>
             </div>
          )}
          <div className="border-muted border rounded-md shadow-sm w-full max-w-full overflow-x-scroll overflow-y-hidden">
-            <table className="w-full">
+            <table className="w-full text-md">
                {select.length > 0 ? (
                   <thead className="sticky top-0 bg-muted/10">
                      <tr>

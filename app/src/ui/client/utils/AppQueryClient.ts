@@ -15,8 +15,7 @@ export class AppQueryClient {
    api: Api;
    constructor(public baseUrl: string) {
       this.api = new Api({
-         host: baseUrl,
-         tokenStorage: "localStorage"
+         host: baseUrl
       });
    }
 

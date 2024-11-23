@@ -47,6 +47,10 @@ html.fixed, html.fixed body {
     @mixin dark {
         --mantine-color-body: rgb(9 9 11);
     }
+
+    table {
+        font-size: inherit;
+    }
 }
 
 html, body {

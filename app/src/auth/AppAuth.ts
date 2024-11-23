@@ -20,6 +20,7 @@ type AuthSchema = Static<typeof authConfigSchema>;
 export class AppAuth extends Module<typeof authConfigSchema> {
    private _authenticator?: Authenticator;
    cache: Record<string, any> = {};
+   _controller!: AuthController;
 
    override async onBeforeUpdate(from: AuthSchema, to: AuthSchema) {
       const defaultSecret = authConfigSchema.properties.jwt.properties.secret.default;
@@ -68,9 +69,17 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       this.registerEntities();
       super.setBuilt();
 
-      const controller = new AuthController(this);
+      this._controller = new AuthController(this);
       //this.ctx.server.use(controller.getMiddleware);
-      this.ctx.server.route(this.config.basepath, controller.getController());
+      this.ctx.server.route(this.config.basepath, this._controller.getController());
+   }
+
+   get controller(): AuthController {
+      if (!this.isBuilt()) {
+         throw new Error("Can't access controller, AppAuth not built yet");
+      }
+
+      return this._controller;
    }
 
    getMiddleware() {

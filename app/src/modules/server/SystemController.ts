@@ -43,6 +43,7 @@ export class SystemController implements ClassController {
             const { secrets } = c.req.valid("query");
             const { module } = c.req.valid("param");
 
+            this.ctx.guard.throwUnlessGranted(SystemPermissions.configRead);
             secrets && this.ctx.guard.throwUnlessGranted(SystemPermissions.configReadSecrets);
 
             const config = this.app.toJSON(secrets);

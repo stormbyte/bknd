@@ -6,10 +6,9 @@ import {
 } from "@tabler/icons-react";
 import { isDebug } from "core";
 import type { Entity } from "data";
-import { cloneDeep, omit } from "lodash-es";
-import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { TbArrowLeft, TbDots } from "react-icons/tb";
-import { useBknd } from "ui/client";
+import { cloneDeep } from "lodash-es";
+import { useRef, useState } from "react";
+import { TbDots } from "react-icons/tb";
 import { useBkndData } from "ui/client/schema/data/use-bknd-data";
 import { Button } from "ui/components/buttons/Button";
 import { IconButton } from "ui/components/buttons/IconButton";
@@ -20,9 +19,8 @@ import {
 } from "ui/components/form/json-schema/JsonSchemaForm";
 import { Dropdown } from "ui/components/overlay/Dropdown";
 import * as AppShell from "ui/layouts/AppShell/AppShell";
-import { SectionHeaderAccordionItem } from "ui/layouts/AppShell/AppShell";
 import { Breadcrumbs2 } from "ui/layouts/AppShell/Breadcrumbs2";
-import { routes, useGoBack, useNavigate } from "ui/lib/routes";
+import { routes, useNavigate } from "ui/lib/routes";
 import { extractSchema } from "../settings/utils/schema";
 import { EntityFieldsForm, type EntityFieldsFormRef } from "./forms/entity.fields.form";
 

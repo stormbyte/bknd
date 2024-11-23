@@ -2,8 +2,9 @@
 
 import type { App } from "App";
 import { type ClassController, isDebug } from "core";
+import { addFlashMessage } from "core/server/flash";
 import { Hono } from "hono";
-import { html, raw } from "hono/html";
+import { html } from "hono/html";
 import { Fragment } from "hono/jsx";
 import * as SystemPermissions from "modules/permissions";
 import type { Manifest } from "vite";
@@ -21,6 +22,12 @@ export type AdminControllerOptions = {
    viteManifest?: Manifest;
 };
 
+const authRoutes = {
+   root: "/",
+   login: "/auth/login",
+   logout: "/auth/logout"
+};
+
 export class AdminController implements ClassController {
    constructor(
       private readonly app: App,
@@ -31,43 +38,97 @@ export class AdminController implements ClassController {
       return this.app.modules.ctx();
    }
 
-   getController(): Hono {
-      const hono = new Hono();
+   getController(): Hono<any> {
+      const auth = this.app.module.auth;
       const configs = this.app.modules.configs();
+      const auth_enabled = configs.auth.enabled;
       const basepath = (String(configs.server.admin.basepath) + "/").replace(/\/+$/, "/");
+      const hono = new Hono<{
+         Variables: {
+            html: string;
+         };
+      }>().basePath(basepath);
 
-      this.ctx.server.get(basepath + "*", async (c) => {
-         if (this.options.html) {
-            return c.html(this.options.html);
+      hono.use("*", async (c, next) => {
+         const obj = { user: auth.authenticator.getUser() };
+         const html = await this.getHtml(obj);
+         if (!html) {
+            console.warn("Couldn't generate HTML for admin UI");
+            // re-casting to void as a return is not required
+            return c.notFound() as unknown as void;
+         }
+         c.set("html", html);
+         await next();
+      });
+
+      hono.get(authRoutes.login, async (c) => {
+         if (
+            this.app.module.auth.authenticator.isUserLoggedIn() &&
+            this.ctx.guard.granted(SystemPermissions.admin)
+         ) {
+            return c.redirect(authRoutes.root);
          }
 
-         // @todo: implement guard redirect once cookie sessions arrive
+         const html = c.get("html");
+         return c.html(html);
+      });
 
-         const isProd = !isDebug();
-         let script: string | undefined;
-         let css: string[] = [];
+      hono.get(authRoutes.logout, async (c) => {
+         await auth.authenticator.logout(c);
+         return c.redirect(authRoutes.login);
+      });
 
-         if (isProd) {
-            const manifest: Manifest = this.options.viteManifest
-               ? this.options.viteManifest
-               : isProd
-                 ? // @ts-ignore cases issues when building types
-                   await import("bknd/dist/manifest.json", { assert: { type: "json" } }).then(
-                      (m) => m.default
-                   )
-                 : {};
-            //console.log("manifest", manifest, manifest["index.html"]);
-            const entry = Object.values(manifest).find((f: any) => f.isEntry === true);
-            if (!entry) {
-               // do something smart
-               return;
-            }
-
-            script = "/" + entry.file;
-            css = entry.css?.map((c: string) => "/" + c) ?? [];
+      hono.get("*", async (c) => {
+         console.log("admin", c.req.url);
+         if (!this.ctx.guard.granted(SystemPermissions.admin)) {
+            await addFlashMessage(c, "You are not authorized to access the Admin UI", "error");
+            return c.redirect(authRoutes.login);
          }
 
-         return c.html(
+         const html = c.get("html");
+         return c.html(html);
+      });
+
+      return hono;
+   }
+
+   private async getHtml(obj: any = {}) {
+      if (this.options.html) {
+         // @todo: add __BKND__ global
+         return this.options.html as string;
+      }
+
+      const configs = this.app.modules.configs();
+
+      // @todo: implement guard redirect once cookie sessions arrive
+
+      const isProd = !isDebug();
+      let script: string | undefined;
+      let css: string[] = [];
+
+      if (isProd) {
+         const manifest: Manifest = this.options.viteManifest
+            ? this.options.viteManifest
+            : isProd
+              ? // @ts-ignore cases issues when building types
+                await import("bknd/dist/manifest.json", { assert: { type: "json" } }).then(
+                   (m) => m.default
+                )
+              : {};
+         //console.log("manifest", manifest, manifest["index.html"]);
+         const entry = Object.values(manifest).find((f: any) => f.isEntry === true);
+         if (!entry) {
+            // do something smart
+            return;
+         }
+
+         script = "/" + entry.file;
+         css = entry.css?.map((c: string) => "/" + c) ?? [];
+      }
+
+      return (
+         <Fragment>
+            {html`<!doctype html>`}
             <html lang="en" class={configs.server.admin.color_scheme ?? "light"}>
                <head>
                   <meta charset="UTF-8" />
@@ -85,20 +146,22 @@ export class AdminController implements ClassController {
                      </Fragment>
                   ) : (
                      <Fragment>
-                        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: I know what I do here :) */}
                         <script type="module" dangerouslySetInnerHTML={{ __html: viteInject }} />
-                        <script type="module" src="/@vite/client" />
+                        <script type="module" src={"/@vite/client"} />
                      </Fragment>
                   )}
                </head>
                <body>
                   <div id="app" />
+                  <script
+                     dangerouslySetInnerHTML={{
+                        __html: `window.__BKND__ = JSON.parse('${JSON.stringify(obj)}');`
+                     }}
+                  />
                   {!isProd && <script type="module" src="/src/ui/main.tsx" />}
                </body>
             </html>
-         );
-      });
-
-      return hono;
+         </Fragment>
+      );
    }
 }

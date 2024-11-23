@@ -89,14 +89,13 @@ export const useAuthStrategies = (options?: { baseUrl?: string }): Partial<AuthS
    const [data, setData] = useState<AuthStrategyData>();
    const ctxBaseUrl = useBaseUrl();
    const api = new Api({
-      host: options?.baseUrl ? options?.baseUrl : ctxBaseUrl,
-      tokenStorage: "localStorage"
+      host: options?.baseUrl ? options?.baseUrl : ctxBaseUrl
    });
 
    useEffect(() => {
       (async () => {
          const res = await api.auth.strategies();
-         console.log("res", res);
+         //console.log("res", res);
          if (res.res.ok) {
             setData(res.body);
          }

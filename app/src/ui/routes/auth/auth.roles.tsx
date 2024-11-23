@@ -90,14 +90,18 @@ const renderValue = ({ value, property }) => {
    }
 
    if (property === "permissions") {
-      return [...(value || [])].map((p, i) => (
-         <span
-            key={i}
-            className="inline-block px-2 py-1.5 text-sm bg-primary/5 rounded font-mono leading-none"
-         >
-            {p}
-         </span>
-      ));
+      return (
+         <div className="flex flex-row gap-1">
+            {[...(value || [])].map((p, i) => (
+               <span
+                  key={i}
+                  className="inline-block px-2 py-1.5 text-sm bg-primary/5 rounded font-mono leading-none"
+               >
+                  {p}
+               </span>
+            ))}
+         </div>
+      );
    }
 
    return <CellValue value={value} property={property} />;

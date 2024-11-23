@@ -1,7 +1,7 @@
 import type { Authenticator, Strategy } from "auth";
 import { type Static, StringEnum, Type, parse } from "core/utils";
 import { hash } from "core/utils";
-import { Hono } from "hono";
+import { type Context, Hono } from "hono";
 
 type LoginSchema = { username: string; password: string } | { email: string; password: string };
 type RegisterSchema = { email: string; password: string; [key: string]: any };
@@ -54,22 +54,34 @@ export class PasswordStrategy implements Strategy {
    getController(authenticator: Authenticator): Hono<any> {
       const hono = new Hono();
 
+      async function getBody(c: Context) {
+         if (authenticator.isJsonRequest(c)) {
+            return await c.req.json();
+         } else {
+            return Object.fromEntries((await c.req.formData()).entries());
+         }
+      }
+
       return hono
          .post("/login", async (c) => {
-            const body = (await c.req.json()) ?? {};
+            const body = await getBody(c);
 
-            const payload = await this.login(body);
-            const data = await authenticator.resolve("login", this, payload.password, payload);
+            try {
+               const payload = await this.login(body);
+               const data = await authenticator.resolve("login", this, payload.password, payload);
 
-            return c.json(data);
+               return await authenticator.respond(c, data);
+            } catch (e) {
+               return await authenticator.respond(c, e);
+            }
          })
          .post("/register", async (c) => {
-            const body = (await c.req.json()) ?? {};
+            const body = await getBody(c);
 
             const payload = await this.register(body);
             const data = await authenticator.resolve("register", this, payload.password, payload);
 
-            return c.json(data);
+            return await authenticator.respond(c, data);
          });
    }
 

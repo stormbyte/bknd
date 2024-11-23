@@ -1,6 +1,6 @@
 import { Suspense, lazy } from "react";
+import { useBknd } from "ui/client";
 import { Route, Router, Switch } from "wouter";
-import { useBknd } from "../client/BkndProvider";
 import { AuthLogin } from "./auth/auth.login";
 import { Root, RootEmpty } from "./root";
 

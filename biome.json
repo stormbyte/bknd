@@ -59,6 +59,9 @@
         "noImplicitAnyLet": "warn",
         "noConfusingVoidType": "off"
       },
+      "security": {
+        "noDangerouslySetInnerHtml": "off"
+      },
       "style": {
         "noNonNullAssertion": "off",
         "noInferrableTypes": "off",

@@ -1,5 +1,8 @@
+import { Exception } from "core";
+import { addFlashMessage } from "core/server/flash";
 import { type Static, type TSchema, Type, parse, randomString, transformObject } from "core/utils";
-import type { Hono } from "hono";
+import type { Context, Hono } from "hono";
+import { deleteCookie, getSignedCookie, setSignedCookie } from "hono/cookie";
 import { type JWTVerifyOptions, SignJWT, jwtVerify } from "jose";
 
 type Input = any; // workaround
@@ -82,7 +85,7 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
       strategy: Strategy,
       identifier: string,
       profile: ProfileExchange
-   ) {
+   ): Promise<AuthResponse> {
       //console.log("resolve", { action, strategy: strategy.getName(), profile });
       const user = await this.userResolver(action, strategy, identifier, profile);
 
@@ -174,6 +177,84 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
       }
 
       return false;
+   }
+
+   // @todo: CookieOptions not exported from hono
+   private get cookieOptions(): any {
+      return {
+         path: "/",
+         sameSite: "lax",
+         httpOnly: true
+      };
+   }
+
+   private async getAuthCookie(c: Context): Promise<string | undefined> {
+      const secret = this.config.jwt.secret;
+
+      const token = await getSignedCookie(c, secret, "auth");
+      if (typeof token !== "string") {
+         await deleteCookie(c, "auth", this.cookieOptions);
+         return undefined;
+      }
+
+      return token;
+   }
+
+   private async setAuthCookie(c: Context, token: string) {
+      const secret = this.config.jwt.secret;
+      await setSignedCookie(c, "auth", token, secret, this.cookieOptions);
+   }
+
+   async logout(c: Context) {
+      const cookie = await this.getAuthCookie(c);
+      if (cookie) {
+         await deleteCookie(c, "auth", this.cookieOptions);
+         await addFlashMessage(c, "Signed out", "info");
+      }
+   }
+
+   isJsonRequest(c: Context): boolean {
+      //return c.req.header("Content-Type") === "application/x-www-form-urlencoded";
+      return c.req.header("Content-Type") === "application/json";
+   }
+
+   async respond(c: Context, data: AuthResponse | Error | any, redirect?: string) {
+      if (this.isJsonRequest(c)) {
+         return c.json(data);
+      }
+
+      const referer = new URL(redirect ?? c.req.header("Referer") ?? "/");
+
+      if ("token" in data) {
+         await this.setAuthCookie(c, data.token);
+         return c.redirect("/");
+      }
+
+      let message = "An error occured";
+      if (data instanceof Exception) {
+         message = data.message;
+      }
+
+      await addFlashMessage(c, message, "error");
+      return c.redirect(referer);
+   }
+
+   // @todo: don't extract user from token, but from the database or cache
+   async resolveAuthFromRequest(c: Context): Promise<SafeUser | undefined> {
+      let token: string | undefined;
+      if (c.req.raw.headers.has("Authorization")) {
+         const bearerHeader = String(c.req.header("Authorization"));
+         token = bearerHeader.replace("Bearer ", "");
+      } else {
+         token = await this.getAuthCookie(c);
+      }
+
+      if (token) {
+         await this.verify(token);
+         return this._user;
+      }
+
+      return undefined;
    }
 
    toJSON(secrets?: boolean) {

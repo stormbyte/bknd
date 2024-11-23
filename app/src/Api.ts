@@ -4,13 +4,19 @@ import { decodeJwt } from "jose";
 import { MediaApi } from "media/api/MediaApi";
 import { SystemApi } from "modules/SystemApi";
 
+declare global {
+   interface Window {
+      __BKND__: {
+         user?: any;
+      };
+   }
+}
+
 export type ApiOptions = {
    host: string;
    token?: string;
-   tokenStorage?: "localStorage";
-   localStorage?: {
-      key?: string;
-   };
+   storage?: "localStorage" | "manual";
+   key?: string;
 };
 
 export class Api {
@@ -33,15 +39,24 @@ export class Api {
       this.buildApis();
    }
 
-   private extractToken() {
-      if (this.options.tokenStorage === "localStorage") {
-         const key = this.options.localStorage?.key ?? "auth";
-         const raw = localStorage.getItem(key);
+   get tokenStorage() {
+      return this.options.storage ?? "manual";
+   }
+   get tokenKey() {
+      return this.options.key ?? "auth";
+   }
 
-         if (raw) {
-            const { token } = JSON.parse(raw);
+   private extractToken() {
+      if (this.tokenStorage === "localStorage") {
+         const token = localStorage.getItem(this.tokenKey);
+         if (token) {
             this.token = token;
             this.user = decodeJwt(token) as any;
+         }
+      } else {
+         if (typeof window !== "undefined" && "__BKND__" in window) {
+            this.user = window.__BKND__.user;
+            this.verified = true;
          }
       }
    }
@@ -50,11 +65,11 @@ export class Api {
       this.token = token;
       this.user = token ? (decodeJwt(token) as any) : undefined;
 
-      if (this.options.tokenStorage === "localStorage") {
-         const key = this.options.localStorage?.key ?? "auth";
+      if (this.tokenStorage === "localStorage") {
+         const key = this.tokenKey;
 
          if (token) {
-            localStorage.setItem(key, JSON.stringify({ token }));
+            localStorage.setItem(key, token);
          } else {
             localStorage.removeItem(key);
          }
@@ -69,8 +84,6 @@ export class Api {
    }
 
    getAuthState() {
-      if (!this.token) return;
-
       return {
          token: this.token,
          user: this.user,
