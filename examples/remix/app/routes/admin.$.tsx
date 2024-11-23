@@ -12,7 +12,7 @@ export default function AdminPage() {
 
    return (
       <Suspense>
-         <Admin withProvider />
+         <Admin />
       </Suspense>
    );
 }

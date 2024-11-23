@@ -8,15 +8,13 @@ export default serve(
          connection: {
             type: "libsql",
             config: {
-               url: env.DB_URL,
-               authToken: env.DB_TOKEN
+               url: "http://localhost:8080"
             }
          }
       }),
       onBuilt: async (app) => {
-         app.modules.server.get("/", (c) => c.json({ hello: "world" }));
-      },
-      setAdminHtml: true
+         app.modules.server.get("/hello", (c) => c.json({ hello: "world" }));
+      }
    },
    manifest
 );

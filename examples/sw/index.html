@@ -7,10 +7,7 @@
       <legend>Params</legend>
       <div>
         <label for="entity">Entity:</label>
-        <select id="entity">
-          <option value="todos">Todos</option>
-          <option value="notes">Notes</option>
-        </select>
+        <select id="entity"></select>
       </div>
       <div>
         <div>
@@ -29,6 +26,19 @@
     </fieldset>
 
     <script>
+      fetch("/api/system/config/data")
+         .then(res => res.json())
+         .then(({ config: { entities} }) => {
+           console.log(entities);
+           const entity = document.getElementById('entity');
+           Object.entries(entities).forEach(([name, config]) => {
+             const option = document.createElement('option');
+             option.value = name;
+             option.innerText = config.label ?? name;
+             entity.appendChild(option);
+           });
+         });
+
       const btn = document.getElementById('btn');
       const query = document.getElementById('query');
       query.onblur = function(e) {
