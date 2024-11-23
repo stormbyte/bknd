@@ -46,3 +46,9 @@ await build({
 await build({
    ...baseConfig("bun")
 });
+
+await build({
+   ...baseConfig("node"),
+   format: ["esm", "cjs"],
+   platform: "node"
+});

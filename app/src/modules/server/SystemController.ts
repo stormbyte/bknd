@@ -98,7 +98,12 @@ export class SystemController implements ClassController {
                // you must explicitly set force to override existing values
                // because omitted values gets removed
                if (force === true) {
-                  await this.app.mutateConfig(module).set(value);
+                  // force overwrite defined keys
+                  const newConfig = {
+                     ...this.app.module[module].config,
+                     ...value
+                  };
+                  await this.app.mutateConfig(module).set(newConfig);
                } else {
                   await this.app.mutateConfig(module).patch("", value);
                }
@@ -287,7 +292,7 @@ export class SystemController implements ClassController {
 
       hono.get("/openapi.json", async (c) => {
          //const config = this.app.toJSON();
-         const config = JSON.parse(getDefaultConfig() as any);
+         const config = getDefaultConfig();
          return c.json(generateOpenAPI(config));
       });
 

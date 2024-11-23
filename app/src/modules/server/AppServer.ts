@@ -4,6 +4,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { timing } from "hono/timing";
 import { Module } from "modules/Module";
+import * as SystemPermissions from "modules/permissions";
 
 const serverMethods = ["GET", "POST", "PATCH", "PUT", "DELETE"];
 export const serverConfigSchema = Type.Object(
@@ -49,7 +50,7 @@ export type AppServerConfig = Static<typeof serverConfigSchema>;
 }*/
 
 export class AppServer extends Module<typeof serverConfigSchema> {
-   private admin_html?: string;
+   //private admin_html?: string;
 
    override getRestrictedPaths() {
       return [];
@@ -64,12 +65,6 @@ export class AppServer extends Module<typeof serverConfigSchema> {
    }
 
    override async build() {
-      //this.client.use(timing());
-
-      /*this.client.use("*", async (c, next) => {
-         console.log(`[${c.req.method}] ${c.req.url}`);
-         await next();
-      });*/
       this.client.use(
          "*",
          cors({
@@ -78,18 +73,6 @@ export class AppServer extends Module<typeof serverConfigSchema> {
             allowHeaders: this.config.cors.allow_headers
          })
       );
-
-      /*this.client.use(async (c, next) => {
-         c.res.headers.set("X-Powered-By", "BKND");
-         try {
-            c.res.headers.set("X-Colo", c.req.raw.cf.colo);
-         } catch (e) {}
-         await next();
-      });
-      this.client.use(async (c, next) => {
-         console.log(`[${c.req.method}] ${c.req.url}`);
-         await next();
-      });*/
 
       this.client.onError((err, c) => {
          //throw err;
@@ -124,18 +107,31 @@ export class AppServer extends Module<typeof serverConfigSchema> {
       this.setBuilt();
    }
 
-   setAdminHtml(html: string) {
+   /*setAdminHtml(html: string) {
       this.admin_html = html;
       const basepath = (String(this.config.admin.basepath) + "/").replace(/\/+$/, "/");
 
+      const allowed_prefix = basepath + "auth";
+      const login_path = basepath + "auth/login";
+
       this.client.get(basepath + "*", async (c, next) => {
+         const path = new URL(c.req.url).pathname;
+         if (!path.startsWith(allowed_prefix)) {
+            console.log("guard check permissions");
+            try {
+               this.ctx.guard.throwUnlessGranted(SystemPermissions.admin);
+            } catch (e) {
+               return c.redirect(login_path);
+            }
+         }
+
          return c.html(this.admin_html!);
       });
    }
 
    getAdminHtml() {
       return this.admin_html;
-   }
+   }*/
 
    override toJSON(secrets?: boolean) {
       return this.config;

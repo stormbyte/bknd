@@ -25,7 +25,7 @@ export function AuthLogin() {
    //console.log("search", token, "/api/auth/google?redirect=" + window.location.href);
 
    const auth = useAuth();
-   const { strategies, loading } = useAuthStrategies();
+   const { strategies, basepath, loading } = useAuthStrategies();
    const [error, setError] = useState<string | null>(null);
 
    useEffect(() => {
@@ -92,7 +92,7 @@ export function AuthLogin() {
                                  variant="outline"
                                  className="justify-center"
                                  onClick={() => {
-                                    window.location.href = `/api/auth/${name}/login?redirect=${window.location.href}`;
+                                    window.location.href = `${basepath}/${name}/login?redirect=${window.location.href}`;
                                  }}
                               >
                                  Continue with {ucFirstAllSnakeToPascalWithSpaces(oauth.name)}

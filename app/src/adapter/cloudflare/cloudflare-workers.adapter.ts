@@ -113,11 +113,10 @@ async function getFresh(config: BkndConfig, { env, html }: Context) {
          "sync"
       );
    }
-
    await app.build();
 
-   if (config?.setAdminHtml !== false) {
-      app.module.server.setAdminHtml(html);
+   if (config.setAdminHtml) {
+      app.registerAdminController({ html });
    }
 
    return app;
@@ -147,6 +146,7 @@ async function getCached(
                await cache.delete(key);
                return c.json({ message: "Cache cleared" });
             });
+            app.registerAdminController({ html });
 
             config.onBuilt!(app);
          },
@@ -163,13 +163,13 @@ async function getCached(
    );
 
    await app.build();
-   if (!cachedConfig) {
-      saveConfig(app.toJSON(true));
+
+   if (config.setAdminHtml) {
+      app.registerAdminController({ html });
    }
 
-   //addAssetsRoute(app, manifest);
-   if (config?.setAdminHtml !== false) {
-      app.module.server.setAdminHtml(html);
+   if (!cachedConfig) {
+      saveConfig(app.toJSON(true));
    }
 
    return app;
@@ -212,10 +212,6 @@ export class DurableBkndApp extends DurableObject {
                      colo: context.colo
                   });
                });
-
-               if (options?.setAdminHtml !== false) {
-                  app.module.server.setAdminHtml(options.html);
-               }
             },
             "sync"
          );

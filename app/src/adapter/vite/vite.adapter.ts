@@ -31,7 +31,7 @@ function setAppBuildListener(app: App, config: BkndConfig, html: string) {
       "app-built",
       async () => {
          await config.onBuilt?.(app);
-         app.module.server.setAdminHtml(html);
+         app.registerAdminController();
          app.module.server.client.get("/assets/!*", serveStatic({ root: "./" }));
       },
       "sync"

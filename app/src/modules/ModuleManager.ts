@@ -425,19 +425,19 @@ export class ModuleManager {
    }
 }
 
-export function getDefaultSchema(pretty = false) {
+export function getDefaultSchema() {
    const schema = {
       type: "object",
       ...transformObject(MODULES, (module) => module.prototype.getSchema())
    };
 
-   return JSON.stringify(schema, null, pretty ? 2 : undefined);
+   return schema as any;
 }
 
-export function getDefaultConfig(pretty = false): ModuleConfigs {
+export function getDefaultConfig(): ModuleConfigs {
    const config = transformObject(MODULES, (module) => {
       return Default(module.prototype.getSchema(), {});
    });
 
-   return JSON.stringify(config, null, pretty ? 2 : undefined) as any;
+   return config as any;
 }

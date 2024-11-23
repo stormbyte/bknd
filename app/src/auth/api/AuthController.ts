@@ -1,31 +1,29 @@
 import type { AppAuth } from "auth";
 import type { ClassController } from "core";
 import { Hono, type MiddlewareHandler } from "hono";
+import * as SystemPermissions from "modules/permissions";
 
 export class AuthController implements ClassController {
    constructor(private auth: AppAuth) {}
 
-   getMiddleware: MiddlewareHandler = async (c, next) => {
-      // @todo: consider adding app name to the payload, because user is not refetched
+   get guard() {
+      return this.auth.ctx.guard;
+   }
 
-      //try {
+   getMiddleware: MiddlewareHandler = async (c, next) => {
+      let token: string | undefined;
       if (c.req.raw.headers.has("Authorization")) {
          const bearerHeader = String(c.req.header("Authorization"));
-         const token = bearerHeader.replace("Bearer ", "");
-         const verified = await this.auth.authenticator.verify(token);
+         token = bearerHeader.replace("Bearer ", "");
+      }
 
+      if (token) {
          // @todo: don't extract user from token, but from the database or cache
+         await this.auth.authenticator.verify(token);
          this.auth.ctx.guard.setUserContext(this.auth.authenticator.getUser());
-         /*console.log("jwt verified?", {
-            verified,
-            auth: this.auth.authenticator.isUserLoggedIn()
-         });*/
       } else {
          this.auth.authenticator.__setUserNull();
       }
-      /* } catch (e) {
-         this.auth.authenticator.__setUserNull();
-      }*/
 
       await next();
    };
@@ -49,7 +47,8 @@ export class AuthController implements ClassController {
       });
 
       hono.get("/strategies", async (c) => {
-         return c.json({ strategies: this.auth.toJSON(false).strategies });
+         const { strategies, basepath } = this.auth.toJSON(false);
+         return c.json({ strategies, basepath });
       });
 
       return hono;

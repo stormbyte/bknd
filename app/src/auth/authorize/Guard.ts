@@ -11,6 +11,8 @@ export type GuardConfig = {
    enabled?: boolean;
 };
 
+const debug = false;
+
 export class Guard {
    permissions: Permission[];
    user?: GuardUserContext;
@@ -96,12 +98,12 @@ export class Guard {
       if (this.user && typeof this.user.role === "string") {
          const role = this.roles?.find((role) => role.name === this.user?.role);
          if (role) {
-            console.log("guard: role found", this.user.role);
+            debug && console.log("guard: role found", this.user.role);
             return role;
          }
       }
 
-      console.log("guard: role not found", this.user, this.user?.role);
+      debug && console.log("guard: role not found", this.user, this.user?.role);
       return this.getDefaultRole();
    }
 
@@ -109,10 +111,14 @@ export class Guard {
       return this.roles?.find((role) => role.is_default);
    }
 
+   isEnabled() {
+      return this.config?.enabled === true;
+   }
+
    hasPermission(permission: Permission): boolean;
    hasPermission(name: string): boolean;
    hasPermission(permissionOrName: Permission | string): boolean {
-      if (this.config?.enabled !== true) {
+      if (!this.isEnabled()) {
          //console.log("guard not enabled, allowing");
          return true;
       }
@@ -126,10 +132,10 @@ export class Guard {
       const role = this.getUserRole();
 
       if (!role) {
-         console.log("guard: role not found, denying");
+         debug && console.log("guard: role not found, denying");
          return false;
       } else if (role.implicit_allow === true) {
-         console.log("guard: role implicit allow, allowing");
+         debug && console.log("guard: role implicit allow, allowing");
          return true;
       }
 
@@ -137,11 +143,12 @@ export class Guard {
          (rolePermission) => rolePermission.permission.name === name
       );
 
-      console.log("guard: rolePermission, allowing?", {
-         permission: name,
-         role: role.name,
-         allowing: !!rolePermission
-      });
+      debug &&
+         console.log("guard: rolePermission, allowing?", {
+            permission: name,
+            role: role.name,
+            allowing: !!rolePermission
+         });
       return !!rolePermission;
    }
 

@@ -8,6 +8,7 @@ export type AppType = ReturnType<App["toJSON"]>;
 
 /**
  * Reduced version of the App class for frontend use
+ * @todo: remove this class
  */
 export class AppReduced {
    // @todo: change to record
@@ -16,7 +17,7 @@ export class AppReduced {
    private _flows: Flow[] = [];
 
    constructor(protected appJson: AppType) {
-      console.log("received appjson", appJson);
+      //console.log("received appjson", appJson);
 
       this._entities = Object.entries(this.appJson.data.entities ?? {}).map(([name, entity]) => {
          return AppData.constructEntity(name, entity);

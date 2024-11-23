@@ -92,7 +92,7 @@
     "entry": ["src/index.ts", "src/ui/index.ts", "src/data/index.ts", "src/core/index.ts", "src/core/utils/index.ts"],
     "minify": true,
     "outDir": "dist",
-    "external": ["bun:test"],
+    "external": ["bun:test", "bknd/dist/manifest.json"],
     "sourcemap": true,
     "metafile": true,
     "platform": "browser",
@@ -109,6 +109,9 @@
     "react": ">=18",
     "react-dom": ">=18"
   },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -165,9 +168,15 @@
       "import": "./dist/adapter/bun/index.js",
       "require": "./dist/adapter/bun/index.cjs"
     },
+    "./adapter/node": {
+      "types": "./dist/adapter/node/index.d.ts",
+      "import": "./dist/adapter/node/index.js",
+      "require": "./dist/adapter/node/index.cjs"
+    },
     "./dist/static/manifest.json": "./dist/static/.vite/manifest.json",
     "./dist/styles.css": "./dist/styles.css",
-    "./dist/index.html": "./dist/static/index.html"
+    "./dist/index.html": "./dist/static/index.html",
+    "./dist/manifest.json": "./dist/static/.vite/manifest.json"
   },
   "files": [
     "dist",

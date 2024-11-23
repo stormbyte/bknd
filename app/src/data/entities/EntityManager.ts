@@ -36,7 +36,7 @@ export class EntityManager<DB> {
       relations.forEach((relation) => this.addRelation(relation));
       indices.forEach((index) => this.addIndex(index));
 
-      if (!(connection instanceof Connection)) {
+      if (!Connection.isConnection(connection)) {
          throw new UnableToConnectException("");
       }
 

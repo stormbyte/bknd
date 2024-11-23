@@ -15,7 +15,7 @@ import {
 import { Hono } from "hono";
 import type { Handler } from "hono/types";
 import type { ModuleBuildContext } from "modules";
-import { AppData } from "../AppData";
+import * as SystemPermissions from "modules/permissions";
 import { type AppDataConfig, FIELDS } from "../data-schema";
 
 export class DataController implements ClassController {
@@ -89,12 +89,10 @@ export class DataController implements ClassController {
          return func;
       }
 
-      // add timing
-      /*hono.use("*", async (c, next) => {
-         startTime(c, "data");
+      hono.use("*", async (c, next) => {
+         this.ctx.guard.throwUnlessGranted(SystemPermissions.api);
          await next();
-         endTime(c, "data");
-      });*/
+      });
 
       // info
       hono.get(

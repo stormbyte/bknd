@@ -7,6 +7,7 @@ export const schema: CliCommand = (program) => {
       .description("get schema")
       .option("--pretty", "pretty print")
       .action((options) => {
-         console.log(getDefaultSchema(options.pretty));
+         const schema = getDefaultSchema();
+         console.log(options.pretty ? JSON.stringify(schema, null, 2) : JSON.stringify(schema));
       });
 };

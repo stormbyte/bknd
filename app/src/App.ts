@@ -7,6 +7,7 @@ import {
    type Modules
 } from "modules/ModuleManager";
 import * as SystemPermissions from "modules/permissions";
+import { AdminController, type AdminControllerOptions } from "modules/server/AdminController";
 import { SystemController } from "modules/server/SystemController";
 
 export type AppPlugin<DB> = (app: App<DB>) => void;
@@ -58,7 +59,7 @@ export class App<DB = any> {
    static create(config: CreateAppConfig) {
       let connection: Connection | undefined = undefined;
 
-      if (config.connection instanceof Connection) {
+      if (Connection.isConnection(config.connection)) {
          connection = config.connection;
       } else if (typeof config.connection === "object") {
          switch (config.connection.type) {
@@ -66,6 +67,8 @@ export class App<DB = any> {
                connection = new LibsqlConnection(config.connection.config);
                break;
          }
+      } else {
+         throw new Error(`Unknown connection of type ${typeof config.connection} given.`);
       }
       if (!connection) {
          throw new Error("Invalid connection");
@@ -79,7 +82,6 @@ export class App<DB = any> {
    }
 
    async build(options?: { sync?: boolean; drop?: boolean; save?: boolean }) {
-      //console.log("building");
       await this.modules.build();
 
       if (options?.sync) {
@@ -134,6 +136,12 @@ export class App<DB = any> {
 
    version() {
       return this.modules.version();
+   }
+
+   registerAdminController(config?: AdminControllerOptions) {
+      // register admin
+      this.modules.server.route("/", new AdminController(this, config).getController());
+      return this;
    }
 
    toJSON(secrets?: boolean) {
