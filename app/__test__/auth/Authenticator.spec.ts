@@ -1,5 +1,4 @@
 import { describe, expect, test } from "bun:test";
-import { decodeJwt, jwtVerify } from "jose";
 import { Authenticator, type User, type UserPool } from "../../src/auth";
 import { cookieConfig } from "../../src/auth/authenticate/Authenticator";
 import { PasswordStrategy } from "../../src/auth/authenticate/strategies/PasswordStrategy";

@@ -1,6 +1,6 @@
 import { AuthApi } from "auth/api/AuthApi";
 import { DataApi } from "data/api/DataApi";
-import { decodeJwt } from "jose";
+import { decode } from "hono/jwt";
 import { MediaApi } from "media/api/MediaApi";
 import { SystemApi } from "modules/SystemApi";
 
@@ -51,7 +51,7 @@ export class Api {
          const token = localStorage.getItem(this.tokenKey);
          if (token) {
             this.token = token;
-            this.user = decodeJwt(token) as any;
+            this.user = decode(token).payload as any;
          }
       } else {
          if (typeof window !== "undefined" && "__BKND__" in window) {
@@ -63,7 +63,7 @@ export class Api {
 
    updateToken(token?: string, rebuild?: boolean) {
       this.token = token;
-      this.user = token ? (decodeJwt(token) as any) : undefined;
+      this.user = token ? (decode(token).payload as any) : undefined;
 
       if (this.tokenStorage === "localStorage") {
          const key = this.tokenKey;

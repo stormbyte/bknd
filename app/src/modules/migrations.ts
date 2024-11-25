@@ -83,7 +83,15 @@ export const migrations: Migration[] = [
       version: 7,
       up: async (config, { db }) => {
          // automatically adds auth.cookie options
-         return config;
+         // remove "expiresIn" (string), it's now "expires" (number)
+         const { expiresIn, ...jwt } = config.auth.jwt;
+         return {
+            ...config,
+            auth: {
+               ...config.auth,
+               jwt
+            }
+         };
       }
    }
 ];
