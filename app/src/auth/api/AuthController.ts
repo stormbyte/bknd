@@ -35,7 +35,16 @@ export class AuthController implements ClassController {
 
       hono.get("/logout", async (c) => {
          await this.auth.authenticator.logout(c);
-         return c.json({ ok: true });
+         if (this.auth.authenticator.isJsonRequest(c)) {
+            return c.json({ ok: true });
+         }
+
+         const referer = c.req.header("referer");
+         if (referer) {
+            return c.redirect(referer);
+         }
+
+         return c.redirect("/");
       });
 
       hono.get("/strategies", async (c) => {

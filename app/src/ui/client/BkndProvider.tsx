@@ -1,4 +1,4 @@
-import { notifications } from "@mantine/notifications";
+//import { notifications } from "@mantine/notifications";
 import { getDefaultConfig, getDefaultSchema } from "modules/ModuleManager";
 import { createContext, startTransition, useContext, useEffect, useRef, useState } from "react";
 import type { ModuleConfigs, ModuleSchemas } from "../../modules";
@@ -83,7 +83,6 @@ export function BkndProvider({
 
    if (!fetched || !schema) return null;
    const app = new AppReduced(schema?.config as any);
-
    const actions = getSchemaActions({ client, setSchema, reloadSchema });
 
    return (
@@ -91,6 +90,20 @@ export function BkndProvider({
          {children}
       </BkndContext.Provider>
    );
+}
+
+type BkndWindowContext = {
+   user?: object;
+   logout_route: string;
+};
+export function useBkndWindowContext(): BkndWindowContext {
+   if (typeof window !== "undefined" && window.__BKND__) {
+      return window.__BKND__ as any;
+   } else {
+      return {
+         logout_route: "/api/auth/logout"
+      };
+   }
 }
 
 export function useBknd({ withSecrets }: { withSecrets?: boolean } = {}): BkndContext {

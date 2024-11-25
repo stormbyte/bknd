@@ -9,8 +9,9 @@ export const meta: MetaFunction = () => {
 
 export const loader = async (args: LoaderFunctionArgs) => {
    const api = args.context.api as Api;
+   const user = api.getAuthState().user;
    const { data } = await api.data.readMany("todos");
-   return { data };
+   return { data, user };
 };
 
 export default function Index() {

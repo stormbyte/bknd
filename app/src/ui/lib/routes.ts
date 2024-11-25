@@ -63,8 +63,15 @@ export function useNavigate() {
    return [
       (
          url: string,
-         options?: { query?: object; absolute?: boolean; replace?: boolean; state?: any }
+         options?:
+            | { query?: object; absolute?: boolean; replace?: boolean; state?: any }
+            | { reload: true }
       ) => {
+         if (options && "reload" in options) {
+            window.location.href = url;
+            return;
+         }
+
          const _url = options?.absolute ? `~/${basepath}${url}`.replace(/\/+/g, "/") : url;
          navigate(options?.query ? withQuery(_url, options?.query) : _url, {
             replace: options?.replace,

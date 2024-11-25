@@ -6,6 +6,8 @@ export type BaseModuleApiOptions = {
    host: string;
    basepath?: string;
    token?: string;
+   headers?: Headers;
+   token_transport?: "header" | "cookie" | "none";
 };
 
 export type ApiResponse<Data = any> = {
@@ -53,14 +55,18 @@ export abstract class ModuleApi<Options extends BaseModuleApiOptions> {
          }
       }
 
-      const headers = new Headers(_init?.headers ?? {});
+      const headers = new Headers(this.options.headers ?? {});
+      // add init headers
+      for (const [key, value] of Object.entries(_init?.headers ?? {})) {
+         headers.set(key, value as string);
+      }
+
       headers.set("Accept", "application/json");
 
-      if (this.options.token) {
+      // only add token if initial headers not provided
+      if (this.options.token && this.options.token_transport === "header") {
          //console.log("setting token", this.options.token);
          headers.set("Authorization", `Bearer ${this.options.token}`);
-      } else {
-         //console.log("no token");
       }
 
       let body: any = _init?.body;

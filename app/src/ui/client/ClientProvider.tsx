@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createContext, useContext, useEffect, useState } from "react";
+import { useBkndWindowContext } from "ui/client/BkndProvider";
 import { AppQueryClient } from "./utils/AppQueryClient";
 
 const ClientContext = createContext<{ baseUrl: string; client: AppQueryClient }>({
@@ -15,8 +16,13 @@ export const queryClient = new QueryClient({
    }
 });
 
-export const ClientProvider = ({ children, baseUrl }: { children?: any; baseUrl?: string }) => {
+export const ClientProvider = ({
+   children,
+   baseUrl,
+   user
+}: { children?: any; baseUrl?: string; user?: object }) => {
    const [actualBaseUrl, setActualBaseUrl] = useState<string | null>(null);
+   const winCtx = useBkndWindowContext();
 
    try {
       const _ctx_baseUrl = useBaseUrl();
@@ -40,8 +46,8 @@ export const ClientProvider = ({ children, baseUrl }: { children?: any; baseUrl?
       return null; // or a loader/spinner if desired
    }
 
-   console.log("client provider11 with", { baseUrl, fallback: actualBaseUrl });
-   const client = createClient(actualBaseUrl);
+   //console.log("client provider11 with", { baseUrl, fallback: actualBaseUrl, user });
+   const client = createClient(actualBaseUrl, user ?? winCtx.user);
 
    return (
       <QueryClientProvider client={queryClient}>
@@ -52,11 +58,11 @@ export const ClientProvider = ({ children, baseUrl }: { children?: any; baseUrl?
    );
 };
 
-export function createClient(baseUrl: string = window.location.origin) {
-   return new AppQueryClient(baseUrl);
+export function createClient(baseUrl: string, user?: object) {
+   return new AppQueryClient(baseUrl, user);
 }
 
-export function createOrUseClient(baseUrl: string = window.location.origin) {
+export function createOrUseClient(baseUrl: string) {
    const context = useContext(ClientContext);
    if (!context) {
       console.warn("createOrUseClient returned a new client");

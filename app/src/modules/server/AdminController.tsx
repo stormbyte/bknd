@@ -38,20 +38,26 @@ export class AdminController implements ClassController {
       return this.app.modules.ctx();
    }
 
+   private withBasePath(route: string = "") {
+      return (this.app.modules.configs().server.admin.basepath + route).replace(/\/+$/, "/");
+   }
+
    getController(): Hono<any> {
       const auth = this.app.module.auth;
       const configs = this.app.modules.configs();
       // if auth is not enabled, authenticator is undefined
       const auth_enabled = configs.auth.enabled;
-      const basepath = (String(configs.server.admin.basepath) + "/").replace(/\/+$/, "/");
       const hono = new Hono<{
          Variables: {
             html: string;
          };
-      }>().basePath(basepath);
+      }>().basePath(this.withBasePath());
 
       hono.use("*", async (c, next) => {
-         const obj = { user: auth.authenticator?.getUser() };
+         const obj = {
+            user: auth.authenticator?.getUser(),
+            logout_route: this.withBasePath(authRoutes.logout)
+         };
          const html = await this.getHtml(obj);
          if (!html) {
             console.warn("Couldn't generate HTML for admin UI");
@@ -85,7 +91,6 @@ export class AdminController implements ClassController {
       }
 
       hono.get("*", async (c) => {
-         console.log("admin", c.req.url);
          if (!this.ctx.guard.granted(SystemPermissions.accessAdmin)) {
             await addFlashMessage(c, "You are not authorized to access the Admin UI", "error");
             return c.redirect(authRoutes.login);

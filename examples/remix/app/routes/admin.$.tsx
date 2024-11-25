@@ -6,6 +6,7 @@ import "bknd/dist/styles.css";
 export default function AdminPage() {
    const [loaded, setLoaded] = useState(false);
    useEffect(() => {
+      if (typeof window === "undefined") return;
       setLoaded(true);
    }, []);
    if (!loaded) return null;

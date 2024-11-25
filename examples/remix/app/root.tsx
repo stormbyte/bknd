@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
-import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "@remix-run/react";
+import { Links, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData } from "@remix-run/react";
 import { Api } from "bknd";
 import { ClientProvider } from "bknd/ui";
 
@@ -22,15 +22,26 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export const loader = async (args: LoaderFunctionArgs) => {
-   args.context.api = new Api({
-      host: new URL(args.request.url).origin
+   const api = new Api({
+      host: new URL(args.request.url).origin,
+      headers: args.request.headers
    });
-   return null;
+
+   // add api to the context
+   args.context.api = api;
+
+   return {
+      user: api.getAuthState().user
+   };
 };
 
 export default function App() {
+   const data = useLoaderData<typeof loader>();
+
+   // add user to the client provider to indicate
+   // that you're authed using cookie
    return (
-      <ClientProvider>
+      <ClientProvider user={data.user}>
          <Outlet />
       </ClientProvider>
    );

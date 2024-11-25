@@ -13,9 +13,13 @@ import { queryClient } from "../ClientProvider";
 
 export class AppQueryClient {
    api: Api;
-   constructor(public baseUrl: string) {
+   constructor(
+      public baseUrl: string,
+      user?: object
+   ) {
       this.api = new Api({
-         host: baseUrl
+         host: baseUrl,
+         user
       });
    }
 
