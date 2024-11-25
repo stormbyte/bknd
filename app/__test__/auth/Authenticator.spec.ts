@@ -1,8 +1,10 @@
-/*import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { decodeJwt, jwtVerify } from "jose";
-import { Authenticator, type User, type UserPool } from "../authenticate/Authenticator";
-import { PasswordStrategy } from "../authenticate/strategies/PasswordStrategy";
-import * as hash from "../utils/hash";*/
+import { Authenticator, type User, type UserPool } from "../../src/auth";
+import { cookieConfig } from "../../src/auth/authenticate/Authenticator";
+import { PasswordStrategy } from "../../src/auth/authenticate/strategies/PasswordStrategy";
+import * as hash from "../../src/auth/utils/hash";
+import { Default, parse } from "../../src/core/utils";
 
 /*class MemoryUserPool implements UserPool {
    constructor(private users: User[] = []) {}
@@ -17,10 +19,14 @@ import * as hash from "../utils/hash";*/
       this.users.push(newUser);
       return newUser;
    }
-}
+}*/
 
 describe("Authenticator", async () => {
-   const userpool = new MemoryUserPool([
+   test("cookie options", async () => {
+      console.log("parsed", parse(cookieConfig, undefined));
+      console.log(Default(cookieConfig, {}));
+   });
+   /*const userpool = new MemoryUserPool([
       { id: 1, email: "d", username: "test", password: await hash.sha256("test") },
    ]);
 
@@ -37,5 +43,5 @@ describe("Authenticator", async () => {
       const { iat, ...decoded } = decodeJwt<any>(token);
       expect(decoded).toEqual({ id: 1, email: "d", username: "test" });
       expect(await auth.verify(token)).toBe(true);
-   });
-});*/
+   });*/
+});

@@ -90,7 +90,7 @@ export class DataController implements ClassController {
       }
 
       hono.use("*", async (c, next) => {
-         this.ctx.guard.throwUnlessGranted(SystemPermissions.api);
+         this.ctx.guard.throwUnlessGranted(SystemPermissions.accessApi);
          await next();
       });
 

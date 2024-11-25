@@ -1,4 +1,4 @@
-import { jwtConfig } from "auth/authenticate/Authenticator";
+import { cookieConfig, jwtConfig } from "auth/authenticate/Authenticator";
 import { CustomOAuthStrategy, OAuthStrategy, PasswordStrategy } from "auth/authenticate/strategies";
 import { type Static, StringRecord, Type, objectTransform } from "core/utils";
 
@@ -51,7 +51,9 @@ export const authConfigSchema = Type.Object(
       enabled: Type.Boolean({ default: false }),
       basepath: Type.String({ default: "/api/auth" }),
       entity_name: Type.String({ default: "users" }),
+      allow_register: Type.Optional(Type.Boolean({ default: true })),
       jwt: jwtConfig,
+      cookie: cookieConfig,
       strategies: Type.Optional(
          StringRecord(strategiesSchema, {
             title: "Strategies",

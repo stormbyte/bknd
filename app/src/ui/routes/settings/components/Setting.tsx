@@ -155,8 +155,8 @@ export function Setting<Schema extends TObject = any>({
          if (success) {
             if (options?.reloadOnSave) {
                window.location.reload();
+               //await actions.reload();
             }
-            //window.location.reload();
          } else {
             setSubmitting(false);
          }

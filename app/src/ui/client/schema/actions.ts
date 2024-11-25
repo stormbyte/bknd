@@ -6,11 +6,12 @@ import type { AppQueryClient } from "../utils/AppQueryClient";
 export type SchemaActionsProps = {
    client: AppQueryClient;
    setSchema: React.Dispatch<React.SetStateAction<any>>;
+   reloadSchema: () => Promise<void>;
 };
 
 export type TSchemaActions = ReturnType<typeof getSchemaActions>;
 
-export function getSchemaActions({ client, setSchema }: SchemaActionsProps) {
+export function getSchemaActions({ client, setSchema, reloadSchema }: SchemaActionsProps) {
    const api = client.api;
 
    async function handleConfigUpdate(
@@ -61,6 +62,7 @@ export function getSchemaActions({ client, setSchema }: SchemaActionsProps) {
    }
 
    return {
+      reload: reloadSchema,
       set: async <Module extends keyof ModuleConfigs>(
          module: keyof ModuleConfigs,
          value: ModuleConfigs[Module],

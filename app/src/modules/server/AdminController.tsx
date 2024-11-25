@@ -41,6 +41,7 @@ export class AdminController implements ClassController {
    getController(): Hono<any> {
       const auth = this.app.module.auth;
       const configs = this.app.modules.configs();
+      // if auth is not enabled, authenticator is undefined
       const auth_enabled = configs.auth.enabled;
       const basepath = (String(configs.server.admin.basepath) + "/").replace(/\/+$/, "/");
       const hono = new Hono<{
@@ -50,7 +51,7 @@ export class AdminController implements ClassController {
       }>().basePath(basepath);
 
       hono.use("*", async (c, next) => {
-         const obj = { user: auth.authenticator.getUser() };
+         const obj = { user: auth.authenticator?.getUser() };
          const html = await this.getHtml(obj);
          if (!html) {
             console.warn("Couldn't generate HTML for admin UI");
@@ -58,29 +59,34 @@ export class AdminController implements ClassController {
             return c.notFound() as unknown as void;
          }
          c.set("html", html);
+
+         // refresh cookie if needed
+         await auth.authenticator?.requestCookieRefresh(c);
          await next();
       });
 
-      hono.get(authRoutes.login, async (c) => {
-         if (
-            this.app.module.auth.authenticator.isUserLoggedIn() &&
-            this.ctx.guard.granted(SystemPermissions.admin)
-         ) {
-            return c.redirect(authRoutes.root);
-         }
+      if (auth_enabled) {
+         hono.get(authRoutes.login, async (c) => {
+            if (
+               this.app.module.auth.authenticator?.isUserLoggedIn() &&
+               this.ctx.guard.granted(SystemPermissions.accessAdmin)
+            ) {
+               return c.redirect(authRoutes.root);
+            }
 
-         const html = c.get("html");
-         return c.html(html);
-      });
+            const html = c.get("html");
+            return c.html(html);
+         });
 
-      hono.get(authRoutes.logout, async (c) => {
-         await auth.authenticator.logout(c);
-         return c.redirect(authRoutes.login);
-      });
+         hono.get(authRoutes.logout, async (c) => {
+            await auth.authenticator?.logout(c);
+            return c.redirect(authRoutes.login);
+         });
+      }
 
       hono.get("*", async (c) => {
          console.log("admin", c.req.url);
-         if (!this.ctx.guard.granted(SystemPermissions.admin)) {
+         if (!this.ctx.guard.granted(SystemPermissions.accessAdmin)) {
             await addFlashMessage(c, "You are not authorized to access the Admin UI", "error");
             return c.redirect(authRoutes.login);
          }
@@ -128,6 +134,7 @@ export class AdminController implements ClassController {
 
       return (
          <Fragment>
+            {/* dnd complains otherwise */}
             {html`<!doctype html>`}
             <html lang="en" class={configs.server.admin.color_scheme ?? "light"}>
                <head>

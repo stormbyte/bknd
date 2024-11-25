@@ -78,6 +78,13 @@ export const migrations: Migration[] = [
       up: async (config, { db }) => {
          return config;
       }
+   },
+   {
+      version: 7,
+      up: async (config, { db }) => {
+         // automatically adds auth.cookie options
+         return config;
+      }
    }
 ];
 

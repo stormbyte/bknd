@@ -27,7 +27,10 @@ export class SystemApi extends ModuleApi<any> {
       value: ModuleConfigs[Module],
       force?: boolean
    ) {
-      return await this.post<any>(["config", "set", module, `?force=${force ? 1 : 0}`], value);
+      return await this.post<any>(
+         ["config", "set", module].join("/") + `?force=${force ? 1 : 0}`,
+         value
+      );
    }
 
    async addConfig<Module extends ModuleKey>(module: Module, path: string, value: any) {

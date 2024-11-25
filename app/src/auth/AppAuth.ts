@@ -63,7 +63,8 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       });
 
       this._authenticator = new Authenticator(strategies, this.resolveUser.bind(this), {
-         jwt: this.config.jwt
+         jwt: this.config.jwt,
+         cookie: this.config.cookie
       });
 
       this.registerEntities();
@@ -115,6 +116,9 @@ export class AppAuth extends Module<typeof authConfigSchema> {
          identifier,
          profile
       });
+      if (!this.config.allow_register && action === "register") {
+         throw new Exception("Registration is not allowed", 403);
+      }
 
       const fields = this.getUsersEntity()
          .getFillableFields("create")

@@ -1,8 +1,17 @@
 import { Exception } from "core";
 import { addFlashMessage } from "core/server/flash";
-import { type Static, type TSchema, Type, parse, randomString, transformObject } from "core/utils";
+import {
+   type Static,
+   StringEnum,
+   type TSchema,
+   Type,
+   parse,
+   randomString,
+   transformObject
+} from "core/utils";
 import type { Context, Hono } from "hono";
 import { deleteCookie, getSignedCookie, setSignedCookie } from "hono/cookie";
+import type { CookieOptions } from "hono/utils/cookie";
 import { type JWTVerifyOptions, SignJWT, jwtVerify } from "jose";
 
 type Input = any; // workaround
@@ -41,6 +50,18 @@ export interface UserPool<Fields = "id" | "email" | "username"> {
    create: (user: CreateUser) => Promise<User | undefined>;
 }
 
+export const cookieConfig = Type.Partial(
+   Type.Object({
+      renew: Type.Boolean({ default: true }),
+      path: Type.String({ default: "/" }),
+      sameSite: StringEnum(["strict", "lax", "none"], { default: "lax" }),
+      secure: Type.Boolean({ default: true }),
+      httpOnly: Type.Boolean({ default: true }),
+      expires: Type.Number({ default: 168 })
+   }),
+   { default: {}, additionalProperties: false }
+);
+
 export const jwtConfig = Type.Object(
    {
       // @todo: autogenerate a secret if not present. But it must be persisted from AppAuth
@@ -56,7 +77,8 @@ export const jwtConfig = Type.Object(
    }
 );
 export const authenticatorConfig = Type.Object({
-   jwt: jwtConfig
+   jwt: jwtConfig,
+   cookie: cookieConfig
 });
 
 type AuthConfig = Static<typeof authenticatorConfig>;
@@ -179,12 +201,12 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
       return false;
    }
 
-   // @todo: CookieOptions not exported from hono
-   private get cookieOptions(): any {
+   private get cookieOptions(): CookieOptions {
+      const { expires = 168, renew, ...cookieConfig } = this.config.cookie;
+
       return {
-         path: "/",
-         sameSite: "lax",
-         httpOnly: true
+         ...cookieConfig,
+         expires: new Date(Date.now() + expires * 60 * 60 * 1000)
       };
    }
 
@@ -198,6 +220,16 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
       }
 
       return token;
+   }
+
+   async requestCookieRefresh(c: Context) {
+      if (this.config.cookie.renew) {
+         console.log("renewing cookie", c.req.url);
+         const token = await this.getAuthCookie(c);
+         if (token) {
+            await this.setAuthCookie(c, token);
+         }
+      }
    }
 
    private async setAuthCookie(c: Context, token: string) {

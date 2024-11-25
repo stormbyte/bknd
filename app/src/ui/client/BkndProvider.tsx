@@ -30,8 +30,12 @@ export function BkndProvider({
    const errorShown = useRef<boolean>();
    const client = useClient();
 
-   async function fetchSchema(_includeSecrets: boolean = false) {
-      if (withSecrets) return;
+   async function reloadSchema() {
+      await fetchSchema(includeSecrets, true);
+   }
+
+   async function fetchSchema(_includeSecrets: boolean = false, force?: boolean) {
+      if (withSecrets && !force) return;
       const { body, res } = await client.api.system.readSchema({
          config: true,
          secrets: _includeSecrets
@@ -80,7 +84,7 @@ export function BkndProvider({
    if (!fetched || !schema) return null;
    const app = new AppReduced(schema?.config as any);
 
-   const actions = getSchemaActions({ client, setSchema });
+   const actions = getSchemaActions({ client, setSchema, reloadSchema });
 
    return (
       <BkndContext.Provider value={{ ...schema, actions, requireSecrets, app }}>
