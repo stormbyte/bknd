@@ -5,17 +5,19 @@ import { omit } from "lodash-es";
 import { MediaApi } from "media/api/MediaApi";
 import { SystemApi } from "modules/SystemApi";
 
+export type TApiUser = object;
+
 declare global {
    interface Window {
       __BKND__: {
-         user?: any;
+         user?: TApiUser;
       };
    }
 }
 
 export type ApiOptions = {
    host: string;
-   user?: object;
+   user?: TApiUser;
    token?: string;
    headers?: Headers;
    key?: string;
@@ -24,7 +26,7 @@ export type ApiOptions = {
 
 export class Api {
    private token?: string;
-   private user?: object;
+   private user?: TApiUser;
    private verified = false;
    private token_transport: "header" | "cookie" | "none" = "header";
 
@@ -109,6 +111,10 @@ export class Api {
          user: this.user,
          verified: this.verified
       };
+   }
+
+   getUser(): TApiUser | null {
+      return this.user || null;
    }
 
    private buildApis() {

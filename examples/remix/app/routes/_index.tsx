@@ -1,31 +1,26 @@
-import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
-import type { Api } from "bknd";
-import { useClient } from "bknd/ui";
+import { type MetaFunction, useLoaderData } from "@remix-run/react";
+import type { LoaderFunctionArgs } from "@remix-run/server-runtime";
 
 export const meta: MetaFunction = () => {
    return [{ title: "Remix & bknd" }, { name: "description", content: "Welcome to Remix & bknd!" }];
 };
 
 export const loader = async (args: LoaderFunctionArgs) => {
-   const api = args.context.api as Api;
+   const api = args.context.api;
    const user = api.getAuthState().user;
    const { data } = await api.data.readMany("todos");
    return { data, user };
 };
 
 export default function Index() {
-   const data = useLoaderData<typeof loader>();
-   const client = useClient();
-
-   const query = client.query().data.entity("todos").readMany();
+   const { data, user } = useLoaderData<typeof loader>();
 
    return (
       <div>
-         hello
-         <pre>{client.baseUrl}</pre>
+         <h1>Data</h1>
          <pre>{JSON.stringify(data, null, 2)}</pre>
-         <pre>{JSON.stringify(query.data, null, 2)}</pre>
+         <h1>User</h1>
+         <pre>{JSON.stringify(user, null, 2)}</pre>
       </div>
    );
 }

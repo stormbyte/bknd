@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import type { TApiUser } from "Api";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useBkndWindowContext } from "ui/client/BkndProvider";
 import { AppQueryClient } from "./utils/AppQueryClient";
@@ -20,7 +21,7 @@ export const ClientProvider = ({
    children,
    baseUrl,
    user
-}: { children?: any; baseUrl?: string; user?: object }) => {
+}: { children?: any; baseUrl?: string; user?: TApiUser | null }) => {
    const [actualBaseUrl, setActualBaseUrl] = useState<string | null>(null);
    const winCtx = useBkndWindowContext();
 

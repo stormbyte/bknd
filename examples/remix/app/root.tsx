@@ -3,6 +3,12 @@ import { Links, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData } from "
 import { Api } from "bknd";
 import { ClientProvider } from "bknd/ui";
 
+declare module "@remix-run/server-runtime" {
+   export interface AppLoadContext {
+      api: Api;
+   }
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
    return (
       <html lang="en">

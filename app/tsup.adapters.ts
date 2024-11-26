@@ -10,13 +10,20 @@ function baseConfig(adapter: string): Options {
       entry: [`src/adapter/${adapter}`],
       format: ["esm"],
       platform: "neutral",
-      minify,
+      minify: false,
       outDir: `dist/adapter/${adapter}`,
       watch,
       define: {
          __isDev: "0"
       },
-      external: [new RegExp(`^(?!\\.\\/src\\/adapter\\/${adapter}\\/).+$`)],
+      external: [
+         "cloudflare:workers",
+         /^@?hono.*?/,
+         /^bknd.*?/,
+         /.*\.html$/,
+         /^node.*/,
+         /^react.*?/
+      ],
       metafile: true,
       splitting: false,
       treeshake: true
@@ -35,7 +42,8 @@ await build({
 await build({
    ...baseConfig("nextjs"),
    format: ["esm", "cjs"],
-   platform: "node"
+   platform: "node",
+   external: [...baseConfig("nextjs").external!, /^next.*/]
 });
 
 await build({
@@ -44,7 +52,8 @@ await build({
 });
 
 await build({
-   ...baseConfig("bun")
+   ...baseConfig("bun"),
+   external: [/^hono.*?/, /^bknd.*?/, "node:path"]
 });
 
 await build({

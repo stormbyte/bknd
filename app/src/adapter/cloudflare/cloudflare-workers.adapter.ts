@@ -5,8 +5,6 @@ import { serveStatic } from "hono/cloudflare-workers";
 import type { BkndConfig, CfBkndModeCache } from "../index";
 
 // @ts-ignore
-//import manifest from "__STATIC_CONTENT_MANIFEST";
-
 import _html from "../../static/index.html";
 
 type Context = {

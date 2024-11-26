@@ -72,6 +72,7 @@
     "@hono/vite-dev-server": "^0.17.0",
     "@tanstack/react-query-devtools": "^5.59.16",
     "@types/diff": "^5.2.3",
+    "@types/node": "^22.10.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.3",
@@ -96,7 +97,7 @@
     "metafile": true,
     "platform": "browser",
     "format": ["esm", "cjs"],
-    "splitting": false,
+    "splitting": true,
     "loader": {
       ".svg": "dataurl"
     }

@@ -117,6 +117,7 @@ export class AdminController implements ClassController {
       let script: string | undefined;
       let css: string[] = [];
 
+      // @todo: check why nextjs imports manifest, it's not required
       if (isProd) {
          const manifest: Manifest = this.options.viteManifest
             ? this.options.viteManifest

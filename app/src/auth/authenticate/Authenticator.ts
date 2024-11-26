@@ -257,11 +257,15 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
          return c.json(data);
       }
 
-      const referer = new URL(redirect ?? c.req.header("Referer") ?? "/");
+      const successPath = "/";
+      const successUrl = new URL(c.req.url).origin + successPath.replace(/\/+$/, "/");
+      const referer = new URL(redirect ?? c.req.header("Referer") ?? successUrl);
 
       if ("token" in data) {
+         // @todo: add config
          await this.setAuthCookie(c, data.token);
-         return c.redirect("/");
+         // can't navigate to "/" – doesn't work on nextjs
+         return c.redirect(successUrl);
       }
 
       let message = "An error occured";

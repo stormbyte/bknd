@@ -4,10 +4,6 @@ description: 'Run bknd inside Remix'
 ---
 import InstallBknd from '/snippets/install-bknd.mdx';
 
-<Note>
-   Remix SSR support is currently limited.
-</Note>
-
 ## Installation
 Install bknd as a dependency:
 <InstallBknd />
@@ -32,28 +28,90 @@ export const action = handler;
 ```
 For more information about the connection object, refer to the [Setup](/setup) guide.
 
+Now make sure that you wrap your root layout with the `ClientProvider` so that all components
+share the same context:
+```tsx
+// app/root.tsx
+export function Layout(props) {
+   // nothing to change here, just for orientation
+   return (
+      <html>{/* ... */}</html>
+   );
+}
+
+// add the api to the `AppLoadContext`
+// so you don't have to manually type it again
+declare module "@remix-run/server-runtime" {
+   export interface AppLoadContext {
+      api: Api;
+   }
+}
+
+// export a loader that initiates the API
+// and pass it through the context
+export const loader = async (args: LoaderFunctionArgs) => {
+   const api = new Api({
+      host: new URL(args.request.url).origin,
+      headers: args.request.headers
+   });
+
+   // get the user from the API
+   const user = api.getUser();
+
+   // add api to the context
+   args.context.api = api;
+
+   return { user };
+};
+
+export default function App() {
+   const { user } = useLoaderData<typeof loader>();
+   return (
+      <ClientProvider user={user}>
+         <Outlet />
+      </ClientProvider>
+   );
+}
+```
+
 ## Enabling the Admin UI
 Create a new splat route file at `app/routes/admin.$.tsx`:
 ```tsx
 // app/routes/admin.$.tsx
-import { Suspense, lazy, useEffect, useState } from "react";
+import { adminPage } from "bknd/adapter/remix";
 import "bknd/dist/styles.css";
 
-const Admin = lazy(() => import("bknd/ui")
-   .then((mod) => ({ default: mod.Admin })));
+export default adminPage();
+```
 
-export default function AdminPage() {
-   const [loaded, setLoaded] = useState(false);
-   useEffect(() => {
-      setLoaded(true);
-   }, []);
-   if (!loaded) return null;
+## Example usage of the API
+Since the API has already been constructed in the root layout, you can now use it in any page:
+```tsx
+// app/routes/_index.tsx
+import type { LoaderFunctionArgs } from "@remix-run/server-runtime";
+import { useLoaderData } from "@remix-run/react";
+
+export const loader = async (args: LoaderFunctionArgs) => {
+   const { api } = args.context;
+
+   // get the authenticated user
+   const user = api.getAuthState().user;
+
+   // get the data from the API
+   const { data } = await api.data.readMany("todos");
+   return { data, user };
+};
+
+export default function Index() {
+   const { data, user } = useLoaderData<typeof loader>();
 
    return (
-      <Suspense>
-         <Admin withProvider />
-      </Suspense>
+      <div>
+         <h1>Data</h1>
+         <pre>{JSON.stringify(data, null, 2)}</pre>
+         <h1>User</h1>
+         <pre>{JSON.stringify(user, null, 2)}</pre>
+      </div>
    );
 }
-
 ```
