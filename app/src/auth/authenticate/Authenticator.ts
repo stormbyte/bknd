@@ -55,12 +55,14 @@ export interface UserPool<Fields = "id" | "email" | "username"> {
 const defaultCookieExpires = 60 * 60 * 24 * 7; // 1 week in seconds
 export const cookieConfig = Type.Partial(
    Type.Object({
-      renew: Type.Boolean({ default: true }),
       path: Type.String({ default: "/" }),
       sameSite: StringEnum(["strict", "lax", "none"], { default: "lax" }),
       secure: Type.Boolean({ default: true }),
       httpOnly: Type.Boolean({ default: true }),
-      expires: Type.Number({ default: defaultCookieExpires }) // seconds
+      expires: Type.Number({ default: defaultCookieExpires }), // seconds
+      renew: Type.Boolean({ default: true }),
+      pathSuccess: Type.String({ default: "/" }),
+      pathLoggedOut: Type.String({ default: "/" })
    }),
    { default: {}, additionalProperties: false }
 );
@@ -257,12 +259,11 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
          return c.json(data);
       }
 
-      const successPath = "/";
+      const successPath = this.config.cookie.pathSuccess ?? "/";
       const successUrl = new URL(c.req.url).origin + successPath.replace(/\/+$/, "/");
       const referer = new URL(redirect ?? c.req.header("Referer") ?? successUrl);
 
       if ("token" in data) {
-         // @todo: add config
          await this.setAuthCookie(c, data.token);
          // can't navigate to "/" – doesn't work on nextjs
          return c.redirect(successUrl);

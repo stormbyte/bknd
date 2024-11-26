@@ -16,16 +16,11 @@ window.$RefreshReg$ = () => {}
 window.$RefreshSig$ = () => (type) => type
 window.__vite_plugin_react_preamble_installed__ = true
 `;
+const htmlBkndContextReplace = "<!-- BKND_CONTEXT -->";
 
 export type AdminControllerOptions = {
    html?: string;
    viteManifest?: Manifest;
-};
-
-const authRoutes = {
-   root: "/",
-   login: "/auth/login",
-   logout: "/auth/logout"
 };
 
 export class AdminController implements ClassController {
@@ -52,6 +47,13 @@ export class AdminController implements ClassController {
             html: string;
          };
       }>().basePath(this.withBasePath());
+      const authRoutes = {
+         root: "/",
+         success: configs.auth.cookie.pathSuccess ?? "/",
+         loggedOut: configs.auth.cookie.pathLoggedOut ?? "/",
+         login: "/auth/login",
+         logout: "/auth/logout"
+      };
 
       hono.use("*", async (c, next) => {
          const obj = {
@@ -77,7 +79,7 @@ export class AdminController implements ClassController {
                this.app.module.auth.authenticator?.isUserLoggedIn() &&
                this.ctx.guard.granted(SystemPermissions.accessAdmin)
             ) {
-               return c.redirect(authRoutes.root);
+               return c.redirect(authRoutes.success);
             }
 
             const html = c.get("html");
@@ -86,7 +88,7 @@ export class AdminController implements ClassController {
 
          hono.get(authRoutes.logout, async (c) => {
             await auth.authenticator?.logout(c);
-            return c.redirect(authRoutes.login);
+            return c.redirect(authRoutes.loggedOut);
          });
       }
 
@@ -104,8 +106,16 @@ export class AdminController implements ClassController {
    }
 
    private async getHtml(obj: any = {}) {
+      const bknd_context = `window.__BKND__ = JSON.parse('${JSON.stringify(obj)}');`;
+
       if (this.options.html) {
-         // @todo: add __BKND__ global
+         if (this.options.html.includes(htmlBkndContextReplace)) {
+            return this.options.html.replace(htmlBkndContextReplace, bknd_context);
+         }
+
+         console.warn(
+            "Custom HTML needs to include '<!-- BKND_CONTEXT -->' to inject BKND context"
+         );
          return this.options.html as string;
       }
 
@@ -168,7 +178,7 @@ export class AdminController implements ClassController {
                   <div id="app" />
                   <script
                      dangerouslySetInnerHTML={{
-                        __html: `window.__BKND__ = JSON.parse('${JSON.stringify(obj)}');`
+                        __html: bknd_context
                      }}
                   />
                   {!isProd && <script type="module" src="/src/ui/main.tsx" />}

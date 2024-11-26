@@ -4,19 +4,15 @@ import { Hono } from "hono";
 import { serveStatic } from "hono/cloudflare-workers";
 import type { BkndConfig, CfBkndModeCache } from "../index";
 
-// @ts-ignore
-import _html from "../../static/index.html";
-
 type Context = {
    request: Request;
    env: any;
    ctx: ExecutionContext;
    manifest: any;
-   html: string;
+   html?: string;
 };
 
-export function serve(_config: BkndConfig, manifest?: string, overrideHtml?: string) {
-   const html = overrideHtml ?? _html;
+export function serve(_config: BkndConfig, manifest?: string, html?: string) {
    return {
       async fetch(request: Request, env: any, ctx: ExecutionContext) {
          const url = new URL(request.url);
@@ -182,7 +178,7 @@ export class DurableBkndApp extends DurableObject {
       request: Request,
       options: {
          config: CreateAppConfig;
-         html: string;
+         html?: string;
          keepAliveSeconds?: number;
          setAdminHtml?: boolean;
       }
