@@ -7,20 +7,12 @@ import { Hono } from "hono";
 import { html } from "hono/html";
 import { Fragment } from "hono/jsx";
 import * as SystemPermissions from "modules/permissions";
-import type { Manifest } from "vite";
 
-const viteInject = `
-import RefreshRuntime from "/@react-refresh"
-RefreshRuntime.injectIntoGlobalHook(window)
-window.$RefreshReg$ = () => {}
-window.$RefreshSig$ = () => (type) => type
-window.__vite_plugin_react_preamble_installed__ = true
-`;
 const htmlBkndContextReplace = "<!-- BKND_CONTEXT -->";
 
 export type AdminControllerOptions = {
    html?: string;
-   viteManifest?: Manifest;
+   forceDev?: boolean;
 };
 
 export class AdminController implements ClassController {
@@ -114,44 +106,36 @@ export class AdminController implements ClassController {
          }
 
          console.warn(
-            "Custom HTML needs to include '<!-- BKND_CONTEXT -->' to inject BKND context"
+            `Custom HTML needs to include '${htmlBkndContextReplace}' to inject BKND context`
          );
          return this.options.html as string;
       }
 
       const configs = this.app.modules.configs();
+      const isProd = !isDebug() && !this.options.forceDev;
 
-      // @todo: implement guard redirect once cookie sessions arrive
+      const assets = {
+         js: "main.js",
+         css: "styles.css"
+      };
 
-      const isProd = !isDebug();
-      let script: string | undefined;
-      let css: string[] = [];
-
-      // @todo: check why nextjs imports manifest, it's not required
       if (isProd) {
-         const manifest: Manifest = this.options.viteManifest
-            ? this.options.viteManifest
-            : isProd
-              ? // @ts-ignore cases issues when building types
-                await import("bknd/dist/manifest.json", { assert: { type: "json" } }).then(
-                   (m) => m.default
-                )
-              : {};
-         //console.log("manifest", manifest, manifest["index.html"]);
-         const entry = Object.values(manifest).find((f: any) => f.isEntry === true);
-         if (!entry) {
-            // do something smart
-            return;
+         try {
+            // @ts-ignore
+            const manifest = await import("bknd/dist/manifest.json", {
+               assert: { type: "json" }
+            }).then((m) => m.default);
+            assets.js = manifest["src/ui/main.tsx"].name;
+            assets.css = manifest["src/ui/main.css"].name;
+         } catch (e) {
+            console.error("Error loading manifest", e);
          }
-
-         script = "/" + entry.file;
-         css = entry.css?.map((c: string) => "/" + c) ?? [];
       }
 
       return (
          <Fragment>
             {/* dnd complains otherwise */}
-            {html`<!doctype html>`}
+            {html`<!DOCTYPE html>`}
             <html lang="en" class={configs.server.admin.color_scheme ?? "light"}>
                <head>
                   <meta charset="UTF-8" />
@@ -162,14 +146,21 @@ export class AdminController implements ClassController {
                   <title>BKND</title>
                   {isProd ? (
                      <Fragment>
-                        <script type="module" CrossOrigin src={script} />
-                        {css.map((c) => (
-                           <link rel="stylesheet" CrossOrigin href={c} key={c} />
-                        ))}
+                        <script type="module" CrossOrigin src={"/" + assets?.js} />
+                        <link rel="stylesheet" crossOrigin href={"/" + assets?.css} />
                      </Fragment>
                   ) : (
                      <Fragment>
-                        <script type="module" dangerouslySetInnerHTML={{ __html: viteInject }} />
+                        <script
+                           type="module"
+                           dangerouslySetInnerHTML={{
+                              __html: `import RefreshRuntime from "/@react-refresh"
+                              RefreshRuntime.injectIntoGlobalHook(window)
+                              window.$RefreshReg$ = () => {}
+                              window.$RefreshSig$ = () => (type) => type
+                              window.__vite_plugin_react_preamble_installed__ = true`
+                           }}
+                        />
                         <script type="module" src={"/@vite/client"} />
                      </Fragment>
                   )}

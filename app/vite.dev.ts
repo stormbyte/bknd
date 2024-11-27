@@ -1,6 +1,6 @@
 import { serveStatic } from "@hono/node-server/serve-static";
 import { createClient } from "@libsql/client/node";
-import { App, type BkndConfig, type CreateAppConfig } from "./src";
+import { App } from "./src";
 import { LibsqlConnection } from "./src/data";
 import { StorageLocalAdapter } from "./src/media/storage/adapters/StorageLocalAdapter";
 import { registries } from "./src/modules/registries";
@@ -10,41 +10,30 @@ registries.media.add("local", {
    schema: StorageLocalAdapter.prototype.getSchema()
 });
 
-const connection = new LibsqlConnection(
-   createClient({
-      url: "file:.db/new.db"
-   })
-);
-
-function createApp(config: BkndConfig, env: any) {
-   const create_config = typeof config.app === "function" ? config.app(env) : config.app;
-   return App.create(create_config as CreateAppConfig);
+const credentials = {
+   url: import.meta.env.VITE_DB_URL!,
+   authToken: import.meta.env.VITE_DB_TOKEN!
+};
+if (!credentials.url) {
+   throw new Error("Missing VITE_DB_URL env variable. Add it to .env file");
 }
 
-export async function serveFresh(config: BkndConfig) {
-   return {
-      async fetch(request: Request, env: any) {
-         const app = createApp(config, env);
+const connection = new LibsqlConnection(createClient(credentials));
 
-         app.emgr.on(
-            "app-built",
-            async () => {
-               await config.onBuilt?.(app as any);
-               app.registerAdminController();
-               app.module.server.client.get("/assets/*", serveStatic({ root: "./" }));
-            },
-            "sync"
-         );
-         await app.build();
+export default {
+   async fetch(request: Request) {
+      const app = App.create({ connection });
 
-         return app.fetch(request, env);
-      }
-   };
-}
+      app.emgr.on(
+         "app-built",
+         async () => {
+            app.registerAdminController({ forceDev: true });
+            app.module.server.client.get("/assets/*", serveStatic({ root: "./" }));
+         },
+         "sync"
+      );
+      await app.build();
 
-export default await serveFresh({
-   app: {
-      connection
-   },
-   setAdminHtml: true
-});
+      return app.fetch(request);
+   }
+};

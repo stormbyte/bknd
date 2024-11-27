@@ -5,18 +5,16 @@
   "bin": "./dist/cli/index.js",
   "version": "0.0.13",
   "scripts": {
-    "build:all": "rm -rf dist && bun build:css && bun run build && bun build:vite && bun build:adapters && bun build:cli",
+    "build:all": "bun run build && bun run build:cli",
     "dev": "vite",
     "test": "ALL_TESTS=1 bun test --bail",
-    "build": "bun tsup && bun build:types",
-    "watch": "bun tsup --watch --onSuccess 'bun run build:types'",
+    "build": "bun run build.ts --minify --types",
+    "watch": "bun run build.ts --types --watch",
     "types": "bun tsc --noEmit",
+    "clean:types": "find ./dist -name '*.d.ts' -delete && rm -f ./dist/tsconfig.tsbuildinfo",
     "build:types": "tsc --emitDeclarationOnly",
-    "build:css": "bun tailwindcss -i ./src/ui/styles.css -o ./dist/styles.css",
-    "watch:css": "bun tailwindcss --watch -i ./src/ui/styles.css -o ./dist/styles.css",
-    "build:vite": "NODE_ENV=production vite build",
-    "build:adapters": "bun tsup.adapters.ts --minify",
-    "watch:adapters": "bun tsup.adapters.ts --watch",
+    "build:css": "bun tailwindcss -i src/ui/main.css -o ./dist/static/styles.css",
+    "watch:css": "bun tailwindcss --watch -i src/ui/main.css -o ./dist/styles.css",
     "updater": "bun x npm-check-updates -ui",
     "build:cli": "bun build src/cli/index.ts --target node --outdir dist/cli --minify",
     "cli": "LOCAL=1 bun src/cli/index.ts"
@@ -77,6 +75,7 @@
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.3",
     "autoprefixer": "^10.4.20",
+    "esbuild-postcss": "^0.0.4",
     "node-fetch": "^3.3.2",
     "openapi-types": "^12.1.3",
     "postcss": "^8.4.47",
@@ -87,20 +86,6 @@
     "vite": "^5.4.10",
     "vite-plugin-static-copy": "^2.0.0",
     "vite-tsconfig-paths": "^5.0.1"
-  },
-  "tsup": {
-    "entry": ["src/index.ts", "src/ui/index.ts", "src/data/index.ts", "src/core/index.ts", "src/core/utils/index.ts"],
-    "minify": true,
-    "outDir": "dist",
-    "external": ["bun:test", "bknd/dist/manifest.json"],
-    "sourcemap": true,
-    "metafile": true,
-    "platform": "browser",
-    "format": ["esm", "cjs"],
-    "splitting": true,
-    "loader": {
-      ".svg": "dataurl"
-    }
   },
   "peerDependencies": {
     "react": ">=18",
@@ -119,6 +104,11 @@
       "types": "./dist/ui/index.d.ts",
       "import": "./dist/ui/index.js",
       "require": "./dist/ui/index.cjs"
+    },
+    "./client": {
+      "types": "./dist/ui/client/index.d.ts",
+      "import": "./dist/ui/client/index.js",
+      "require": "./dist/ui/client/index.cjs"
     },
     "./data": {
       "types": "./dist/data/index.d.ts",
@@ -170,10 +160,8 @@
       "import": "./dist/adapter/node/index.js",
       "require": "./dist/adapter/node/index.cjs"
     },
-    "./dist/static/manifest.json": "./dist/static/.vite/manifest.json",
-    "./dist/styles.css": "./dist/styles.css",
-    "./dist/index.html": "./dist/static/index.html",
-    "./dist/manifest.json": "./dist/static/.vite/manifest.json"
+    "./dist/styles.css": "./dist/ui/main.css",
+    "./dist/manifest.json": "./dist/static/manifest.json"
   },
   "files": [
     "dist",

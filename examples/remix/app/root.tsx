@@ -1,7 +1,6 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { Links, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData } from "@remix-run/react";
-import { Api } from "bknd";
-import { ClientProvider } from "bknd/ui";
+import { Api, ClientProvider } from "bknd/client";
 
 declare module "@remix-run/server-runtime" {
    export interface AppLoadContext {

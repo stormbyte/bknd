@@ -54,7 +54,7 @@ async function makeApp(config: MakeAppConfig) {
       "app-built",
       async () => {
          await attachServeStatic(app, config.server?.platform ?? "node");
-         app.registerAdminController({ html: await getHtml() });
+         app.registerAdminController();
 
          if (config.onBuilt) {
             await config.onBuilt(app);
@@ -75,7 +75,7 @@ export async function makeConfigApp(config: BkndConfig, platform?: Platform) {
       "app-built",
       async () => {
          await attachServeStatic(app, platform ?? "node");
-         app.registerAdminController({ html: await getHtml() });
+         app.registerAdminController();
 
          if (config.onBuilt) {
             await config.onBuilt(app);

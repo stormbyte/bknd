@@ -1,6 +1,6 @@
-import React, { StrictMode } from "react";
-import ReactDOM from "react-dom/client";
-import "./styles.css";
+import * as React from "react";
+import * as ReactDOM from "react-dom/client";
+import "./main.css";
 
 import Admin from "./Admin";
 
@@ -13,9 +13,9 @@ const rootElement = document.getElementById("app")!;
 if (!rootElement.innerHTML) {
    const root = ReactDOM.createRoot(rootElement);
    root.render(
-      <StrictMode>
+      <React.StrictMode>
          <ClientApp />
-      </StrictMode>
+      </React.StrictMode>
    );
 }
 

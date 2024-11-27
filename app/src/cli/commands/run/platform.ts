@@ -28,7 +28,7 @@ export async function serveStatic(server: Platform): Promise<MiddlewareHandler> 
 }
 
 export async function attachServeStatic(app: any, platform: Platform) {
-   app.module.server.client.get("/assets/*", await serveStatic(platform));
+   app.module.server.client.get("/*", await serveStatic(platform));
 }
 
 export async function startServer(server: Platform, app: any, options: { port: number }) {
