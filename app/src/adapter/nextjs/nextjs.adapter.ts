@@ -1,6 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { Api, App, type CreateAppConfig } from "bknd";
-import { isDebug } from "bknd/core";
 import { nodeRequestToRequest } from "../index";
 
 type GetServerSidePropsContext = {
@@ -46,7 +45,7 @@ function getCleanRequest(req: Request) {
 let app: App;
 export function serve(config: CreateAppConfig) {
    return async (req: Request) => {
-      if (!app || isDebug()) {
+      if (!app) {
          app = App.create(config);
          await app.build();
       }

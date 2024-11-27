@@ -12,10 +12,10 @@ Install bknd as a dependency:
 ``` tsx
 // pages/api/[...route].ts
 import { serve } from "bknd/adapter/nextjs";
-import type { PageConfig } from "next";
 
-export const config: PageConfig = {
-   runtime: "edge"
+export const config = {
+   runtime: "experimental-edge",
+   unstable_allowDynamic: ["**/*.js"]
 };
 
 export default serve({

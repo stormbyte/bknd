@@ -173,3 +173,9 @@ await tsup.build({
 await tsup.build({
    ...baseConfig("bun")
 });
+
+await tsup.build({
+   ...baseConfig("node"),
+   platform: "node",
+   format: ["esm", "cjs"]
+});

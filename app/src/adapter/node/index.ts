@@ -1,10 +1,8 @@
-import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { serve as honoServe } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { App, type CreateAppConfig } from "bknd";
 import { LibsqlConnection } from "bknd/data";
-import type { Manifest } from "vite";
 
 async function getConnection(conn?: CreateAppConfig["connection"]) {
    if (conn) {
@@ -26,7 +24,6 @@ async function getConnection(conn?: CreateAppConfig["connection"]) {
 
 export type NodeAdapterOptions = {
    relativeDistPath?: string;
-   viteManifest?: Manifest;
    port?: number;
    hostname?: string;
    listener?: Parameters<typeof honoServe>[1];
@@ -51,22 +48,16 @@ export function serve(_config: Partial<CreateAppConfig> = {}, options: NodeAdapt
                   connection
                });
 
-               const viteManifest =
-                  options.viteManifest ??
-                  JSON.parse(await readFile(path.resolve(root, ".vite/manifest.json"), "utf-8"));
-
                app.emgr.on(
                   "app-built",
                   async () => {
                      app.modules.server.get(
-                        "/assets/*",
+                        "/*",
                         serveStatic({
                            root
                         })
                      );
-                     app.registerAdminController({
-                        viteManifest
-                     });
+                     app.registerAdminController();
                   },
                   "sync"
                );
