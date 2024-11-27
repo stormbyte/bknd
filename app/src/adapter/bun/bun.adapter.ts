@@ -37,7 +37,7 @@ export function serve(_config: Partial<CreateAppConfig> = {}, distPath?: string)
             "app-built",
             async () => {
                app.modules.server.get(
-                  "/assets/*",
+                  "/*",
                   serveStatic({
                      root
                   })

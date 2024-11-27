@@ -19,7 +19,7 @@ Bun.serve({
       config,
       // this is only required to run inside the same workspace
       // leave blank if you're running this from a different project
-      "../../node_modules/bknd/dist"
+      "../../app/dist"
    )
 });
 
