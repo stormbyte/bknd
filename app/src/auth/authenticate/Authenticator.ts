@@ -228,9 +228,9 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
 
    async requestCookieRefresh(c: Context) {
       if (this.config.cookie.renew) {
-         console.log("renewing cookie", c.req.url);
          const token = await this.getAuthCookie(c);
          if (token) {
+            console.log("renewing cookie", c.req.url);
             await this.setAuthCookie(c, token);
          }
       }
