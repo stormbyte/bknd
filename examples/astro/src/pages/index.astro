@@ -1,0 +1,16 @@
+---
+import { Api } from "bknd";
+const api = new Api({
+   host: new URL(Astro.request.url).origin
+});
+const { data } = await api.data.readMany("todos");
+---
+
+
+<h1>Home (static)</h1>
+<h2>Data</h2>
+<pre>{JSON.stringify(data, null, 2)}</pre>
+
+<a href="/admin">Admin</a> -
+<a href="/ssr">SSR (with auth)</a> -
+<a href="/">Home (static)</a>

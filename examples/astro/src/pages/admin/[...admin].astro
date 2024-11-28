@@ -1,0 +1,18 @@
+---
+import { Api } from "bknd";
+import { Admin } from "bknd/ui";
+import "bknd/dist/styles.css";
+
+export const prerender = false;
+const api = new Api({
+   host: new URL(Astro.request.url).origin,
+   headers: Astro.request.headers
+});
+const user = api.getUser();
+---
+
+<html>
+   <body>
+      <Admin withProvider={{ user }} client:load />
+   </body>
+</html>
