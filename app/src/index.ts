@@ -8,5 +8,5 @@ export {
    type ModuleSchemas
 } from "modules/ModuleManager";
 
-export * from "./adapter";
+export type * from "./adapter";
 export { Api, type ApiOptions } from "./Api";

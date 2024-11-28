@@ -2,14 +2,14 @@ import { MantineProvider } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import React from "react";
 import { FlashMessage } from "ui/modules/server/FlashMessage";
-import { BkndProvider, ClientProvider, useBknd } from "./client";
+import { BkndProvider, ClientProvider, type ClientProviderProps, useBknd } from "./client";
 import { createMantineTheme } from "./lib/mantine/theme";
 import { BkndModalsProvider } from "./modals";
 import { Routes } from "./routes";
 
 export type BkndAdminProps = {
    baseUrl?: string;
-   withProvider?: boolean;
+   withProvider?: boolean | ClientProviderProps;
    // @todo: add admin config override
 };
 
@@ -20,7 +20,12 @@ export default function Admin({ baseUrl: baseUrlOverride, withProvider = false }
       </BkndProvider>
    );
    return withProvider ? (
-      <ClientProvider baseUrl={baseUrlOverride}>{Component}</ClientProvider>
+      <ClientProvider
+         baseUrl={baseUrlOverride}
+         {...(typeof withProvider === "object" ? withProvider : {})}
+      >
+         {Component}
+      </ClientProvider>
    ) : (
       Component
    );

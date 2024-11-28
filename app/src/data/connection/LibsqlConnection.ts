@@ -1,4 +1,4 @@
-import { type Client, type InStatement, createClient } from "@libsql/client/web";
+import { type Client, type Config, type InStatement, createClient } from "@libsql/client/web";
 import { LibsqlDialect } from "@libsql/kysely-libsql";
 import { type DatabaseIntrospector, Kysely, ParseJSONResultsPlugin, sql } from "kysely";
 import { FilterNumericKeysPlugin } from "../plugins/FilterNumericKeysPlugin";
@@ -8,9 +8,7 @@ import { SqliteConnection } from "./SqliteConnection";
 import { SqliteIntrospector } from "./SqliteIntrospector";
 
 export const LIBSQL_PROTOCOLS = ["wss", "https", "libsql"] as const;
-export type LibSqlCredentials = {
-   url: string;
-   authToken?: string;
+export type LibSqlCredentials = Config & {
    protocol?: (typeof LIBSQL_PROTOCOLS)[number];
 };
 
