@@ -13,6 +13,10 @@ const user = api.getUser();
 
 <html>
    <body>
-      <Admin withProvider={{ user }} config={{ basepath: "/admin" }} client:load />
+      <Admin
+         withProvider={{ user }}
+         config={{ basepath: "/admin" }}
+         client:load
+      />
    </body>
 </html>
