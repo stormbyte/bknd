@@ -1,4 +1,5 @@
 import { withApi } from "bknd/adapter/nextjs";
+import type { BkndAdminProps } from "bknd/ui";
 import type { InferGetServerSidePropsType } from "next";
 import dynamic from "next/dynamic";
 
@@ -10,15 +11,10 @@ export const getServerSideProps = withApi(async (context) => {
    };
 });
 
-export function adminPage() {
+export function adminPage(adminProps?: BkndAdminProps) {
    const Admin = dynamic(() => import("bknd/ui").then((mod) => mod.Admin), { ssr: false });
-   const ClientProvider = dynamic(() => import("bknd/ui").then((mod) => mod.ClientProvider));
    return (props: InferGetServerSidePropsType<typeof getServerSideProps>) => {
       if (typeof document === "undefined") return null;
-      return (
-         <ClientProvider user={props.user}>
-            <Admin />
-         </ClientProvider>
-      );
+      return <Admin withProvider={{ user: props.user }} {...adminProps} />;
    };
 }

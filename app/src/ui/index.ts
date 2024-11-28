@@ -1,4 +1,4 @@
-export { default as Admin } from "./Admin";
+export { default as Admin, type BkndAdminProps } from "./Admin";
 export { Button } from "./components/buttons/Button";
 export { Context } from "./components/Context";
 export {

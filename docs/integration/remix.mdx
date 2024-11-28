@@ -81,7 +81,9 @@ Create a new splat route file at `app/routes/admin.$.tsx`:
 import { adminPage } from "bknd/adapter/remix";
 import "bknd/dist/styles.css";
 
-export default adminPage();
+export default adminPage({
+   config: { basepath: "/admin" }
+});
 ```
 
 ## Example usage of the API

@@ -12,6 +12,7 @@ import { Setting } from "./components/Setting";
 import { AuthSettings } from "./routes/auth.settings";
 import { DataSettings } from "./routes/data.settings";
 import { FlowsSettings } from "./routes/flows.settings";
+import { ServerSettings } from "./routes/server.settings";
 
 function SettingsSidebar() {
    const { version, schema } = useBknd();
@@ -39,36 +40,6 @@ function SettingsSidebar() {
                   ))}
                </nav>
             </div>
-            {/*<button
-               onClick={() =>
-                  modals.openContextModal({
-                     modal: "test",
-                     title: "Test Modal",
-                     innerProps: { modalBody: "This is a test modal" }
-                  })
-               }
-            >
-               modal
-            </button>
-            <button
-               onClick={() =>
-                  bkndModals.open(bkndModals.ids.test, { modalBody: "test" }, { title: "what" })
-               }
-            >
-               modal2
-            </button>
-            <button onClick={() => bkndModals.open("test", { modalBody: "test" })}>modal</button>
-            <button
-               onClick={() =>
-                  bkndModals.open("debug", {
-                     data: {
-                        one: { what: 1 }
-                     }
-                  })
-               }
-            >
-               debug
-            </button>*/}
          </AppShell.Scrollable>
       </AppShell.Sidebar>
    );
@@ -145,12 +116,7 @@ const SettingRoutesRoutes = () => {
 
    return (
       <>
-         <FallbackRoutes
-            module="server"
-            schema={schema}
-            config={config}
-            uiSchema={uiSchema.server}
-         />
+         <ServerSettings schema={schema.server} config={config.server} />
          <DataSettings schema={schema.data} config={config.data} />
          <AuthSettings schema={schema.auth} config={config.auth} />
          <FallbackRoutes module="media" schema={schema} config={config} uiSchema={uiSchema.media} />

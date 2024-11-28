@@ -1,11 +1,11 @@
-import type { ComponentPropsWithoutRef } from "react";
+import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { twMerge } from "tailwind-merge";
 
 export type AlertProps = ComponentPropsWithoutRef<"div"> & {
    className?: string;
    visible?: boolean;
    title?: string;
-   message?: string;
+   message?: ReactNode | string;
 };
 
 const Base: React.FC<AlertProps> = ({ visible = true, title, message, className, ...props }) =>
