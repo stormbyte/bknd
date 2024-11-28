@@ -42,6 +42,7 @@ export type DbFunctions = {
 };
 
 export abstract class Connection {
+   cls = "bknd:connection";
    kysely: Kysely<any>;
 
    constructor(
@@ -50,6 +51,15 @@ export abstract class Connection {
       protected plugins: KyselyPlugin[] = []
    ) {
       this.kysely = kysely;
+   }
+
+   /**
+    * This is a helper function to manage Connection classes
+    * coming from different places
+    * @param conn
+    */
+   static isConnection(conn: any): conn is Connection {
+      return conn?.cls === "bknd:connection";
    }
 
    getIntrospector(): ConnectionIntrospector {

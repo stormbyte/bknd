@@ -43,6 +43,7 @@ export class SystemController implements ClassController {
             const { secrets } = c.req.valid("query");
             const { module } = c.req.valid("param");
 
+            this.ctx.guard.throwUnlessGranted(SystemPermissions.configRead);
             secrets && this.ctx.guard.throwUnlessGranted(SystemPermissions.configReadSecrets);
 
             const config = this.app.toJSON(secrets);
@@ -66,10 +67,16 @@ export class SystemController implements ClassController {
             console.error(e);
 
             if (e instanceof TypeInvalidError) {
-               return c.json({ success: false, errors: e.errors }, { status: 400 });
+               return c.json(
+                  { success: false, type: "type-invalid", errors: e.errors },
+                  { status: 400 }
+               );
+            }
+            if (e instanceof Error) {
+               return c.json({ success: false, type: "error", error: e.message }, { status: 500 });
             }
 
-            return c.json({ success: false }, { status: 500 });
+            return c.json({ success: false, type: "unknown" }, { status: 500 });
          }
       }
 
@@ -92,7 +99,12 @@ export class SystemController implements ClassController {
                // you must explicitly set force to override existing values
                // because omitted values gets removed
                if (force === true) {
-                  await this.app.mutateConfig(module).set(value);
+                  // force overwrite defined keys
+                  const newConfig = {
+                     ...this.app.module[module].config,
+                     ...value
+                  };
+                  await this.app.mutateConfig(module).set(newConfig);
                } else {
                   await this.app.mutateConfig(module).patch("", value);
                }
@@ -281,7 +293,7 @@ export class SystemController implements ClassController {
 
       hono.get("/openapi.json", async (c) => {
          //const config = this.app.toJSON();
-         const config = JSON.parse(getDefaultConfig() as any);
+         const config = getDefaultConfig();
          return c.json(generateOpenAPI(config));
       });
 

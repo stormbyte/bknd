@@ -5,7 +5,8 @@ export default {
       connection: {
          type: "libsql",
          config: {
-            url: "http://localhost:8080"
+            //url: "http://localhost:8080"
+            url: ":memory:"
          }
       }
    }

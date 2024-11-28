@@ -1,9 +1,9 @@
 import type { Config } from "@libsql/client/node";
 import { App } from "App";
 import type { BkndConfig } from "adapter";
+import type { CliCommand } from "cli/types";
 import { Option } from "commander";
 import type { Connection } from "data";
-import type { CliCommand } from "../../types";
 import {
    PLATFORMS,
    type Platform,
@@ -48,14 +48,13 @@ type MakeAppConfig = {
 };
 
 async function makeApp(config: MakeAppConfig) {
-   const html = await getHtml();
    const app = new App(config.connection);
 
    app.emgr.on(
       "app-built",
       async () => {
          await attachServeStatic(app, config.server?.platform ?? "node");
-         app.module.server.setAdminHtml(html);
+         app.registerAdminController();
 
          if (config.onBuilt) {
             await config.onBuilt(app);
@@ -70,14 +69,13 @@ async function makeApp(config: MakeAppConfig) {
 
 export async function makeConfigApp(config: BkndConfig, platform?: Platform) {
    const appConfig = typeof config.app === "function" ? config.app(process.env) : config.app;
-   const html = await getHtml();
    const app = App.create(appConfig);
 
    app.emgr.on(
       "app-built",
       async () => {
          await attachServeStatic(app, platform ?? "node");
-         app.module.server.setAdminHtml(html);
+         app.registerAdminController();
 
          if (config.onBuilt) {
             await config.onBuilt(app);

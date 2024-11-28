@@ -11,6 +11,10 @@ import {
 
 export type SchemaObjectOptions<Schema extends TObject> = {
    onUpdate?: (config: Static<Schema>) => void | Promise<void>;
+   onBeforeUpdate?: (
+      from: Static<Schema>,
+      to: Static<Schema>
+   ) => Static<Schema> | Promise<Static<Schema>>;
    restrictPaths?: string[];
    overwritePaths?: (RegExp | string)[];
    forceParse?: boolean;
@@ -45,6 +49,13 @@ export class SchemaObject<Schema extends TObject> {
       return this._default;
    }
 
+   private async onBeforeUpdate(from: Static<Schema>, to: Static<Schema>): Promise<Static<Schema>> {
+      if (this.options?.onBeforeUpdate) {
+         return this.options.onBeforeUpdate(from, to);
+      }
+      return to;
+   }
+
    get(options?: { stripMark?: boolean }): Static<Schema> {
       if (options?.stripMark) {
          return stripMark(this._config);
@@ -58,8 +69,10 @@ export class SchemaObject<Schema extends TObject> {
          forceParse: true,
          skipMark: this.isForceParse()
       });
-      this._value = valid;
-      this._config = Object.freeze(valid);
+      const updatedConfig = noEmit ? valid : await this.onBeforeUpdate(this._config, valid);
+
+      this._value = updatedConfig;
+      this._config = Object.freeze(updatedConfig);
 
       if (noEmit !== true) {
          await this.options?.onUpdate?.(this._config);
@@ -134,7 +147,7 @@ export class SchemaObject<Schema extends TObject> {
                overwritePaths.length > 1
                   ? overwritePaths.filter((k) =>
                        overwritePaths.some((k2) => {
-                          console.log("keep?", { k, k2 }, k2 !== k && k2.startsWith(k));
+                          //console.log("keep?", { k, k2 }, k2 !== k && k2.startsWith(k));
                           return k2 !== k && k2.startsWith(k);
                        })
                     )

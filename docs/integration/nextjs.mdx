@@ -4,11 +4,6 @@ description: 'Run bknd inside Next.js'
 ---
 import InstallBknd from '/snippets/install-bknd.mdx';
 
-<Note>
-   Next.js support is currently experimental, this guide only covers adding bknd using `pages`
-   folder.
-</Note>
-
 ## Installation
 Install bknd as a dependency:
 <InstallBknd />
@@ -17,10 +12,10 @@ Install bknd as a dependency:
 ``` tsx
 // pages/api/[...route].ts
 import { serve } from "bknd/adapter/nextjs";
-import type { PageConfig } from "next";
 
-export const config: PageConfig = {
-   runtime: "edge"
+export const config = {
+   runtime: "experimental-edge",
+   unstable_allowDynamic: ["**/*.js"]
 };
 
 export default serve({
@@ -39,20 +34,37 @@ For more information about the connection object, refer to the [Setup](/setup) g
 Create a file `[[...admin]].tsx` inside the `pages/admin` folder:
 ```tsx
 // pages/admin/[[...admin]].tsx
-import type { PageConfig } from "next";
-import dynamic from "next/dynamic";
+import { adminPage, getServerSideProps } from "bknd/adapter/nextjs";
 import "bknd/dist/styles.css";
 
-export const config: PageConfig = {
-  runtime: "experimental-edge",
-};
+export { getServerSideProps };
+export default adminPage();
+```
 
-const Admin = dynamic(
-  () => import("bknd/ui").then((mod) => mod.Admin),
-  { ssr: false },
-);
+## Example usage of the API in pages dir
+Using pages dir, you need to wrap the `getServerSideProps` function with `withApi` to get access
+to the API. With the API, you can query the database or retrieve the authentication status:
+```tsx
+import { withApi } from "bknd/adapter/nextjs";
+import type { InferGetServerSidePropsType as InferProps } from "next";
 
-export default function AdminPage() {
-  return <Admin />;
+export const getServerSideProps = withApi(async (context) => {
+   const { data = [] } = await context.api.data.readMany("todos");
+   const user = context.api.getUser();
+
+   return { props: { data, user } };
+});
+
+export default function Home(props: InferProps<typeof getServerSideProps>) {
+   const { data, user } = props;
+   return (
+      <div>
+         <h1>Data</h1>
+         <pre>{JSON.stringify(data, null, 2)}</pre>
+
+         <h1>User</h1>
+         <pre>{JSON.stringify(user, null, 2)}</pre>
+      </div>
+   );
 }
 ```

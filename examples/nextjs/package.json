@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "db": "turso dev --db-file test.db",
+    "db:check": "sqlite3 test.db \"PRAGMA wal_checkpoint(FULL);\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

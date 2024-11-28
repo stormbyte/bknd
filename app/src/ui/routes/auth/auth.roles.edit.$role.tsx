@@ -29,13 +29,13 @@ function AuthRolesEditInternal({ params }) {
       const data = formRef.current?.getData();
       const success = await actions.roles.patch(roleName, data);
 
-      notifications.show({
+      /*notifications.show({
          id: `role-${roleName}-update`,
          position: "top-right",
          title: success ? "Update success" : "Update failed",
          message: success ? "Role updated successfully" : "Failed to update role",
          color: !success ? "red" : undefined
-      });
+      });*/
    }
 
    async function handleDelete() {

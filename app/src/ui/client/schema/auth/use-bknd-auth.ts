@@ -19,6 +19,7 @@ export function useBkndAuth() {
             if (window.confirm(`Are you sure you want to delete the role "${name}"?`)) {
                return await bkndActions.remove("auth", `roles.${name}`);
             }
+            return false;
          }
       }
    };

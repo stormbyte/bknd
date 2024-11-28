@@ -14,6 +14,7 @@ import {
 } from "react-icons/tb";
 import { Button } from "ui";
 import { useAuth, useBknd } from "ui/client";
+import { useBkndWindowContext } from "ui/client/BkndProvider";
 import { useBkndSystemTheme } from "ui/client/schema/system/use-bknd-system";
 import { IconButton } from "ui/components/buttons/IconButton";
 import { Logo } from "ui/components/display/Logo";
@@ -147,10 +148,12 @@ export function Header({ hasSidebar = true }) {
 function UserMenu() {
    const auth = useAuth();
    const [navigate] = useNavigate();
+   const { logout_route } = useBkndWindowContext();
 
    async function handleLogout() {
       await auth.logout();
-      navigate("/auth/login", { replace: true });
+      // @todo: grab from somewhere constant
+      navigate(logout_route, { reload: true });
    }
 
    async function handleLogin() {

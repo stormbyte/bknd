@@ -15,10 +15,6 @@ export function ucFirstAll(str: string, split: string = " "): string {
       .join(split);
 }
 
-export function ucFirstAllSnakeToPascalWithSpaces(str: string, split: string = " "): string {
-   return ucFirstAll(snakeToPascalWithSpaces(str), split);
-}
-
 export function randomString(length: number, includeSpecial = false): string {
    const base = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
    const special = "!@#$%^&*()_+{}:\"<>?|[];',./`~";
@@ -47,6 +43,54 @@ export function snakeToPascalWithSpaces(str: string): string {
 
 export function pascalToKebab(pascalStr: string): string {
    return pascalStr.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+}
+
+type StringCaseType =
+   | "snake_case"
+   | "PascalCase"
+   | "camelCase"
+   | "kebab-case"
+   | "SCREAMING_SNAKE_CASE"
+   | "unknown";
+export function detectCase(input: string): StringCaseType {
+   if (/^[a-z]+(_[a-z]+)*$/.test(input)) {
+      return "snake_case";
+   } else if (/^[A-Z][a-zA-Z]*$/.test(input)) {
+      return "PascalCase";
+   } else if (/^[a-z][a-zA-Z]*$/.test(input)) {
+      return "camelCase";
+   } else if (/^[a-z]+(-[a-z]+)*$/.test(input)) {
+      return "kebab-case";
+   } else if (/^[A-Z]+(_[A-Z]+)*$/.test(input)) {
+      return "SCREAMING_SNAKE_CASE";
+   } else {
+      return "unknown";
+   }
+}
+export function identifierToHumanReadable(str: string) {
+   const _case = detectCase(str);
+   switch (_case) {
+      case "snake_case":
+         return snakeToPascalWithSpaces(str);
+      case "PascalCase":
+         return kebabToPascalWithSpaces(pascalToKebab(str));
+      case "camelCase":
+         return ucFirst(kebabToPascalWithSpaces(pascalToKebab(str)));
+      case "kebab-case":
+         return kebabToPascalWithSpaces(str);
+      case "SCREAMING_SNAKE_CASE":
+         return snakeToPascalWithSpaces(str.toLowerCase());
+      case "unknown":
+         return str;
+   }
+}
+
+export function kebabToPascalWithSpaces(str: string): string {
+   return str.split("-").map(ucFirst).join(" ");
+}
+
+export function ucFirstAllSnakeToPascalWithSpaces(str: string, split: string = " "): string {
+   return ucFirstAll(snakeToPascalWithSpaces(str), split);
 }
 
 /**

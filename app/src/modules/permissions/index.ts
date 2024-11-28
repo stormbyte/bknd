@@ -1,5 +1,7 @@
 import { Permission } from "core";
 
+export const accessAdmin = new Permission("system.access.admin");
+export const accessApi = new Permission("system.access.api");
 export const configRead = new Permission("system.config.read");
 export const configReadSecrets = new Permission("system.config.read.secrets");
 export const configWrite = new Permission("system.config.write");

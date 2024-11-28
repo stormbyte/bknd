@@ -5,27 +5,13 @@ import { Hono, type MiddlewareHandler } from "hono";
 export class AuthController implements ClassController {
    constructor(private auth: AppAuth) {}
 
+   get guard() {
+      return this.auth.ctx.guard;
+   }
+
    getMiddleware: MiddlewareHandler = async (c, next) => {
-      // @todo: consider adding app name to the payload, because user is not refetched
-
-      //try {
-      if (c.req.raw.headers.has("Authorization")) {
-         const bearerHeader = String(c.req.header("Authorization"));
-         const token = bearerHeader.replace("Bearer ", "");
-         const verified = await this.auth.authenticator.verify(token);
-
-         // @todo: don't extract user from token, but from the database or cache
-         this.auth.ctx.guard.setUserContext(this.auth.authenticator.getUser());
-         /*console.log("jwt verified?", {
-            verified,
-            auth: this.auth.authenticator.isUserLoggedIn()
-         });*/
-      } else {
-         this.auth.authenticator.__setUserNull();
-      }
-      /* } catch (e) {
-         this.auth.authenticator.__setUserNull();
-      }*/
+      const user = await this.auth.authenticator.resolveAuthFromRequest(c);
+      this.auth.ctx.guard.setUserContext(user);
 
       await next();
    };
@@ -33,7 +19,6 @@ export class AuthController implements ClassController {
    getController(): Hono<any> {
       const hono = new Hono();
       const strategies = this.auth.authenticator.getStrategies();
-      //console.log("strategies", strategies);
 
       for (const [name, strategy] of Object.entries(strategies)) {
          //console.log("registering", name, "at", `/${name}`);
@@ -48,8 +33,23 @@ export class AuthController implements ClassController {
          return c.json({ user: null }, 403);
       });
 
+      hono.get("/logout", async (c) => {
+         await this.auth.authenticator.logout(c);
+         if (this.auth.authenticator.isJsonRequest(c)) {
+            return c.json({ ok: true });
+         }
+
+         const referer = c.req.header("referer");
+         if (referer) {
+            return c.redirect(referer);
+         }
+
+         return c.redirect("/");
+      });
+
       hono.get("/strategies", async (c) => {
-         return c.json({ strategies: this.auth.toJSON(false).strategies });
+         const { strategies, basepath } = this.auth.toJSON(false);
+         return c.json({ strategies, basepath });
       });
 
       return hono;

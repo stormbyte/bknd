@@ -6,7 +6,7 @@ import {
    getTemplate,
    getUiOptions
 } from "@rjsf/utils";
-import { ucFirstAll, ucFirstAllSnakeToPascalWithSpaces } from "core/utils";
+import { identifierToHumanReadable } from "core/utils";
 import { twMerge } from "tailwind-merge";
 
 const REQUIRED_FIELD_SYMBOL = "*";
@@ -31,7 +31,7 @@ export function Label(props: LabelProps) {
    }
    return (
       <label className="control-label" htmlFor={id}>
-         {ucFirstAllSnakeToPascalWithSpaces(label)}
+         {identifierToHumanReadable(label)}
          {required && <span className="required">{REQUIRED_FIELD_SYMBOL}</span>}
       </label>
    );

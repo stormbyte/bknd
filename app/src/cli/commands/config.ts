@@ -7,6 +7,7 @@ export const config: CliCommand = (program) => {
       .description("get default config")
       .option("--pretty", "pretty print")
       .action((options) => {
-         console.log(getDefaultConfig(options.pretty));
+         const config = getDefaultConfig();
+         console.log(options.pretty ? JSON.stringify(config, null, 2) : JSON.stringify(config));
       });
 };

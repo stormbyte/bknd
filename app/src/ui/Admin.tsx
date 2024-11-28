@@ -1,15 +1,19 @@
 import { MantineProvider } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import React from "react";
+import { FlashMessage } from "ui/modules/server/FlashMessage";
 import { BkndProvider, ClientProvider, useBknd } from "./client";
 import { createMantineTheme } from "./lib/mantine/theme";
 import { BkndModalsProvider } from "./modals";
 import { Routes } from "./routes";
 
-export default function Admin({
-   baseUrl: baseUrlOverride,
-   withProvider = false
-}: { baseUrl?: string; withProvider?: boolean }) {
+export type BkndAdminProps = {
+   baseUrl?: string;
+   withProvider?: boolean;
+   // @todo: add admin config override
+};
+
+export default function Admin({ baseUrl: baseUrlOverride, withProvider = false }: BkndAdminProps) {
    const Component = (
       <BkndProvider>
          <AdminInternal />
@@ -25,9 +29,11 @@ export default function Admin({
 function AdminInternal() {
    const b = useBknd();
    const theme = b.app.getAdminConfig().color_scheme;
+
    return (
       <MantineProvider {...createMantineTheme(theme ?? "light")}>
          <Notifications />
+         <FlashMessage />
          <BkndModalsProvider>
             <Routes />
          </BkndModalsProvider>

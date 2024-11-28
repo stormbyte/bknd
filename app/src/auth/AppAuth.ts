@@ -1,16 +1,9 @@
 import { type AuthAction, Authenticator, type ProfileExchange, Role, type Strategy } from "auth";
 import { Exception } from "core";
-import { transformObject } from "core/utils";
-import {
-   type Entity,
-   EntityIndex,
-   type EntityManager,
-   EnumField,
-   type Field,
-   type Mutator
-} from "data";
+import { type Static, secureRandomString, transformObject } from "core/utils";
+import { type Entity, EntityIndex, type EntityManager } from "data";
 import { type FieldSchema, entity, enumm, make, text } from "data/prototype";
-import { cloneDeep, mergeWith, omit, pick } from "lodash-es";
+import { pick } from "lodash-es";
 import { Module } from "modules/Module";
 import { AuthController } from "./api/AuthController";
 import { type AppAuthSchema, STRATEGIES, authConfigSchema } from "./auth-schema";
@@ -22,9 +15,25 @@ declare global {
    }
 }
 
+type AuthSchema = Static<typeof authConfigSchema>;
+
 export class AppAuth extends Module<typeof authConfigSchema> {
    private _authenticator?: Authenticator;
    cache: Record<string, any> = {};
+   _controller!: AuthController;
+
+   override async onBeforeUpdate(from: AuthSchema, to: AuthSchema) {
+      const defaultSecret = authConfigSchema.properties.jwt.properties.secret.default;
+
+      if (!from.enabled && to.enabled) {
+         if (to.jwt.secret === defaultSecret) {
+            console.warn("No JWT secret provided, generating a random one");
+            to.jwt.secret = secureRandomString(64);
+         }
+      }
+
+      return to;
+   }
 
    override async build() {
       if (!this.config.enabled) {
@@ -46,22 +55,32 @@ export class AppAuth extends Module<typeof authConfigSchema> {
             return new STRATEGIES[strategy.type].cls(strategy.config as any);
          } catch (e) {
             throw new Error(
-               `Could not build strategy ${String(name)} with config ${JSON.stringify(strategy.config)}`
+               `Could not build strategy ${String(
+                  name
+               )} with config ${JSON.stringify(strategy.config)}`
             );
          }
       });
 
-      const { fields, ...jwt } = this.config.jwt;
       this._authenticator = new Authenticator(strategies, this.resolveUser.bind(this), {
-         jwt
+         jwt: this.config.jwt,
+         cookie: this.config.cookie
       });
 
       this.registerEntities();
       super.setBuilt();
 
-      const controller = new AuthController(this);
+      this._controller = new AuthController(this);
       //this.ctx.server.use(controller.getMiddleware);
-      this.ctx.server.route(this.config.basepath, controller.getController());
+      this.ctx.server.route(this.config.basepath, this._controller.getController());
+   }
+
+   get controller(): AuthController {
+      if (!this.isBuilt()) {
+         throw new Error("Can't access controller, AppAuth not built yet");
+      }
+
+      return this._controller;
    }
 
    getMiddleware() {
@@ -97,6 +116,9 @@ export class AppAuth extends Module<typeof authConfigSchema> {
          identifier,
          profile
       });
+      if (!this.config.allow_register && action === "register") {
+         throw new Exception("Registration is not allowed", 403);
+      }
 
       const fields = this.getUsersEntity()
          .getFillableFields("create")
@@ -124,7 +146,11 @@ export class AppAuth extends Module<typeof authConfigSchema> {
    }
 
    private async login(strategy: Strategy, identifier: string, profile: ProfileExchange) {
-      console.log("--- trying to login", { strategy: strategy.getName(), identifier, profile });
+      /*console.log("--- trying to login", {
+         strategy: strategy.getName(),
+         identifier,
+         profile
+      });*/
       if (!("email" in profile)) {
          throw new Exception("Profile must have email");
       }
@@ -263,17 +289,9 @@ export class AppAuth extends Module<typeof authConfigSchema> {
          return this.configDefault;
       }
 
-      const obj = {
+      return {
          ...this.config,
          ...this.authenticator.toJSON(secrets)
-      };
-
-      return {
-         ...obj,
-         jwt: {
-            ...obj.jwt,
-            fields: this.config.jwt.fields
-         }
       };
    }
 }

@@ -34,7 +34,7 @@ export class AuthApi extends ModuleApi<AuthApiOptions> {
    }
 
    async strategies() {
-      return this.get<{ strategies: AppAuthSchema["strategies"] }>(["strategies"]);
+      return this.get<Pick<AppAuthSchema, "strategies" | "basepath">>(["strategies"]);
    }
 
    async logout() {}

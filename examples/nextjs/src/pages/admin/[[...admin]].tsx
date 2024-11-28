@@ -1,14 +1,5 @@
-import type { PageConfig } from "next";
-import dynamic from "next/dynamic";
-
-export const config: PageConfig = {
-   runtime: "experimental-edge"
-};
-
-const Admin = dynamic(() => import("bknd/ui").then((mod) => mod.Admin), { ssr: false });
+import { adminPage, getServerSideProps } from "bknd/adapter/nextjs";
 import "bknd/dist/styles.css";
 
-export default function AdminPage() {
-   if (typeof document === "undefined") return null;
-   return <Admin withProvider />;
-}
+export { getServerSideProps };
+export default adminPage();

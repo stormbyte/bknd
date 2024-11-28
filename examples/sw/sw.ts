@@ -25,7 +25,7 @@ self.addEventListener("fetch", async (e) => {
          (async () => {
             try {
                const bknd = await getBknd();
-               return bknd.modules.server.fetch(e.request);
+               return bknd.fetch(e.request);
             } catch (e) {
                return new Response(e.message, { status: 500 });
             }

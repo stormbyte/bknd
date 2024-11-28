@@ -13,7 +13,7 @@ export type ModuleBuildContext = {
    guard: Guard;
 };
 
-export abstract class Module<Schema extends TSchema = TSchema> {
+export abstract class Module<Schema extends TSchema = TSchema, ConfigSchema = Static<Schema>> {
    private _built = false;
    private _schema: SchemaObject<ReturnType<(typeof this)["getSchema"]>>;
    private _listener: any = () => null;
@@ -28,8 +28,13 @@ export abstract class Module<Schema extends TSchema = TSchema> {
             await this._listener(c);
          },
          restrictPaths: this.getRestrictedPaths(),
-         overwritePaths: this.getOverwritePaths()
+         overwritePaths: this.getOverwritePaths(),
+         onBeforeUpdate: this.onBeforeUpdate.bind(this)
       });
+   }
+
+   onBeforeUpdate(from: ConfigSchema, to: ConfigSchema): ConfigSchema | Promise<ConfigSchema> {
+      return to;
    }
 
    setListener(listener: (c: ReturnType<(typeof this)["getSchema"]>) => void | Promise<void>) {
@@ -92,7 +97,8 @@ export abstract class Module<Schema extends TSchema = TSchema> {
          },
          forceParse: this.useForceParse(),
          restrictPaths: this.getRestrictedPaths(),
-         overwritePaths: this.getOverwritePaths()
+         overwritePaths: this.getOverwritePaths(),
+         onBeforeUpdate: this.onBeforeUpdate.bind(this)
       });
    }
 

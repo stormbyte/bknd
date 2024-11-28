@@ -1,4 +1,6 @@
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+//import { notifications } from "@mantine/notifications";
+import { getDefaultConfig, getDefaultSchema } from "modules/ModuleManager";
+import { createContext, startTransition, useContext, useEffect, useRef, useState } from "react";
 import type { ModuleConfigs, ModuleSchemas } from "../../modules";
 import { useClient } from "./ClientProvider";
 import { type TSchemaActions, getSchemaActions } from "./schema/actions";
@@ -22,18 +24,51 @@ export function BkndProvider({
    children
 }: { includeSecrets?: boolean; children: any }) {
    const [withSecrets, setWithSecrets] = useState<boolean>(includeSecrets);
-   const [schema, setSchema] = useState<BkndContext>();
+   const [schema, setSchema] =
+      useState<Pick<BkndContext, "version" | "schema" | "config" | "permissions">>();
+   const [fetched, setFetched] = useState(false);
+   const errorShown = useRef<boolean>();
    const client = useClient();
 
-   async function fetchSchema(_includeSecrets: boolean = false) {
-      if (withSecrets) return;
-      const { body } = await client.api.system.readSchema({
+   async function reloadSchema() {
+      await fetchSchema(includeSecrets, true);
+   }
+
+   async function fetchSchema(_includeSecrets: boolean = false, force?: boolean) {
+      if (withSecrets && !force) return;
+      const { body, res } = await client.api.system.readSchema({
          config: true,
          secrets: _includeSecrets
       });
-      console.log("--schema fetched", body);
-      setSchema(body as any);
-      setWithSecrets(_includeSecrets);
+
+      if (!res.ok) {
+         if (errorShown.current) return;
+         errorShown.current = true;
+         /*notifications.show({
+            title: "Failed to fetch schema",
+            // @ts-ignore
+            message: body.error,
+            color: "red",
+            position: "top-right",
+            autoClose: false,
+            withCloseButton: true
+         });*/
+      }
+
+      const schema = res.ok
+         ? body
+         : ({
+              version: 0,
+              schema: getDefaultSchema(),
+              config: getDefaultConfig(),
+              permissions: []
+           } as any);
+
+      startTransition(() => {
+         setSchema(schema);
+         setWithSecrets(_includeSecrets);
+         setFetched(true);
+      });
    }
 
    async function requireSecrets() {
@@ -46,10 +81,9 @@ export function BkndProvider({
       fetchSchema(includeSecrets);
    }, []);
 
-   if (!schema?.schema) return null;
-   const app = new AppReduced(schema.config as any);
-
-   const actions = getSchemaActions({ client, setSchema });
+   if (!fetched || !schema) return null;
+   const app = new AppReduced(schema?.config as any);
+   const actions = getSchemaActions({ client, setSchema, reloadSchema });
 
    return (
       <BkndContext.Provider value={{ ...schema, actions, requireSecrets, app }}>
@@ -58,26 +92,23 @@ export function BkndProvider({
    );
 }
 
+type BkndWindowContext = {
+   user?: object;
+   logout_route: string;
+};
+export function useBkndWindowContext(): BkndWindowContext {
+   if (typeof window !== "undefined" && window.__BKND__) {
+      return window.__BKND__ as any;
+   } else {
+      return {
+         logout_route: "/api/auth/logout"
+      };
+   }
+}
+
 export function useBknd({ withSecrets }: { withSecrets?: boolean } = {}): BkndContext {
    const ctx = useContext(BkndContext);
    if (withSecrets) ctx.requireSecrets();
 
    return ctx;
 }
-
-/*
-type UseSchemaForType<Key extends keyof ModuleSchemas> = {
-   version: number;
-   schema: ModuleSchemas[Key];
-   config: ModuleConfigs[Key];
-};
-
-export function useSchemaFor<Key extends keyof ModuleConfigs>(module: Key): UseSchemaForType<Key> {
-   //const app = useApp();
-   const { version, schema, config } = useSchema();
-   return {
-      version,
-      schema: schema[module],
-      config: config[module]
-   };
-}*/

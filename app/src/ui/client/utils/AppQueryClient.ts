@@ -13,10 +13,13 @@ import { queryClient } from "../ClientProvider";
 
 export class AppQueryClient {
    api: Api;
-   constructor(public baseUrl: string) {
+   constructor(
+      public baseUrl: string,
+      user?: object
+   ) {
       this.api = new Api({
          host: baseUrl,
-         tokenStorage: "localStorage"
+         user
       });
    }
 
@@ -50,14 +53,18 @@ export class AppQueryClient {
             return this.api.getAuthState();
          },
          verify: async () => {
-            console.log("verifiying");
-            const res = await this.api.auth.me();
-            console.log("verifying result", res);
-            if (!res.res.ok) {
+            try {
+               //console.log("verifiying");
+               const res = await this.api.auth.me();
+               //console.log("verifying result", res);
+               if (!res.res.ok || !res.body.user) {
+                  throw new Error();
+               }
+
+               this.api.markAuthVerified(true);
+            } catch (e) {
                this.api.markAuthVerified(false);
                this.api.updateToken(undefined);
-            } else {
-               this.api.markAuthVerified(true);
             }
          }
       };
