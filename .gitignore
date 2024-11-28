@@ -17,6 +17,8 @@ packages/media/.env
 **/*/vite.config.ts.timestamp*
 .history
 **/*/.db/*
+**/*/*.db-shm
+**/*/*.db-wal
 .npmrc
 /.verdaccio
 .idea

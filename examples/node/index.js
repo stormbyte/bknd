@@ -12,9 +12,11 @@ const config = {
 };
 
 serve(config, {
-   relativeDistPath: "../../node_modules/bknd/dist",
    port: 1337,
    listener: ({ port }) => {
       console.log(`Server is running on http://localhost:${port}`);
-   }
+   },
+   // this is only required to run inside the same workspace
+   // leave blank if you're running this from a different project
+   relativeDistPath: "../../app/dist"
 });

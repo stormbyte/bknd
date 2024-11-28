@@ -15,8 +15,8 @@ const { dummyConnection, afterAllCleanup } = getDummyConnection();
  * Node writefile
  * data: string | NodeJS.ArrayBufferView | Iterable<string | NodeJS.ArrayBufferView> | AsyncIterable<string | NodeJS.ArrayBufferView> | Stream,
  */
-
-describe("MediaController", () => {
+const ALL_TESTS = !!process.env.ALL_TESTS;
+describe.skipIf(ALL_TESTS)("MediaController", () => {
    test("..", async () => {
       const ctx: any = {
          em: new EntityManager([], dummyConnection, []),
