@@ -179,3 +179,8 @@ await tsup.build({
    platform: "node",
    format: ["esm", "cjs"]
 });
+
+await tsup.build({
+   ...baseConfig("astro"),
+   format: ["esm", "cjs"]
+});

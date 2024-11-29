@@ -160,6 +160,11 @@
       "import": "./dist/adapter/node/index.js",
       "require": "./dist/adapter/node/index.cjs"
     },
+    "./adapter/astro": {
+      "types": "./dist/adapter/astro/index.d.ts",
+      "import": "./dist/adapter/astro/index.js",
+      "require": "./dist/adapter/astro/index.cjs"
+    },
     "./dist/styles.css": "./dist/ui/main.css",
     "./dist/manifest.json": "./dist/static/manifest.json"
   },

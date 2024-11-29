@@ -234,7 +234,7 @@ export function Setting<Schema extends TObject = any>({
             <Breadcrumbs path={path} />
          </AppShell.SectionHeader>
          <AppShell.Scrollable key={path.join("-")}>
-            {typeof showAlert === "string" && <Alert.Warning message={showAlert} />}
+            {typeof showAlert !== "undefined" && <Alert.Warning message={showAlert} />}
 
             <div className="flex flex-col flex-grow p-3 gap-3">
                <JsonSchemaForm

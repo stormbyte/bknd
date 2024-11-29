@@ -1,6 +1,7 @@
+import type { BkndAdminProps } from "bknd/ui";
 import { Suspense, lazy, useEffect, useState } from "react";
 
-export function adminPage() {
+export function adminPage(props?: BkndAdminProps) {
    const Admin = lazy(() => import("bknd/ui").then((mod) => ({ default: mod.Admin })));
    return () => {
       const [loaded, setLoaded] = useState(false);
@@ -12,7 +13,7 @@ export function adminPage() {
 
       return (
          <Suspense>
-            <Admin />
+            <Admin {...props} />
          </Suspense>
       );
    };

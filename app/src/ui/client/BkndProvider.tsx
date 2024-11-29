@@ -14,6 +14,7 @@ type BkndContext = {
    requireSecrets: () => Promise<void>;
    actions: ReturnType<typeof getSchemaActions>;
    app: AppReduced;
+   adminOverride?: ModuleConfigs["server"]["admin"];
 };
 
 const BkndContext = createContext<BkndContext>(undefined!);
@@ -21,8 +22,9 @@ export type { TSchemaActions };
 
 export function BkndProvider({
    includeSecrets = false,
+   adminOverride,
    children
-}: { includeSecrets?: boolean; children: any }) {
+}: { includeSecrets?: boolean; children: any } & Pick<BkndContext, "adminOverride">) {
    const [withSecrets, setWithSecrets] = useState<boolean>(includeSecrets);
    const [schema, setSchema] =
       useState<Pick<BkndContext, "version" | "schema" | "config" | "permissions">>();
@@ -64,6 +66,13 @@ export function BkndProvider({
               permissions: []
            } as any);
 
+      if (adminOverride) {
+         schema.config.server.admin = {
+            ...schema.config.server.admin,
+            ...adminOverride
+         };
+      }
+
       startTransition(() => {
          setSchema(schema);
          setWithSecrets(_includeSecrets);
@@ -86,7 +95,7 @@ export function BkndProvider({
    const actions = getSchemaActions({ client, setSchema, reloadSchema });
 
    return (
-      <BkndContext.Provider value={{ ...schema, actions, requireSecrets, app }}>
+      <BkndContext.Provider value={{ ...schema, actions, requireSecrets, app, adminOverride }}>
          {children}
       </BkndContext.Provider>
    );

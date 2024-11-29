@@ -17,11 +17,13 @@ export const queryClient = new QueryClient({
    }
 });
 
-export const ClientProvider = ({
-   children,
-   baseUrl,
-   user
-}: { children?: any; baseUrl?: string; user?: TApiUser | null }) => {
+export type ClientProviderProps = {
+   children?: any;
+   baseUrl?: string;
+   user?: TApiUser | null | undefined;
+};
+
+export const ClientProvider = ({ children, baseUrl, user }: ClientProviderProps) => {
    const [actualBaseUrl, setActualBaseUrl] = useState<string | null>(null);
    const winCtx = useBkndWindowContext();
 

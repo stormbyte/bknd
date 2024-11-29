@@ -135,10 +135,10 @@ type FormInputElement = HTMLInputElement | HTMLTextAreaElement;
 function EntityFormField({ fieldApi, field, action, data, ...props }: EntityFormFieldProps) {
    const handleUpdate = useEvent((e: React.ChangeEvent<FormInputElement> | any) => {
       if (typeof e === "object" && "target" in e) {
-         console.log("handleUpdate", e.target.value);
+         //console.log("handleUpdate", e.target.value);
          fieldApi.handleChange(e.target.value);
       } else {
-         console.log("handleUpdate-", e);
+         //console.log("handleUpdate-", e);
          fieldApi.handleChange(e);
       }
    });
