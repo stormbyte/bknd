@@ -1,21 +1,20 @@
 ---
-import { Api } from "bknd";
 import { Admin } from "bknd/ui";
 import "bknd/dist/styles.css";
 
-export const prerender = false;
-const api = new Api({
-   host: new URL(Astro.request.url).origin,
-   headers: Astro.request.headers
-});
+import { getApi } from "bknd/adapter/astro";
+
+const api = getApi(Astro, { mode: "dynamic" });
 const user = api.getUser();
+
+export const prerender = false;
 ---
 
 <html>
    <body>
       <Admin
          withProvider={{ user }}
-         config={{ basepath: "/admin" }}
+         config={{ basepath: "/admin", color_scheme: "dark" }}
          client:load
       />
    </body>
