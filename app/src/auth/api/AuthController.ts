@@ -1,5 +1,5 @@
 import type { AppAuth } from "auth";
-import type { ClassController } from "core";
+import { type ClassController, isDebug } from "core";
 import { Hono, type MiddlewareHandler } from "hono";
 
 export class AuthController implements ClassController {
@@ -10,8 +10,16 @@ export class AuthController implements ClassController {
    }
 
    getMiddleware: MiddlewareHandler = async (c, next) => {
-      const user = await this.auth.authenticator.resolveAuthFromRequest(c);
-      this.auth.ctx.guard.setUserContext(user);
+      // @todo: ONLY HOTFIX
+      const url = new URL(c.req.url);
+      const last = url.pathname.split("/")?.pop();
+      const ext = last?.includes(".") ? last.split(".")?.pop() : undefined;
+      if (ext) {
+         isDebug() && console.log("Skipping auth", { ext }, url.pathname);
+      } else {
+         const user = await this.auth.authenticator.resolveAuthFromRequest(c);
+         this.auth.ctx.guard.setUserContext(user);
+      }
 
       await next();
    };
