@@ -22,8 +22,8 @@
   },
   "topbarLinks": [
     {
-      "name": "Support",
-      "url": "mailto:hi@help.bknd.io"
+      "name": "Discord",
+      "url": "https://discord.gg/952SFk8Tb8"
     }
   ],
   "topbarCtaButton": {
@@ -55,12 +55,6 @@
       "icon": "book-open-cover",
       "iconType": "solid",
       "url": "/"
-    },
-    {
-      "name": "Discord",
-      "icon": "discord",
-      "iconType": "solid",
-      "url": "https://discord.gg/YAHnKXr5"
     },
     {
       "name": "GitHub",
