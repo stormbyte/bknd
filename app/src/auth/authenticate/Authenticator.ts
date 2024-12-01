@@ -249,6 +249,7 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
       }
    }
 
+   // @todo: move this to a server helper
    isJsonRequest(c: Context): boolean {
       //return c.req.header("Content-Type") === "application/x-www-form-urlencoded";
       return c.req.header("Content-Type") === "application/json";

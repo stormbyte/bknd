@@ -11,10 +11,21 @@ export class AuthController implements ClassController {
 
    getMiddleware: MiddlewareHandler = async (c, next) => {
       // @todo: ONLY HOTFIX
+      // middlewares are added for all routes are registered. But we need to make sure that
+      // only HTML/JSON routes are adding a cookie to the response. Config updates might
+      // also use an extension "syntax", e.g. /api/system/patch/data/entities.posts
+      // This middleware should be extracted and added by each Controller individually,
+      // but it requires access to the auth secret.
+      // Note: This doesn't mean endpoints aren't protected, just the cookie is not set.
       const url = new URL(c.req.url);
       const last = url.pathname.split("/")?.pop();
       const ext = last?.includes(".") ? last.split(".")?.pop() : undefined;
-      if (ext) {
+      if (
+         !this.auth.authenticator.isJsonRequest(c) &&
+         ["GET", "HEAD", "OPTIONS"].includes(c.req.method) &&
+         ext &&
+         ["js", "css", "png", "jpg", "jpeg", "svg", "ico"].includes(ext)
+      ) {
          isDebug() && console.log("Skipping auth", { ext }, url.pathname);
       } else {
          const user = await this.auth.authenticator.resolveAuthFromRequest(c);
