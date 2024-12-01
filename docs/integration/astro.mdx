@@ -1,0 +1,120 @@
+---
+title: 'Astro'
+description: 'Run bknd inside Astro'
+---
+import InstallBknd from '/snippets/install-bknd.mdx';
+
+## Installation
+Install bknd as a dependency:
+<InstallBknd />
+
+For the Astro integration to work, you also need to [add the react integration](https://docs.astro.build/en/guides/integrations-guide/react/):
+```bash
+npx astro add react
+```
+
+You also need to make sure to set the output to `hybrid` in your Astro config:
+```js {6}
+// astro.config.mjs
+import { defineConfig } from "astro/config";
+import react from "@astrojs/react";
+
+export default defineConfig({
+   output: "hybrid",
+   integrations: [react()]
+});
+```
+
+<Note>
+   If you don't want to use React with Astro, there is also an option to serve the bknd Admin UI
+   statically using Astro's middleware. In case you're interested in this, feel free to reach
+   out in [Discord](https://discord.gg/952SFk8Tb8) or open an [issue on GitHub](https://github.com/bknd-io/bknd/issues/new).
+</Note>
+
+## Serve the API
+Create a new catch-all route at `src/pages/api/[...api].ts`:
+```ts src/pages/api/[...api].ts
+import { serve } from "bknd/adapter/astro";
+
+export const prerender = false;
+
+export const ALL = serve({
+   connection: {
+      type: "libsql",
+      config: {
+         url: "http://127.0.0.1:8080"
+      }
+   }
+});
+```
+For more information about the connection object, refer to the [Setup](/setup) guide. In the
+special case of astro, you may also use your Astro DB credentials since it's also using LibSQL
+under the hood. Refer to the [Astro DB documentation](https://docs.astro.build/en/guides/astro-db/) for more information.
+
+## Enabling the Admin UI
+Create a new catch-all route at `src/pages/admin/[...admin].astro`:
+```jsx src/pages/admin/[...admin].astro
+---
+import { Admin } from "bknd/ui";
+import "bknd/dist/styles.css";
+
+import { getApi } from "bknd/adapter/astro";
+
+const api = getApi(Astro, { mode: "dynamic" });
+const user = api.getUser();
+
+export const prerender = false;
+---
+
+<html>
+   <body>
+      <Admin
+         withProvider={{ user }}
+         config={{ basepath: "/admin", color_scheme: "dark" }}
+         client:load
+      />
+   </body>
+</html>
+```
+
+## Example usage of the API
+You use the API in both static and SSR pages. Just note that on static pages, authentication
+might not work as expected, because Cookies are not available in the static context.
+
+Here is an example of using the API in static context:
+```jsx
+---
+import { getApi } from "bknd/adapter/astro";
+const api = getApi(Astro);
+const { data } = await api.data.readMany("todos");
+---
+
+<ul>
+   {data.map((todo) => (
+      <li>{todo.title}</li>
+   ))}
+</ul>
+```
+
+On SSR pages, you can also access the authenticated user:
+```jsx
+---
+import { getApi } from "bknd/adapter/astro";
+const api = getApi(Astro, { mode: "dynamic" });
+const user = api.getUser();
+const { data } = await api.data.readMany("todos");
+
+export const prerender = false;
+---
+
+{user
+   ? <p>Logged in as <b>{user.email}</b>.</p>
+   : <p>Not authenticated.</p>}
+<ul>
+   {data.map((todo) => (
+      <li>{todo.title}</li>
+   ))}
+</ul>
+```
+
+Check the [astro example](https://github.com/bknd-io/bknd/tree/main/examples/astro) for more implementation details.

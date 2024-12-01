@@ -108,6 +108,7 @@
         "integration/bun",
         "integration/vite",
         "integration/express",
+        "integration/astro",
         "integration/nodejs",
         "integration/deno",
         "integration/browser"
