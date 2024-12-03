@@ -2,9 +2,9 @@
   "$schema": "https://mintlify.com/schema.json",
   "name": "bknd",
   "logo": {
-    "dark": "/_assets/logo/bknd_logo_white_test.svg",
-    "light": "/_assets/logo/light.svg",
-     "href": "https://bknd.io"
+    "dark": "/_assets/logo/bknd_logo_white.svg",
+    "light": "/_assets/logo/bknd_logo_black.svg",
+    "href": "https://bknd.io"
   },
   "theme": "prism",
   "layout": "sidenav",
