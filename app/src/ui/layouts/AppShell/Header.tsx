@@ -146,6 +146,7 @@ export function Header({ hasSidebar = true }) {
 }
 
 function UserMenu() {
+   const { adminOverride } = useBknd();
    const auth = useAuth();
    const [navigate] = useNavigate();
    const { logout_route } = useBkndWindowContext();
@@ -170,7 +171,9 @@ function UserMenu() {
       items.push({ label: `Logout ${auth.user.email}`, onClick: handleLogout, icon: IconKeyOff });
    }
 
-   items.push(() => <UserMenuThemeToggler />);
+   if (!adminOverride) {
+      items.push(() => <UserMenuThemeToggler />);
+   }
 
    return (
       <>

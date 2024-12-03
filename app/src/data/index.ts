@@ -4,6 +4,7 @@ export * from "./fields";
 export * from "./entities";
 export * from "./relations";
 export * from "./schema/SchemaManager";
+export * from "./prototype";
 
 export {
    type RepoQuery,
