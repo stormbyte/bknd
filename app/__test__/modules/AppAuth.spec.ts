@@ -39,7 +39,10 @@ describe("AppAuth", () => {
    test("creates user on register", async () => {
       const auth = new AppAuth(
          {
-            enabled: true
+            enabled: true,
+            jwt: {
+               secret: "123456"
+            }
          },
          ctx
       );
@@ -57,6 +60,9 @@ describe("AppAuth", () => {
          disableConsoleLog();
          const res = await app.request("/password/register", {
             method: "POST",
+            headers: {
+               "Content-Type": "application/json"
+            },
             body: JSON.stringify({
                email: "some@body.com",
                password: "123456"

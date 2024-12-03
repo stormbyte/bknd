@@ -45,7 +45,6 @@
     "@uiw/react-codemirror": "^4.23.6",
     "@xyflow/react": "^12.3.2",
     "aws4fetch": "^1.0.18",
-    "codemirror-lang-liquid": "^1.0.0",
     "dayjs": "^1.11.13",
     "fast-xml-parser": "^4.4.0",
     "hono": "^4.6.12",
@@ -57,12 +56,10 @@
     "react-hook-form": "^7.53.1",
     "react-icons": "5.2.1",
     "react-json-view-lite": "^2.0.1",
-    "reactflow": "^11.11.4",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
     "wouter": "^3.3.5",
-    "zod": "^3.23.8",
-    "zod-to-json-schema": "^3.23.2"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.613.0",

@@ -11,7 +11,7 @@ import {
 } from "core/utils";
 import type { Context, Hono } from "hono";
 import { deleteCookie, getSignedCookie, setSignedCookie } from "hono/cookie";
-import { decode, sign, verify } from "hono/jwt";
+import { sign, verify } from "hono/jwt";
 import type { CookieOptions } from "hono/utils/cookie";
 import { omit } from "lodash-es";
 
@@ -177,7 +177,12 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
          payload.exp = Math.floor(Date.now() / 1000) + this.config.jwt.expires;
       }
 
-      return sign(payload, this.config.jwt?.secret ?? "", this.config.jwt?.alg ?? "HS256");
+      const secret = this.config.jwt.secret;
+      if (!secret || secret.length === 0) {
+         throw new Error("Cannot sign JWT without a secret");
+      }
+
+      return sign(payload, secret, this.config.jwt?.alg ?? "HS256");
    }
 
    async verify(jwt: string): Promise<boolean> {
