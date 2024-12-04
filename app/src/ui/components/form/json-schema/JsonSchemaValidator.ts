@@ -12,7 +12,7 @@ import type {
    ValidatorType
 } from "@rjsf/utils";
 import { toErrorSchema } from "@rjsf/utils";
-import get from "lodash-es/get";
+import { get } from "lodash-es";
 
 function removeUndefinedKeys(obj: any): any {
    if (!obj) return obj;
