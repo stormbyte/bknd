@@ -14,9 +14,7 @@ import {
    getWidget,
    mergeSchemas
 } from "@rjsf/utils";
-import get from "lodash-es/get";
-import isEmpty from "lodash-es/isEmpty";
-import omit from "lodash-es/omit";
+import { get, isEmpty, omit } from "lodash-es";
 import { Component } from "react";
 import { twMerge } from "tailwind-merge";
 import { Label } from "../templates/FieldTemplate";
