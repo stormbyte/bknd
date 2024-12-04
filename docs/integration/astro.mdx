@@ -8,6 +8,9 @@ import InstallBknd from '/snippets/install-bknd.mdx';
 Install bknd as a dependency:
 <InstallBknd />
 
+<Note>The guide below assumes you're using Astro v4. We've experienced issues with Astro DB
+   using v5, see [this issue](https://github.com/withastro/astro/issues/12474).</Note>
+
 For the Astro integration to work, you also need to [add the react integration](https://docs.astro.build/en/guides/integrations-guide/react/):
 ```bash
 npx astro add react
@@ -117,4 +120,5 @@ export const prerender = false;
 </ul>
 ```
 
-Check the [astro example](https://github.com/bknd-io/bknd/tree/main/examples/astro) for more implementation details.
+Check the [astro repository example](https://github.com/bknd-io/bknd/tree/main/examples/astro)
+for more implementation details or a [fully working example using Astro DB](https://github.com/dswbx/bknd-astro-example).
