@@ -6,6 +6,7 @@ import { Default, type Static, objectEach, transformObject } from "core/utils";
 import { type Connection, EntityManager } from "data";
 import { Hono } from "hono";
 import { type Kysely, sql } from "kysely";
+import { mergeWith } from "lodash-es";
 import { CURRENT_VERSION, TABLE_NAME, migrate, migrateSchema } from "modules/migrations";
 import { AppServer } from "modules/server/AppServer";
 import { AppAuth } from "../auth/AppAuth";
@@ -38,9 +39,11 @@ export type ModuleConfigs = {
    [K in keyof ModuleSchemas]: Static<ModuleSchemas[K]>;
 };
 
-export type InitialModuleConfigs = {
-   version: number;
-} & Partial<ModuleConfigs>;
+export type InitialModuleConfigs =
+   | ({
+        version: number;
+     } & ModuleConfigs)
+   | Partial<ModuleConfigs>;
 
 export type ModuleManagerOptions = {
    initial?: InitialModuleConfigs;
@@ -71,7 +74,9 @@ export class ModuleManager {
    private _version: number = 0;
    private _built = false;
    private _fetched = false;
-   private readonly _provided;
+
+   // @todo: keep? not doing anything with it
+   private readonly _booted_with?: "provided" | "partial";
 
    private logger = new DebugLogger(isDebug() && false);
 
@@ -85,14 +90,15 @@ export class ModuleManager {
       let initial = {} as Partial<ModuleConfigs>;
 
       if (options?.initial) {
-         const { version, ...initialConfig } = options.initial;
-         if (version && initialConfig) {
+         if ("version" in options.initial) {
+            const { version, ...initialConfig } = options.initial;
             this._version = version;
             initial = initialConfig;
 
-            this._provided = true;
+            this._booted_with = "provided";
          } else {
-            throw new Error("Initial was provided, but it needs a version!");
+            initial = mergeWith(getDefaultConfig(), options.initial);
+            this._booted_with = "partial";
          }
       }
 
@@ -337,10 +343,11 @@ export class ModuleManager {
 
    async build() {
       this.logger.context("build").log("version", this.version());
+      this.logger.log("booted with", this._booted_with);
 
       // if no config provided, try fetch from db
       if (this.version() === 0) {
-         this.logger.context("build no config").log("version is 0");
+         this.logger.context("no version").log("version is 0");
          try {
             const result = await this.fetch();
 

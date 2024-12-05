@@ -148,50 +148,58 @@ describe("ModuleManager", async () => {
       });
    });
 
-   // @todo: check what happens here
-   /*test("blank app, modify deep config", async () => {
+   test("partial config given", async () => {
       const { dummyConnection } = getDummyConnection();
 
-      const mm = new ModuleManager(dummyConnection);
+      const partial = {
+         auth: {
+            enabled: true
+         }
+      };
+      const mm = new ModuleManager(dummyConnection, {
+         initial: partial
+      });
       await mm.build();
 
-      /!* await mm
-         .get("data")
-         .schema()
-         .patch("entities.test", {
-            fields: {
-               content: {
-                  type: "text"
-               }
+      expect(mm.version()).toBe(CURRENT_VERSION);
+      expect(mm.built()).toBe(true);
+      expect(mm.configs().auth.enabled).toBe(true);
+      expect(mm.configs().data.entities.users).toBeDefined();
+   });
+
+   test("partial config given, but db version exists", async () => {
+      const c = getDummyConnection();
+      const mm = new ModuleManager(c.dummyConnection);
+      await mm.build();
+      const json = mm.configs();
+
+      const c2 = getDummyConnection();
+      const db = c2.dummyConnection.kysely;
+      await migrateSchema(CURRENT_VERSION, { db });
+      const payload = {
+         ...json,
+         auth: {
+            ...json.auth,
+            enabled: true,
+            basepath: "/api/auth2"
+         }
+      };
+      await db
+         .updateTable(TABLE_NAME)
+         .set({
+            json: JSON.stringify(payload),
+            version: CURRENT_VERSION
+         })
+         .execute();
+
+      const mm2 = new ModuleManager(c2.dummyConnection, {
+         initial: {
+            auth: {
+               basepath: "/shouldnt/take/this"
             }
-         });
-      await mm.build();
-
-      expect(mm.configs().data.entities?.users?.fields?.email.type).toBe("text");
-
-      expect(
-         mm.get("data").schema().patch("desc", "entities.users.config.sort_dir")
-      ).rejects.toThrow();
-      await mm.build();*!/
-      expect(mm.configs().data.entities?.users?.fields?.email.type).toBe("text");
-      console.log("here", mm.configs());
-      await mm
-         .get("data")
-         .schema()
-         .patch("entities.users", { config: { sort_dir: "desc" } });
-      await mm.build();
-      expect(mm.toJSON());
-
-      //console.log(_jsonp(mm.toJSON().data));
-      /!*expect(mm.configs().data.entities!.test!.fields!.content.type).toBe("text");
-      expect(mm.configs().data.entities!.users!.config!.sort_dir).toBe("desc");*!/
-   });*/
-
-   /*test("accessing modules", async () => {
-      const { dummyConnection } = getDummyConnection();
-
-      const mm = new ModuleManager(dummyConnection);
-
-      //mm.get("auth").mutate().set({});
-   });*/
+         }
+      });
+      await mm2.build();
+      expect(mm2.configs().auth.basepath).toBe("/api/auth2");
+   });
 });
