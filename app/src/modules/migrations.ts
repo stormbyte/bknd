@@ -72,6 +72,13 @@ export const migrations: Migration[] = [
          };
       }
    }
+   /*{
+      version: 8,
+      up: async (config, { db }) => {
+         await db.deleteFrom(TABLE_NAME).where("type", "=", "diff").execute();
+         return config;
+      }
+   }*/
 ];
 
 export const CURRENT_VERSION = migrations[migrations.length - 1]?.version ?? 0;

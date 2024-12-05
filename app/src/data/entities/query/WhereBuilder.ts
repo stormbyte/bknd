@@ -15,7 +15,6 @@ import type {
    SelectQueryBuilder,
    UpdateQueryBuilder
 } from "kysely";
-import type { RepositoryQB } from "./Repository";
 
 type Builder = ExpressionBuilder<any, any>;
 type Wrapper = ExpressionWrapper<any, any, any>;

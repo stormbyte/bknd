@@ -1,7 +1,7 @@
-import { Diff } from "@sinclair/typebox/value";
 import { Guard } from "auth";
 import { BkndError, DebugLogger, Exception, isDebug } from "core";
 import { EventManager } from "core/events";
+import { clone, diff } from "core/object/diff";
 import {
    Default,
    type Static,
@@ -18,7 +18,6 @@ import {
    datetime,
    entity,
    enumm,
-   json,
    jsonSchema,
    number
 } from "data";
@@ -87,9 +86,10 @@ const configJsonSchema = Type.Union([
    getDefaultSchema(),
    Type.Array(
       Type.Object({
-         type: StringEnum(["insert", "update", "delete"]),
-         value: Type.Any(),
-         path: Type.Optional(Type.String())
+         t: StringEnum(["a", "r", "e"]),
+         p: Type.Array(Type.Union([Type.String(), Type.Number()])),
+         o: Type.Optional(Type.Any()),
+         n: Type.Optional(Type.Any())
       })
    )
 ]);
@@ -105,6 +105,8 @@ type T_INTERNAL_EM = {
    __bknd: ConfigTable2;
 };
 
+// @todo: cleanup old diffs on upgrade
+// @todo: cleanup multiple backups on upgrade
 export class ModuleManager {
    private modules: Modules;
    // internal em for __bknd config table
@@ -251,26 +253,31 @@ export class ModuleManager {
             // @todo: mark all others as "backup"
             this.logger.log("version conflict, storing new version", state.version, version);
             await this.mutator().insertOne({
-               version,
+               version: state.version,
                type: "backup",
+               json: configs
+            });
+            await this.mutator().insertOne({
+               version: version,
+               type: "config",
                json: configs
             });
          } else {
             this.logger.log("version matches");
 
             // clean configs because of Diff() function
-            const diff = Diff(state.json, JSON.parse(JSON.stringify(configs)));
-            this.logger.log("checking diff", diff);
+            const diffs = diff(state.json, clone(configs));
+            this.logger.log("checking diff", diffs);
 
             if (diff.length > 0) {
                // store diff
                await this.mutator().insertOne({
                   version,
                   type: "diff",
-                  json: diff
+                  json: clone(diffs)
                });
+
                // store new version
-               // @todo: maybe by id?
                await this.mutator().updateWhere(
                   {
                      version,

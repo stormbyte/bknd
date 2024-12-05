@@ -250,4 +250,6 @@ describe("ModuleManager", async () => {
       await mm2.build();
       expect(mm2.configs().auth.basepath).toBe("/api/auth2");
    });
+
+   // @todo: add tests for migrations (check "backup" and new version)
 });
