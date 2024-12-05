@@ -2,7 +2,7 @@ import { Diff } from "@sinclair/typebox/value";
 import { Guard } from "auth";
 import { BkndError, DebugLogger, Exception, isDebug } from "core";
 import { EventManager } from "core/events";
-import { Default, type Static, objectEach, transformObject } from "core/utils";
+import { Default, type Static, StringEnum, Type, objectEach, transformObject } from "core/utils";
 import {
    type Connection,
    EntityManager,
@@ -11,8 +11,10 @@ import {
    entity,
    enumm,
    json,
+   jsonSchema,
    number
 } from "data";
+import { TransformPersistFailedException } from "data/errors";
 import { Hono } from "hono";
 import { type Kysely, sql } from "kysely";
 import { mergeWith } from "lodash-es";
@@ -73,10 +75,20 @@ type ConfigTable<Json = ModuleConfigs> = {
    updated_at?: Date;
 };
 
+const configJsonSchema = Type.Union([
+   getDefaultSchema(),
+   Type.Array(
+      Type.Object({
+         type: StringEnum(["insert", "update", "delete"]),
+         value: Type.Any(),
+         path: Type.Optional(Type.String())
+      })
+   )
+]);
 const __bknd = entity(TABLE_NAME, {
    version: number().required(),
    type: enumm({ enum: ["config", "diff", "backup"] }).required(),
-   json: json().required(),
+   json: jsonSchema({ schema: configJsonSchema }).required(),
    created_at: datetime(),
    updated_at: datetime()
 });
@@ -223,10 +235,9 @@ export class ModuleManager {
       const configs = this.configs();
       const version = this.version();
 
-      const json = JSON.stringify(configs) as any;
-
       try {
          const state = await this.fetch();
+         this.logger.log("fetched version", state.version);
 
          if (state.version !== version) {
             // @todo: mark all others as "backup"
@@ -234,12 +245,13 @@ export class ModuleManager {
             await this.mutator().insertOne({
                version,
                type: "backup",
-               json
+               json: configs
             });
          } else {
             this.logger.log("version matches");
 
-            const diff = Diff(state.json, JSON.parse(json));
+            // clean configs because of Diff() function
+            const diff = Diff(state.json, JSON.parse(JSON.stringify(configs)));
             this.logger.log("checking diff", diff);
 
             if (diff.length > 0) {
@@ -247,14 +259,14 @@ export class ModuleManager {
                await this.mutator().insertOne({
                   version,
                   type: "diff",
-                  json: JSON.stringify(diff) as any
+                  json: diff
                });
                // store new version
                // @todo: maybe by id?
                await this.mutator().updateWhere(
                   {
                      version,
-                     json,
+                     json: configs,
                      updated_at: new Date()
                   },
                   {
@@ -268,14 +280,18 @@ export class ModuleManager {
          }
       } catch (e) {
          if (e instanceof BkndError) {
+            this.logger.log("no config, just save fresh");
             // no config, just save
             await this.mutator().insertOne({
                type: "config",
                version,
-               json,
+               json: configs,
                created_at: new Date(),
                updated_at: new Date()
             });
+         } else if (e instanceof TransformPersistFailedException) {
+            console.error("Cannot save invalid config");
+            throw e;
          } else {
             console.error("Aborting");
             throw e;
