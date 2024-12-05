@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { mark, stripMark } from "../src/core/utils";
 import { ModuleManager } from "../src/modules/ModuleManager";
-import { CURRENT_VERSION, TABLE_NAME, migrateSchema } from "../src/modules/migrations";
+import { CURRENT_VERSION, TABLE_NAME } from "../src/modules/migrations";
 import { getDummyConnection } from "./helper";
 
 describe("ModuleManager", async () => {
@@ -34,13 +34,13 @@ describe("ModuleManager", async () => {
 
       const c2 = getDummyConnection();
       const db = c2.dummyConnection.kysely;
-      await migrateSchema(CURRENT_VERSION, { db });
+      const mm2 = new ModuleManager(c2.dummyConnection, { initial: { version, ...json } });
+      await mm2.syncConfigTable();
       await db
          .updateTable(TABLE_NAME)
          .set({ json: JSON.stringify(json), version: CURRENT_VERSION })
          .execute();
 
-      const mm2 = new ModuleManager(c2.dummyConnection, { initial: { version, ...json } });
       await mm2.build();
 
       expect(json).toEqual(mm2.configs());
@@ -52,21 +52,19 @@ describe("ModuleManager", async () => {
       await mm.build();
       const version = mm.version();
       const json = mm.configs();
-      //const { version, ...json } = mm.toJSON() as any;
 
       const c2 = getDummyConnection();
       const db = c2.dummyConnection.kysely;
-      console.log("here2");
-      await migrateSchema(CURRENT_VERSION, { db });
-      await db
-         .updateTable(TABLE_NAME)
-         .set({ json: JSON.stringify(json), version: CURRENT_VERSION - 1 })
-         .execute();
-
       const mm2 = new ModuleManager(c2.dummyConnection, {
          initial: { version: version - 1, ...json }
       });
-      console.log("here3");
+      await mm2.syncConfigTable();
+
+      await db
+         .insertInto(TABLE_NAME)
+         .values({ json: JSON.stringify(json), type: "config", version: CURRENT_VERSION - 1 })
+         .execute();
+
       await mm2.build();
    });
 
@@ -80,15 +78,15 @@ describe("ModuleManager", async () => {
 
       const c2 = getDummyConnection();
       const db = c2.dummyConnection.kysely;
-      await migrateSchema(CURRENT_VERSION, { db });
-      await db
-         .updateTable(TABLE_NAME)
-         .set({ json: JSON.stringify(json), version: CURRENT_VERSION })
-         .execute();
 
       const mm2 = new ModuleManager(c2.dummyConnection, {
          initial: { version: version - 1, ...json }
       });
+      await mm2.syncConfigTable();
+      await db
+         .insertInto(TABLE_NAME)
+         .values({ type: "config", json: JSON.stringify(json), version: CURRENT_VERSION })
+         .execute();
 
       expect(mm2.build()).rejects.toThrow(/version.*do not match/);
    });
@@ -102,7 +100,9 @@ describe("ModuleManager", async () => {
 
       const c2 = getDummyConnection();
       const db = c2.dummyConnection.kysely;
-      await migrateSchema(CURRENT_VERSION, { db });
+
+      const mm2 = new ModuleManager(c2.dummyConnection);
+      await mm2.syncConfigTable();
 
       const config = {
          ...json,
@@ -112,12 +112,11 @@ describe("ModuleManager", async () => {
          }
       };
       await db
-         .updateTable(TABLE_NAME)
-         .set({ json: JSON.stringify(config), version: CURRENT_VERSION })
+         .insertInto(TABLE_NAME)
+         .values({ type: "config", json: JSON.stringify(config), version: CURRENT_VERSION })
          .execute();
 
       // run without config given
-      const mm2 = new ModuleManager(c2.dummyConnection);
       await mm2.build();
 
       expect(mm2.configs().data.basepath).toBe("/api/data2");
@@ -175,7 +174,15 @@ describe("ModuleManager", async () => {
 
       const c2 = getDummyConnection();
       const db = c2.dummyConnection.kysely;
-      await migrateSchema(CURRENT_VERSION, { db });
+
+      const mm2 = new ModuleManager(c2.dummyConnection, {
+         initial: {
+            auth: {
+               basepath: "/shouldnt/take/this"
+            }
+         }
+      });
+      await mm2.syncConfigTable();
       const payload = {
          ...json,
          auth: {
@@ -185,20 +192,13 @@ describe("ModuleManager", async () => {
          }
       };
       await db
-         .updateTable(TABLE_NAME)
-         .set({
+         .insertInto(TABLE_NAME)
+         .values({
+            type: "config",
             json: JSON.stringify(payload),
             version: CURRENT_VERSION
          })
          .execute();
-
-      const mm2 = new ModuleManager(c2.dummyConnection, {
-         initial: {
-            auth: {
-               basepath: "/shouldnt/take/this"
-            }
-         }
-      });
       await mm2.build();
       expect(mm2.configs().auth.basepath).toBe("/api/auth2");
    });

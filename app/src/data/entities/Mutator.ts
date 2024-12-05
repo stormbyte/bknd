@@ -250,7 +250,7 @@ export class Mutator<DB> implements EmitsEvents {
    }
 
    // @todo: decide whether entries should be deleted all at once or one by one (for events)
-   async deleteMany(where?: RepoQuery["where"]): Promise<MutatorResponse<EntityData>> {
+   async deleteWhere(where?: RepoQuery["where"]): Promise<MutatorResponse<EntityData>> {
       const entity = this.entity;
 
       const qb = this.appendWhere(this.conn.deleteFrom(entity.name), where).returning(
@@ -263,6 +263,32 @@ export class Mutator<DB> implements EmitsEvents {
 
       /*await this.emgr.emit(
          new Mutator.Events.MutatorDeleteAfter({ entity, entityId: id, data: res.data })
+      );*/
+
+      return res;
+   }
+
+   async updateWhere(
+      data: EntityData,
+      where?: RepoQuery["where"]
+   ): Promise<MutatorResponse<EntityData>> {
+      const entity = this.entity;
+
+      const validatedData = await this.getValidatedData(data, "update");
+
+      /*await this.emgr.emit(
+         new Mutator.Events.MutatorUpdateBefore({ entity, entityId: id, data: validatedData })
+      );*/
+
+      const query = this.appendWhere(this.conn.updateTable(entity.name), where)
+         .set(validatedData)
+         //.where(entity.id().name, "=", id)
+         .returning(entity.getSelect());
+
+      const res = await this.many(query);
+
+      /*await this.emgr.emit(
+         new Mutator.Events.MutatorUpdateAfter({ entity, entityId: id, data: res.data })
       );*/
 
       return res;
