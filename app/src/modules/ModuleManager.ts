@@ -56,12 +56,13 @@ export type ModuleSchemas = {
 export type ModuleConfigs = {
    [K in keyof ModuleSchemas]: Static<ModuleSchemas[K]>;
 };
+type PartialRec<T> = { [P in keyof T]?: PartialRec<T[P]> };
 
 export type InitialModuleConfigs =
    | ({
         version: number;
      } & ModuleConfigs)
-   | Partial<ModuleConfigs>;
+   | PartialRec<ModuleConfigs>;
 
 export type ModuleManagerOptions = {
    initial?: InitialModuleConfigs;
