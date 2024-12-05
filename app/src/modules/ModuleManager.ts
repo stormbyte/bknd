@@ -2,7 +2,15 @@ import { Diff } from "@sinclair/typebox/value";
 import { Guard } from "auth";
 import { BkndError, DebugLogger, Exception, isDebug } from "core";
 import { EventManager } from "core/events";
-import { Default, type Static, StringEnum, Type, objectEach, transformObject } from "core/utils";
+import {
+   Default,
+   type Static,
+   StringEnum,
+   Type,
+   objectEach,
+   stripMark,
+   transformObject
+} from "core/utils";
 import {
    type Connection,
    EntityManager,
@@ -130,7 +138,7 @@ export class ModuleManager {
          if ("version" in options.initial) {
             const { version, ...initialConfig } = options.initial;
             this._version = version;
-            initial = initialConfig;
+            initial = stripMark(initialConfig);
 
             this._booted_with = "provided";
          } else {
@@ -393,6 +401,7 @@ export class ModuleManager {
       this.logger.context("build").log("version", this.version());
       this.logger.log("booted with", this._booted_with);
 
+      // @todo: check this, because you could start without an initial config
       if (this.version() !== CURRENT_VERSION) {
          await this.syncConfigTable();
       }
