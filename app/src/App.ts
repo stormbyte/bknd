@@ -21,7 +21,7 @@ export class AppBuiltEvent extends Event<{ app: App }> {
 export const AppEvents = { AppConfigUpdatedEvent, AppBuiltEvent } as const;
 
 export type CreateAppConfig = {
-   connection:
+   connection?:
       | Connection
       | {
            type: "libsql";
@@ -59,17 +59,19 @@ export class App<DB = any> {
    static create(config: CreateAppConfig) {
       let connection: Connection | undefined = undefined;
 
-      if (Connection.isConnection(config.connection)) {
-         connection = config.connection;
-      } else if (typeof config.connection === "object") {
-         switch (config.connection.type) {
-            case "libsql":
-               connection = new LibsqlConnection(config.connection.config);
-               break;
+      try {
+         if (Connection.isConnection(config.connection)) {
+            connection = config.connection;
+         } else if (typeof config.connection === "object") {
+            connection = new LibsqlConnection(config.connection.config);
+         } else {
+            connection = new LibsqlConnection({ url: ":memory:" });
+            console.warn("[!] No connection provided, using in-memory database");
          }
-      } else {
-         throw new Error(`Unknown connection of type ${typeof config.connection} given.`);
+      } catch (e) {
+         console.error("Could not create connection", e);
       }
+
       if (!connection) {
          throw new Error("Invalid connection");
       }

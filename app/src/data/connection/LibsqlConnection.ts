@@ -1,4 +1,4 @@
-import { type Client, type Config, type InStatement, createClient } from "@libsql/client/web";
+import { type Client, type Config, type InStatement, createClient } from "@libsql/client";
 import { LibsqlDialect } from "@libsql/kysely-libsql";
 import { type DatabaseIntrospector, Kysely, ParseJSONResultsPlugin, sql } from "kysely";
 import { FilterNumericKeysPlugin } from "../plugins/FilterNumericKeysPlugin";
