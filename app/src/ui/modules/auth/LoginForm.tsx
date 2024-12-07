@@ -3,7 +3,7 @@ import { Type } from "core/utils";
 import type { ComponentPropsWithoutRef } from "react";
 import { useForm } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
-import { Button } from "ui";
+import { Button } from "ui/components/buttons/Button";
 import * as Formy from "ui/components/form/Formy";
 
 export type LoginFormProps = Omit<ComponentPropsWithoutRef<"form">, "onSubmit"> & {

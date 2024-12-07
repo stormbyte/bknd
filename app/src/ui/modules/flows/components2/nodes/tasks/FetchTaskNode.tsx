@@ -8,7 +8,7 @@ import { Type } from "core/utils";
 import { FetchTask } from "flows";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Button } from "ui";
+import { Button } from "ui/components/buttons/Button";
 import { JsonViewer } from "ui/components/code/JsonViewer";
 import { SegmentedControl } from "ui/components/form/SegmentedControl";
 import { MantineSelect } from "ui/components/form/hook-form-mantine/MantineSelect";

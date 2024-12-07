@@ -1,6 +1,6 @@
 import { IconFingerprint } from "@tabler/icons-react";
 import { TbSettings } from "react-icons/tb";
-import { useBknd } from "ui/client";
+import { useBknd } from "ui/client/bknd";
 import { IconButton } from "ui/components/buttons/IconButton";
 import { Empty } from "ui/components/display/Empty";
 import { Link } from "ui/components/wouter/Link";

@@ -1,21 +1,19 @@
-import { Menu, Popover, SegmentedControl, Tooltip } from "@mantine/core";
+import { SegmentedControl, Tooltip } from "@mantine/core";
 import { IconKeyOff, IconSettings, IconUser } from "@tabler/icons-react";
 import {
    TbDatabase,
    TbFingerprint,
    TbHierarchy2,
    TbMenu2,
-   TbMoon,
    TbPhoto,
    TbSelector,
-   TbSun,
    TbUser,
    TbX
 } from "react-icons/tb";
-import { Button } from "ui";
-import { useAuth, useBknd } from "ui/client";
-import { useBkndWindowContext } from "ui/client/BkndProvider";
+import { useAuth, useBkndWindowContext } from "ui/client";
+import { useBknd } from "ui/client/bknd";
 import { useBkndSystemTheme } from "ui/client/schema/system/use-bknd-system";
+import { Button } from "ui/components/buttons/Button";
 import { IconButton } from "ui/components/buttons/IconButton";
 import { Logo } from "ui/components/display/Logo";
 import { Dropdown, type DropdownItem } from "ui/components/overlay/Dropdown";

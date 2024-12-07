@@ -2,12 +2,12 @@ import { SegmentedControl } from "@mantine/core";
 import { IconDatabase } from "@tabler/icons-react";
 import type { Entity, TEntityType } from "data";
 import { twMerge } from "tailwind-merge";
-import { useBknd } from "../../client";
-import { Empty } from "../../components/display/Empty";
-import { Link } from "../../components/wouter/Link";
-import { useBrowserTitle } from "../../hooks/use-browser-title";
-import * as AppShell from "../../layouts/AppShell/AppShell";
-import { routes, useNavigate } from "../../lib/routes";
+import { useBknd } from "ui/client/bknd";
+import { Empty } from "ui/components/display/Empty";
+import { Link } from "ui/components/wouter/Link";
+import { useBrowserTitle } from "ui/hooks/use-browser-title";
+import * as AppShell from "ui/layouts/AppShell/AppShell";
+import { routes, useNavigate } from "ui/lib/routes";
 
 export function DataRoot({ children }) {
    // @todo: settings routes should be centralized

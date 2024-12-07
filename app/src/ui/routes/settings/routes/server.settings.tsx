@@ -1,5 +1,5 @@
 import { cloneDeep } from "lodash-es";
-import { useBknd } from "ui";
+import { useBknd } from "ui/client/bknd";
 import { Setting } from "ui/routes/settings/components/Setting";
 import { Route } from "wouter";
 

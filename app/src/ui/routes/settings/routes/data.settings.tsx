@@ -1,8 +1,8 @@
 import { cloneDeep, transform } from "lodash-es";
+import type { ModuleConfigs, ModuleSchemas } from "modules";
+import { useBknd } from "ui/client/bknd";
 import { fieldSpecs } from "ui/modules/data/components/fields-specs";
 import { Route, Switch } from "wouter";
-import type { ModuleConfigs, ModuleSchemas } from "../../../../modules";
-import { useBknd } from "../../../client";
 import { Setting } from "../components/Setting";
 
 export const dataFieldsUiSchema = {

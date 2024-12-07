@@ -3,23 +3,21 @@ import { type TObject, ucFirst } from "core/utils";
 import { omit } from "lodash-es";
 import { type ReactNode, useMemo, useRef, useState } from "react";
 import { TbSettings } from "react-icons/tb";
-import { useAuth } from "ui";
+import { useBknd } from "ui/client/bknd";
+import { Button } from "ui/components/buttons/Button";
+import { IconButton } from "ui/components/buttons/IconButton";
 import { Alert } from "ui/components/display/Alert";
-import { Link, Route, useLocation } from "wouter";
-import { useBknd } from "../../../client/BkndProvider";
-import { Button } from "../../../components/buttons/Button";
-import { IconButton } from "../../../components/buttons/IconButton";
-import { Empty } from "../../../components/display/Empty";
+import { Empty } from "ui/components/display/Empty";
 import {
    JsonSchemaForm,
    type JsonSchemaFormRef
-} from "../../../components/form/json-schema/JsonSchemaForm";
-import { Dropdown } from "../../../components/overlay/Dropdown";
-import { DataTable } from "../../../components/table/DataTable";
-import { useEvent } from "../../../hooks/use-event";
-import * as AppShell from "../../../layouts/AppShell/AppShell";
-import { SectionHeaderTabs } from "../../../layouts/AppShell/AppShell";
-import { Breadcrumbs } from "../../../layouts/AppShell/Breadcrumbs";
+} from "ui/components/form/json-schema/JsonSchemaForm";
+import { Dropdown } from "ui/components/overlay/Dropdown";
+import { DataTable } from "ui/components/table/DataTable";
+import { useEvent } from "ui/hooks/use-event";
+import * as AppShell from "ui/layouts/AppShell/AppShell";
+import { Breadcrumbs } from "ui/layouts/AppShell/Breadcrumbs";
+import { Link, Route, useLocation } from "wouter";
 import { extractSchema } from "../utils/schema";
 import { SettingNewModal, type SettingsNewModalProps } from "./SettingNewModal";
 import { SettingSchemaModal, type SettingsSchemaModalRef } from "./SettingSchemaModal";

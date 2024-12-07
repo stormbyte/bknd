@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { TApiUser } from "Api";
 import { createContext, useContext, useEffect, useState } from "react";
-import { useBkndWindowContext } from "ui/client/BkndProvider";
+//import { useBkndWindowContext } from "ui/client/BkndProvider";
 import { AppQueryClient } from "./utils/AppQueryClient";
 
 const ClientContext = createContext<{ baseUrl: string; client: AppQueryClient }>({
@@ -89,3 +89,17 @@ export const useBaseUrl = () => {
    const context = useContext(ClientContext);
    return context.baseUrl;
 };
+
+type BkndWindowContext = {
+   user?: object;
+   logout_route: string;
+};
+export function useBkndWindowContext(): BkndWindowContext {
+   if (typeof window !== "undefined" && window.__BKND__) {
+      return window.__BKND__ as any;
+   } else {
+      return {
+         logout_route: "/api/auth/logout"
+      };
+   }
+}

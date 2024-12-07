@@ -1,4 +1,5 @@
-import { useBknd, useClient } from "ui/client";
+import { useClient } from "ui/client";
+import { useBknd } from "ui/client/bknd";
 import { useBkndAuth } from "ui/client/schema/auth/use-bknd-auth";
 import { Alert } from "ui/components/display/Alert";
 import { routes } from "ui/lib/routes";

@@ -5,7 +5,7 @@ import { selectAtom } from "jotai/utils";
 import { isEqual } from "lodash-es";
 import type { ModuleSchemas } from "modules/ModuleManager";
 import { createContext, useCallback, useContext, useEffect } from "react";
-import { useBknd } from "ui/client";
+import { useBknd } from "ui/client/bknd";
 
 export type TFlowNodeData = {
    label: string;

@@ -2,10 +2,10 @@ import { typeboxResolver } from "@hookform/resolvers/typebox";
 import { Input, Switch, Tooltip } from "@mantine/core";
 import { guardRoleSchema } from "auth/auth-schema";
 import { type Static, ucFirst } from "core/utils";
-import type { TAppDataEntityFields } from "data/data-schema";
 import { forwardRef, useImperativeHandle } from "react";
 import { type UseControllerProps, useController, useForm } from "react-hook-form";
-import { Button, useBknd } from "ui";
+import { useBknd } from "ui/client/bknd";
+import { Button } from "ui/components/buttons/Button";
 import { MantineSwitch } from "ui/components/form/hook-form-mantine/MantineSwitch";
 
 const schema = guardRoleSchema;

@@ -1,24 +1,21 @@
-import { encodeSearch, ucFirst } from "core/utils";
-import type { Entity, EntityData } from "data";
-import type { EntityRelation } from "data";
-import { Fragment, memo, useState } from "react";
-import { TbArrowLeft, TbDots } from "react-icons/tb";
+import { ucFirst } from "core/utils";
+import type { Entity, EntityData, EntityRelation } from "data";
+import { Fragment, useState } from "react";
+import { TbDots } from "react-icons/tb";
+import { useClient } from "ui/client";
 import { useBkndData } from "ui/client/schema/data/use-bknd-data";
+import { Button } from "ui/components/buttons/Button";
+import { IconButton } from "ui/components/buttons/IconButton";
+import { Dropdown } from "ui/components/overlay/Dropdown";
+import { useEntity } from "ui/container";
+import { useBrowserTitle } from "ui/hooks/use-browser-title";
+import * as AppShell from "ui/layouts/AppShell/AppShell";
+import { Breadcrumbs2 } from "ui/layouts/AppShell/Breadcrumbs2";
+import { routes, useNavigate } from "ui/lib/routes";
+import { bkndModals } from "ui/modals";
 import { EntityForm } from "ui/modules/data/components/EntityForm";
 import { EntityTable2 } from "ui/modules/data/components/EntityTable2";
 import { useEntityForm } from "ui/modules/data/hooks/useEntityForm";
-import { useClient } from "../../client";
-import { useBknd } from "../../client";
-import { Button } from "../../components/buttons/Button";
-import { IconButton } from "../../components/buttons/IconButton";
-import { Dropdown } from "../../components/overlay/Dropdown";
-import { useEntity } from "../../container";
-import { useBrowserTitle } from "../../hooks/use-browser-title";
-import * as AppShell from "../../layouts/AppShell/AppShell";
-import { SectionHeaderLink } from "../../layouts/AppShell/AppShell";
-import { Breadcrumbs2 } from "../../layouts/AppShell/Breadcrumbs2";
-import { routes, useNavigate } from "../../lib/routes";
-import { bkndModals } from "../../modals";
 
 export function DataEntityUpdate({ params }) {
    const { $data, relations } = useBkndData();

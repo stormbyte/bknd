@@ -1,7 +1,6 @@
-import { IconFingerprint, IconHome } from "@tabler/icons-react";
-import { isDebug } from "core";
-import { Suspense, lazy, useEffect } from "react";
-import { useAuth } from "ui";
+import { IconHome } from "@tabler/icons-react";
+import { Suspense, useEffect } from "react";
+import { useAuth } from "ui/client";
 import { Empty } from "../components/display/Empty";
 import { useBrowserTitle } from "../hooks/use-browser-title";
 import * as AppShell from "../layouts/AppShell/AppShell";

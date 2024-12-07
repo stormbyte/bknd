@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Button } from "ui";
+import { Button } from "ui/components/buttons/Button";
 import {
    JsonSchemaForm,
    type JsonSchemaFormProps,

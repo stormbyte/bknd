@@ -1,6 +1,6 @@
 import { cloneDeep, omit } from "lodash-es";
 import { useEffect, useRef } from "react";
-import { useBknd } from "ui/client";
+import { useBknd } from "ui/client/bknd";
 import { useBkndAuth } from "ui/client/schema/auth/use-bknd-auth";
 import { useBkndData } from "ui/client/schema/data/use-bknd-data";
 import { Button } from "ui/components/buttons/Button";

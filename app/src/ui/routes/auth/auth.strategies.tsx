@@ -1,5 +1,5 @@
 import { cloneDeep, omit } from "lodash-es";
-import { useBknd } from "ui/client";
+import { useBknd } from "ui/client/bknd";
 import { Button } from "ui/components/buttons/Button";
 import { JsonSchemaForm } from "ui/components/form/json-schema/JsonSchemaForm";
 import * as AppShell from "../../layouts/AppShell/AppShell";

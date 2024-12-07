@@ -11,7 +11,7 @@ import {
    fieldsSchema,
    relationsSchema
 } from "data/data-schema";
-import { useBknd } from "ui/client";
+import { useBknd } from "ui/client/bknd";
 import type { TSchemaActions } from "ui/client/schema/actions";
 
 export function useBkndData() {
