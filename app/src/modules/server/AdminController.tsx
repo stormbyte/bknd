@@ -10,7 +10,9 @@ import * as SystemPermissions from "modules/permissions";
 
 const htmlBkndContextReplace = "<!-- BKND_CONTEXT -->";
 
+// @todo: add migration to remove admin path from config
 export type AdminControllerOptions = {
+   basepath?: string;
    html?: string;
    forceDev?: boolean;
 };
@@ -25,8 +27,12 @@ export class AdminController implements ClassController {
       return this.app.modules.ctx();
    }
 
+   get basepath() {
+      return this.options.basepath ?? "/";
+   }
+
    private withBasePath(route: string = "") {
-      return (this.app.modules.configs().server.admin.basepath + route).replace(/\/+$/, "/");
+      return (this.basepath + route).replace(/\/+$/, "/");
    }
 
    getController(): Hono<any> {
