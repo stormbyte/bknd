@@ -189,7 +189,11 @@ export class DurableBkndApp extends DurableObject {
          const config = options.config;
 
          // change protocol to websocket if libsql
-         if ("type" in config.connection && config.connection.type === "libsql") {
+         if (
+            config?.connection &&
+            "type" in config.connection &&
+            config.connection.type === "libsql"
+         ) {
             config.connection.config.protocol = "wss";
          }
 

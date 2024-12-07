@@ -1,25 +1,11 @@
 import { describe, expect, test } from "bun:test";
 import { type ObjectQuery, convert, validate } from "../../../src/core/object/query/object-query";
-import { deprecated__whereRepoSchema } from "../../../src/data";
 
 describe("object-query", () => {
    const q: ObjectQuery = { name: "Michael" };
    const q2: ObjectQuery = { name: { $isnull: 1 } };
    const q3: ObjectQuery = { name: "Michael", age: { $gt: 18 } };
    const bag = { q, q2, q3 };
-
-   test("translates into legacy", async () => {
-      for (const [key, value] of Object.entries(bag)) {
-         const obj = convert(value);
-         try {
-            const parsed = deprecated__whereRepoSchema.parse(obj);
-            expect(parsed).toBeDefined();
-         } catch (e) {
-            console.log("errored", { obj, value });
-            console.error(key, e);
-         }
-      }
-   });
 
    test("validates", async () => {
       const converted = convert({

@@ -1,5 +1,5 @@
-export { Endpoint, type RequestResponse, type Middleware } from "./server/Endpoint";
-export { zValidator } from "./server/lib/zValidator";
+import type { Hono, MiddlewareHandler } from "hono";
+
 export { tbValidator } from "./server/lib/tbValidator";
 export { Exception, BkndError } from "./errors";
 export { isDebug } from "./env";
@@ -11,7 +11,6 @@ export {
    type TemplateTypes,
    type SimpleRendererOptions
 } from "./template/SimpleRenderer";
-export { Controller, type ClassController } from "./server/Controller";
 export { SchemaObject } from "./object/SchemaObject";
 export { DebugLogger } from "./utils/DebugLogger";
 export { Permission } from "./security/Permission";
@@ -26,3 +25,10 @@ export {
    isBooleanLike
 } from "./object/query/query";
 export { Registry, type Constructor } from "./registry/Registry";
+
+// compatibility
+export type Middleware = MiddlewareHandler<any, any, any>;
+export interface ClassController {
+   getController: () => Hono<any, any, any>;
+   getMiddleware?: MiddlewareHandler<any, any, any>;
+}
