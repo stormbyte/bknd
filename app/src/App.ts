@@ -29,7 +29,7 @@ export type CreateAppConfig = {
         };
    initialConfig?: InitialModuleConfigs;
    plugins?: AppPlugin<any>[];
-   options?: ModuleManagerOptions;
+   options?: Omit<ModuleManagerOptions, "initial" | "onUpdated">;
 };
 
 export type AppConfig = InitialModuleConfigs;
