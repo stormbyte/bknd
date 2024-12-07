@@ -93,6 +93,7 @@ await tsup.build({
    platform: "browser",
    format: ["esm", "cjs"],
    splitting: false,
+   treeshake: true,
    loader: {
       ".svg": "dataurl"
    }
@@ -112,6 +113,7 @@ await tsup.build({
    platform: "browser",
    format: ["esm", "cjs"],
    splitting: true,
+   treeshake: true,
    loader: {
       ".svg": "dataurl"
    },
