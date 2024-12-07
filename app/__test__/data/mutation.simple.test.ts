@@ -132,14 +132,47 @@ describe("Mutator simple", async () => {
       const data = (await em.repository(items).findMany()).data;
       //console.log(data);
 
-      await em.mutator(items).deleteMany({ label: "delete" });
+      await em.mutator(items).deleteWhere({ label: "delete" });
 
       expect((await em.repository(items).findMany()).data.length).toBe(data.length - 2);
       //console.log((await em.repository(items).findMany()).data);
 
-      await em.mutator(items).deleteMany();
+      await em.mutator(items).deleteWhere();
       expect((await em.repository(items).findMany()).data.length).toBe(0);
 
       //expect(res.data.count).toBe(0);
+   });
+
+   test("updateMany", async () => {
+      await em.mutator(items).insertOne({ label: "update", count: 1 });
+      await em.mutator(items).insertOne({ label: "update too", count: 1 });
+      await em.mutator(items).insertOne({ label: "keep" });
+
+      // expect no update
+      await em.mutator(items).updateWhere(
+         { count: 2 },
+         {
+            count: 10
+         }
+      );
+      expect((await em.repository(items).findMany()).data).toEqual([
+         { id: 6, label: "update", count: 1 },
+         { id: 7, label: "update too", count: 1 },
+         { id: 8, label: "keep", count: 0 }
+      ]);
+
+      // expect 2 to be updated
+      await em.mutator(items).updateWhere(
+         { count: 2 },
+         {
+            count: 1
+         }
+      );
+
+      expect((await em.repository(items).findMany()).data).toEqual([
+         { id: 6, label: "update", count: 2 },
+         { id: 7, label: "update too", count: 2 },
+         { id: 8, label: "keep", count: 0 }
+      ]);
    });
 });

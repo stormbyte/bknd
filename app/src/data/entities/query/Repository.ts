@@ -162,8 +162,7 @@ export class Repository<DB = any, TB extends keyof DB = any> implements EmitsEve
    protected async performQuery(qb: RepositoryQB): Promise<RepositoryResponse> {
       const entity = this.entity;
       const compiled = qb.compile();
-      /*const { sql, parameters } = qb.compile();
-      console.log("many", sql, parameters);*/
+      //console.log("performQuery", compiled.sql, compiled.parameters);
 
       const start = performance.now();
       const selector = (as = "count") => this.conn.fn.countAll<number>().as(as);
@@ -263,6 +262,7 @@ export class Repository<DB = any, TB extends keyof DB = any> implements EmitsEve
          qb = qb.orderBy(aliased(options.sort.by), options.sort.dir);
       }
 
+      //console.log("options", { _options, options, exclude_options });
       return { qb, options };
    }
 
@@ -286,14 +286,11 @@ export class Repository<DB = any, TB extends keyof DB = any> implements EmitsEve
       where: RepoQuery["where"],
       _options?: Partial<Omit<RepoQuery, "where" | "limit" | "offset">>
    ): Promise<RepositoryResponse<DB[TB] | undefined>> {
-      const { qb, options } = this.buildQuery(
-         {
-            ..._options,
-            where,
-            limit: 1
-         },
-         ["offset", "sort"]
-      );
+      const { qb, options } = this.buildQuery({
+         ..._options,
+         where,
+         limit: 1
+      });
 
       return this.single(qb, options) as any;
    }

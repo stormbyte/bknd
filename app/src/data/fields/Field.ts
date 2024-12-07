@@ -236,8 +236,8 @@ export abstract class Field<
 
    toJSON() {
       return {
-         //name: this.name,
-         type: this.type,
+         // @todo: current workaround because of fixed string type
+         type: this.type as any,
          config: this.config
       };
    }

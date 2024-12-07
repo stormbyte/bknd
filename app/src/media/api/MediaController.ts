@@ -181,7 +181,7 @@ export class MediaController implements ClassController {
             if (ids_to_delete.length > 0) {
                await this.media.em
                   .mutator(mediaEntity)
-                  .deleteMany({ [id_field]: { $in: ids_to_delete } });
+                  .deleteWhere({ [id_field]: { $in: ids_to_delete } });
             }
 
             return c.json({ ok: true, result: result.data, ...info });

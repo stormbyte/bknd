@@ -27,6 +27,10 @@ export class BkndError extends Error {
       super(message);
    }
 
+   static with(message: string, details?: Record<string, any>, type?: string) {
+      throw new BkndError(message, details, type);
+   }
+
    toJSON() {
       return {
          type: this.type ?? "unknown",

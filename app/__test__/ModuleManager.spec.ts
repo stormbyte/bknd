@@ -1,7 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { mark, stripMark } from "../src/core/utils";
-import { ModuleManager } from "../src/modules/ModuleManager";
-import { CURRENT_VERSION, TABLE_NAME, migrateSchema } from "../src/modules/migrations";
+import { entity, text } from "../src/data";
+import { ModuleManager, getDefaultConfig } from "../src/modules/ModuleManager";
+import { CURRENT_VERSION, TABLE_NAME } from "../src/modules/migrations";
 import { getDummyConnection } from "./helper";
 
 describe("ModuleManager", async () => {
@@ -29,21 +30,68 @@ describe("ModuleManager", async () => {
       const mm = new ModuleManager(c.dummyConnection);
       await mm.build();
       const version = mm.version();
-      const json = mm.configs();
+      const configs = mm.configs();
+      const json = stripMark({
+         ...configs,
+         data: {
+            ...configs.data,
+            basepath: "/api/data2",
+            entities: {
+               test: entity("test", {
+                  content: text()
+               }).toJSON()
+            }
+         }
+      });
       //const { version, ...json } = mm.toJSON() as any;
 
       const c2 = getDummyConnection();
       const db = c2.dummyConnection.kysely;
-      await migrateSchema(CURRENT_VERSION, { db });
+      const mm2 = new ModuleManager(c2.dummyConnection, { initial: { version, ...json } });
+      await mm2.syncConfigTable();
       await db
-         .updateTable(TABLE_NAME)
-         .set({ json: JSON.stringify(json), version: CURRENT_VERSION })
+         .insertInto(TABLE_NAME)
+         .values({ type: "config", json: JSON.stringify(json), version: CURRENT_VERSION })
          .execute();
 
-      const mm2 = new ModuleManager(c2.dummyConnection, { initial: { version, ...json } });
       await mm2.build();
 
-      expect(json).toEqual(mm2.configs());
+      expect(json).toEqual(stripMark(mm2.configs()));
+   });
+
+   test("s3.1: (fetch) config given, table exists, version matches", async () => {
+      const configs = getDefaultConfig();
+      const json = {
+         ...configs,
+         data: {
+            ...configs.data,
+            basepath: "/api/data2",
+            entities: {
+               test: entity("test", {
+                  content: text()
+               }).toJSON()
+            }
+         }
+      };
+      //const { version, ...json } = mm.toJSON() as any;
+
+      const { dummyConnection } = getDummyConnection();
+      const db = dummyConnection.kysely;
+      const mm2 = new ModuleManager(dummyConnection);
+      await mm2.syncConfigTable();
+      // assume an initial version
+      await db.insertInto(TABLE_NAME).values({ type: "config", json: null, version: 1 }).execute();
+      await db
+         .insertInto(TABLE_NAME)
+         .values({ type: "config", json: JSON.stringify(json), version: CURRENT_VERSION })
+         .execute();
+
+      await mm2.build();
+
+      expect(stripMark(json)).toEqual(stripMark(mm2.configs()));
+      expect(mm2.configs().data.entities.test).toBeDefined();
+      expect(mm2.configs().data.entities.test.fields.content).toBeDefined();
+      expect(mm2.get("data").toJSON().entities.test.fields.content).toBeDefined();
    });
 
    test("s4: config given, table exists, version outdated, migrate", async () => {
@@ -52,21 +100,19 @@ describe("ModuleManager", async () => {
       await mm.build();
       const version = mm.version();
       const json = mm.configs();
-      //const { version, ...json } = mm.toJSON() as any;
 
       const c2 = getDummyConnection();
       const db = c2.dummyConnection.kysely;
-      console.log("here2");
-      await migrateSchema(CURRENT_VERSION, { db });
-      await db
-         .updateTable(TABLE_NAME)
-         .set({ json: JSON.stringify(json), version: CURRENT_VERSION - 1 })
-         .execute();
-
       const mm2 = new ModuleManager(c2.dummyConnection, {
          initial: { version: version - 1, ...json }
       });
-      console.log("here3");
+      await mm2.syncConfigTable();
+
+      await db
+         .insertInto(TABLE_NAME)
+         .values({ json: JSON.stringify(json), type: "config", version: CURRENT_VERSION - 1 })
+         .execute();
+
       await mm2.build();
    });
 
@@ -80,15 +126,15 @@ describe("ModuleManager", async () => {
 
       const c2 = getDummyConnection();
       const db = c2.dummyConnection.kysely;
-      await migrateSchema(CURRENT_VERSION, { db });
-      await db
-         .updateTable(TABLE_NAME)
-         .set({ json: JSON.stringify(json), version: CURRENT_VERSION })
-         .execute();
 
       const mm2 = new ModuleManager(c2.dummyConnection, {
          initial: { version: version - 1, ...json }
       });
+      await mm2.syncConfigTable();
+      await db
+         .insertInto(TABLE_NAME)
+         .values({ type: "config", json: JSON.stringify(json), version: CURRENT_VERSION })
+         .execute();
 
       expect(mm2.build()).rejects.toThrow(/version.*do not match/);
    });
@@ -102,7 +148,9 @@ describe("ModuleManager", async () => {
 
       const c2 = getDummyConnection();
       const db = c2.dummyConnection.kysely;
-      await migrateSchema(CURRENT_VERSION, { db });
+
+      const mm2 = new ModuleManager(c2.dummyConnection);
+      await mm2.syncConfigTable();
 
       const config = {
          ...json,
@@ -112,12 +160,11 @@ describe("ModuleManager", async () => {
          }
       };
       await db
-         .updateTable(TABLE_NAME)
-         .set({ json: JSON.stringify(config), version: CURRENT_VERSION })
+         .insertInto(TABLE_NAME)
+         .values({ type: "config", json: JSON.stringify(config), version: CURRENT_VERSION })
          .execute();
 
       // run without config given
-      const mm2 = new ModuleManager(c2.dummyConnection);
       await mm2.build();
 
       expect(mm2.configs().data.basepath).toBe("/api/data2");
@@ -148,50 +195,61 @@ describe("ModuleManager", async () => {
       });
    });
 
-   // @todo: check what happens here
-   /*test("blank app, modify deep config", async () => {
+   test("partial config given", async () => {
       const { dummyConnection } = getDummyConnection();
 
-      const mm = new ModuleManager(dummyConnection);
+      const partial = {
+         auth: {
+            enabled: true
+         }
+      };
+      const mm = new ModuleManager(dummyConnection, {
+         initial: partial
+      });
       await mm.build();
 
-      /!* await mm
-         .get("data")
-         .schema()
-         .patch("entities.test", {
-            fields: {
-               content: {
-                  type: "text"
-               }
+      expect(mm.version()).toBe(CURRENT_VERSION);
+      expect(mm.built()).toBe(true);
+      expect(mm.configs().auth.enabled).toBe(true);
+      expect(mm.configs().data.entities.users).toBeDefined();
+   });
+
+   test("partial config given, but db version exists", async () => {
+      const c = getDummyConnection();
+      const mm = new ModuleManager(c.dummyConnection);
+      await mm.build();
+      const json = mm.configs();
+
+      const c2 = getDummyConnection();
+      const db = c2.dummyConnection.kysely;
+
+      const mm2 = new ModuleManager(c2.dummyConnection, {
+         initial: {
+            auth: {
+               basepath: "/shouldnt/take/this"
             }
-         });
-      await mm.build();
+         }
+      });
+      await mm2.syncConfigTable();
+      const payload = {
+         ...json,
+         auth: {
+            ...json.auth,
+            enabled: true,
+            basepath: "/api/auth2"
+         }
+      };
+      await db
+         .insertInto(TABLE_NAME)
+         .values({
+            type: "config",
+            json: JSON.stringify(payload),
+            version: CURRENT_VERSION
+         })
+         .execute();
+      await mm2.build();
+      expect(mm2.configs().auth.basepath).toBe("/api/auth2");
+   });
 
-      expect(mm.configs().data.entities?.users?.fields?.email.type).toBe("text");
-
-      expect(
-         mm.get("data").schema().patch("desc", "entities.users.config.sort_dir")
-      ).rejects.toThrow();
-      await mm.build();*!/
-      expect(mm.configs().data.entities?.users?.fields?.email.type).toBe("text");
-      console.log("here", mm.configs());
-      await mm
-         .get("data")
-         .schema()
-         .patch("entities.users", { config: { sort_dir: "desc" } });
-      await mm.build();
-      expect(mm.toJSON());
-
-      //console.log(_jsonp(mm.toJSON().data));
-      /!*expect(mm.configs().data.entities!.test!.fields!.content.type).toBe("text");
-      expect(mm.configs().data.entities!.users!.config!.sort_dir).toBe("desc");*!/
-   });*/
-
-   /*test("accessing modules", async () => {
-      const { dummyConnection } = getDummyConnection();
-
-      const mm = new ModuleManager(dummyConnection);
-
-      //mm.get("auth").mutate().set({});
-   });*/
+   // @todo: add tests for migrations (check "backup" and new version)
 });
