@@ -88,8 +88,8 @@
     "@hono/node-server": "^1.13.7"
   },
   "peerDependencies": {
-    "react": ">=18 || >=19",
-    "react-dom": ">=18 || >=19"
+    "react": ">=18 <20",
+    "react-dom": ">=18 <20"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
