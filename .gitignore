@@ -20,8 +20,10 @@ packages/media/.env
 **/*/*.db
 **/*/*.db-shm
 **/*/*.db-wal
+**/*/.tmp
 .npmrc
 /.verdaccio
 .idea
 .vscode
 .git_old
+docker/tmp
