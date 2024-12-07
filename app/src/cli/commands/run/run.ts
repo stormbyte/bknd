@@ -1,16 +1,13 @@
 import type { Config } from "@libsql/client/node";
-import { App } from "App";
+import { App, type CreateAppConfig } from "App";
 import type { BkndConfig } from "adapter";
 import type { CliCommand } from "cli/types";
 import { Option } from "commander";
-import type { Connection } from "data";
 import {
    PLATFORMS,
    type Platform,
    attachServeStatic,
    getConfigPath,
-   getConnection,
-   getHtml,
    startServer
 } from "./platform";
 
@@ -41,14 +38,14 @@ export const run: CliCommand = (program) => {
 };
 
 type MakeAppConfig = {
-   connection: Connection;
+   connection?: CreateAppConfig["connection"];
    server?: { platform?: Platform };
    setAdminHtml?: boolean;
    onBuilt?: (app: App) => Promise<void>;
 };
 
 async function makeApp(config: MakeAppConfig) {
-   const app = new App(config.connection);
+   const app = App.create({ connection: config.connection });
 
    app.emgr.on(
       "app-built",
@@ -99,9 +96,9 @@ async function action(options: {
 
    let app: App;
    if (options.dbUrl || !configFilePath) {
-      const connection = getConnection(
-         options.dbUrl ? { url: options.dbUrl, authToken: options.dbToken } : undefined
-      );
+      const connection = options.dbUrl
+         ? { type: "libsql" as const, config: { url: options.dbUrl, authToken: options.dbToken } }
+         : undefined;
       app = await makeApp({ connection, server: { platform: options.server } });
    } else {
       console.log("Using config from:", configFilePath);

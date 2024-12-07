@@ -1,6 +1,5 @@
-export { App, type AppConfig, type CreateAppConfig } from "./App";
+export { App, createApp, AppEvents, type AppConfig, type CreateAppConfig } from "./App";
 
-export { MediaField } from "media/MediaField";
 export {
    getDefaultConfig,
    getDefaultSchema,

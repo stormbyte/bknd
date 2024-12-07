@@ -104,7 +104,7 @@
         "integration/vite",
         "integration/express",
         "integration/astro",
-        "integration/nodejs",
+        "integration/node",
         "integration/deno",
         "integration/browser"
       ]

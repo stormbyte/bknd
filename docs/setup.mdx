@@ -18,9 +18,9 @@ The easiest to get started is using SQLite as a file. When serving the API in th
 the function accepts an object with connection details. To use a file, use the following:
 ```json
 {
-   "type": "sqlite",
+   "type": "libsql",
    "config": {
-      "file": "path/to/your/database.db"
+      "url": "file:<path/to/your/database.db>"
    }
 }
 ```
@@ -54,6 +54,30 @@ connection object to your new database:
       "authToken": "your-auth-token"
    }
 }
+```
+
+### Custom Connection (unstable)
+<Note>
+   Follow the progress of custom connections on its [Github Issue](https://github.com/bknd-io/bknd/issues/24).
+   If you're interested, make sure to upvote so it can be prioritized.
+</Note>
+Any bknd app instantiation accepts as connection either `undefined`, a connection object like
+described above, or an class instance that extends from `Connection`:
+```ts
+import { createApp } from "bknd";
+import { Connection } from "bknd/data";
+
+class CustomConnection extends Connection {
+   constructor() {
+      const kysely = new Kysely(/* ... */);
+      super(kysely);
+   }
+}
+
+const connection = new CustomConnection();
+
+// e.g. and then, create an instance
+const app = createApp({ connection })
 ```
 
 ## Installation

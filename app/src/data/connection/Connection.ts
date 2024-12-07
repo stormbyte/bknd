@@ -41,16 +41,18 @@ export type DbFunctions = {
    >;
 };
 
-export abstract class Connection {
-   cls = "bknd:connection";
-   kysely: Kysely<any>;
+const CONN_SYMBOL = Symbol.for("bknd:connection");
+
+export abstract class Connection<DB = any> {
+   kysely: Kysely<DB>;
 
    constructor(
-      kysely: Kysely<any>,
+      kysely: Kysely<DB>,
       public fn: Partial<DbFunctions> = {},
       protected plugins: KyselyPlugin[] = []
    ) {
       this.kysely = kysely;
+      this[CONN_SYMBOL] = true;
    }
 
    /**
@@ -58,8 +60,9 @@ export abstract class Connection {
     * coming from different places
     * @param conn
     */
-   static isConnection(conn: any): conn is Connection {
-      return conn?.cls === "bknd:connection";
+   static isConnection(conn: unknown): conn is Connection {
+      if (!conn) return false;
+      return conn[CONN_SYMBOL] === true;
    }
 
    getIntrospector(): ConnectionIntrospector {

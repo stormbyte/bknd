@@ -56,29 +56,6 @@ export class App<DB = any> {
       this.modules.ctx().emgr.registerEvents(AppEvents);
    }
 
-   static create(config: CreateAppConfig) {
-      let connection: Connection | undefined = undefined;
-
-      try {
-         if (Connection.isConnection(config.connection)) {
-            connection = config.connection;
-         } else if (typeof config.connection === "object") {
-            connection = new LibsqlConnection(config.connection.config);
-         } else {
-            connection = new LibsqlConnection({ url: ":memory:" });
-            console.warn("[!] No connection provided, using in-memory database");
-         }
-      } catch (e) {
-         console.error("Could not create connection", e);
-      }
-
-      if (!connection) {
-         throw new Error("Invalid connection");
-      }
-
-      return new App(connection, config.initialConfig, config.plugins, config.options);
-   }
-
    get emgr() {
       return this.modules.ctx().emgr;
    }
@@ -149,4 +126,31 @@ export class App<DB = any> {
    toJSON(secrets?: boolean) {
       return this.modules.toJSON(secrets);
    }
+
+   static create(config: CreateAppConfig) {
+      return createApp(config);
+   }
+}
+
+export function createApp(config: CreateAppConfig) {
+   let connection: Connection | undefined = undefined;
+
+   try {
+      if (Connection.isConnection(config.connection)) {
+         connection = config.connection;
+      } else if (typeof config.connection === "object") {
+         connection = new LibsqlConnection(config.connection.config);
+      } else {
+         connection = new LibsqlConnection({ url: ":memory:" });
+         console.warn("[!] No connection provided, using in-memory database");
+      }
+   } catch (e) {
+      console.error("Could not create connection", e);
+   }
+
+   if (!connection) {
+      throw new Error("Invalid connection");
+   }
+
+   return new App(connection, config.initialConfig, config.plugins, config.options);
 }

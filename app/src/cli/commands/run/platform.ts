@@ -1,10 +1,8 @@
-import { readFile } from "node:fs/promises";
 import path from "node:path";
-import type { ServeStaticOptions } from "@hono/node-server/serve-static";
-import { type Config, createClient } from "@libsql/client/node";
-import { Connection, LibsqlConnection, SqliteLocalConnection } from "data";
+import type { Config } from "@libsql/client/node";
 import type { MiddlewareHandler } from "hono";
-import { fileExists, getDistPath, getRelativeDistPath } from "../../utils/sys";
+import open from "open";
+import { fileExists, getRelativeDistPath } from "../../utils/sys";
 
 export const PLATFORMS = ["node", "bun"] as const;
 export type Platform = (typeof PLATFORMS)[number];
@@ -33,7 +31,8 @@ export async function attachServeStatic(app: any, platform: Platform) {
 
 export async function startServer(server: Platform, app: any, options: { port: number }) {
    const port = options.port;
-   console.log("running on", server, port);
+   console.log(`(using ${server} serve)`);
+
    switch (server) {
       case "node": {
          // https://github.com/honojs/node-server/blob/main/src/response.ts#L88
@@ -53,27 +52,9 @@ export async function startServer(server: Platform, app: any, options: { port: n
       }
    }
 
-   console.log("Server listening on", "http://localhost:" + port);
-}
-
-export async function getHtml() {
-   return await readFile(path.resolve(getDistPath(), "static/index.html"), "utf-8");
-}
-
-export function getConnection(connectionOrConfig?: Connection | Config): Connection {
-   if (connectionOrConfig) {
-      if (connectionOrConfig instanceof Connection) {
-         return connectionOrConfig;
-      }
-
-      if ("url" in connectionOrConfig) {
-         return new LibsqlConnection(createClient(connectionOrConfig));
-      }
-   }
-
-   console.log("Using in-memory database");
-   return new LibsqlConnection(createClient({ url: ":memory:" }));
-   //return new SqliteLocalConnection(new Database(":memory:"));
+   const url = `http://localhost:${port}`;
+   console.log(`Server listening on ${url}`);
+   await open(url);
 }
 
 export async function getConfigPath(filePath?: string) {

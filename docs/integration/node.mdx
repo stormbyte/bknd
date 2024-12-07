@@ -1,6 +1,6 @@
 ---
-title: 'Bun'
-description: 'Run bknd inside Bun'
+title: 'Node'
+description: 'Run bknd inside Node'
 ---
 import InstallBknd from '/snippets/install-bknd.mdx';
 
@@ -9,27 +9,29 @@ Install bknd as a dependency:
 <InstallBknd />
 
 ## Serve the API & static files
-The `serve` function of the Bun adapter makes sure to also serve the static files required for
+The `serve` function of the Node adapter makes sure to also serve the static files required for
 the admin panel.
 
 ``` tsx
-// index.ts
-import { serve } from "bknd/adapter/bun";
+// index.js
+import { serve } from "bknd/adapter/node";
 
 // if the configuration is omitted, it uses an in-memory database
-serve({
+/** @type {import("bknd/adapter/node").NodeAdapterOptions} */
+const config = {
    connection: {
       type: "libsql",
       config: {
-         url: process.env.DB_URL!,
-         authToken: process.env.DB_AUTH_TOKEN!
+         url: ":memory:"
       }
    }
-});
+};
+
+serve(config);
 ```
 For more information about the connection object, refer to the [Setup](/setup) guide.
 
-Run the application using Bun by executing:
+Run the application using node by executing:
 ```bash
-bun run index.ts
+node index.js
 ```
