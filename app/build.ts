@@ -107,7 +107,7 @@ await tsup.build({
    watch,
    entry: ["src/ui/index.ts", "src/ui/client/index.ts", "src/ui/main.css"],
    outDir: "dist/ui",
-   external: ["bun:test"],
+   external: ["bun:test", "react", "react-dom", "use-sync-external-store"],
    metafile: true,
    platform: "browser",
    format: ["esm", "cjs"],
