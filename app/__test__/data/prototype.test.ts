@@ -1,5 +1,4 @@
 import { describe, expect, test } from "bun:test";
-import { MediaField } from "../../src";
 import {
    BooleanField,
    DateField,
@@ -30,6 +29,7 @@ import {
    relation,
    text
 } from "../../src/data/prototype";
+import { MediaField } from "../../src/media/MediaField";
 
 describe("prototype", () => {
    test("...", () => {
@@ -76,7 +76,9 @@ describe("prototype", () => {
          new DateField("created_at", {
             type: "datetime"
          }),
+         // @ts-ignore
          new MediaField("images", { entity: "posts" }),
+         // @ts-ignore
          new MediaField("cover", { entity: "posts", max_items: 1 })
       ]);
 
