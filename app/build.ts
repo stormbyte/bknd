@@ -88,7 +88,7 @@ await tsup.build({
    watch,
    entry: ["src/index.ts", "src/data/index.ts", "src/core/index.ts", "src/core/utils/index.ts"],
    outDir: "dist",
-   external: ["bun:test"],
+   external: ["bun:test", "@libsql/client"],
    metafile: true,
    platform: "browser",
    format: ["esm", "cjs"],
