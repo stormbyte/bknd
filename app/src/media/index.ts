@@ -17,10 +17,6 @@ import {
 import { type S3AdapterConfig, StorageS3Adapter } from "./storage/adapters/StorageS3Adapter";
 
 export { StorageS3Adapter, type S3AdapterConfig, StorageCloudinaryAdapter, type CloudinaryConfig };
-/*export {
-   StorageLocalAdapter,
-   type LocalAdapterConfig
-} from "./storage/adapters/StorageLocalAdapter";*/
 
 export * as StorageEvents from "./storage/events";
 export { type FileUploadedEventData } from "./storage/events";
@@ -31,16 +27,12 @@ type ClassThatImplements<T> = Constructor<T> & { prototype: T };
 export const MediaAdapterRegistry = new Registry<{
    cls: ClassThatImplements<StorageAdapter>;
    schema: TObject;
-}>().set({
-   s3: {
-      cls: StorageS3Adapter,
-      schema: StorageS3Adapter.prototype.getSchema()
-   },
-   cloudinary: {
-      cls: StorageCloudinaryAdapter,
-      schema: StorageCloudinaryAdapter.prototype.getSchema()
-   }
-});
+}>((cls: ClassThatImplements<StorageAdapter>) => ({
+   cls,
+   schema: cls.prototype.getSchema() as TObject
+}))
+   .register("s3", StorageS3Adapter)
+   .register("cloudinary", StorageCloudinaryAdapter);
 
 export const Adapters = {
    s3: {

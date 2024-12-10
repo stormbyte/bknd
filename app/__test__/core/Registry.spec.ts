@@ -1,4 +1,4 @@
-import { describe, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import type { TObject, TString } from "@sinclair/typebox";
 import { Registry } from "../../src/core/registry/Registry";
 import { type TSchema, Type } from "../../src/core/utils";
@@ -10,6 +10,9 @@ type ClassRef<T> = Constructor<T> & (new (...args: any[]) => T);
 class What {
    method() {
       return null;
+   }
+   getType() {
+      return Type.Object({ type: Type.String() });
    }
 }
 class What2 extends What {}
@@ -32,25 +35,53 @@ describe("Registry", () => {
       } satisfies Record<string, Test1>);
 
       const item = registry.get("first");
+      expect(item).toBeDefined();
+      expect(item?.cls).toBe(What);
 
+      const second = Type.Object({ type: Type.String(), what: Type.String() });
       registry.add("second", {
          cls: What2,
-         schema: Type.Object({ type: Type.String(), what: Type.String() }),
+         schema: second,
          enabled: true
       });
+      // @ts-ignore
+      expect(registry.get("second").schema).toEqual(second);
+
+      const third = Type.Object({ type: Type.String({ default: "1" }), what22: Type.String() });
       registry.add("third", {
          // @ts-expect-error
          cls: NotAllowed,
-         schema: Type.Object({ type: Type.String({ default: "1" }), what22: Type.String() }),
+         schema: third,
          enabled: true
       });
+      // @ts-ignore
+      expect(registry.get("third").schema).toEqual(third);
+
+      const fourth = Type.Object({ type: Type.Number(), what22: Type.String() });
       registry.add("fourth", {
          cls: What,
          // @ts-expect-error
-         schema: Type.Object({ type: Type.Number(), what22: Type.String() }),
+         schema: fourth,
          enabled: true
       });
+      // @ts-ignore
+      expect(registry.get("fourth").schema).toEqual(fourth);
 
-      console.log("list", registry.all());
+      expect(Object.keys(registry.all()).length).toBe(4);
+   });
+
+   test("uses registration fn", async () => {
+      const registry = new Registry<Test1>((a: ClassRef<What>) => {
+         return {
+            cls: a,
+            schema: a.prototype.getType(),
+            enabled: true
+         };
+      });
+
+      registry.register("what2", What2);
+      expect(registry.get("what2")).toBeDefined();
+      expect(registry.get("what2").cls).toBe(What2);
+      expect(registry.get("what2").schema).toEqual(What2.prototype.getType());
    });
 });
