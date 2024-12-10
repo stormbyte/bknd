@@ -72,10 +72,10 @@ export class TypeInvalidError extends Error {
    }
 }
 
-export function stripMark(obj: any) {
+export function stripMark<O = any>(obj: O) {
    const newObj = cloneDeep(obj);
    mark(newObj, false);
-   return newObj;
+   return newObj as O;
 }
 
 export function mark(obj: any, validated = true) {

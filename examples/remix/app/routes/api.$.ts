@@ -4,7 +4,7 @@ const handler = serve({
    connection: {
       type: "libsql",
       config: {
-         url: "http://localhost:8080"
+         url: "file:test.db"
       }
    }
 });

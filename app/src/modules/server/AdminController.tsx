@@ -10,9 +10,11 @@ import * as SystemPermissions from "modules/permissions";
 
 const htmlBkndContextReplace = "<!-- BKND_CONTEXT -->";
 
+// @todo: add migration to remove admin path from config
 export type AdminControllerOptions = {
+   basepath?: string;
    html?: string;
-   forceDev?: boolean;
+   forceDev?: boolean | { mainPath: string };
 };
 
 export class AdminController implements ClassController {
@@ -25,8 +27,12 @@ export class AdminController implements ClassController {
       return this.app.modules.ctx();
    }
 
+   get basepath() {
+      return this.options.basepath ?? "/";
+   }
+
    private withBasePath(route: string = "") {
-      return (this.app.modules.configs().server.admin.basepath + route).replace(/\/+$/, "/");
+      return (this.basepath + route).replace(/\/+$/, "/");
    }
 
    getController(): Hono<any> {
@@ -102,7 +108,10 @@ export class AdminController implements ClassController {
 
       if (this.options.html) {
          if (this.options.html.includes(htmlBkndContextReplace)) {
-            return this.options.html.replace(htmlBkndContextReplace, bknd_context);
+            return this.options.html.replace(
+               htmlBkndContextReplace,
+               "<script>" + bknd_context + "</script>"
+            );
          }
 
          console.warn(
@@ -113,6 +122,10 @@ export class AdminController implements ClassController {
 
       const configs = this.app.modules.configs();
       const isProd = !isDebug() && !this.options.forceDev;
+      const mainPath =
+         typeof this.options.forceDev === "object" && "mainPath" in this.options.forceDev
+            ? this.options.forceDev.mainPath
+            : "/src/ui/main.tsx";
 
       const assets = {
          js: "main.js",
@@ -166,13 +179,14 @@ export class AdminController implements ClassController {
                   )}
                </head>
                <body>
+                  <div id="root" />
                   <div id="app" />
                   <script
                      dangerouslySetInnerHTML={{
                         __html: bknd_context
                      }}
                   />
-                  {!isProd && <script type="module" src="/src/ui/main.tsx" />}
+                  {!isProd && <script type="module" src={mainPath} />}
                </body>
             </html>
          </Fragment>

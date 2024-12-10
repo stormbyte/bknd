@@ -10,7 +10,7 @@ import {
 } from "core/utils";
 import type { MediaFieldConfig } from "media/MediaField";
 import { useForm } from "react-hook-form";
-import { useBknd } from "ui/client";
+import { useBknd } from "ui/client/bknd";
 import { MantineNumberInput } from "ui/components/form/hook-form-mantine/MantineNumberInput";
 import { MantineRadio } from "ui/components/form/hook-form-mantine/MantineRadio";
 import { MantineSelect } from "ui/components/form/hook-form-mantine/MantineSelect";

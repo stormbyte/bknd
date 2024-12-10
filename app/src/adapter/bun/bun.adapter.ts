@@ -1,55 +1,59 @@
+/// <reference types="bun-types" />
+
 import path from "node:path";
 import { App, type CreateAppConfig } from "bknd";
-import { LibsqlConnection } from "bknd/data";
+import type { Serve, ServeOptions } from "bun";
 import { serveStatic } from "hono/bun";
 
-async function getConnection(conn?: CreateAppConfig["connection"]) {
-   if (conn) {
-      if (LibsqlConnection.isConnection(conn)) {
-         return conn;
-      }
+let app: App;
+export async function createApp(_config: Partial<CreateAppConfig> = {}, distPath?: string) {
+   const root = path.resolve(distPath ?? "./node_modules/bknd/dist", "static");
 
-      return new LibsqlConnection(conn.config);
+   if (!app) {
+      app = App.create(_config);
+
+      app.emgr.on(
+         "app-built",
+         async () => {
+            app.modules.server.get(
+               "/*",
+               serveStatic({
+                  root
+               })
+            );
+            app.registerAdminController();
+         },
+         "sync"
+      );
+
+      await app.build();
    }
 
-   const createClient = await import("@libsql/client/node").then((m) => m.createClient);
-   if (!createClient) {
-      throw new Error('libsql client not found, you need to install "@libsql/client/node"');
-   }
-
-   console.log("Using in-memory database");
-   return new LibsqlConnection(createClient({ url: ":memory:" }));
+   return app;
 }
 
-export function serve(_config: Partial<CreateAppConfig> = {}, distPath?: string) {
-   const root = path.resolve(distPath ?? "./node_modules/bknd/dist", "static");
-   let app: App;
-
-   return async (req: Request) => {
-      if (!app) {
-         const connection = await getConnection(_config.connection);
-         app = App.create({
-            ..._config,
-            connection
-         });
-
-         app.emgr.on(
-            "app-built",
-            async () => {
-               app.modules.server.get(
-                  "/*",
-                  serveStatic({
-                     root
-                  })
-               );
-               app.registerAdminController();
-            },
-            "sync"
-         );
-
-         await app.build();
-      }
-
-      return app.fetch(req);
+export type BunAdapterOptions = Omit<ServeOptions, "fetch"> &
+   CreateAppConfig & {
+      distPath?: string;
    };
+
+export function serve({
+   distPath,
+   connection,
+   initialConfig,
+   plugins,
+   options,
+   port = 1337,
+   ...serveOptions
+}: BunAdapterOptions = {}) {
+   Bun.serve({
+      ...serveOptions,
+      port,
+      fetch: async (request: Request) => {
+         const app = await createApp({ connection, initialConfig, plugins, options }, distPath);
+         return app.fetch(request);
+      }
+   });
+
+   console.log(`Server is running on http://localhost:${port}`);
 }

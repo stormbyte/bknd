@@ -1,7 +1,7 @@
 import { notifications } from "@mantine/notifications";
 import { useRef } from "react";
 import { TbDots } from "react-icons/tb";
-import { useBknd } from "ui/client";
+import { useBknd } from "ui/client/bknd";
 import { useBkndAuth } from "ui/client/schema/auth/use-bknd-auth";
 import { Button } from "ui/components/buttons/Button";
 import { IconButton } from "ui/components/buttons/IconButton";

@@ -45,7 +45,7 @@ export const ALL = serve({
    connection: {
       type: "libsql",
       config: {
-         url: "http://127.0.0.1:8080"
+         url: "file:data.db"
       }
    }
 });
@@ -74,7 +74,7 @@ export const prerender = false;
       <Admin
          withProvider={{ user }}
          config={{ basepath: "/admin", color_scheme: "dark" }}
-         client:load
+         client:only
       />
    </body>
 </html>

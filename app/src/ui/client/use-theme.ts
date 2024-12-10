@@ -1,4 +1,4 @@
-import { useBknd } from "ui";
+import { useBknd } from "ui/client/bknd";
 
 export function useTheme(): { theme: "light" | "dark" } {
    const b = useBknd();

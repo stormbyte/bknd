@@ -13,8 +13,6 @@ export {
    whereSchema
 } from "./server/data-query-impl";
 
-export { whereRepoSchema as deprecated__whereRepoSchema } from "./server/query";
-
 export { Connection } from "./connection/Connection";
 export { LibsqlConnection, type LibSqlCredentials } from "./connection/LibsqlConnection";
 export { SqliteConnection } from "./connection/SqliteConnection";

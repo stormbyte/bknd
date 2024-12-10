@@ -11,7 +11,7 @@ import {
 import { ManyToOneRelation, type RelationType, RelationTypes } from "data";
 import { type ReactNode, useEffect } from "react";
 import { type Control, type FieldValues, type UseFormRegister, useForm } from "react-hook-form";
-import { useBknd } from "ui/client";
+import { useBknd } from "ui/client/bknd";
 import { MantineNumberInput } from "ui/components/form/hook-form-mantine/MantineNumberInput";
 import { MantineSelect } from "ui/components/form/hook-form-mantine/MantineSelect";
 import { useStepContext } from "ui/components/steps/Steps";

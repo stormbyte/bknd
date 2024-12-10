@@ -1,5 +1,4 @@
-import { Api, type ApiOptions } from "bknd";
-import { App, type CreateAppConfig } from "bknd";
+import { Api, type ApiOptions, App, type CreateAppConfig } from "bknd";
 
 type TAstro = {
    request: Request;

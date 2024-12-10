@@ -369,9 +369,9 @@ export class DataController implements ClassController {
                   return c.notFound();
                }
                const where = c.req.valid("json") as RepoQuery["where"];
-               console.log("where", where);
+               //console.log("where", where);
 
-               const result = await this.em.mutator(entity).deleteMany(where);
+               const result = await this.em.mutator(entity).deleteWhere(where);
 
                return c.json(this.mutatorResult(result));
             }

@@ -1,6 +1,6 @@
 import type { ReactCodeMirrorProps } from "@uiw/react-codemirror";
 import { Suspense, lazy } from "react";
-import { useBknd } from "ui/client";
+import { useBknd } from "ui/client/bknd";
 const CodeMirror = lazy(() => import("@uiw/react-codemirror"));
 
 export default function CodeEditor({ editable, basicSetup, ...props }: ReactCodeMirrorProps) {

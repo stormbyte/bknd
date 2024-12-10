@@ -2,18 +2,16 @@ import { Type } from "core/utils";
 import { querySchema } from "data";
 import { TbDots } from "react-icons/tb";
 import { useBkndData } from "ui/client/schema/data/use-bknd-data";
-import { Empty } from "ui/components/display/Empty";
+import { Button } from "ui/components/buttons/Button";
+import { IconButton } from "ui/components/buttons/IconButton";
 import { Message } from "ui/components/display/Message";
+import { Dropdown } from "ui/components/overlay/Dropdown";
+import { EntitiesContainer } from "ui/container";
+import { useBrowserTitle } from "ui/hooks/use-browser-title";
+import { useSearch } from "ui/hooks/use-search";
+import * as AppShell from "ui/layouts/AppShell/AppShell";
+import { routes, useNavigate } from "ui/lib/routes";
 import { EntityTable2 } from "ui/modules/data/components/EntityTable2";
-import { useBknd } from "../../client";
-import { Button } from "../../components/buttons/Button";
-import { IconButton } from "../../components/buttons/IconButton";
-import { Dropdown } from "../../components/overlay/Dropdown";
-import { EntitiesContainer } from "../../container";
-import { useBrowserTitle } from "../../hooks/use-browser-title";
-import { useSearch } from "../../hooks/use-search";
-import * as AppShell from "../../layouts/AppShell/AppShell";
-import { routes, useNavigate } from "../../lib/routes";
 
 // @todo: migrate to Typebox
 const searchSchema = Type.Composite(

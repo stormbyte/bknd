@@ -1,12 +1,31 @@
-import { Diff } from "@sinclair/typebox/value";
 import { Guard } from "auth";
-import { DebugLogger, isDebug } from "core";
+import { BkndError, DebugLogger, Exception, isDebug } from "core";
 import { EventManager } from "core/events";
-import { Default, type Static, objectEach, transformObject } from "core/utils";
-import { type Connection, EntityManager } from "data";
+import { clone, diff } from "core/object/diff";
+import {
+   Default,
+   type Static,
+   StringEnum,
+   Type,
+   objectEach,
+   stripMark,
+   transformObject
+} from "core/utils";
+import {
+   type Connection,
+   EntityManager,
+   type Schema,
+   datetime,
+   entity,
+   enumm,
+   jsonSchema,
+   number
+} from "data";
+import { TransformPersistFailedException } from "data/errors";
 import { Hono } from "hono";
 import { type Kysely, sql } from "kysely";
-import { CURRENT_VERSION, TABLE_NAME, migrate, migrateSchema } from "modules/migrations";
+import { mergeWith } from "lodash-es";
+import { CURRENT_VERSION, TABLE_NAME, migrate } from "modules/migrations";
 import { AppServer } from "modules/server/AppServer";
 import { AppAuth } from "../auth/AppAuth";
 import { AppData } from "../data/AppData";
@@ -37,10 +56,13 @@ export type ModuleSchemas = {
 export type ModuleConfigs = {
    [K in keyof ModuleSchemas]: Static<ModuleSchemas[K]>;
 };
+type PartialRec<T> = { [P in keyof T]?: PartialRec<T[P]> };
 
-export type InitialModuleConfigs = {
-   version: number;
-} & Partial<ModuleConfigs>;
+export type InitialModuleConfigs =
+   | ({
+        version: number;
+     } & ModuleConfigs)
+   | PartialRec<ModuleConfigs>;
 
 export type ModuleManagerOptions = {
    initial?: InitialModuleConfigs;
@@ -61,8 +83,36 @@ type ConfigTable<Json = ModuleConfigs> = {
    updated_at?: Date;
 };
 
+const configJsonSchema = Type.Union([
+   getDefaultSchema(),
+   Type.Array(
+      Type.Object({
+         t: StringEnum(["a", "r", "e"]),
+         p: Type.Array(Type.Union([Type.String(), Type.Number()])),
+         o: Type.Optional(Type.Any()),
+         n: Type.Optional(Type.Any())
+      })
+   )
+]);
+const __bknd = entity(TABLE_NAME, {
+   version: number().required(),
+   type: enumm({ enum: ["config", "diff", "backup"] }).required(),
+   json: jsonSchema({ schema: configJsonSchema }).required(),
+   created_at: datetime(),
+   updated_at: datetime()
+});
+type ConfigTable2 = Schema<typeof __bknd>;
+type T_INTERNAL_EM = {
+   __bknd: ConfigTable2;
+};
+
+// @todo: cleanup old diffs on upgrade
+// @todo: cleanup multiple backups on upgrade
 export class ModuleManager {
    private modules: Modules;
+   // internal em for __bknd config table
+   __em!: EntityManager<T_INTERNAL_EM>;
+   // ctx for modules
    em!: EntityManager<any>;
    server!: Hono;
    emgr!: EventManager;
@@ -71,28 +121,32 @@ export class ModuleManager {
    private _version: number = 0;
    private _built = false;
    private _fetched = false;
-   private readonly _provided;
 
-   private logger = new DebugLogger(isDebug() && false);
+   // @todo: keep? not doing anything with it
+   private readonly _booted_with?: "provided" | "partial";
+
+   private logger = new DebugLogger(false);
 
    constructor(
       private readonly connection: Connection,
       private options?: Partial<ModuleManagerOptions>
    ) {
+      this.__em = new EntityManager([__bknd], this.connection);
       this.modules = {} as Modules;
       this.emgr = new EventManager();
       const context = this.ctx(true);
       let initial = {} as Partial<ModuleConfigs>;
 
       if (options?.initial) {
-         const { version, ...initialConfig } = options.initial;
-         if (version && initialConfig) {
+         if ("version" in options.initial) {
+            const { version, ...initialConfig } = options.initial;
             this._version = version;
-            initial = initialConfig;
+            initial = stripMark(initialConfig);
 
-            this._provided = true;
+            this._booted_with = "provided";
          } else {
-            throw new Error("Initial was provided, but it needs a version!");
+            initial = mergeWith(getDefaultConfig(), options.initial);
+            this._booted_with = "partial";
          }
       }
 
@@ -118,6 +172,22 @@ export class ModuleManager {
       } else {
          this.buildModules();
       }
+   }
+
+   private repo() {
+      return this.__em.repo(__bknd);
+   }
+
+   private mutator() {
+      return this.__em.mutator(__bknd);
+   }
+
+   private get db() {
+      return this.connection.kysely as Kysely<{ table: ConfigTable }>;
+   }
+
+   async syncConfigTable() {
+      return await this.__em.schema().sync({ force: true });
    }
 
    private rebuildServer() {
@@ -153,27 +223,22 @@ export class ModuleManager {
       };
    }
 
-   private get db() {
-      return this.connection.kysely as Kysely<{ table: ConfigTable }>;
-   }
-
-   get table() {
-      return TABLE_NAME as "table";
-   }
-
    private async fetch(): Promise<ConfigTable> {
       this.logger.context("fetch").log("fetching");
 
       const startTime = performance.now();
-      const result = await this.db
-         .selectFrom(this.table)
-         .selectAll()
-         .where("type", "=", "config")
-         .orderBy("version", "desc")
-         .executeTakeFirstOrThrow();
+      const { data: result } = await this.repo().findOne(
+         { type: "config" },
+         {
+            sort: { by: "version", dir: "desc" }
+         }
+      );
+      if (!result) {
+         throw BkndError.with("no config");
+      }
 
       this.logger.log("took", performance.now() - startTime, "ms", result).clear();
-      return result;
+      return result as ConfigTable;
    }
 
    async save() {
@@ -181,65 +246,75 @@ export class ModuleManager {
       const configs = this.configs();
       const version = this.version();
 
-      const json = JSON.stringify(configs) as any;
-      const state = await this.fetch();
+      try {
+         const state = await this.fetch();
+         this.logger.log("fetched version", state.version);
 
-      if (state.version !== version) {
-         // @todo: mark all others as "backup"
-         this.logger.log("version conflict, storing new version", state.version, version);
-         await this.db
-            .insertInto(this.table)
-            .values({
-               version,
+         if (state.version !== version) {
+            // @todo: mark all others as "backup"
+            this.logger.log("version conflict, storing new version", state.version, version);
+            await this.mutator().insertOne({
+               version: state.version,
+               type: "backup",
+               json: configs
+            });
+            await this.mutator().insertOne({
+               version: version,
                type: "config",
-               json
-            })
-            .execute();
-      } else {
-         this.logger.log("version matches");
+               json: configs
+            });
+         } else {
+            this.logger.log("version matches");
 
-         const diff = Diff(state.json, JSON.parse(json));
-         this.logger.log("checking diff", diff);
+            // clean configs because of Diff() function
+            const diffs = diff(state.json, clone(configs));
+            this.logger.log("checking diff", diffs);
 
-         if (diff.length > 0) {
-            // store diff
-            await this.db
-               .insertInto(this.table)
-               .values({
+            if (diff.length > 0) {
+               // store diff
+               await this.mutator().insertOne({
                   version,
                   type: "diff",
-                  json: JSON.stringify(diff) as any
-               })
-               .execute();
+                  json: clone(diffs)
+               });
 
-            await this.db
-               .updateTable(this.table)
-               .set({ version, json, updated_at: sql`CURRENT_TIMESTAMP` })
-               .where((eb) => eb.and([eb("type", "=", "config"), eb("version", "=", version)]))
-               .execute();
+               // store new version
+               await this.mutator().updateWhere(
+                  {
+                     version,
+                     json: configs,
+                     updated_at: new Date()
+                  },
+                  {
+                     type: "config",
+                     version
+                  }
+               );
+            } else {
+               this.logger.log("no diff, not saving");
+            }
+         }
+      } catch (e) {
+         if (e instanceof BkndError) {
+            this.logger.log("no config, just save fresh");
+            // no config, just save
+            await this.mutator().insertOne({
+               type: "config",
+               version,
+               json: configs,
+               created_at: new Date(),
+               updated_at: new Date()
+            });
+         } else if (e instanceof TransformPersistFailedException) {
+            console.error("Cannot save invalid config");
+            throw e;
          } else {
-            this.logger.log("no diff, not saving");
+            console.error("Aborting");
+            throw e;
          }
       }
 
-      // cleanup
-      /*this.logger.log("cleaning up");
-      const result = await this.db
-         .deleteFrom(this.table)
-         .where((eb) =>
-            eb.or([
-               // empty migrations
-               eb.and([
-                  eb("type", "=", "config"),
-                  eb("version", "<", version),
-                  eb("json", "is", null)
-               ]),
-               // past diffs
-               eb.and([eb("type", "=", "diff"), eb("version", "<", version)])
-            ])
-         )
-         .executeTakeFirst();
-      this.logger.log("cleaned up", result.numDeletedRows);*/
+      // @todo: cleanup old versions?
 
       this.logger.clear();
       return this;
@@ -250,6 +325,8 @@ export class ModuleManager {
 
       if (this.version() < CURRENT_VERSION) {
          this.logger.log("there are migrations, verify version");
+         // sync __bknd table
+         await this.syncConfigTable();
 
          // modules must be built before migration
          await this.buildModules({ graceful: true });
@@ -264,14 +341,7 @@ export class ModuleManager {
             }
          } catch (e: any) {
             this.logger.clear(); // fetch couldn't clear
-
-            // if table doesn't exist, migrate schema to version
-            if (e.message.includes("no such table")) {
-               this.logger.log("table has to created, migrating schema up to", this.version());
-               await migrateSchema(this.version(), { db: this.db });
-            } else {
-               throw new Error(`Version is ${this.version()}, fetch failed: ${e.message}`);
-            }
+            throw new Error(`Version is ${this.version()}, fetch failed: ${e.message}`);
          }
 
          this.logger.log("now migrating");
@@ -337,10 +407,16 @@ export class ModuleManager {
 
    async build() {
       this.logger.context("build").log("version", this.version());
+      this.logger.log("booted with", this._booted_with);
+
+      // @todo: check this, because you could start without an initial config
+      if (this.version() !== CURRENT_VERSION) {
+         await this.syncConfigTable();
+      }
 
       // if no config provided, try fetch from db
       if (this.version() === 0) {
-         this.logger.context("build no config").log("version is 0");
+         this.logger.context("no version").log("version is 0");
          try {
             const result = await this.fetch();
 
@@ -351,23 +427,15 @@ export class ModuleManager {
             this.logger.clear(); // fetch couldn't clear
 
             this.logger.context("error handler").log("fetch failed", e.message);
-            // if table doesn't exist, migrate schema, set default config and latest version
-            if (e.message.includes("no such table")) {
-               this.logger.log("migrate schema to", CURRENT_VERSION);
-               await migrateSchema(CURRENT_VERSION, { db: this.db });
-               this._version = CURRENT_VERSION;
 
-               // we can safely build modules, since config version is up to date
-               // it's up to date because we use default configs (no fetch result)
-               await this.buildModules();
-               await this.save();
+            // we can safely build modules, since config version is up to date
+            // it's up to date because we use default configs (no fetch result)
+            this._version = CURRENT_VERSION;
+            await this.buildModules();
+            await this.save();
 
-               this.logger.clear();
-               return this;
-            } else {
-               throw e;
-               //throw new Error("Issues connecting to the database. Reason: " + e.message);
-            }
+            this.logger.clear();
+            return this;
          }
          this.logger.clear();
       }

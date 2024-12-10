@@ -1,4 +1,4 @@
-import { useBknd } from "ui/client";
+import { useBknd } from "ui/client/bknd";
 
 export function useBkndSystem() {
    const { config, schema, actions: bkndActions } = useBknd();
