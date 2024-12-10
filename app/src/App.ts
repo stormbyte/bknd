@@ -132,7 +132,7 @@ export class App<DB = any> {
    }
 }
 
-export function createApp(config: CreateAppConfig) {
+export function createApp(config: CreateAppConfig = {}) {
    let connection: Connection | undefined = undefined;
 
    try {
