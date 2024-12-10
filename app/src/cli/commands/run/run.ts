@@ -1,8 +1,10 @@
 import type { Config } from "@libsql/client/node";
 import { App, type CreateAppConfig } from "App";
 import type { BkndConfig } from "adapter";
+import { StorageLocalAdapter } from "adapter/node";
 import type { CliCommand } from "cli/types";
 import { Option } from "commander";
+import { registries } from "modules/registries";
 import {
    PLATFORMS,
    type Platform,
@@ -37,6 +39,12 @@ export const run: CliCommand = (program) => {
       .action(action);
 };
 
+// automatically register local adapter
+const local = StorageLocalAdapter.prototype.getName();
+if (!registries.media.has(local)) {
+   registries.media.register(local, StorageLocalAdapter);
+}
+
 type MakeAppConfig = {
    connection?: CreateAppConfig["connection"];
    server?: { platform?: Platform };
@@ -47,8 +55,8 @@ type MakeAppConfig = {
 async function makeApp(config: MakeAppConfig) {
    const app = App.create({ connection: config.connection });
 
-   app.emgr.on(
-      "app-built",
+   app.emgr.onEvent(
+      App.Events.AppBuiltEvent,
       async () => {
          await attachServeStatic(app, config.server?.platform ?? "node");
          app.registerAdminController();
@@ -68,8 +76,8 @@ export async function makeConfigApp(config: BkndConfig, platform?: Platform) {
    const appConfig = typeof config.app === "function" ? config.app(process.env) : config.app;
    const app = App.create(appConfig);
 
-   app.emgr.on(
-      "app-built",
+   app.emgr.onEvent(
+      App.Events.AppBuiltEvent,
       async () => {
          await attachServeStatic(app, platform ?? "node");
          app.registerAdminController();

@@ -8,6 +8,8 @@ export type NodeAdapterOptions = CreateAppConfig & {
    port?: number;
    hostname?: string;
    listener?: Parameters<typeof honoServe>[1];
+   onBuilt?: (app: App) => Promise<void>;
+   buildOptions?: Parameters<App["build"]>[0];
 };
 
 export function serve({
@@ -15,6 +17,8 @@ export function serve({
    port = 1337,
    hostname,
    listener,
+   onBuilt,
+   buildOptions = {},
    ...config
 }: NodeAdapterOptions = {}) {
    const root = path.relative(
@@ -31,8 +35,8 @@ export function serve({
             if (!app) {
                app = App.create(config);
 
-               app.emgr.on(
-                  "app-built",
+               app.emgr.onEvent(
+                  App.Events.AppBuiltEvent,
                   async () => {
                      app.modules.server.get(
                         "/*",
@@ -41,11 +45,12 @@ export function serve({
                         })
                      );
                      app.registerAdminController();
+                     await onBuilt?.(app);
                   },
                   "sync"
                );
 
-               await app.build();
+               await app.build(buildOptions);
             }
 
             return app.fetch(req);

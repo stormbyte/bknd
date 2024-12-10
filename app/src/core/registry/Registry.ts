@@ -41,6 +41,10 @@ export class Registry<
       return this.items[name];
    }
 
+   has(name: keyof Items): boolean {
+      return name in this.items;
+   }
+
    all() {
       return this.items;
    }

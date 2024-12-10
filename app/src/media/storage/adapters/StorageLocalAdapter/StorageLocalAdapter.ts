@@ -1,17 +1,11 @@
 import { readFile, readdir, stat, unlink, writeFile } from "node:fs/promises";
 import { type Static, Type, parse } from "core/utils";
-import type {
-   FileBody,
-   FileListObject,
-   FileMeta,
-   FileUploadPayload,
-   StorageAdapter
-} from "../../Storage";
+import type { FileBody, FileListObject, FileMeta, StorageAdapter } from "../../Storage";
 import { guessMimeType } from "../../mime-types";
 
 export const localAdapterConfig = Type.Object(
    {
-      path: Type.String()
+      path: Type.String({ default: "./" })
    },
    { title: "Local" }
 );
