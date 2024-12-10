@@ -106,7 +106,8 @@
         "integration/astro",
         "integration/node",
         "integration/deno",
-        "integration/browser"
+        "integration/browser",
+        "integration/docker"
       ]
     },
     {
@@ -156,7 +157,6 @@
         "guide/media/transformations"
       ]
     },
-
     {
       "group": "API Documentation",
       "pages": ["api-reference/introduction"]
