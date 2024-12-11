@@ -7,6 +7,7 @@ import {
    type Static,
    StringEnum,
    Type,
+   mark,
    objectEach,
    stripMark,
    transformObject
@@ -23,7 +24,7 @@ import {
 } from "data";
 import { TransformPersistFailedException } from "data/errors";
 import { Hono } from "hono";
-import { type Kysely, sql } from "kysely";
+import type { Kysely } from "kysely";
 import { mergeWith } from "lodash-es";
 import { CURRENT_VERSION, TABLE_NAME, migrate } from "modules/migrations";
 import { AppServer } from "modules/server/AppServer";
@@ -73,6 +74,7 @@ export type ModuleManagerOptions = {
    ) => Promise<void>;
    // base path for the hono instance
    basePath?: string;
+   trustFetched?: boolean;
 };
 
 type ConfigTable<Json = ModuleConfigs> = {
@@ -187,7 +189,10 @@ export class ModuleManager {
    }
 
    async syncConfigTable() {
-      return await this.__em.schema().sync({ force: true });
+      this.logger.context("sync").log("start");
+      const result = await this.__em.schema().sync({ force: true });
+      this.logger.log("done").clear();
+      return result;
    }
 
    private rebuildServer() {
@@ -237,7 +242,7 @@ export class ModuleManager {
          throw BkndError.with("no config");
       }
 
-      this.logger.log("took", performance.now() - startTime, "ms", result).clear();
+      this.logger.log("took", performance.now() - startTime, "ms", result.version).clear();
       return result as ConfigTable;
    }
 
@@ -359,9 +364,6 @@ export class ModuleManager {
          configs = _configs;
 
          this.setConfigs(configs);
-         /* objectEach(configs, (config, key) => {
-            this.get(key as any).setConfig(config);
-         }); */
 
          this._version = version;
          this.logger.log("migrated to", version);
@@ -395,10 +397,11 @@ export class ModuleManager {
          return;
       }
 
+      this.logger.log("building");
       const ctx = this.ctx(true);
       for (const key in this.modules) {
-         this.logger.log(`building "${key}"`);
          await this.modules[key].setContext(ctx).build();
+         this.logger.log("built", key);
       }
 
       this._built = true;
@@ -409,11 +412,6 @@ export class ModuleManager {
       this.logger.context("build").log("version", this.version());
       this.logger.log("booted with", this._booted_with);
 
-      // @todo: check this, because you could start without an initial config
-      if (this.version() !== CURRENT_VERSION) {
-         await this.syncConfigTable();
-      }
-
       // if no config provided, try fetch from db
       if (this.version() === 0) {
          this.logger.context("no version").log("version is 0");
@@ -422,6 +420,16 @@ export class ModuleManager {
 
             // set version and config from fetched
             this._version = result.version;
+
+            if (this.version() !== CURRENT_VERSION) {
+               await this.syncConfigTable();
+            }
+
+            if (this.options?.trustFetched === true) {
+               this.logger.log("trusting fetched config (mark)");
+               mark(result.json);
+            }
+
             this.setConfigs(result.json);
          } catch (e: any) {
             this.logger.clear(); // fetch couldn't clear
@@ -431,6 +439,7 @@ export class ModuleManager {
             // we can safely build modules, since config version is up to date
             // it's up to date because we use default configs (no fetch result)
             this._version = CURRENT_VERSION;
+            await this.syncConfigTable();
             await this.buildModules();
             await this.save();
 
