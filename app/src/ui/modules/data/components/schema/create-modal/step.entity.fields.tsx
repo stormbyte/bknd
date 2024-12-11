@@ -1,5 +1,5 @@
 import { typeboxResolver } from "@hookform/resolvers/typebox";
-import type { Static } from "core/utils";
+import { type Static, objectCleanEmpty } from "core/utils";
 import { type TAppDataEntityFields, entitiesSchema } from "data/data-schema";
 import { mergeWith } from "lodash-es";
 import { useRef } from "react";
@@ -20,13 +20,15 @@ export function StepEntityFields() {
    const entity = state.entities?.create?.[0]!;
    const defaultFields = { id: { type: "primary", name: "id" } } as const;
    const ref = useRef<EntityFieldsFormRef>(null);
-   const initial = mergeWith(entity, {
-      fields: defaultFields,
-      config: {
-         sort_field: "id",
-         sort_dir: "asc"
-      }
-   });
+   const initial = objectCleanEmpty(
+      mergeWith(entity, {
+         fields: defaultFields,
+         config: {
+            sort_field: "id",
+            sort_dir: "asc"
+         }
+      })
+   );
    const {
       control,
       formState: { isValid, errors },

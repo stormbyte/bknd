@@ -158,7 +158,7 @@ export class Entity<
    }
 
    get label(): string {
-      return snakeToPascalWithSpaces(this.config.name ?? this.name);
+      return snakeToPascalWithSpaces(this.config.name || this.name);
    }
 
    field(name: string): Field | undefined {
