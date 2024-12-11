@@ -1,6 +1,7 @@
 import { typeboxResolver } from "@hookform/resolvers/typebox";
 import type { Static } from "core/utils";
 import { type TAppDataEntityFields, entitiesSchema } from "data/data-schema";
+import { mergeWith } from "lodash-es";
 import { useRef } from "react";
 import { useForm } from "react-hook-form";
 import { MantineSelect } from "ui/components/form/hook-form-mantine/MantineSelect";
@@ -19,15 +20,13 @@ export function StepEntityFields() {
    const entity = state.entities?.create?.[0]!;
    const defaultFields = { id: { type: "primary", name: "id" } } as const;
    const ref = useRef<EntityFieldsFormRef>(null);
-   const initial = entity
-      ? entity
-      : {
-           fields: defaultFields,
-           config: {
-              sort_field: "id",
-              sort_dir: "asc"
-           }
-        };
+   const initial = mergeWith(entity, {
+      fields: defaultFields,
+      config: {
+         sort_field: "id",
+         sort_dir: "asc"
+      }
+   });
    const {
       control,
       formState: { isValid, errors },
