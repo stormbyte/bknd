@@ -1,6 +1,7 @@
 import { typeboxResolver } from "@hookform/resolvers/typebox";
+import type { Static } from "core/utils";
 import { type TAppDataEntityFields, entitiesSchema } from "data/data-schema";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { useForm } from "react-hook-form";
 import { MantineSelect } from "ui/components/form/hook-form-mantine/MantineSelect";
 import { useEvent } from "ui/hooks/use-event";
@@ -11,31 +12,33 @@ import {
 import { ModalBody, ModalFooter, type TCreateModalSchema, useStepContext } from "./CreateModal";
 
 const schema = entitiesSchema;
+type Schema = Static<typeof schema>;
 
 export function StepEntityFields() {
    const { nextStep, stepBack, state, setState } = useStepContext<TCreateModalSchema>();
    const entity = state.entities?.create?.[0]!;
    const defaultFields = { id: { type: "primary", name: "id" } } as const;
    const ref = useRef<EntityFieldsFormRef>(null);
+   const initial = entity
+      ? entity
+      : {
+           fields: defaultFields,
+           config: {
+              sort_field: "id",
+              sort_dir: "asc"
+           }
+        };
    const {
       control,
       formState: { isValid, errors },
       getValues,
       handleSubmit,
       watch,
-      register,
       setValue
    } = useForm({
       mode: "onTouched",
       resolver: typeboxResolver(schema),
-      defaultValues: {
-         ...entity,
-         fields: defaultFields,
-         config: {
-            sort_field: "id",
-            sort_dir: "asc"
-         }
-      }
+      defaultValues: initial as NonNullable<Schema>
    });
 
    const values = watch();
@@ -74,7 +77,11 @@ export function StepEntityFields() {
                      Add fields to <strong>{entity.name}</strong>:
                   </p>
                   <div className="flex flex-col gap-1">
-                     <EntityFieldsForm ref={ref} fields={defaultFields} onChange={updateListener} />
+                     <EntityFieldsForm
+                        ref={ref}
+                        fields={initial.fields as any}
+                        onChange={updateListener}
+                     />
                   </div>
                </div>
                <div className="flex flex-col gap-3">
@@ -82,7 +89,7 @@ export function StepEntityFields() {
                   <div className="flex flex-row gap-2">
                      <MantineSelect
                         label="Field"
-                        data={Object.keys(values.fields).filter((name) => name.length > 0)}
+                        data={Object.keys(values.fields ?? {}).filter((name) => name.length > 0)}
                         placeholder="Select field"
                         name="config.sort_field"
                         allowDeselect={false}
@@ -102,7 +109,7 @@ export function StepEntityFields() {
                <div>
                   {Object.entries(errors).map(([key, value]) => (
                      <p key={key}>
-                        {key}: {value.message}
+                        {key}: {(value as any).message}
                      </p>
                   ))}
                </div>
