@@ -20,11 +20,16 @@ export class DebugLogger {
       return this;
    }
 
+   reset() {
+      this.last = 0;
+      return this;
+   }
+
    log(...args: any[]) {
       if (!this._enabled) return this;
 
       const now = performance.now();
-      const time = Number.parseInt(String(now - this.last));
+      const time = this.last === 0 ? 0 : Number.parseInt(String(now - this.last));
       const indents = "  ".repeat(this._context.length);
       const context =
          this._context.length > 0 ? `[${this._context[this._context.length - 1]}]` : "";
