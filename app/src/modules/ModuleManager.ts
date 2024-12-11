@@ -10,7 +10,8 @@ import {
    mark,
    objectEach,
    stripMark,
-   transformObject
+   transformObject,
+   withDisabledConsole
 } from "core/utils";
 import {
    type Connection,
@@ -231,19 +232,23 @@ export class ModuleManager {
    private async fetch(): Promise<ConfigTable> {
       this.logger.context("fetch").log("fetching");
 
-      const startTime = performance.now();
-      const { data: result } = await this.repo().findOne(
-         { type: "config" },
-         {
-            sort: { by: "version", dir: "desc" }
-         }
-      );
-      if (!result) {
-         throw BkndError.with("no config");
-      }
+      // disabling console log, because the table might not exist yet
+      return await withDisabledConsole(async () => {
+         const startTime = performance.now();
+         const { data: result } = await this.repo().findOne(
+            { type: "config" },
+            {
+               sort: { by: "version", dir: "desc" }
+            }
+         );
 
-      this.logger.log("took", performance.now() - startTime, "ms", result.version).clear();
-      return result as ConfigTable;
+         if (!result) {
+            throw BkndError.with("no config");
+         }
+
+         this.logger.log("took", performance.now() - startTime, "ms", result.version).clear();
+         return result as ConfigTable;
+      }, ["log", "error", "warn"]);
    }
 
    async save() {

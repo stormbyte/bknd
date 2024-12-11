@@ -201,7 +201,10 @@ export class Repository<DB = any, TB extends keyof DB = any> implements EmitsEve
             }
          };
       } catch (e) {
-         console.error("many error", e, compiled);
+         if (e instanceof Error) {
+            console.error("[ERROR] Repository.performQuery", e.message);
+         }
+
          throw e;
       }
    }

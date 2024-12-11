@@ -5,10 +5,21 @@ const _oldConsoles = {
    error: console.error
 };
 
+export async function withDisabledConsole<R>(
+   fn: () => Promise<R>,
+   severities: ConsoleSeverity[] = ["log"]
+): Promise<R> {
+   const enable = disableConsoleLog(severities);
+   const result = await fn();
+   enable();
+   return result;
+}
+
 export function disableConsoleLog(severities: ConsoleSeverity[] = ["log"]) {
    severities.forEach((severity) => {
       console[severity] = () => null;
    });
+   return enableConsoleLog;
 }
 
 export function enableConsoleLog() {
