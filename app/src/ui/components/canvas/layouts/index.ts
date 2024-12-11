@@ -25,12 +25,6 @@ export const layoutWithDagre = ({ nodes, edges, graph }: LayoutProps) => {
    const dagreGraph = new Dagre.graphlib.Graph();
    dagreGraph.setDefaultEdgeLabel(() => ({}));
    dagreGraph.setGraph(graph || {});
-   /*dagreGraph.setGraph({
-      rankdir: "LR",
-      align: "UR",
-      nodesep: NODE_SEP,
-      ranksep: RANK_SEP
-   });*/
 
    nodes.forEach((node) => {
       dagreGraph.setNode(node.id, {
@@ -48,7 +42,11 @@ export const layoutWithDagre = ({ nodes, edges, graph }: LayoutProps) => {
    return {
       nodes: nodes.map((node) => {
          const position = dagreGraph.node(node.id);
-         return { ...node, x: position.x, y: position.y };
+         return {
+            ...node,
+            x: position.x - (node.width ?? 0) / 2,
+            y: position.y - (node.height ?? 0) / 2
+         };
       }),
       edges
    };

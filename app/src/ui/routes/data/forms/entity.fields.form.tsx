@@ -72,22 +72,16 @@ export const EntityFieldsForm = forwardRef<
       name,
       field
    }));
-   /*const entityFields = entity.fields.map((field) => ({
-         name: field.name,
-         field: field.toJSON()
-      }));*/
 
    const {
       control,
       formState: { isValid, errors },
       getValues,
-      handleSubmit,
       watch,
       register,
       setValue,
       setError,
-      reset,
-      clearErrors
+      reset
    } = useForm({
       mode: "all",
       resolver: typeboxResolver(schema),
@@ -114,7 +108,6 @@ export const EntityFieldsForm = forwardRef<
             props?.onChange?.(toCleanValues(data));
          });
       }
-      //props?.onChange?.()
    }, []);
 
    useImperativeHandle(ref, () => ({
@@ -122,25 +115,9 @@ export const EntityFieldsForm = forwardRef<
       getValues: () => getValues(),
       getData: () => {
          return toCleanValues(getValues());
-         /*return Object.fromEntries(
-            getValues().fields.map((field) => [field.name, objectCleanEmpty(field.field)])
-         );*/
       },
       isValid: () => isValid
    }));
-   console.log("errors", errors.fields);
-
-   /*useEffect(() => {
-      console.log("change", values);
-      onSubmit(values);
-   }, [values]);*/
-
-   function onSubmit(data: TFieldsFormSchema) {
-      console.log("submit", isValid, data, errors);
-   }
-   function onSubmitInvalid(a, b) {
-      console.log("submit invalid", a, b);
-   }
 
    function handleAppend(_type: keyof typeof fieldsSchemaObject) {
       const newField = {
@@ -151,7 +128,6 @@ export const EntityFieldsForm = forwardRef<
             config: {}
          }
       };
-      console.log("handleAppend", _type, newField);
       append(newField);
    }
 
@@ -165,10 +141,7 @@ export const EntityFieldsForm = forwardRef<
    };
    return (
       <>
-         <form
-            onSubmit={handleSubmit(onSubmit as any, onSubmitInvalid)}
-            className="flex flex-col gap-6"
-         >
+         <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-3">
                <div className="flex flex-col gap-4">
                   {sortable ? (
@@ -220,9 +193,7 @@ export const EntityFieldsForm = forwardRef<
                   </Popover>
                </div>
             </div>
-            <button type="submit" className="hidden" />
-            {/*<Debug watch={watch} errors={errors} />*/}
-         </form>
+         </div>
       </>
    );
 });
