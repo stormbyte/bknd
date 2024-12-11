@@ -69,15 +69,13 @@ export function DataSchemaCanvas() {
    const nodeLayout = layoutWithDagre({
       nodes: nodes.map((n) => ({
          id: n.id,
-         ...EntityTableNode.getSize(n)
+         ...EntityTableNode.getSize(n.data)
       })),
       edges,
       graph: {
          rankdir: "LR",
-         //align: "UR",
-         ranker: "network-simplex",
-         nodesep: 350,
-         ranksep: 50
+         marginx: 50,
+         marginy: 50
       }
    });
 
@@ -87,12 +85,6 @@ export function DataSchemaCanvas() {
          n.position = { x: node.x, y: node.y };
       }
    });
-
-   /*const _edges = edges.map((e) => ({
-      ...e,
-      source: e.source + `-${e.target}_id`,
-      target: e.target + "-id"
-   }));*/
 
    return (
       <ReactFlowProvider>
