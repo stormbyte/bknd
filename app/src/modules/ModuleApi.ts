@@ -21,7 +21,7 @@ export type ApiResponse<Data = any> = {
 export type TInput = string | (string | number | PrimaryFieldType)[];
 
 export abstract class ModuleApi<Options extends BaseModuleApiOptions = BaseModuleApiOptions> {
-   fetcher = fetch;
+   protected fetcher?: typeof fetch;
 
    constructor(protected readonly _options: Partial<Options> = {}) {}
 
@@ -136,17 +136,18 @@ export abstract class ModuleApi<Options extends BaseModuleApiOptions = BaseModul
    }
 }
 
-class FetchPromise<T> implements Promise<T> {
+export class FetchPromise<T = ApiResponse<any>> implements Promise<T> {
    // @ts-ignore
    [Symbol.toStringTag]: "FetchPromise";
 
    constructor(
       public request: Request,
-      protected fetcher = fetch
+      protected fetcher?: typeof fetch
    ) {}
 
    async execute() {
-      const res = await this.fetcher(this.request);
+      const fetcher = this.fetcher ?? fetch;
+      const res = await fetcher(this.request);
       let resBody: any;
       let resData: any;
 
@@ -194,5 +195,10 @@ class FetchPromise<T> implements Promise<T> {
             throw reason;
          }
       );
+   }
+
+   getKey(): string {
+      const url = new URL(this.request.url);
+      return url.pathname + url.search;
    }
 }

@@ -29,11 +29,11 @@ export class AuthApi extends ModuleApi<AuthApiOptions> {
       return res;
    }
 
-   async me() {
+   me() {
       return this.get<{ user: SafeUser | null }>(["me"]);
    }
 
-   async strategies() {
+   strategies() {
       return this.get<Pick<AppAuthSchema, "strategies" | "basepath">>(["strategies"]);
    }
 
