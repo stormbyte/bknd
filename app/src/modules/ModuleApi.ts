@@ -18,7 +18,11 @@ export type ApiResponse<Data = any> = {
    res: Response;
 };
 
-export abstract class ModuleApi<Options extends BaseModuleApiOptions> {
+export type TInput = string | (string | number | PrimaryFieldType)[];
+
+export abstract class ModuleApi<Options extends BaseModuleApiOptions = BaseModuleApiOptions> {
+   fetcher = fetch;
+
    constructor(protected readonly _options: Partial<Options> = {}) {}
 
    protected getDefaultOptions(): Partial<Options> {
@@ -35,14 +39,15 @@ export abstract class ModuleApi<Options extends BaseModuleApiOptions> {
    }
 
    protected getUrl(path: string) {
-      return this.options.host + (this.options.basepath + "/" + path).replace(/\/\//g, "/");
+      const basepath = this.options.basepath ?? "";
+      return this.options.host + (basepath + "/" + path).replace(/\/{2,}/g, "/").replace(/\/$/, "");
    }
 
-   protected async request<Data = any>(
-      _input: string | (string | number | PrimaryFieldType)[],
+   protected request<Data = any>(
+      _input: TInput,
       _query?: Record<string, any> | URLSearchParams,
       _init?: RequestInit
-   ): Promise<ApiResponse<Data>> {
+   ): FetchPromise<ApiResponse<Data>> {
       const method = _init?.method ?? "GET";
       const input = Array.isArray(_input) ? _input.join("/") : _input;
       let url = this.getUrl(input);
@@ -78,14 +83,70 @@ export abstract class ModuleApi<Options extends BaseModuleApiOptions> {
          }
       }
 
-      //console.log("url", url);
-      const res = await fetch(url, {
+      const request = new Request(url, {
          ..._init,
          method,
          body,
          headers
       });
 
+      return new FetchPromise(request, this.fetcher);
+   }
+
+   get<Data = any>(
+      _input: TInput,
+      _query?: Record<string, any> | URLSearchParams,
+      _init?: RequestInit
+   ) {
+      return this.request<Data>(_input, _query, {
+         ..._init,
+         method: "GET"
+      });
+   }
+
+   post<Data = any>(_input: TInput, body?: any, _init?: RequestInit) {
+      return this.request<Data>(_input, undefined, {
+         ..._init,
+         body,
+         method: "POST"
+      });
+   }
+
+   patch<Data = any>(_input: TInput, body?: any, _init?: RequestInit) {
+      return this.request<Data>(_input, undefined, {
+         ..._init,
+         body,
+         method: "PATCH"
+      });
+   }
+
+   put<Data = any>(_input: TInput, body?: any, _init?: RequestInit) {
+      return this.request<Data>(_input, undefined, {
+         ..._init,
+         body,
+         method: "PUT"
+      });
+   }
+
+   delete<Data = any>(_input: TInput, _init?: RequestInit) {
+      return this.request<Data>(_input, undefined, {
+         ..._init,
+         method: "DELETE"
+      });
+   }
+}
+
+class FetchPromise<T> implements Promise<T> {
+   // @ts-ignore
+   [Symbol.toStringTag]: "FetchPromise";
+
+   constructor(
+      public request: Request,
+      protected fetcher = fetch
+   ) {}
+
+   async execute() {
+      const res = await this.fetcher(this.request);
       let resBody: any;
       let resData: any;
 
@@ -108,60 +169,30 @@ export abstract class ModuleApi<Options extends BaseModuleApiOptions> {
       };
    }
 
-   protected async get<Data = any>(
-      _input: string | (string | number | PrimaryFieldType)[],
-      _query?: Record<string, any> | URLSearchParams,
-      _init?: RequestInit
-   ) {
-      return this.request<Data>(_input, _query, {
-         ..._init,
-         method: "GET"
-      });
+   // biome-ignore lint/suspicious/noThenProperty: it's a promise :)
+   then<TResult1 = T, TResult2 = never>(
+      onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | null | undefined,
+      onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null | undefined
+   ): Promise<TResult1 | TResult2> {
+      return this.execute().then(onfulfilled as any, onrejected);
    }
 
-   protected async post<Data = any>(
-      _input: string | (string | number | PrimaryFieldType)[],
-      body?: any,
-      _init?: RequestInit
-   ) {
-      return this.request<Data>(_input, undefined, {
-         ..._init,
-         body,
-         method: "POST"
-      });
+   catch<TResult = never>(
+      onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | null | undefined
+   ): Promise<T | TResult> {
+      return this.then(undefined, onrejected);
    }
 
-   protected async patch<Data = any>(
-      _input: string | (string | number | PrimaryFieldType)[],
-      body?: any,
-      _init?: RequestInit
-   ) {
-      return this.request<Data>(_input, undefined, {
-         ..._init,
-         body,
-         method: "PATCH"
-      });
-   }
-
-   protected async put<Data = any>(
-      _input: string | (string | number | PrimaryFieldType)[],
-      body?: any,
-      _init?: RequestInit
-   ) {
-      return this.request<Data>(_input, undefined, {
-         ..._init,
-         body,
-         method: "PUT"
-      });
-   }
-
-   protected async delete<Data = any>(
-      _input: string | (string | number | PrimaryFieldType)[],
-      _init?: RequestInit
-   ) {
-      return this.request<Data>(_input, undefined, {
-         ..._init,
-         method: "DELETE"
-      });
+   finally(onfinally?: (() => void) | null | undefined): Promise<T> {
+      return this.then(
+         (value) => {
+            onfinally?.();
+            return value;
+         },
+         (reason) => {
+            onfinally?.();
+            throw reason;
+         }
+      );
    }
 }
