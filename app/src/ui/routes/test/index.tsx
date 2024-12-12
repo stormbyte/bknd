@@ -1,6 +1,7 @@
 import AppShellAccordionsTest from "ui/routes/test/tests/appshell-accordions-test";
 import SwaggerTest from "ui/routes/test/tests/swagger-test";
 import SWRAndAPI from "ui/routes/test/tests/swr-and-api";
+import SwrAndDataApi from "ui/routes/test/tests/swr-and-data-api";
 import { Route, useParams } from "wouter";
 import { Empty } from "../../components/display/Empty";
 import { Link } from "../../components/wouter/Link";
@@ -39,7 +40,8 @@ const tests = {
    FlowsTest,
    AppShellAccordionsTest,
    SwaggerTest,
-   SWRAndAPI
+   SWRAndAPI,
+   SwrAndDataApi
 } as const;
 
 export default function TestRoutes() {

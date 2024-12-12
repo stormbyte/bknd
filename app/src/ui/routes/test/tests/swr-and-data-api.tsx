@@ -1,13 +1,19 @@
 import { useEffect, useState } from "react";
-import { useApiQuery } from "ui/client";
+import { useEntity, useEntityQuery } from "ui/client/api/use-entity";
 import { Scrollable } from "ui/layouts/AppShell/AppShell";
 
-export default function SWRAndAPI() {
+export default function SwrAndDataApi() {
+   return (
+      <div>
+         <DirectDataApi />
+         <QueryDataApi />
+      </div>
+   );
+}
+
+function QueryDataApi() {
    const [text, setText] = useState("");
-   const { data, ...r } = useApiQuery((api) => api.data.readOne("comments", 1), {
-      refine: (data) => data.data,
-      revalidateOnFocus: true
-   });
+   const { data, update, ...r } = useEntityQuery("comments", 1, {});
    const comment = data ? data : null;
 
    useEffect(() => {
@@ -16,7 +22,7 @@ export default function SWRAndAPI() {
 
    return (
       <Scrollable>
-         <pre>{JSON.stringify(r.promise.keyArray({ search: false }))}</pre>
+         <pre>{JSON.stringify(r.key)}</pre>
          {r.error && <div>failed to load</div>}
          {r.isLoading && <div>loading...</div>}
          {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
@@ -25,14 +31,7 @@ export default function SWRAndAPI() {
                onSubmit={async (e) => {
                   e.preventDefault();
                   if (!comment) return;
-
-                  await r.mutate(async () => {
-                     const res = await r.api.data.updateOne("comments", comment.id, {
-                        content: text
-                     });
-                     return res.data;
-                  });
-
+                  await update({ content: text });
                   return false;
                }}
             >
@@ -42,4 +41,15 @@ export default function SWRAndAPI() {
          )}
       </Scrollable>
    );
+}
+
+function DirectDataApi() {
+   const [data, setData] = useState<any>();
+   const { create, read, update, _delete } = useEntity("comments", 1);
+
+   useEffect(() => {
+      read().then(setData);
+   }, []);
+
+   return <pre>{JSON.stringify(data, null, 2)}</pre>;
 }

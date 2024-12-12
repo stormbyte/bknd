@@ -80,8 +80,6 @@ export const useClient = () => {
    if (!context) {
       throw new Error("useClient must be used within a ClientProvider");
    }
-
-   console.log("useClient", context.baseUrl);
    return context.client;
 };
 

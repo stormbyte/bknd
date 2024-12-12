@@ -90,7 +90,9 @@ export abstract class ModuleApi<Options extends BaseModuleApiOptions = BaseModul
          headers
       });
 
-      return new FetchPromise(request, this.fetcher);
+      return new FetchPromise(request, {
+         fetcher: this.fetcher
+      });
    }
 
    get<Data = any>(
@@ -142,11 +144,13 @@ export class FetchPromise<T = ApiResponse<any>> implements Promise<T> {
 
    constructor(
       public request: Request,
-      protected fetcher?: typeof fetch
+      protected options?: {
+         fetcher?: typeof fetch;
+      }
    ) {}
 
-   async execute() {
-      const fetcher = this.fetcher ?? fetch;
+   async execute(): Promise<T> {
+      const fetcher = this.options?.fetcher ?? fetch;
       const res = await fetcher(this.request);
       let resBody: any;
       let resData: any;
@@ -167,7 +171,7 @@ export class FetchPromise<T = ApiResponse<any>> implements Promise<T> {
          body: resBody,
          data: resData,
          res
-      };
+      } as T;
    }
 
    // biome-ignore lint/suspicious/noThenProperty: it's a promise :)
@@ -197,8 +201,21 @@ export class FetchPromise<T = ApiResponse<any>> implements Promise<T> {
       );
    }
 
-   getKey(): string {
+   path(): string {
       const url = new URL(this.request.url);
-      return url.pathname + url.search;
+      return url.pathname;
+   }
+
+   key(options?: { search: boolean }): string {
+      const url = new URL(this.request.url);
+      return options?.search !== false ? this.path() + url.search : this.path();
+   }
+
+   keyArray(options?: { search: boolean }): string[] {
+      const url = new URL(this.request.url);
+      const path = this.path().split("/");
+      return (options?.search !== false ? [...path, url.searchParams.toString()] : path).filter(
+         Boolean
+      );
    }
 }
