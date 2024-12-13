@@ -1,21 +1,19 @@
 import { type NotificationData, notifications } from "@mantine/notifications";
+import type { Api } from "Api";
 import { ucFirst } from "core/utils";
 import type { ModuleConfigs } from "modules";
 import type { ResponseObject } from "modules/ModuleApi";
 import type { ConfigUpdateResponse } from "modules/server/SystemController";
-import type { AppQueryClient } from "../utils/AppQueryClient";
 
 export type SchemaActionsProps = {
-   client: AppQueryClient;
+   api: Api;
    setSchema: React.Dispatch<React.SetStateAction<any>>;
    reloadSchema: () => Promise<void>;
 };
 
 export type TSchemaActions = ReturnType<typeof getSchemaActions>;
 
-export function getSchemaActions({ client, setSchema, reloadSchema }: SchemaActionsProps) {
-   const api = client.api;
-
+export function getSchemaActions({ api, setSchema, reloadSchema }: SchemaActionsProps) {
    async function handleConfigUpdate<Module extends keyof ModuleConfigs>(
       action: string,
       module: Module,

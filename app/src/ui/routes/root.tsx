@@ -1,19 +1,10 @@
 import { IconHome } from "@tabler/icons-react";
-import { Suspense, useEffect } from "react";
+import { useEffect } from "react";
 import { useAuth } from "ui/client";
 import { Empty } from "../components/display/Empty";
 import { useBrowserTitle } from "../hooks/use-browser-title";
 import * as AppShell from "../layouts/AppShell/AppShell";
 import { useNavigate } from "../lib/routes";
-
-// @todo: package is still required somehow
-const ReactQueryDevtools = (p: any) => null; /*!isDebug()
-   ? () => null // Render nothing in production
-   : lazy(() =>
-        import("@tanstack/react-query-devtools").then((res) => ({
-           default: res.ReactQueryDevtools,
-        })),
-     );*/
 
 export const Root = ({ children }) => {
    const { verify } = useAuth();
@@ -26,10 +17,6 @@ export const Root = ({ children }) => {
       <AppShell.Root>
          <AppShell.Header />
          <AppShell.Content>{children}</AppShell.Content>
-
-         <Suspense>
-            <ReactQueryDevtools buttonPosition="bottom-left" />
-         </Suspense>
       </AppShell.Root>
    );
 };

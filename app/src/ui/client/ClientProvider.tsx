@@ -1,21 +1,9 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { TApiUser } from "Api";
+import { Api, type ApiOptions, type TApiUser } from "Api";
 import { createContext, useContext, useEffect, useState } from "react";
-//import { useBkndWindowContext } from "ui/client/BkndProvider";
-import { AppQueryClient } from "./utils/AppQueryClient";
 
-const ClientContext = createContext<{ baseUrl: string; client: AppQueryClient }>({
+const ClientContext = createContext<{ baseUrl: string; api: Api }>({
    baseUrl: undefined
 } as any);
-
-export const queryClient = new QueryClient({
-   defaultOptions: {
-      queries: {
-         retry: false,
-         refetchOnWindowFocus: false
-      }
-   }
-});
 
 export type ClientProviderProps = {
    children?: any;
@@ -49,47 +37,34 @@ export const ClientProvider = ({ children, baseUrl, user }: ClientProviderProps)
       return null; // or a loader/spinner if desired
    }
 
-   //console.log("client provider11 with", { baseUrl, fallback: actualBaseUrl, user });
-   const client = createClient(actualBaseUrl, user ?? winCtx.user);
+   const api = new Api({ host: actualBaseUrl, user: user ?? winCtx.user });
 
    return (
-      <QueryClientProvider client={queryClient}>
-         <ClientContext.Provider value={{ baseUrl: actualBaseUrl, client }}>
-            {children}
-         </ClientContext.Provider>
-      </QueryClientProvider>
+      <ClientContext.Provider value={{ baseUrl: actualBaseUrl, api }}>
+         {children}
+      </ClientContext.Provider>
    );
 };
 
-export function createClient(baseUrl: string, user?: object) {
-   return new AppQueryClient(baseUrl, user);
-}
-
-export function createOrUseClient(baseUrl: string) {
+export const useApi = (host?: ApiOptions["host"]) => {
    const context = useContext(ClientContext);
-   if (!context) {
-      console.warn("createOrUseClient returned a new client");
-      return createClient(baseUrl);
+   if (host && host !== context.baseUrl) {
+      return new Api({ host });
    }
 
-   return context.client;
-}
-
-export const useClient = () => {
-   const context = useContext(ClientContext);
-   if (!context) {
-      throw new Error("useClient must be used within a ClientProvider");
-   }
-   return context.client;
+   return context.api;
 };
 
+/**
+ * @deprecated use useApi().baseUrl instead
+ */
 export const useBaseUrl = () => {
    const context = useContext(ClientContext);
    return context.baseUrl;
 };
 
 type BkndWindowContext = {
-   user?: object;
+   user?: TApiUser;
    logout_route: string;
 };
 export function useBkndWindowContext(): BkndWindowContext {

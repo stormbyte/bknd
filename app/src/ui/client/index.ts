@@ -2,7 +2,7 @@ export {
    ClientProvider,
    useBkndWindowContext,
    type ClientProviderProps,
-   useClient,
+   useApi,
    useBaseUrl
 } from "./ClientProvider";
 

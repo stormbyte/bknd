@@ -1,12 +1,7 @@
+import type { ModuleConfigs, ModuleSchemas } from "modules";
 import { getDefaultConfig, getDefaultSchema } from "modules/ModuleManager";
 import { createContext, startTransition, useContext, useEffect, useRef, useState } from "react";
-import { Logo } from "ui/components/display/Logo";
-import { Link } from "ui/components/wouter/Link";
-import * as AppShell from "ui/layouts/AppShell/AppShell";
-import { HeaderNavigation } from "ui/layouts/AppShell/Header";
-import { Root } from "ui/routes/root";
-import type { ModuleConfigs, ModuleSchemas } from "../../modules";
-import { useClient } from "./ClientProvider";
+import { useApi } from "ui/client";
 import { type TSchemaActions, getSchemaActions } from "./schema/actions";
 import { AppReduced } from "./utils/AppReduced";
 
@@ -38,7 +33,7 @@ export function BkndProvider({
       useState<Pick<BkndContext, "version" | "schema" | "config" | "permissions">>();
    const [fetched, setFetched] = useState(false);
    const errorShown = useRef<boolean>();
-   const client = useClient();
+   const api = useApi();
 
    async function reloadSchema() {
       await fetchSchema(includeSecrets, true);
@@ -46,7 +41,7 @@ export function BkndProvider({
 
    async function fetchSchema(_includeSecrets: boolean = false, force?: boolean) {
       if (withSecrets && !force) return;
-      const res = await client.api.system.readSchema({
+      const res = await api.system.readSchema({
          config: true,
          secrets: _includeSecrets
       });
@@ -100,7 +95,7 @@ export function BkndProvider({
 
    if (!fetched || !schema) return fallback;
    const app = new AppReduced(schema?.config as any);
-   const actions = getSchemaActions({ client, setSchema, reloadSchema });
+   const actions = getSchemaActions({ api, setSchema, reloadSchema });
 
    return (
       <BkndContext.Provider value={{ ...schema, actions, requireSecrets, app, adminOverride }}>

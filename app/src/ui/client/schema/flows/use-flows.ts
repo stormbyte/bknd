@@ -1,10 +1,8 @@
 import { type Static, parse } from "core/utils";
 import { type TAppFlowSchema, flowSchema } from "flows/flows-schema";
 import { useBknd } from "../../BkndProvider";
-import { useClient } from "../../ClientProvider";
 
 export function useFlows() {
-   const client = useClient();
    const { config, app, actions: bkndActions } = useBknd();
 
    const actions = {

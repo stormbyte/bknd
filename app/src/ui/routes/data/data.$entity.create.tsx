@@ -1,9 +1,9 @@
 import { Type } from "core/utils";
+import type { EntityData } from "data";
 import { useState } from "react";
-import { useEntityMutate, useEntityQuery } from "ui/client";
+import { useEntityMutate } from "ui/client";
 import { useBknd } from "ui/client/BkndProvider";
 import { Button } from "ui/components/buttons/Button";
-import { type EntityData, useEntity } from "ui/container";
 import { useBrowserTitle } from "ui/hooks/use-browser-title";
 import { useSearch } from "ui/hooks/use-search";
 import * as AppShell from "ui/layouts/AppShell/AppShell";

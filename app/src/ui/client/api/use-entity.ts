@@ -100,6 +100,7 @@ export const useEntityQuery = <
    return {
       ...swr,
       ...mapped,
+      api,
       key
    };
 };

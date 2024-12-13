@@ -1,8 +1,8 @@
 import { ucFirst } from "core/utils";
-import type { Entity, EntityData, EntityRelation } from "data";
+import type { Entity, EntityData, EntityRelation, RepoQuery } from "data";
 import { Fragment, useState } from "react";
 import { TbDots } from "react-icons/tb";
-import { useClient, useEntityQuery } from "ui/client";
+import { useApiQuery, useEntityQuery } from "ui/client";
 import { useBkndData } from "ui/client/schema/data/use-bknd-data";
 import { Button } from "ui/components/buttons/Button";
 import { IconButton } from "ui/components/buttons/IconButton";
@@ -232,18 +232,17 @@ function EntityDetailInner({
    relation: EntityRelation;
 }) {
    const other = relation.other(entity);
-   const client = useClient();
    const [navigate] = useNavigate();
 
-   const search = {
+   const search: Partial<RepoQuery> = {
       select: other.entity.getSelect(undefined, "table"),
       limit: 10,
       offset: 0
    };
-   const query = client
-      .query()
-      .data.entity(entity.name)
-      .readManyByReference(id, other.reference, other.entity.name, search);
+   // @todo: add custom key for invalidation
+   const $q = useApiQuery((api) =>
+      api.data.readManyByReference(entity.name, id, other.reference, search)
+   );
 
    function handleClickRow(row: Record<string, any>) {
       navigate(routes.data.entity.edit(other.entity.name, row.id));
@@ -262,12 +261,11 @@ function EntityDetailInner({
       }
    }
 
-   if (query.isPending) {
+   if (!$q.data) {
       return null;
    }
 
-   const isUpdating = query.isInitialLoading || query.isFetching;
-   //console.log("query", query, search.select);
+   const isUpdating = $q.isValidating || $q.isLoading;
 
    return (
       <div
@@ -276,13 +274,12 @@ function EntityDetailInner({
       >
          <EntityTable2
             select={search.select}
-            data={query.data?.data ?? []}
+            data={$q.data ?? null}
             entity={other.entity}
             onClickRow={handleClickRow}
             onClickNew={handleClickNew}
             page={1}
-            /* @ts-ignore */
-            total={query.data?.body?.meta?.count ?? 1}
+            total={$q.data?.body?.meta?.count ?? 1}
             /*onClickPage={handleClickPage}*/
          />
       </div>

@@ -10,7 +10,7 @@ import {
 } from "data";
 import { MediaField } from "media/MediaField";
 import { type ComponentProps, Suspense } from "react";
-import { useClient } from "ui/client";
+import { useApi, useBaseUrl, useInvalidate } from "ui/client";
 import { JsonEditor } from "ui/components/code/JsonEditor";
 import * as Formy from "ui/components/form/Formy";
 import { FieldLabel } from "ui/components/form/Formy";
@@ -215,7 +215,9 @@ function EntityMediaFormField({
 }) {
    if (!entityId) return;
 
-   const client = useClient();
+   const api = useApi();
+   const baseUrl = useBaseUrl();
+   const invalidate = useInvalidate();
    const value = formApi.useStore((state) => {
       const val = state.values[field.name];
       if (!val || typeof val === "undefined") return [];
@@ -227,22 +229,21 @@ function EntityMediaFormField({
       value.length === 0
          ? []
          : mediaItemsToFileStates(value, {
-              baseUrl: client.baseUrl,
+              baseUrl: api.baseUrl,
               overrides: { state: "uploaded" }
            });
 
    const getUploadInfo = useEvent(() => {
-      const api = client.media().api();
       return {
-         url: api.getEntityUploadUrl(entity.name, entityId, field.name),
-         headers: api.getUploadHeaders(),
+         url: api.media.getEntityUploadUrl(entity.name, entityId, field.name),
+         headers: api.media.getUploadHeaders(),
          method: "POST"
       };
    });
 
-   const handleDelete = useEvent(async (file) => {
-      client.__invalidate(entity.name, entityId);
-      return await client.media().deleteFile(file);
+   const handleDelete = useEvent(async (file: FileState) => {
+      invalidate((api) => api.data.readOne(entity.name, entityId));
+      return api.media.deleteFile(file.path);
    });
 
    return (

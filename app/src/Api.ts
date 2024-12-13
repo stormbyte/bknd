@@ -1,3 +1,4 @@
+import type { SafeUser } from "auth";
 import { AuthApi } from "auth/api/AuthApi";
 import { DataApi } from "data/api/DataApi";
 import { decode } from "hono/jwt";
@@ -5,7 +6,7 @@ import { omit } from "lodash-es";
 import { MediaApi } from "media/api/MediaApi";
 import { SystemApi } from "modules/SystemApi";
 
-export type TApiUser = object;
+export type TApiUser = SafeUser;
 
 declare global {
    interface Window {
@@ -22,6 +23,12 @@ export type ApiOptions = {
    headers?: Headers;
    key?: string;
    localStorage?: boolean;
+};
+
+export type AuthState = {
+   token?: string;
+   user?: TApiUser;
+   verified: boolean;
 };
 
 export class Api {
@@ -48,6 +55,10 @@ export class Api {
       }
 
       this.buildApis();
+   }
+
+   get baseUrl() {
+      return this.options.host;
    }
 
    get tokenKey() {
@@ -85,7 +96,11 @@ export class Api {
 
    updateToken(token?: string, rebuild?: boolean) {
       this.token = token;
-      this.user = token ? omit(decode(token).payload as any, ["iat", "iss", "exp"]) : undefined;
+      if (token) {
+         this.user = omit(decode(token).payload as any, ["iat", "iss", "exp"]) as any;
+      } else {
+         this.user = undefined;
+      }
 
       if (this.options.localStorage) {
          const key = this.tokenKey;
@@ -105,12 +120,26 @@ export class Api {
       return this;
    }
 
-   getAuthState() {
+   getAuthState(): AuthState {
       return {
          token: this.token,
          user: this.user,
          verified: this.verified
       };
+   }
+
+   async verifyAuth() {
+      try {
+         const res = await this.auth.me();
+         if (!res.ok || !res.body.user) {
+            throw new Error();
+         }
+
+         this.markAuthVerified(true);
+      } catch (e) {
+         this.markAuthVerified(false);
+         this.updateToken(undefined);
+      }
    }
 
    getUser(): TApiUser | null {

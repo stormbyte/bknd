@@ -4,12 +4,11 @@ import { ucFirst } from "core/utils";
 import type { EntityData, RelationField } from "data";
 import { useEffect, useRef, useState } from "react";
 import { TbEye } from "react-icons/tb";
-import { useClient, useEntityQuery } from "ui/client";
+import { useEntityQuery } from "ui/client";
 import { useBknd } from "ui/client/bknd";
 import { Button } from "ui/components/buttons/Button";
 import * as Formy from "ui/components/form/Formy";
 import { Popover } from "ui/components/overlay/Popover";
-import { useEntities } from "ui/container";
 import { routes } from "ui/lib/routes";
 import { useLocation } from "wouter";
 import { EntityTable } from "../EntityTable";
@@ -33,7 +32,6 @@ export function EntityRelationalFormField({
    const [query, setQuery] = useState<any>({ limit: 10, page: 1, perPage: 10 });
    const [, navigate] = useLocation();
    const ref = useRef<any>(null);
-   const client = useClient();
    const $q = useEntityQuery(field.target(), undefined, {
       limit: query.limit,
       offset: (query.page - 1) * query.limit
@@ -53,7 +51,7 @@ export function EntityRelationalFormField({
          const rel_value = field.target();
          if (!rel_value || !relationalField) return;
 
-         const fetched = await client.api.data.readOne(field.target(), relationalField);
+         const fetched = await $q.api.readOne(field.target(), relationalField);
          if (fetched.ok && fetched.data) {
             _setValue(fetched.data as any);
          }

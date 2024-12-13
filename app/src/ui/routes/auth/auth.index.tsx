@@ -1,25 +1,19 @@
-import { useClient } from "ui/client";
+import { useApiQuery } from "ui/client";
 import { useBknd } from "ui/client/bknd";
 import { useBkndAuth } from "ui/client/schema/auth/use-bknd-auth";
+import { ButtonLink, type ButtonLinkProps } from "ui/components/buttons/Button";
 import { Alert } from "ui/components/display/Alert";
+import * as AppShell from "ui/layouts/AppShell/AppShell";
 import { routes } from "ui/lib/routes";
-import {
-   Button,
-   ButtonLink,
-   type ButtonLinkProps,
-   type ButtonProps
-} from "../../components/buttons/Button";
-import * as AppShell from "../../layouts/AppShell/AppShell";
 
 export function AuthIndex() {
-   const client = useClient();
    const { app } = useBknd();
    const {
       config: { roles, strategies, entity_name, enabled }
    } = useBkndAuth();
    const users_entity = entity_name;
-   const query = client.query().data.entity("users").count();
-   const usersTotal = query.data?.body.count ?? 0;
+   const $q = useApiQuery((api) => api.data.count(users_entity));
+   const usersTotal = $q.data?.count ?? 0;
    const rolesTotal = Object.keys(roles ?? {}).length ?? 0;
    const strategiesTotal = Object.keys(strategies ?? {}).length ?? 0;
 

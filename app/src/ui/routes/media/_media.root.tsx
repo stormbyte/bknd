@@ -1,16 +1,17 @@
 import { IconPhoto } from "@tabler/icons-react";
+import type { MediaFieldSchema } from "modules";
 import { TbSettings } from "react-icons/tb";
-import { Dropzone } from "ui/modules/media/components/dropzone/Dropzone";
+import { useApi, useBaseUrl, useEntityQuery } from "ui/client";
+import { useBknd } from "ui/client/BkndProvider";
+import { IconButton } from "ui/components/buttons/IconButton";
+import { Empty } from "ui/components/display/Empty";
+import { Link } from "ui/components/wouter/Link";
+import { useBrowserTitle } from "ui/hooks/use-browser-title";
+import { useEvent } from "ui/hooks/use-event";
+import * as AppShell from "ui/layouts/AppShell/AppShell";
+import { Dropzone, type FileState } from "ui/modules/media/components/dropzone/Dropzone";
 import { mediaItemsToFileStates } from "ui/modules/media/helper";
 import { useLocation } from "wouter";
-import { useClient } from "../../client";
-import { useBknd } from "../../client/BkndProvider";
-import { IconButton } from "../../components/buttons/IconButton";
-import { Empty } from "../../components/display/Empty";
-import { Link } from "../../components/wouter/Link";
-import { useBrowserTitle } from "../../hooks/use-browser-title";
-import { useEvent } from "../../hooks/use-event";
-import * as AppShell from "../../layouts/AppShell/AppShell";
 
 export function MediaRoot({ children }) {
    const { app, config } = useBknd();
@@ -62,32 +63,30 @@ export function MediaRoot({ children }) {
 // @todo: add infinite load
 export function MediaEmpty() {
    useBrowserTitle(["Media"]);
-   const client = useClient();
-   const query = client.media().list({ limit: 50 });
+   const baseUrl = useBaseUrl();
+   const api = useApi();
+   const $q = useEntityQuery("media", undefined, { limit: 50 });
 
    const getUploadInfo = useEvent((file) => {
-      const api = client.media().api();
       return {
-         url: api.getFileUploadUrl(file),
-         headers: api.getUploadHeaders(),
+         url: api.media.getFileUploadUrl(file),
+         headers: api.media.getUploadHeaders(),
          method: "POST"
       };
    });
 
-   const handleDelete = useEvent(async (file) => {
-      return await client.media().deleteFile(file);
+   const handleDelete = useEvent(async (file: FileState) => {
+      return api.media.deleteFile(file.path);
    });
 
-   const media = query.data?.data || [];
-   const initialItems = mediaItemsToFileStates(media, { baseUrl: client.baseUrl });
-
-   console.log("initialItems", initialItems);
+   const media = ($q.data || []) as MediaFieldSchema[];
+   const initialItems = mediaItemsToFileStates(media, { baseUrl });
 
    return (
       <AppShell.Scrollable>
          <div className="flex flex-1 p-3">
             <Dropzone
-               key={query.isSuccess ? "loaded" : "initial"}
+               key={$q.isLoading ? "loaded" : "initial"}
                getUploadInfo={getUploadInfo}
                handleDelete={handleDelete}
                autoUpload
