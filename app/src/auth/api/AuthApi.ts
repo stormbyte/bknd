@@ -15,7 +15,7 @@ export class AuthApi extends ModuleApi<AuthApiOptions> {
 
    async loginWithPassword(input: any) {
       const res = await this.post<AuthResponse>(["password", "login"], input);
-      if (res.res.ok && res.body.token) {
+      if (res.ok && res.body.token) {
          await this.options.onTokenUpdate?.(res.body.token);
       }
       return res;
@@ -23,7 +23,7 @@ export class AuthApi extends ModuleApi<AuthApiOptions> {
 
    async registerWithPassword(input: any) {
       const res = await this.post<AuthResponse>(["password", "register"], input);
-      if (res.res.ok && res.body.token) {
+      if (res.ok && res.body.token) {
          await this.options.onTokenUpdate?.(res.body.token);
       }
       return res;

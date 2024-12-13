@@ -1,4 +1,4 @@
-import type { PrimaryFieldType } from "core";
+import { type PrimaryFieldType, isDebug } from "core";
 import { encodeSearch } from "core/utils";
 
 export type { PrimaryFieldType };
@@ -10,6 +10,7 @@ export type BaseModuleApiOptions = {
    token_transport?: "header" | "cookie" | "none";
 };
 
+/** @deprecated */
 export type ApiResponse<Data = any> = {
    success: boolean;
    status: number;
@@ -47,7 +48,7 @@ export abstract class ModuleApi<Options extends BaseModuleApiOptions = BaseModul
       _input: TInput,
       _query?: Record<string, any> | URLSearchParams,
       _init?: RequestInit
-   ): FetchPromise<ApiResponse<Data>> {
+   ): FetchPromise<ResponseObject<Data>> {
       const method = _init?.method ?? "GET";
       const input = Array.isArray(_input) ? _input.join("/") : _input;
       let url = this.getUrl(input);
@@ -138,6 +139,58 @@ export abstract class ModuleApi<Options extends BaseModuleApiOptions = BaseModul
    }
 }
 
+export type ResponseObject<Body = any, Data = Body extends { data: infer R } ? R : Body> = Data & {
+   raw: Response;
+   res: Response;
+   data: Data;
+   body: Body;
+   ok: boolean;
+   status: number;
+   toJSON(): Data;
+};
+
+export function createResponseProxy<Body = any, Data = any>(
+   raw: Response,
+   body: Body,
+   data?: Data
+): ResponseObject<Body, Data> {
+   const actualData = data ?? (body as unknown as Data);
+   const _props = ["raw", "body", "ok", "status", "res", "data", "toJSON"];
+
+   return new Proxy(actualData as any, {
+      get(target, prop, receiver) {
+         if (prop === "raw" || prop === "res") return raw;
+         if (prop === "body") return body;
+         if (prop === "data") return data;
+         if (prop === "ok") return raw.ok;
+         if (prop === "status") return raw.status;
+         if (prop === "toJSON") {
+            return () => target;
+         }
+         return Reflect.get(target, prop, receiver);
+      },
+      has(target, prop) {
+         if (_props.includes(prop as string)) {
+            return true;
+         }
+         return Reflect.has(target, prop);
+      },
+      ownKeys(target) {
+         return Array.from(new Set([...Reflect.ownKeys(target), ..._props]));
+      },
+      getOwnPropertyDescriptor(target, prop) {
+         if (_props.includes(prop as string)) {
+            return {
+               configurable: true,
+               enumerable: true,
+               value: Reflect.get({ raw, body, ok: raw.ok, status: raw.status }, prop)
+            };
+         }
+         return Reflect.getOwnPropertyDescriptor(target, prop);
+      }
+   }) as ResponseObject<Body, Data>;
+}
+
 export class FetchPromise<T = ApiResponse<any>> implements Promise<T> {
    // @ts-ignore
    [Symbol.toStringTag]: "FetchPromise";
@@ -149,7 +202,10 @@ export class FetchPromise<T = ApiResponse<any>> implements Promise<T> {
       }
    ) {}
 
-   async execute(): Promise<T> {
+   async execute(): Promise<ResponseObject<T>> {
+      // delay in dev environment
+      isDebug() && (await new Promise((resolve) => setTimeout(resolve, 200)));
+
       const fetcher = this.options?.fetcher ?? fetch;
       const res = await fetcher(this.request);
       let resBody: any;
@@ -165,13 +221,7 @@ export class FetchPromise<T = ApiResponse<any>> implements Promise<T> {
          resBody = await res.text();
       }
 
-      return {
-         success: res.ok,
-         status: res.status,
-         body: resBody,
-         data: resData,
-         res
-      } as T;
+      return createResponseProxy<T>(res, resBody, resData);
    }
 
    // biome-ignore lint/suspicious/noThenProperty: it's a promise :)

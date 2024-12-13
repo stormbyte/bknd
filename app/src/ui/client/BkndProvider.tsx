@@ -1,5 +1,10 @@
 import { getDefaultConfig, getDefaultSchema } from "modules/ModuleManager";
 import { createContext, startTransition, useContext, useEffect, useRef, useState } from "react";
+import { Logo } from "ui/components/display/Logo";
+import { Link } from "ui/components/wouter/Link";
+import * as AppShell from "ui/layouts/AppShell/AppShell";
+import { HeaderNavigation } from "ui/layouts/AppShell/Header";
+import { Root } from "ui/routes/root";
 import type { ModuleConfigs, ModuleSchemas } from "../../modules";
 import { useClient } from "./ClientProvider";
 import { type TSchemaActions, getSchemaActions } from "./schema/actions";
@@ -22,8 +27,12 @@ export type { TSchemaActions };
 export function BkndProvider({
    includeSecrets = false,
    adminOverride,
-   children
-}: { includeSecrets?: boolean; children: any } & Pick<BkndContext, "adminOverride">) {
+   children,
+   fallback = null
+}: { includeSecrets?: boolean; children: any; fallback?: React.ReactNode } & Pick<
+   BkndContext,
+   "adminOverride"
+>) {
    const [withSecrets, setWithSecrets] = useState<boolean>(includeSecrets);
    const [schema, setSchema] =
       useState<Pick<BkndContext, "version" | "schema" | "config" | "permissions">>();
@@ -37,7 +46,7 @@ export function BkndProvider({
 
    async function fetchSchema(_includeSecrets: boolean = false, force?: boolean) {
       if (withSecrets && !force) return;
-      const { body, res } = await client.api.system.readSchema({
+      const res = await client.api.system.readSchema({
          config: true,
          secrets: _includeSecrets
       });
@@ -57,7 +66,7 @@ export function BkndProvider({
       }
 
       const schema = res.ok
-         ? body
+         ? res.body
          : ({
               version: 0,
               schema: getDefaultSchema(),
@@ -89,7 +98,7 @@ export function BkndProvider({
       fetchSchema(includeSecrets);
    }, []);
 
-   if (!fetched || !schema) return null;
+   if (!fetched || !schema) return fallback;
    const app = new AppReduced(schema?.config as any);
    const actions = getSchemaActions({ client, setSchema, reloadSchema });
 

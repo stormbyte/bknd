@@ -36,12 +36,10 @@ export class AppQueryClient {
          state: (): (AuthResponse & { verified: boolean }) | undefined => {
             return this.api.getAuthState() as any;
          },
-         login: async (data: { email: string; password: string }): Promise<
-            ApiResponse<AuthResponse>
-         > => {
+         login: async (data: { email: string; password: string }) => {
             return await this.api.auth.loginWithPassword(data);
          },
-         register: async (data: any): Promise<ApiResponse<AuthResponse>> => {
+         register: async (data: any) => {
             return await this.api.auth.registerWithPassword(data);
          },
          logout: async () => {
@@ -57,7 +55,7 @@ export class AppQueryClient {
                //console.log("verifiying");
                const res = await this.api.auth.me();
                //console.log("verifying result", res);
-               if (!res.res.ok || !res.body.user) {
+               if (!res.ok || !res.body.user) {
                   throw new Error();
                }
 
@@ -90,7 +88,7 @@ export class AppQueryClient {
                typeof filename === "string" ? filename : filename.path
             );
 
-            if (res.res.ok) {
+            if (res.ok) {
                queryClient.invalidateQueries({ queryKey: ["data", "entity", "media"] });
                return true;
             }

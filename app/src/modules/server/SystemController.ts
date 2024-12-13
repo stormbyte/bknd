@@ -1,17 +1,31 @@
 /// <reference types="@cloudflare/workers-types" />
 
+import type { App } from "App";
 import type { ClassController } from "core";
 import { tbValidator as tb } from "core";
 import { StringEnum, Type, TypeInvalidError } from "core/utils";
 import { type Context, Hono } from "hono";
-import { MODULE_NAMES, type ModuleKey, getDefaultConfig } from "modules/ModuleManager";
+import {
+   MODULE_NAMES,
+   type ModuleConfigs,
+   type ModuleKey,
+   getDefaultConfig
+} from "modules/ModuleManager";
 import * as SystemPermissions from "modules/permissions";
 import { generateOpenAPI } from "modules/server/openapi";
-import type { App } from "../../App";
 
 const booleanLike = Type.Transform(Type.String())
    .Decode((v) => v === "1")
    .Encode((v) => (v ? "1" : "0"));
+
+export type ConfigUpdate<Key extends ModuleKey = ModuleKey> = {
+   success: true;
+   module: Key;
+   config: ModuleConfigs[Key];
+};
+export type ConfigUpdateResponse<Key extends ModuleKey = ModuleKey> =
+   | ConfigUpdate<Key>
+   | { success: false; type: "type-invalid" | "error" | "unknown"; error?: any; errors?: any };
 
 export class SystemController implements ClassController {
    constructor(private readonly app: App) {}
@@ -60,7 +74,7 @@ export class SystemController implements ClassController {
          }
       );
 
-      async function handleConfigUpdateResponse(c: Context<any>, cb: () => Promise<object>) {
+      async function handleConfigUpdateResponse(c: Context<any>, cb: () => Promise<ConfigUpdate>) {
          try {
             return c.json(await cb(), { status: 202 });
          } catch (e) {

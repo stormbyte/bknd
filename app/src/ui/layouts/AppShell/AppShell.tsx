@@ -1,14 +1,12 @@
-import { useClickOutside, useDisclosure, useHotkeys, useViewportSize } from "@mantine/hooks";
+import { useClickOutside, useHotkeys } from "@mantine/hooks";
 import * as ScrollArea from "@radix-ui/react-scroll-area";
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
-import { ucFirst } from "core/utils";
 import { throttle } from "lodash-es";
-import { type ComponentProps, createContext, useContext, useEffect, useRef, useState } from "react";
+import { type ComponentProps, useEffect, useRef, useState } from "react";
 import type { IconType } from "react-icons";
 import { twMerge } from "tailwind-merge";
 import { IconButton } from "ui/components/buttons/IconButton";
 import { AppShellProvider, useAppShell } from "ui/layouts/AppShell/use-appshell";
-import { Link } from "wouter";
 import { useEvent } from "../../hooks/use-event";
 
 export function Root({ children }) {
