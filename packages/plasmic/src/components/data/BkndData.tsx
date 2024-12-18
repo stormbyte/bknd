@@ -1,11 +1,13 @@
-import { type CodeComponentMeta, DataProvider, usePlasmicCanvasContext } from "@plasmicapp/host";
+import { DataProvider, usePlasmicCanvasContext } from "@plasmicapp/host";
+import registerComponent, { type ComponentMeta } from "@plasmicapp/host/registerComponent";
+import { usePlasmicQueryData } from "@plasmicapp/query";
+import { useApi, useEntityQuery } from "bknd/client";
 import type { RepoQuery } from "bknd/data";
-import { useEntities, useEntity } from "bknd/ui";
-import { encodeSearch } from "bknd/utils";
-import { useContext, useEffect, useState } from "react";
+// biome-ignore lint/style/useImportType: <explanation>
+import React from "react";
 import { usePlasmicBkndContext } from "../../contexts/BkndContext";
 
-type BkndEntitiesProps = {
+type BkndDataProps = {
    children?: React.ReactNode;
    loading?: React.ReactNode;
    error?: React.ReactNode;
@@ -23,10 +25,11 @@ type BkndEntitiesProps = {
    dataName?: string;
    entityId?: number;
    entity?: string;
+   select?: string[];
    sortBy: string;
    sortDir: "asc" | "desc";
    where?: string;
-   mode?: "fetch" | "react-query";
+   mode?: "fetch" | "swr";
    noLayout?: boolean;
    preview?: boolean;
    previewSlot?: "loading" | "error" | "empty";
@@ -61,11 +64,13 @@ export function BkndData({
    sortBy = "id",
    sortDir = "asc",
    mode = "fetch",
+   select = [],
    noLayout,
    preview,
    previewSlot,
    ...props
-}: BkndEntitiesProps) {
+}: BkndDataProps) {
+   //console.log("--bknd data");
    const inEditor = !!usePlasmicCanvasContext();
    const plasmicContext = usePlasmicBkndContext();
 
@@ -100,6 +105,7 @@ export function BkndData({
    }
 
    const query = {
+      select: select.length > 0 ? select : undefined,
       limit: entityId ? undefined : limit,
       offset: entityId ? undefined : offset,
       where: _where,
@@ -108,7 +114,7 @@ export function BkndData({
       join: joinRefs
    };
 
-   console.log("---context", plasmicContext);
+   //console.log("---context", plasmicContext);
    if (plasmicContext.appConfig?.data?.entities) {
       const { entities, relations } = plasmicContext.appConfig.data;
       console.log("entities", entities);
@@ -149,8 +155,7 @@ export function BkndData({
       children
    };
 
-   const Component =
-      mode === "react-query" ? <ModeReactQuery {...modeProps} /> : <ModeFetch {...modeProps} />;
+   const Component = mode === "swr" ? <ModeSWR {...modeProps} /> : <ModeFetch {...modeProps} />;
    return noLayout ? Component : <div className={props.className}>{Component}</div>;
 }
 
@@ -175,32 +180,19 @@ const ModeFetch = ({
    entity,
    query
 }: ModeProps) => {
-   const [data, setData] = useState<any[]>([]);
-   const [isLoading, setLoading] = useState(true);
-   const [hasError, setError] = useState<string>();
-   const plasmicContext = usePlasmicBkndContext();
-   const basepath = "/api/data";
-   const path = entityId ? `${basepath}/${entity}/${entityId}` : `${basepath}/${entity}`;
-   console.log("query", path, query);
-   const url = `${plasmicContext.baseUrl}${path}?${encodeSearch(query)}`;
-   useEffect(() => {
-      (async () => {
-         try {
-            const res = await fetch(url);
-            const result = (await res.json()) as any;
-            //console.log("result", result);
-            setData(result.data);
-            setLoading(false);
-            setError(undefined);
-         } catch (e) {
-            console.error(e);
-            setError(String(e));
-            setLoading(false);
-         }
-      })();
-   }, [url]);
+   const api = useApi();
+   const endpoint = entityId
+      ? api.data.readOne(entity, entityId, query)
+      : api.data.readMany(entity, query);
 
-   console.log("--data", { name: dataName ?? entity ?? "data", data, isLoading, hasError });
+   const {
+      data,
+      error: hasError,
+      isLoading
+   } = usePlasmicQueryData(endpoint.key(), async () => {
+      const res = await endpoint.execute();
+      return res.data;
+   });
 
    if (isLoading) {
       return <LoadingComponent loading={loading} />;
@@ -213,7 +205,6 @@ const ModeFetch = ({
    if (data.length === 0) {
       return <EmptyComponent empty={empty} />;
    }
-   console.log("--here1");
 
    return (
       <DataProvider name={dataName ?? entity ?? "data"} data={data}>
@@ -222,91 +213,58 @@ const ModeFetch = ({
    );
 };
 
-const ModeReactQuery = (props: ModeProps) => {
-   return props.entityId ? (
-      <ModeReactQuerySingle {...props} />
-   ) : (
-      <ModeReactQueryMultiple {...props} />
-   );
-};
+const ModeSWR = ({ children, loading, error, dataName, entityId, empty, entity }: ModeProps) => {
+   const $q = useEntityQuery(entity, entityId);
 
-const ModeReactQuerySingle = ({
-   children,
-   loading,
-   error,
-   dataName,
-   entityId,
-   empty,
-   entity
-}: ModeProps) => {
-   const container = useEntity(entity, entityId);
-   const { isLoading, isError } = container.status.fetch;
-
-   if (isLoading) {
+   if ($q.isLoading) {
       return <LoadingComponent loading={loading} />;
    }
 
-   if (isError) {
+   if ($q.error) {
       return <ErrorComponent error={error} />;
    }
 
-   if (!container.data) {
+   if (!$q.data) {
       return <EmptyComponent empty={empty} />;
    }
 
    return (
-      <DataProvider name={dataName ?? entity ?? "data"} data={container.data}>
+      <DataProvider name={dataName ?? entity ?? "data"} data={$q.data}>
          {children}
       </DataProvider>
    );
 };
 
-const ModeReactQueryMultiple = ({
-   children,
-   loading,
-   error,
-   empty,
-   dataName,
-   entity,
-   query
-}: ModeProps) => {
-   const container = useEntities(entity, query);
-   const { isLoading, isError } = container.status.fetch;
-
-   if (isLoading) {
-      return <LoadingComponent loading={loading} />;
+export function registerBkndData(
+   loader?: { registerComponent: typeof registerComponent },
+   customMeta?: ComponentMeta<BkndDataProps>
+) {
+   if (loader) {
+      loader.registerComponent(BkndData, customMeta ?? BkndDataMeta);
+   } else {
+      registerComponent(BkndData, customMeta ?? BkndDataMeta);
    }
+}
 
-   if (isError) {
-      return <ErrorComponent error={error} />;
-   }
-
-   if (!container.data || container.data.length === 0) {
-      return <EmptyComponent empty={empty} />;
-   }
-
-   return (
-      <DataProvider name={dataName ?? entity ?? "data"} data={container.data}>
-         {children}
-      </DataProvider>
-   );
-};
-
-export const BkndDataMeta: CodeComponentMeta<React.ComponentType<BkndEntitiesProps>> = {
+export const BkndDataMeta: ComponentMeta<BkndDataProps> = {
    name: "BKND Data",
    section: "BKND",
-   importPath: import.meta.dir,
+   importPath: "@bknd/plasmic",
    providesData: true,
    props: {
       entity: {
          type: "choice",
-         options: (props, ctx) => ctx.entities
+         options: (props, ctx) => ctx?.entities ?? []
       },
       dataName: {
          type: "string"
       },
       entityId: {
          type: "number"
+      },
+      select: {
+         type: "choice",
+         options: (props, ctx) => ctx?.fields ?? []
       },
       limit: {
          type: "number",
@@ -326,13 +284,13 @@ export const BkndDataMeta: CodeComponentMeta<React.ComponentType<BkndEntitiesPro
          displayName: "With",
          type: "choice",
          multiSelect: true,
-         options: (props, ctx) => ctx.references
+         options: (props, ctx) => ctx?.references ?? []
       },
       joinRefs: {
          displayName: "Join",
          type: "choice",
          multiSelect: true,
-         options: (props, ctx) => ctx.references
+         options: (props, ctx) => ctx?.references ?? []
       },
       where: {
          type: "code",
@@ -340,7 +298,7 @@ export const BkndDataMeta: CodeComponentMeta<React.ComponentType<BkndEntitiesPro
       },
       sortBy: {
          type: "choice",
-         options: (props, ctx) => ctx.fields
+         options: (props, ctx) => ctx?.fields ?? []
       },
       sortDir: {
          type: "choice",
@@ -361,7 +319,7 @@ export const BkndDataMeta: CodeComponentMeta<React.ComponentType<BkndEntitiesPro
       },
       mode: {
          type: "choice",
-         options: ["fetch", "react-query"],
+         options: ["fetch", "swr"],
          defaultValue: "fetch",
          advanced: true
       },

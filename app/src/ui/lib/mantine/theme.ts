@@ -15,7 +15,7 @@ import {
 } from "@mantine/core";
 import { twMerge } from "tailwind-merge";
 
-// default: https://github.com/mantinedev/mantine/blob/master/src/mantine-core/src/core/MantineProvider/default-theme.ts
+// default: https://github.com/mantinedev/mantine/blob/master/packages/%40mantine/core/src/core/MantineProvider/default-theme.ts
 
 export function createMantineTheme(scheme: "light" | "dark"): {
    theme: ReturnType<typeof createTheme>;

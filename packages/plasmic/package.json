@@ -1,5 +1,6 @@
 {
    "name": "@bknd/plasmic",
+   "version": "0.3.4-alpha1",
    "type": "module",
    "sideEffects": false,
    "scripts": {
@@ -8,41 +9,61 @@
       "build:only": "rm -rf dist && bun tsup",
       "types": "bun tsc -p tsconfig.json --noEmit --skipLibCheck",
       "build:types": "bun tsc --emitDeclarationOnly",
-      "updater": "bun x npm-check-updates -ui"
+      "updater": "bun x npm-check-updates -ui",
+      "pack": "rm -rf *.tgz && npm pack && mv *.tgz latest.tgz",
+      "prepublishOnly": "bun run build"
    },
-   "dependencies": {
-      "wouter": "^3.3.5"
+   "publishConfig": {
+      "access": "public"
    },
+   "dependencies": {},
    "devDependencies": {
       "@types/bun": "latest",
+      "bknd": "workspace:*",
+      "tsdx": "^0.14.1",
       "typescript": "^5.0.0"
    },
    "peerDependencies": {
-      "@plasmicapp/host": ">=1.0.0",
-      "bknd": "workspace:*",
+      "bknd": "*",
       "react": ">=18",
-      "react-dom": ">=18"
+      "react-dom": ">=18",
+      "@plasmicapp/host": ">=1.0.0",
+      "@plasmicapp/query": ">=0.1.0"
    },
    "tsup": {
-      "entry": ["index.ts"],
-      "minify": true,
+      "entry": [
+         "src/index.ts"
+      ],
+      "minify": false,
       "clean": true,
-      "external": ["react", "react-dom", "@plasmicapp/host", "@plasmicapp/loader-react", "@plasmicapp/loader-core"],
-      "format": ["esm"],
+      "external": [
+         "react",
+         "react-dom",
+         "@plasmicapp/host",
+         "@plasmicapp/query",
+         "swr"
+      ],
+      "format": [
+         "esm",
+         "cjs"
+      ],
       "platform": "browser",
-      "shims": true,
       "bundle": true,
       "metafile": true,
-      "splitting": false,
+      "splitting": true,
       "sourceMap": true,
       "outDir": "dist"
    },
-   "exports": {
-      ".": {
-         "types": "./dist/index.d.ts",
-         "import": "./dist/index.js",
-         "require": "./dist/index.js"
-      }
-   },
-   "files": ["dist"]
+   "types": "dist/index.d.ts",
+   "module": "dist/index.js",
+   "main": "dist/index.cjs",
+   "files": [
+      "dist",
+      "README.md",
+      "!dist/*.tsbuildinfo",
+      "!dist/*.map",
+      "!dist/**/*.map",
+      "!dist/metafile*",
+      "!dist/**/metafile*"
+   ]
 }

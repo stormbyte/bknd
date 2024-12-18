@@ -16,6 +16,10 @@ export class SystemApi extends ModuleApi<any> {
       };
    }
 
+   readConfig() {
+      return this.get<{ version: number } & ModuleConfigs>("config");
+   }
+
    readSchema(options?: { config?: boolean; secrets?: boolean }) {
       return this.get<ApiSchemaResponse>("schema", {
          config: options?.config ? 1 : 0,

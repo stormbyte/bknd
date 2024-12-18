@@ -12,44 +12,38 @@ export type ClientProviderProps = {
 };
 
 export const ClientProvider = ({ children, baseUrl, user }: ClientProviderProps) => {
-   const [actualBaseUrl, setActualBaseUrl] = useState<string | null>(null);
+   //const [actualBaseUrl, setActualBaseUrl] = useState<string | null>(null);
    const winCtx = useBkndWindowContext();
+   const _ctx_baseUrl = useBaseUrl();
+   let actualBaseUrl = baseUrl ?? _ctx_baseUrl ?? "";
 
    try {
-      const _ctx_baseUrl = useBaseUrl();
-      if (_ctx_baseUrl) {
-         console.warn("wrapped many times");
-         setActualBaseUrl(_ctx_baseUrl);
+      if (!baseUrl) {
+         if (_ctx_baseUrl) {
+            actualBaseUrl = _ctx_baseUrl;
+            console.warn("wrapped many times, take from context", actualBaseUrl);
+         } else if (typeof window !== "undefined") {
+            actualBaseUrl = window.location.origin;
+            console.log("setting from window", actualBaseUrl);
+         }
       }
    } catch (e) {
-      console.error("error", e);
-   }
-
-   useEffect(() => {
-      // Only set base URL if running on the client side
-      if (typeof window !== "undefined") {
-         setActualBaseUrl(baseUrl || window.location.origin);
-      }
-   }, [baseUrl]);
-
-   if (!actualBaseUrl) {
-      // Optionally, return a fallback during SSR rendering
-      return null; // or a loader/spinner if desired
+      console.error("error .....", e);
    }
 
    const api = new Api({ host: actualBaseUrl, user: user ?? winCtx.user });
 
    return (
-      <ClientContext.Provider value={{ baseUrl: actualBaseUrl, api }}>
+      <ClientContext.Provider value={{ baseUrl: api.baseUrl, api }}>
          {children}
       </ClientContext.Provider>
    );
 };
 
-export const useApi = (host?: ApiOptions["host"]) => {
+export const useApi = (host?: ApiOptions["host"]): Api => {
    const context = useContext(ClientContext);
-   if (host && host !== context.baseUrl) {
-      return new Api({ host });
+   if (!context?.api || (host && host.length > 0 && host !== context.baseUrl)) {
+      return new Api({ host: host ?? "" });
    }
 
    return context.api;

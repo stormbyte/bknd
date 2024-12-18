@@ -1,6 +1,7 @@
-"use client";
-
 import type { CodeComponentMeta } from "@plasmicapp/host";
+import registerComponent, { type ComponentMeta } from "@plasmicapp/host/registerComponent";
+// biome-ignore lint/style/useImportType: <explanation>
+import React from "react";
 //import { PlasmicCanvasContext } from "@plasmicapp/loader-react";
 import { useContext, useEffect, useRef, useState } from "react";
 
@@ -39,7 +40,7 @@ function numeric(value: number | string): number {
 function getDimensionDefaults(
    width: number | string | undefined,
    height: number | string | undefined,
-   ratio: number | undefined,
+   ratio: number | undefined
 ) {
    let _width = width;
    let _height = height;
@@ -61,7 +62,7 @@ function getDimensionDefaults(
 function getPlaceholderStyle(
    width: number | string | undefined,
    height: number | string | undefined,
-   ratio: number | undefined,
+   ratio: number | undefined
 ) {
    let paddingBottom = 0;
    if (width && height) {
@@ -73,7 +74,7 @@ function getPlaceholderStyle(
    }
 
    return {
-      paddingBottom: paddingBottom + "%",
+      paddingBottom: paddingBottom + "%"
    };
 }
 
@@ -126,7 +127,7 @@ export const Image: React.FC<ImageProps> = ({
                }
             });
          },
-         { threshold: loadTreshold },
+         { threshold: loadTreshold }
       );
       if (imgRef.current) {
          observer.observe(imgRef.current);
@@ -150,7 +151,7 @@ export const Image: React.FC<ImageProps> = ({
    const {
       width: _width,
       height: _height,
-      ratio: _ratio,
+      ratio: _ratio
    } = getDimensionDefaults(width, height, ratio);
 
    const imgStyle: any = {
@@ -163,7 +164,7 @@ export const Image: React.FC<ImageProps> = ({
       height: "auto",
       //height: _height || "auto",
       //height: !transitioned ? _height || "auto" : "auto",
-      opacity: forceLoad || loaded ? 1 : 0,
+      opacity: forceLoad || loaded ? 1 : 0
    };
 
    const placeholderStyle: any = {
@@ -174,7 +175,7 @@ export const Image: React.FC<ImageProps> = ({
       width: _width || "100%",
       height: 0,
       //height: transitioned ? "auto" : 0,
-      ...getPlaceholderStyle(_width, _height, _ratio),
+      ...getPlaceholderStyle(_width, _height, _ratio)
    };
 
    const wrapperStyle: any = {
@@ -186,7 +187,7 @@ export const Image: React.FC<ImageProps> = ({
       lineHeight: 0,
       //height: _height,
       maxWidth: "100%",
-      maxHeight: "100%",
+      maxHeight: "100%"
    };
    if (loaded) {
       wrapperStyle.height = "auto";
@@ -213,13 +214,24 @@ export const Image: React.FC<ImageProps> = ({
    );
 };
 
-export const ImageMeta: CodeComponentMeta<React.ComponentType<ImageProps>> = {
+export function registerImage(
+   loader?: { registerComponent: typeof registerComponent },
+   customMeta?: ComponentMeta<ImageProps>
+) {
+   if (loader) {
+      loader.registerComponent(Image, customMeta ?? ImageMeta);
+   } else {
+      registerComponent(Image, customMeta ?? ImageMeta);
+   }
+}
+
+export const ImageMeta: CodeComponentMeta<ImageProps> = {
    name: "ImageLazy",
-   importPath: import.meta.dir,
+   importPath: "@bknd/plasmic",
    props: {
       src: {
          type: "imageUrl",
-         displayName: "Image",
+         displayName: "Image"
       },
       alt: "string",
       width: "number",
@@ -230,14 +242,14 @@ export const ImageMeta: CodeComponentMeta<React.ComponentType<ImageProps>> = {
       //backgroundColor: "color",
       transitionSpeed: {
          type: "number",
-         helpText: "How fast image should fade in. Default is 200 (ms).",
+         helpText: "How fast image should fade in. Default is 200 (ms)."
       },
       loadTreshold: {
          type: "number",
          displayName: "Treshold",
          //defaultValue: 0.1,
          helpText:
-            "Number between 0 and 1. Default is 0.1. Determines how much of the image must be in viewport before it gets loaded",
-      },
-   },
+            "Number between 0 and 1. Default is 0.1. Determines how much of the image must be in viewport before it gets loaded"
+      }
+   }
 };
