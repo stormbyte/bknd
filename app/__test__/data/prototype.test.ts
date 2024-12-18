@@ -3,6 +3,7 @@ import {
    BooleanField,
    DateField,
    Entity,
+   EntityManager,
    EnumField,
    JsonField,
    ManyToManyRelation,
@@ -46,12 +47,17 @@ describe("prototype", () => {
    });
 
    test("...2", async () => {
-      const user = entity("users", {
-         name: text().required(),
+      const users = entity("users", {
+         name: text(),
          bio: text(),
          age: number(),
-         some: number().required()
+         some: number()
       });
+      type db = {
+         users: Schema<typeof users>;
+      };
+
+      const obj: Schema<typeof users> = {} as any;
 
       //console.log("user", user.toJSON());
    });

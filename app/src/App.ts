@@ -37,6 +37,7 @@ export type AppConfig = InitialModuleConfigs;
 export class App<DB = any> {
    modules: ModuleManager;
    static readonly Events = AppEvents;
+   adminController?: AdminController;
 
    constructor(
       private connection: Connection,
@@ -94,8 +95,12 @@ export class App<DB = any> {
       return this.modules.get(module).schema();
    }
 
+   get server() {
+      return this.modules.server;
+   }
+
    get fetch(): any {
-      return this.modules.server.fetch;
+      return this.server.fetch;
    }
 
    get module() {
@@ -119,7 +124,8 @@ export class App<DB = any> {
 
    registerAdminController(config?: AdminControllerOptions) {
       // register admin
-      this.modules.server.route("/", new AdminController(this, config).getController());
+      this.adminController = new AdminController(this, config);
+      this.modules.server.route("/", this.adminController.getController());
       return this;
    }
 

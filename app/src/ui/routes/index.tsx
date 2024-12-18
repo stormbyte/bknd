@@ -1,14 +1,19 @@
 import { Suspense, lazy } from "react";
 import { useBknd } from "ui/client/bknd";
 import { Route, Router, Switch } from "wouter";
+import AuthRoutes from "./auth";
 import { AuthLogin } from "./auth/auth.login";
+import DataRoutes from "./data";
+import FlowRoutes from "./flows";
+import MediaRoutes from "./media";
 import { Root, RootEmpty } from "./root";
+import SettingsRoutes from "./settings";
 
-const DataRoutes = lazy(() => import("./data"));
+/*const DataRoutes = lazy(() => import("./data"));
 const AuthRoutes = lazy(() => import("./auth"));
 const MediaRoutes = lazy(() => import("./media"));
 const FlowRoutes = lazy(() => import("./flows"));
-const SettingsRoutes = lazy(() => import("./settings"));
+const SettingsRoutes = lazy(() => import("./settings"));*/
 
 // @ts-ignore
 const TestRoutes = lazy(() => import("./test"));

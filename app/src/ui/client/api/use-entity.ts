@@ -1,8 +1,8 @@
 import type { PrimaryFieldType } from "core";
 import { objectTransform } from "core/utils";
 import type { EntityData, RepoQuery } from "data";
-import type { ResponseObject } from "modules/ModuleApi";
-import useSWR, { type SWRConfiguration } from "swr";
+import type { ModuleApi, ResponseObject } from "modules/ModuleApi";
+import useSWR, { type SWRConfiguration, useSWRConfig } from "swr";
 import { useApi } from "ui/client";
 
 export class UseEntityApiError<Payload = any> extends Error {
@@ -15,9 +15,19 @@ export class UseEntityApiError<Payload = any> extends Error {
    }
 }
 
+function Test() {
+   const { read } = useEntity("users");
+   async () => {
+      const data = await read();
+   };
+
+   return null;
+}
+
 export const useEntity = <
-   Entity extends string,
-   Id extends PrimaryFieldType | undefined = undefined
+   Entity extends keyof DB | string,
+   Id extends PrimaryFieldType | undefined = undefined,
+   Data = Entity extends keyof DB ? DB[Entity] : EntityData
 >(
    entity: Entity,
    id?: Id
@@ -25,7 +35,7 @@ export const useEntity = <
    const api = useApi().data;
 
    return {
-      create: async (input: EntityData) => {
+      create: async (input: Omit<Data, "id">) => {
          const res = await api.createOne(entity, input);
          if (!res.ok) {
             throw new UseEntityApiError(res.data, res.res, "Failed to create entity");
@@ -37,9 +47,12 @@ export const useEntity = <
          if (!res.ok) {
             throw new UseEntityApiError(res.data, res.res, "Failed to read entity");
          }
-         return res;
+         // must be manually typed
+         return res as unknown as Id extends undefined
+            ? ResponseObject<Data[]>
+            : ResponseObject<Data>;
       },
-      update: async (input: Partial<EntityData>, _id: PrimaryFieldType | undefined = id) => {
+      update: async (input: Partial<Omit<Data, "id">>, _id: PrimaryFieldType | undefined = id) => {
          if (!_id) {
             throw new Error("id is required");
          }
@@ -63,8 +76,17 @@ export const useEntity = <
    };
 };
 
+export function makeKey(api: ModuleApi, entity: string, id?: PrimaryFieldType) {
+   return (
+      "/" +
+      [...(api.options?.basepath?.split("/") ?? []), entity, ...(id ? [id] : [])]
+         .filter(Boolean)
+         .join("/")
+   );
+}
+
 export const useEntityQuery = <
-   Entity extends string,
+   Entity extends keyof DB | string,
    Id extends PrimaryFieldType | undefined = undefined
 >(
    entity: Entity,
@@ -72,28 +94,28 @@ export const useEntityQuery = <
    query?: Partial<RepoQuery>,
    options?: SWRConfiguration & { enabled?: boolean }
 ) => {
+   const { mutate } = useSWRConfig();
    const api = useApi().data;
-   const key =
-      options?.enabled !== false
-         ? [...(api.options?.basepath?.split("/") ?? []), entity, ...(id ? [id] : [])].filter(
-              Boolean
-           )
-         : null;
-   const { read, ...actions } = useEntity(entity, id) as any;
+   const key = makeKey(api, entity, id);
+   const { read, ...actions } = useEntity<Entity, Id>(entity, id);
    const fetcher = () => read(query);
 
-   type T = Awaited<ReturnType<(typeof api)[Id extends undefined ? "readMany" : "readOne"]>>;
-   const swr = useSWR<T>(key, fetcher, {
+   type T = Awaited<ReturnType<typeof fetcher>>;
+   const swr = useSWR<T>(options?.enabled === false ? null : key, fetcher as any, {
       revalidateOnFocus: false,
       keepPreviousData: false,
       ...options
    });
 
    const mapped = objectTransform(actions, (action) => {
-      if (action === "read") return;
+      return async (...args: any) => {
+         // @ts-ignore
+         const res = await action(...args);
 
-      return async (...args) => {
-         return swr.mutate(action(...args)) as any;
+         // mutate the key + list key
+         mutate(key);
+         if (id) mutate(makeKey(api, entity));
+         return res;
       };
    }) as Omit<ReturnType<typeof useEntity<Entity, Id>>, "read">;
 
@@ -106,14 +128,14 @@ export const useEntityQuery = <
 };
 
 export const useEntityMutate = <
-   Entity extends string,
+   Entity extends keyof DB | string,
    Id extends PrimaryFieldType | undefined = undefined
 >(
    entity: Entity,
    id?: Id,
    options?: SWRConfiguration
 ) => {
-   const { data, ...$q } = useEntityQuery(entity, id, undefined, {
+   const { data, ...$q } = useEntityQuery<Entity, Id>(entity, id, undefined, {
       ...options,
       enabled: false
    });

@@ -38,7 +38,7 @@ export class Api {
    private token_transport: "header" | "cookie" | "none" = "header";
 
    public system!: SystemApi;
-   public data!: DataApi;
+   public data!: DataApi<DB>;
    public auth!: AuthApi;
    public media!: MediaApi;
 

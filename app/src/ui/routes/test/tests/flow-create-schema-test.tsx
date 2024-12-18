@@ -2,7 +2,7 @@ import { parse } from "core/utils";
 import { AppFlows } from "flows/AppFlows";
 import { useState } from "react";
 import { JsonViewer } from "../../../components/code/JsonViewer";
-import { JsonSchemaForm } from "../../../components/form/json-schema/JsonSchemaForm";
+import { JsonSchemaForm } from "../../../components/form/json-schema";
 import { Scrollable } from "../../../layouts/AppShell/AppShell";
 
 export default function FlowCreateSchemaTest() {

@@ -165,13 +165,12 @@ export class DataController implements ClassController {
          // read entity schema
          .get("/schema.json", async (c) => {
             this.guard.throwUnlessGranted(DataPermissions.entityRead);
-            const url = new URL(c.req.url);
-            const $id = `${url.origin}${this.config.basepath}/schema.json`;
+            const $id = `${this.config.basepath}/schema.json`;
             const schemas = Object.fromEntries(
                this.em.entities.map((e) => [
                   e.name,
                   {
-                     $ref: `schemas/${e.name}`
+                     $ref: `${this.config.basepath}/schemas/${e.name}`
                   }
                ])
             );
@@ -198,7 +197,7 @@ export class DataController implements ClassController {
                const schema = _entity.toSchema();
                const url = new URL(c.req.url);
                const base = `${url.origin}${this.config.basepath}`;
-               const $id = `${base}/schemas/${entity}`;
+               const $id = `${this.config.basepath}/schemas/${entity}`;
                return c.json({
                   $schema: `${base}/schema.json`,
                   $id,

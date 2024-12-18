@@ -9,10 +9,25 @@ export async function withDisabledConsole<R>(
    fn: () => Promise<R>,
    severities: ConsoleSeverity[] = ["log"]
 ): Promise<R> {
-   const enable = disableConsoleLog(severities);
-   const result = await fn();
-   enable();
-   return result;
+   const _oldConsoles = {
+      log: console.log,
+      warn: console.warn,
+      error: console.error
+   };
+   disableConsoleLog(severities);
+   const enable = () => {
+      Object.entries(_oldConsoles).forEach(([severity, fn]) => {
+         console[severity as ConsoleSeverity] = fn;
+      });
+   };
+   try {
+      const result = await fn();
+      enable();
+      return result;
+   } catch (e) {
+      enable();
+      throw e;
+   }
 }
 
 export function disableConsoleLog(severities: ConsoleSeverity[] = ["log"]) {

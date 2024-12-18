@@ -1,3 +1,5 @@
+import type { Generated } from "kysely";
+import { MediaField, type MediaFieldConfig, type MediaItem } from "media/MediaField";
 import {
    BooleanField,
    type BooleanFieldConfig,
@@ -25,15 +27,14 @@ import {
    type TEntityType,
    TextField,
    type TextFieldConfig
-} from "data";
-import type { Generated } from "kysely";
-import { MediaField, type MediaFieldConfig, type MediaItem } from "media/MediaField";
+} from "../index";
 
 type Options<Config = any> = {
    entity: { name: string; fields: Record<string, Field<any, any, any>> };
    field_name: string;
    config: Config;
    is_required: boolean;
+   another?: string;
 };
 
 const FieldMap = {
@@ -239,7 +240,7 @@ export function relation<Local extends Entity>(local: Local) {
    };
 }
 
-type InferEntityFields<T> = T extends Entity<infer _N, infer Fields>
+export type InferEntityFields<T> = T extends Entity<infer _N, infer Fields>
    ? {
         [K in keyof Fields]: Fields[K] extends { _type: infer Type; _required: infer Required }
            ? Required extends true
@@ -284,12 +285,25 @@ type OptionalUndefined<
    }
 >;
 
-type InferField<Field> = Field extends { _type: infer Type; _required: infer Required }
+export type InferField<Field> = Field extends { _type: infer Type; _required: infer Required }
    ? Required extends true
       ? Type
       : Type | undefined
    : never;
 
+const n = number();
+type T2 = InferField<typeof n>;
+
+const users = entity("users", {
+   name: text(),
+   email: text(),
+   created_at: datetime(),
+   updated_at: datetime()
+});
+type TUsersFields = InferEntityFields<typeof users>;
+type TUsers = Schema<typeof users>;
+type TUsers2 = Simplify<OptionalUndefined<Schema<typeof users>>>;
+
 export type InsertSchema<T> = Simplify<OptionalUndefined<InferEntityFields<T>>>;
-export type Schema<T> = { id: Generated<number> } & InsertSchema<T>;
+export type Schema<T> = Simplify<{ id: Generated<number> } & InsertSchema<T>>;
 export type FieldSchema<T> = Simplify<OptionalUndefined<InferFields<T>>>;

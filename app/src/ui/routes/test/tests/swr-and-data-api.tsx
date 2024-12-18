@@ -13,7 +13,7 @@ export default function SwrAndDataApi() {
 
 function QueryDataApi() {
    const [text, setText] = useState("");
-   const { data, update, ...r } = useEntityQuery("comments", 1, {});
+   const { data, update, ...r } = useEntityQuery("comments", 2);
    const comment = data ? data : null;
 
    useEffect(() => {
@@ -45,10 +45,10 @@ function QueryDataApi() {
 
 function DirectDataApi() {
    const [data, setData] = useState<any>();
-   const { create, read, update, _delete } = useEntity("comments", 1);
+   const { create, read, update, _delete } = useEntity("users");
 
    useEffect(() => {
-      read().then(setData);
+      read().then((data) => setData(data));
    }, []);
 
    return <pre>{JSON.stringify(data, null, 2)}</pre>;

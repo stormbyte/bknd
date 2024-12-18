@@ -35,6 +35,8 @@ import { AppFlows } from "../flows/AppFlows";
 import { AppMedia } from "../media/AppMedia";
 import type { Module, ModuleBuildContext } from "./Module";
 
+export type { ModuleBuildContext };
+
 export const MODULES = {
    server: AppServer,
    data: AppData<any>,
@@ -75,7 +77,10 @@ export type ModuleManagerOptions = {
    ) => Promise<void>;
    // base path for the hono instance
    basePath?: string;
+   // doesn't perform validity checks for given/fetched config
    trustFetched?: boolean;
+   // runs when initial config provided on a fresh database
+   seed?: (ctx: ModuleBuildContext) => Promise<void>;
 };
 
 type ConfigTable<Json = ModuleConfigs> = {
@@ -294,7 +299,7 @@ export class ModuleManager {
                      version,
                      json: configs,
                      updated_at: new Date()
-                  },
+                  } as any,
                   {
                      type: "config",
                      version
@@ -448,6 +453,9 @@ export class ModuleManager {
             await this.buildModules();
             await this.save();
 
+            // run initial setup
+            await this.setupInitial();
+
             this.logger.clear();
             return this;
          }
@@ -460,6 +468,18 @@ export class ModuleManager {
       this.logger.log("building");
       await this.buildModules();
       return this;
+   }
+
+   protected async setupInitial() {
+      const ctx = {
+         ...this.ctx(),
+         // disable events for initial setup
+         em: this.ctx().em.fork()
+      };
+
+      // perform a sync
+      await ctx.em.schema().sync({ force: true });
+      await this.options?.seed?.(ctx);
    }
 
    get<K extends keyof Modules>(key: K): Modules[K] {

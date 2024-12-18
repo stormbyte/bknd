@@ -4,7 +4,7 @@ import {
    JsonSchemaForm,
    type JsonSchemaFormProps,
    type JsonSchemaFormRef
-} from "ui/components/form/json-schema/JsonSchemaForm";
+} from "ui/components/form/json-schema";
 
 import type { ContextModalProps } from "@mantine/modals";
 
