@@ -16,7 +16,7 @@ describe("Mutator simple", async () => {
       new TextField("label", { required: true, minLength: 1 }),
       new NumberField("count", { default_value: 0 })
    ]);
-   const em = new EntityManager([items], connection);
+   const em = new EntityManager<any>([items], connection);
 
    await em.connection.kysely.schema
       .createTable("items")
@@ -174,5 +174,19 @@ describe("Mutator simple", async () => {
          { id: 7, label: "update too", count: 2 },
          { id: 8, label: "keep", count: 0 }
       ]);
+   });
+
+   test("insertMany", async () => {
+      const oldCount = (await em.repo(items).count()).count;
+      const inserts = [{ label: "insert 1" }, { label: "insert 2" }];
+      const { data } = await em.mutator(items).insertMany(inserts);
+
+      expect(data.length).toBe(2);
+      expect(data.map((d) => ({ label: d.label }))).toEqual(inserts);
+      const newCount = (await em.repo(items).count()).count;
+      expect(newCount).toBe(oldCount + inserts.length);
+
+      const { data: data2 } = await em.repo(items).findMany();
+      expect(data2).toEqual(data);
    });
 });

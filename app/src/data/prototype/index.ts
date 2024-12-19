@@ -1,3 +1,5 @@
+import { DummyConnection } from "data/connection/DummyConnection";
+import { EntityManager } from "data/entities/EntityManager";
 import type { Generated } from "kysely";
 import { MediaField, type MediaFieldConfig, type MediaItem } from "media/MediaField";
 import {
@@ -7,6 +9,7 @@ import {
    type DateFieldConfig,
    Entity,
    type EntityConfig,
+   type EntityRelation,
    EnumField,
    type EnumFieldConfig,
    type Field,
@@ -240,6 +243,57 @@ export function relation<Local extends Entity>(local: Local) {
    };
 }
 
+class EntityManagerPrototype<Entities extends Record<string, Entity>> extends EntityManager<
+   Schema<Entities>
+> {
+   constructor(
+      public __entities: Entities,
+      relations: EntityRelation[]
+   ) {
+      super(Object.values(__entities), new DummyConnection(), relations);
+   }
+}
+
+export function em<Entities extends Record<string, Entity>>(
+   entities: Entities,
+   schema?: (rel: typeof relation, entities: Entities) => void
+) {
+   const relations: EntityRelation[] = [];
+   const relationProxy = (local: Entity) => {
+      return new Proxy(relation(local), {
+         get(target, prop) {
+            if (typeof target[prop] === "function") {
+               return (...args: any[]) => {
+                  const result = target[prop](...args);
+                  relations.push(result);
+                  return result;
+               };
+            }
+            return target[prop];
+         }
+      });
+   };
+
+   if (schema) {
+      schema(relationProxy, entities);
+   }
+
+   const e = new EntityManagerPrototype(entities, relations);
+   return {
+      DB: e.__entities as unknown as Schemas<Entities>,
+      entities: e.__entities,
+      relations,
+      indices: [],
+      toJSON: () => {
+         return e.toJSON() as unknown as {
+            entities: Schemas<Entities>;
+            relations: EntityRelation[];
+            indices: any[];
+         };
+      }
+   };
+}
+
 export type InferEntityFields<T> = T extends Entity<infer _N, infer Fields>
    ? {
         [K in keyof Fields]: Fields[K] extends { _type: infer Type; _required: infer Required }
@@ -291,18 +345,9 @@ export type InferField<Field> = Field extends { _type: infer Type; _required: in
       : Type | undefined
    : never;
 
-const n = number();
-type T2 = InferField<typeof n>;
-
-const users = entity("users", {
-   name: text(),
-   email: text(),
-   created_at: datetime(),
-   updated_at: datetime()
-});
-type TUsersFields = InferEntityFields<typeof users>;
-type TUsers = Schema<typeof users>;
-type TUsers2 = Simplify<OptionalUndefined<Schema<typeof users>>>;
+export type Schemas<T extends Record<string, Entity>> = {
+   [K in keyof T]: Schema<T[K]>;
+};
 
 export type InsertSchema<T> = Simplify<OptionalUndefined<InferEntityFields<T>>>;
 export type Schema<T> = Simplify<{ id: Generated<number> } & InsertSchema<T>>;

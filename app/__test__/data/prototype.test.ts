@@ -13,6 +13,7 @@ import {
    PolymorphicRelation,
    TextField
 } from "../../src/data";
+import { DummyConnection } from "../../src/data/connection/DummyConnection";
 import {
    FieldPrototype,
    type FieldSchema,
@@ -21,6 +22,7 @@ import {
    boolean,
    date,
    datetime,
+   em,
    entity,
    enumm,
    json,
@@ -271,5 +273,30 @@ describe("prototype", () => {
       ];
 
       const obj: Schema<typeof test> = {} as any;
+   });
+
+   test("schema", async () => {
+      const _em = em(
+         {
+            posts: entity("posts", { name: text() }),
+            comments: entity("comments", { some: text() })
+         },
+         (relation, { posts, comments }) => {
+            relation(posts).manyToOne(comments);
+         }
+      );
+
+      type LocalDb = (typeof _em)["DB"];
+
+      const es = [
+         new Entity("posts", [new TextField("name")]),
+         new Entity("comments", [new TextField("some")])
+      ];
+      const _em2 = new EntityManager(es, new DummyConnection(), [
+         new ManyToOneRelation(es[0], es[1])
+      ]);
+
+      // @ts-ignore
+      expect(_em2.toJSON()).toEqual(_em.toJSON());
    });
 });

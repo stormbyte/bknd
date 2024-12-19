@@ -276,4 +276,39 @@ export class Mutator<DB = any, TB extends keyof DB = any, Data = Omit<DB[TB], "i
 
       return (await this.many(query)) as any;
    }
+
+   async insertMany(data: Data[]): Promise<MutatorResponse<DB[TB][]>> {
+      const entity = this.entity;
+      if (entity.type === "system" && this.__unstable_disable_system_entity_creation) {
+         throw new Error(`Creation of system entity "${entity.name}" is disabled`);
+      }
+
+      const validated: any[] = [];
+      for (const row of data) {
+         const validatedData = {
+            ...entity.getDefaultObject(),
+            ...(await this.getValidatedData(row, "create"))
+         };
+
+         // check if required fields are present
+         const required = entity.getRequiredFields();
+         for (const field of required) {
+            if (
+               typeof validatedData[field.name] === "undefined" ||
+               validatedData[field.name] === null
+            ) {
+               throw new Error(`Field "${field.name}" is required`);
+            }
+         }
+
+         validated.push(validatedData);
+      }
+
+      const query = this.conn
+         .insertInto(entity.name)
+         .values(validated)
+         .returning(entity.getSelect());
+
+      return (await this.many(query)) as any;
+   }
 }
