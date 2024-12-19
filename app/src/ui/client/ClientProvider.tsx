@@ -1,21 +1,9 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { TApiUser } from "Api";
+import { Api, type ApiOptions, type TApiUser } from "Api";
 import { createContext, useContext, useEffect, useState } from "react";
-//import { useBkndWindowContext } from "ui/client/BkndProvider";
-import { AppQueryClient } from "./utils/AppQueryClient";
 
-const ClientContext = createContext<{ baseUrl: string; client: AppQueryClient }>({
+const ClientContext = createContext<{ baseUrl: string; api: Api }>({
    baseUrl: undefined
 } as any);
-
-export const queryClient = new QueryClient({
-   defaultOptions: {
-      queries: {
-         retry: false,
-         refetchOnWindowFocus: false
-      }
-   }
-});
 
 export type ClientProviderProps = {
    children?: any;
@@ -24,74 +12,53 @@ export type ClientProviderProps = {
 };
 
 export const ClientProvider = ({ children, baseUrl, user }: ClientProviderProps) => {
-   const [actualBaseUrl, setActualBaseUrl] = useState<string | null>(null);
+   //const [actualBaseUrl, setActualBaseUrl] = useState<string | null>(null);
    const winCtx = useBkndWindowContext();
+   const _ctx_baseUrl = useBaseUrl();
+   let actualBaseUrl = baseUrl ?? _ctx_baseUrl ?? "";
 
    try {
-      const _ctx_baseUrl = useBaseUrl();
-      if (_ctx_baseUrl) {
-         console.warn("wrapped many times");
-         setActualBaseUrl(_ctx_baseUrl);
+      if (!baseUrl) {
+         if (_ctx_baseUrl) {
+            actualBaseUrl = _ctx_baseUrl;
+            console.warn("wrapped many times, take from context", actualBaseUrl);
+         } else if (typeof window !== "undefined") {
+            actualBaseUrl = window.location.origin;
+            console.log("setting from window", actualBaseUrl);
+         }
       }
    } catch (e) {
-      console.error("error", e);
+      console.error("error .....", e);
    }
 
-   useEffect(() => {
-      // Only set base URL if running on the client side
-      if (typeof window !== "undefined") {
-         setActualBaseUrl(baseUrl || window.location.origin);
-      }
-   }, [baseUrl]);
-
-   if (!actualBaseUrl) {
-      // Optionally, return a fallback during SSR rendering
-      return null; // or a loader/spinner if desired
-   }
-
-   //console.log("client provider11 with", { baseUrl, fallback: actualBaseUrl, user });
-   const client = createClient(actualBaseUrl, user ?? winCtx.user);
+   const api = new Api({ host: actualBaseUrl, user: user ?? winCtx.user });
 
    return (
-      <QueryClientProvider client={queryClient}>
-         <ClientContext.Provider value={{ baseUrl: actualBaseUrl, client }}>
-            {children}
-         </ClientContext.Provider>
-      </QueryClientProvider>
+      <ClientContext.Provider value={{ baseUrl: api.baseUrl, api }}>
+         {children}
+      </ClientContext.Provider>
    );
 };
 
-export function createClient(baseUrl: string, user?: object) {
-   return new AppQueryClient(baseUrl, user);
-}
-
-export function createOrUseClient(baseUrl: string) {
+export const useApi = (host?: ApiOptions["host"]): Api => {
    const context = useContext(ClientContext);
-   if (!context) {
-      console.warn("createOrUseClient returned a new client");
-      return createClient(baseUrl);
+   if (!context?.api || (host && host.length > 0 && host !== context.baseUrl)) {
+      return new Api({ host: host ?? "" });
    }
 
-   return context.client;
-}
-
-export const useClient = () => {
-   const context = useContext(ClientContext);
-   if (!context) {
-      throw new Error("useClient must be used within a ClientProvider");
-   }
-
-   console.log("useClient", context.baseUrl);
-   return context.client;
+   return context.api;
 };
 
+/**
+ * @deprecated use useApi().baseUrl instead
+ */
 export const useBaseUrl = () => {
    const context = useContext(ClientContext);
    return context.baseUrl;
 };
 
 type BkndWindowContext = {
-   user?: object;
+   user?: TApiUser;
    logout_route: string;
 };
 export function useBkndWindowContext(): BkndWindowContext {

@@ -1,13 +1,12 @@
 import { ucFirst } from "core/utils";
-import type { Entity, EntityData, EntityRelation } from "data";
+import type { Entity, EntityData, EntityRelation, RepoQuery } from "data";
 import { Fragment, useState } from "react";
 import { TbDots } from "react-icons/tb";
-import { useClient } from "ui/client";
+import { useApiQuery, useEntityQuery } from "ui/client";
 import { useBkndData } from "ui/client/schema/data/use-bknd-data";
 import { Button } from "ui/components/buttons/Button";
 import { IconButton } from "ui/components/buttons/IconButton";
 import { Dropdown } from "ui/components/overlay/Dropdown";
-import { useEntity } from "ui/container";
 import { useBrowserTitle } from "ui/hooks/use-browser-title";
 import * as AppShell from "ui/layouts/AppShell/AppShell";
 import { Breadcrumbs2 } from "ui/layouts/AppShell/Breadcrumbs2";
@@ -25,22 +24,23 @@ export function DataEntityUpdate({ params }) {
    const [navigate] = useNavigate();
    useBrowserTitle(["Data", entity.label, `#${entityId}`]);
    const targetRelations = relations.listableRelationsOf(entity);
-   //console.log("targetRelations", targetRelations, relations.relationsOf(entity));
-   // filter out polymorphic for now
-   //.filter((r) => r.type() !== "poly");
+
    const local_relation_refs = relations
       .sourceRelationsOf(entity)
       ?.map((r) => r.other(entity).reference);
 
-   const container = useEntity(entity.name, entityId, {
-      fetch: {
-         query: {
-            with: local_relation_refs
-         }
+   const $q = useEntityQuery(
+      entity.name,
+      entityId,
+      {
+         with: local_relation_refs
+      },
+      {
+         revalidateOnFocus: false
       }
-   });
+   );
 
-   function goBack(state?: Record<string, any>) {
+   function goBack() {
       window.history.go(-1);
    }
 
@@ -52,43 +52,39 @@ export function DataEntityUpdate({ params }) {
          return;
       }
 
-      const res = await container.actions.update(changeSet);
-      console.log("update:res", res);
-      if (res.data?.error) {
-         setError(res.data.error);
-      } else {
-         error && setError(null);
+      try {
+         await $q.update(changeSet);
+         if (error) setError(null);
          goBack();
+      } catch (e) {
+         setError(e instanceof Error ? e.message : "Failed to update");
       }
    }
 
    async function handleDelete() {
       if (confirm("Are you sure to delete?")) {
-         const res = await container.actions.remove();
-         if (res.error) {
-            setError(res.error);
-         } else {
-            error && setError(null);
+         try {
+            await $q._delete();
+            if (error) setError(null);
             goBack();
+         } catch (e) {
+            setError(e instanceof Error ? e.message : "Failed to delete");
          }
       }
    }
 
+   const data = $q.data;
    const { Form, handleSubmit } = useEntityForm({
       action: "update",
       entity,
-      initialData: container.data,
+      initialData: $q.data?.toJSON(),
       onSubmitted
    });
-   //console.log("form.data", Form.state.values, container.data);
 
    const makeKey = (key: string | number = "") =>
       `${params.entity.name}_${entityId}_${String(key)}`;
 
-   const fieldsDisabled =
-      container.raw.fetch?.isLoading ||
-      container.status.fetch.isUpdating ||
-      Form.state.isSubmitting;
+   const fieldsDisabled = $q.isLoading || $q.isValidating || Form.state.isSubmitting;
 
    return (
       <Fragment key={makeKey()}>
@@ -103,7 +99,7 @@ export function DataEntityUpdate({ params }) {
                            onClick: () => {
                               bkndModals.open("debug", {
                                  data: {
-                                    data: container.data as any,
+                                    data: data as any,
                                     entity: entity.toJSON(),
                                     schema: entity.toSchema(true),
                                     form: Form.state.values,
@@ -165,7 +161,7 @@ export function DataEntityUpdate({ params }) {
                entityId={entityId}
                handleSubmit={handleSubmit}
                fieldsDisabled={fieldsDisabled}
-               data={container.data ?? undefined}
+               data={data ?? undefined}
                Form={Form}
                action="update"
                className="flex flex-grow flex-col gap-3 p-3"
@@ -236,18 +232,17 @@ function EntityDetailInner({
    relation: EntityRelation;
 }) {
    const other = relation.other(entity);
-   const client = useClient();
    const [navigate] = useNavigate();
 
-   const search = {
+   const search: Partial<RepoQuery> = {
       select: other.entity.getSelect(undefined, "table"),
       limit: 10,
       offset: 0
    };
-   const query = client
-      .query()
-      .data.entity(entity.name)
-      .readManyByReference(id, other.reference, other.entity.name, search);
+   // @todo: add custom key for invalidation
+   const $q = useApiQuery((api) =>
+      api.data.readManyByReference(entity.name, id, other.reference, search)
+   );
 
    function handleClickRow(row: Record<string, any>) {
       navigate(routes.data.entity.edit(other.entity.name, row.id));
@@ -266,12 +261,11 @@ function EntityDetailInner({
       }
    }
 
-   if (query.isPending) {
+   if (!$q.data) {
       return null;
    }
 
-   const isUpdating = query.isInitialLoading || query.isFetching;
-   //console.log("query", query, search.select);
+   const isUpdating = $q.isValidating || $q.isLoading;
 
    return (
       <div
@@ -280,13 +274,12 @@ function EntityDetailInner({
       >
          <EntityTable2
             select={search.select}
-            data={query.data?.data ?? []}
+            data={$q.data ?? null}
             entity={other.entity}
             onClickRow={handleClickRow}
             onClickNew={handleClickNew}
             page={1}
-            /* @ts-ignore */
-            total={query.data?.body?.meta?.count ?? 1}
+            total={$q.data?.body?.meta?.count ?? 1}
             /*onClickPage={handleClickPage}*/
          />
       </div>

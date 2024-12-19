@@ -1,23 +1,23 @@
 import { type NotificationData, notifications } from "@mantine/notifications";
+import type { Api } from "Api";
 import { ucFirst } from "core/utils";
-import type { ApiResponse, ModuleConfigs } from "../../../modules";
-import type { AppQueryClient } from "../utils/AppQueryClient";
+import type { ModuleConfigs } from "modules";
+import type { ResponseObject } from "modules/ModuleApi";
+import type { ConfigUpdateResponse } from "modules/server/SystemController";
 
 export type SchemaActionsProps = {
-   client: AppQueryClient;
+   api: Api;
    setSchema: React.Dispatch<React.SetStateAction<any>>;
    reloadSchema: () => Promise<void>;
 };
 
 export type TSchemaActions = ReturnType<typeof getSchemaActions>;
 
-export function getSchemaActions({ client, setSchema, reloadSchema }: SchemaActionsProps) {
-   const api = client.api;
-
-   async function handleConfigUpdate(
+export function getSchemaActions({ api, setSchema, reloadSchema }: SchemaActionsProps) {
+   async function handleConfigUpdate<Module extends keyof ModuleConfigs>(
       action: string,
-      module: string,
-      res: ApiResponse,
+      module: Module,
+      res: ResponseObject<ConfigUpdateResponse<Module>>,
       path?: string
    ): Promise<boolean> {
       const base: Partial<NotificationData> = {
@@ -26,7 +26,7 @@ export function getSchemaActions({ client, setSchema, reloadSchema }: SchemaActi
          autoClose: 3000
       };
 
-      if (res.res.ok && res.body.success) {
+      if (res.success === true) {
          console.log("update config", action, module, path, res.body);
          if (res.body.success) {
             setSchema((prev) => {
@@ -35,7 +35,7 @@ export function getSchemaActions({ client, setSchema, reloadSchema }: SchemaActi
                   ...prev,
                   config: {
                      ...prev.config,
-                     [module]: res.body.config
+                     [module]: res.config
                   }
                };
             });
@@ -47,18 +47,18 @@ export function getSchemaActions({ client, setSchema, reloadSchema }: SchemaActi
             color: "blue",
             message: `Operation ${action.toUpperCase()} at ${module}${path ? "." + path : ""}`
          });
-         return true;
+      } else {
+         notifications.show({
+            ...base,
+            title: `Config Update failed: ${ucFirst(module)}${path ? "." + path : ""}`,
+            color: "red",
+            withCloseButton: true,
+            autoClose: false,
+            message: res.error ?? "Failed to complete config update"
+         });
       }
 
-      notifications.show({
-         ...base,
-         title: `Config Update failed: ${ucFirst(module)}${path ? "." + path : ""}`,
-         color: "red",
-         withCloseButton: true,
-         autoClose: false,
-         message: res.body.error ?? "Failed to complete config update"
-      });
-      return false;
+      return res.success;
    }
 
    return {
@@ -72,7 +72,7 @@ export function getSchemaActions({ client, setSchema, reloadSchema }: SchemaActi
          return await handleConfigUpdate("set", module, res);
       },
       patch: async <Module extends keyof ModuleConfigs>(
-         module: keyof ModuleConfigs,
+         module: Module,
          path: string,
          value: any
       ): Promise<boolean> => {
@@ -80,25 +80,18 @@ export function getSchemaActions({ client, setSchema, reloadSchema }: SchemaActi
          return await handleConfigUpdate("patch", module, res, path);
       },
       overwrite: async <Module extends keyof ModuleConfigs>(
-         module: keyof ModuleConfigs,
+         module: Module,
          path: string,
          value: any
       ) => {
          const res = await api.system.overwriteConfig(module, path, value);
          return await handleConfigUpdate("overwrite", module, res, path);
       },
-      add: async <Module extends keyof ModuleConfigs>(
-         module: keyof ModuleConfigs,
-         path: string,
-         value: any
-      ) => {
+      add: async <Module extends keyof ModuleConfigs>(module: Module, path: string, value: any) => {
          const res = await api.system.addConfig(module, path, value);
          return await handleConfigUpdate("add", module, res, path);
       },
-      remove: async <Module extends keyof ModuleConfigs>(
-         module: keyof ModuleConfigs,
-         path: string
-      ) => {
+      remove: async <Module extends keyof ModuleConfigs>(module: Module, path: string) => {
          const res = await api.system.removeConfig(module, path);
          return await handleConfigUpdate("remove", module, res, path);
       }

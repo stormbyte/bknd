@@ -29,7 +29,7 @@ export const Check = () => {
 };
 
 export type DataTableProps<Data> = {
-   data: Data[];
+   data: Data[] | null; // "null" implies loading
    columns?: string[];
    checkable?: boolean;
    onClickRow?: (row: Data) => void;
@@ -71,10 +71,10 @@ export function DataTable<Data extends Record<string, any> = Record<string, any>
    renderValue,
    onClickNew
 }: DataTableProps<Data>) {
-   total = total || data.length;
+   total = total || data?.length || 0;
    page = page || 1;
 
-   const select = columns && columns.length > 0 ? columns : Object.keys(data[0] || {});
+   const select = columns && columns.length > 0 ? columns : Object.keys(data?.[0] || {});
    const pages = Math.max(Math.ceil(total / perPage), 1);
    const CellRender = renderValue || CellValue;
 
@@ -129,7 +129,9 @@ export function DataTable<Data extends Record<string, any> = Record<string, any>
                      <tr>
                         <td colSpan={select.length + (checkable ? 1 : 0)}>
                            <div className="flex flex-col gap-2 p-8 justify-center items-center border-t border-muted">
-                              <i className="opacity-50">No data to show</i>
+                              <i className="opacity-50">
+                                 {Array.isArray(data) ? "No data to show" : "Loading..."}
+                              </i>
                            </div>
                         </td>
                      </tr>
@@ -188,7 +190,12 @@ export function DataTable<Data extends Record<string, any> = Record<string, any>
          </div>
          <div className="flex flex-row items-center justify-between">
             <div className="hidden md:flex text-primary/40">
-               <TableDisplay perPage={perPage} page={page} items={data.length} total={total} />
+               <TableDisplay
+                  perPage={perPage}
+                  page={page}
+                  items={data?.length || 0}
+                  total={total}
+               />
             </div>
             <div className="flex flex-row gap-2 md:gap-10 items-center">
                {perPageOptions && (

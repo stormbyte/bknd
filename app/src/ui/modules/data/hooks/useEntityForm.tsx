@@ -19,18 +19,16 @@ export function useEntityForm({
    // @todo: check if virtual must be filtered
    const fields = entity.getFillableFields(action, true);
 
-   console.log("useEntityForm:data", data);
-
    // filter defaultValues to only contain fillable fields
    const defaultValues = getDefaultValues(fields, data);
-   console.log("useEntityForm:defaultValues", data);
+   //console.log("useEntityForm", { data, defaultValues });
 
    const Form = useForm({
       defaultValues,
       validators: {
          onSubmitAsync: async ({ value }): Promise<any> => {
             try {
-               console.log("validating", value, entity.isValidData(value, action));
+               //console.log("validating", value, entity.isValidData(value, action));
                entity.isValidData(value, action, true);
                return undefined;
             } catch (e) {
@@ -40,7 +38,7 @@ export function useEntityForm({
          }
       },
       onSubmit: async ({ value, formApi }) => {
-         console.log("onSubmit", value);
+         //console.log("onSubmit", value);
          if (!entity.isValidData(value, action)) {
             console.error("invalid data", value);
             return;
@@ -49,7 +47,7 @@ export function useEntityForm({
 
          if (!data) return;
          const changeSet = getChangeSet(action, value, data, fields);
-         console.log("changesSet", action, changeSet);
+         //console.log("changesSet", action, changeSet, { data });
 
          // only submit change set if there were changes
          await onSubmitted?.(Object.keys(changeSet).length === 0 ? undefined : changeSet);

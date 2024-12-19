@@ -1,8 +1,7 @@
 import { useBknd } from "ui/client/bknd";
 
 export function useBkndAuth() {
-   //const client = useClient();
-   const { config, app, schema, actions: bkndActions } = useBknd();
+   const { config, schema, actions: bkndActions } = useBknd();
 
    const actions = {
       roles: {

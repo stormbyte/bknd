@@ -4,12 +4,11 @@ import { ucFirst } from "core/utils";
 import type { EntityData, RelationField } from "data";
 import { useEffect, useRef, useState } from "react";
 import { TbEye } from "react-icons/tb";
-import { useClient } from "ui/client";
+import { useEntityQuery } from "ui/client";
 import { useBknd } from "ui/client/bknd";
 import { Button } from "ui/components/buttons/Button";
 import * as Formy from "ui/components/form/Formy";
 import { Popover } from "ui/components/overlay/Popover";
-import { useEntities } from "ui/container";
 import { routes } from "ui/lib/routes";
 import { useLocation } from "wouter";
 import { EntityTable } from "../EntityTable";
@@ -31,25 +30,20 @@ export function EntityRelationalFormField({
    const { app } = useBknd();
    const entity = app.entity(field.target())!;
    const [query, setQuery] = useState<any>({ limit: 10, page: 1, perPage: 10 });
-   const [location, navigate] = useLocation();
+   const [, navigate] = useLocation();
    const ref = useRef<any>(null);
-   const client = useClient();
-   const container = useEntities(
-      field.target(),
-      {
-         limit: query.limit,
-         offset: (query.page - 1) * query.limit
-         //select: entity.getSelect(undefined, "form")
-      },
-      { enabled: true }
-   );
+   const $q = useEntityQuery(field.target(), undefined, {
+      limit: query.limit,
+      offset: (query.page - 1) * query.limit
+   });
    const [_value, _setValue] = useState<{ id: number | undefined; [key: string]: any }>();
 
    const referenceField = data?.[field.reference()];
    const relationalField = data?.[field.name];
 
    useEffect(() => {
-      _setValue(data?.[field.reference()]);
+      const value = data?.[field.reference()];
+      _setValue(value);
    }, [referenceField]);
 
    useEffect(() => {
@@ -57,62 +51,40 @@ export function EntityRelationalFormField({
          const rel_value = field.target();
          if (!rel_value || !relationalField) return;
 
-         console.log("-- need to fetch", field.target(), relationalField);
-         const fetched = await client.api.data.readOne(field.target(), relationalField);
-         if (fetched.res.ok && fetched.data) {
+         const fetched = await $q.api.readOne(field.target(), relationalField);
+         if (fetched.ok && fetched.data) {
             _setValue(fetched.data as any);
          }
-         console.log("-- fetched", fetched);
-
-         console.log("relation", {
-            referenceField,
-            relationalField,
-            data,
-            field,
-            entity
-         });
       })();
    }, [relationalField]);
-
-   /*const initialValue: { id: number | undefined; [key: string]: any } = data?.[
-      field.reference()
-   ] ?? {
-      id: data?.[field.name],
-   };*/
 
    function handleViewItem(e: React.MouseEvent<HTMLButtonElement>) {
       e.preventDefault();
       e.stopPropagation();
-      console.log("yo");
       if (_value) {
          navigate(routes.data.entity.edit(entity.name, _value.id as any));
       }
    }
 
-   /*console.log(
-      "relationfield:data",
-      { _value, initialValue },
-      data,
-      field.reference(),
-      entity,
-      //container.entity,
-      //data[field.reference()],
-      data?.[field.name],
-      field,
-   );*/
-
    // fix missing value on fields that are required
    useEffect(() => {
       if (field.isRequired() && !fieldApi.state.value) {
-         fieldApi.setValue(container.data?.[0]?.id);
+         const firstValue = $q.data?.[0];
+         if (!firstValue) return;
+
+         console.warn("setting first value because field is required", field.name, firstValue.id);
+         fieldApi.setValue(firstValue.id);
+         _setValue(firstValue as any);
       }
-   }, [container.data]);
+   }, [$q.data]);
+
+   const fetching = $q.isLoading || $q.isValidating;
 
    return (
       <Formy.Group>
          <Formy.Label htmlFor={fieldApi.name}>{field.getLabel()}</Formy.Label>
          <div
-            data-disabled={!Array.isArray(container.data) || disabled ? 1 : undefined}
+            data-disabled={fetching || disabled ? 1 : undefined}
             className="data-[disabled]:opacity-70 data-[disabled]:pointer-events-none"
          >
             <Popover
@@ -120,7 +92,7 @@ export function EntityRelationalFormField({
                className=""
                target={({ toggle }) => (
                   <PopoverTable
-                     container={container}
+                     container={$q.data}
                      entity={entity}
                      query={query}
                      toggle={toggle}
@@ -198,28 +170,6 @@ export function EntityRelationalFormField({
             onChange={console.log}
             tabIndex={-1}
          />
-         {/*<Formy.Select
-            ref={ref}
-            name={fieldApi.name}
-            id={fieldApi.name}
-            value={fieldApi.state.value}
-            data-value={fieldApi.state.value}
-            onBlur={fieldApi.handleBlur}
-            onChange={handleUpdate}
-            disabled={!Array.isArray(container.data)}
-         >
-            {container.data ? (
-               <>
-                  {emptyOption}
-                  {!field.isRequired() && emptyOption}
-                  {container.data?.map(renderRow)}
-               </>
-            ) : (
-               <option value={undefined} disabled>
-                  Loading...
-               </option>
-            )}
-         </Formy.Select>*/}
       </Formy.Group>
    );
 }

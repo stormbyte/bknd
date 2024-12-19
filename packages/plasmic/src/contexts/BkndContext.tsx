@@ -1,6 +1,12 @@
 import { DataProvider, GlobalActionsProvider, usePlasmicCanvasContext } from "@plasmicapp/host";
+import registerGlobalContext, {
+   type GlobalContextMeta
+} from "@plasmicapp/host/registerGlobalContext";
 import type { AppConfig } from "bknd";
-import { ClientProvider, useAuth, useBaseUrl } from "bknd/ui";
+// @ts-ignore
+import { ClientProvider, useApi, useAuth, useBaseUrl } from "bknd/client";
+// biome-ignore lint/style/useImportType: <explanation>
+import React from "react";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 // Users will be able to set these props in Studio.
@@ -18,17 +24,6 @@ type BkndContextProps = {
 
 const BkndContextContext = createContext<BkndGlobalContextProps>({} as any);
 
-function getBaseUrlFromWindow() {
-   if (typeof window === "undefined") {
-      return "";
-   }
-
-   const protocol = window.location.protocol;
-   const host = window.location.host;
-
-   return `${protocol}//${host}`;
-}
-
 // @todo: it's an issue that we need auth, so we cannot make baseurl adjustable (maybe add an option to useAuth with a specific base url?)
 export const BkndContext = ({
    children,
@@ -36,19 +31,15 @@ export const BkndContext = ({
    initialAuth
 }: React.PropsWithChildren<BkndContextProps>) => {
    const auth = useAuth();
-   const baseurl = useBaseUrl();
+   const baseurl = baseUrl ?? useBaseUrl();
+   const api = useApi({ host: baseurl });
 
    const [data, setData] = useState<BkndGlobalContextProps>({
       baseUrl: baseurl,
-      /*baseUrl: (baseUrl && baseUrl.length > 0 ? baseUrl : getBaseUrlFromWindow()).replace(
-         /\/+$/,
-         ""
-      ),*/
       auth: auth ?? initialAuth,
       appConfig: undefined
    });
    const inEditor = !!usePlasmicCanvasContext();
-   console.log("context:user", data);
 
    useEffect(() => {
       setData((prev) => ({ ...prev, auth: auth }));
@@ -57,8 +48,10 @@ export const BkndContext = ({
    useEffect(() => {
       (async () => {
          if (inEditor) {
-            const res = await fetch(`${baseurl}/api/system/config`);
-            const result = (await res.json()) as BkndGlobalContextProps["appConfig"];
+            const result = await api.system.readConfig();
+
+            /*const res = await fetch(`${baseurl}/api/system/config`);
+            const result = (await res.json()) as BkndGlobalContextProps["appConfig"];*/
             console.log("appconfig", result);
             setData((prev) => ({ ...prev, appConfig: result }));
          }
@@ -101,13 +94,12 @@ export const BkndContext = ({
       [baseUrl]
    );
 
-   console.log("plasmic.bknd.context", data);
+   console.log("plasmic.bknd.context", { baseUrl });
    return (
       <GlobalActionsProvider contextName="BkndContext" actions={actions}>
          <BkndContextContext.Provider value={data}>
             <DataProvider name="bknd" data={data}>
-               {/*<ClientProvider baseUrl={data.baseUrl}>{children}</ClientProvider>*/}
-               {children}
+               <ClientProvider baseUrl={data.baseUrl}>{children}</ClientProvider>
             </DataProvider>
          </BkndContextContext.Provider>
       </GlobalActionsProvider>
@@ -119,8 +111,20 @@ export function usePlasmicBkndContext() {
    return context;
 }
 
-export const BkndContextMeta = {
+export function registerBkndContext(
+   loader?: { registerGlobalContext: typeof registerGlobalContext },
+   customMeta?: GlobalContextMeta<BkndContextProps>
+) {
+   if (loader) {
+      loader.registerGlobalContext(BkndContext, customMeta ?? BkndContextMeta);
+   } else {
+      registerGlobalContext(BkndContext, customMeta ?? BkndContextMeta);
+   }
+}
+
+export const BkndContextMeta: GlobalContextMeta<BkndContextProps> = {
    name: "BkndContext",
+   importPath: "@bknd/plasmic",
    props: { baseUrl: { type: "string" }, initialAuth: { type: "object" } },
    providesData: true,
    globalActions: {

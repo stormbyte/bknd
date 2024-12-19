@@ -24,7 +24,7 @@ import { useNavigate } from "ui/lib/routes";
 import { useLocation } from "wouter";
 import { NavLink } from "./AppShell";
 
-function HeaderNavigation() {
+export function HeaderNavigation() {
    const [location, navigate] = useLocation();
 
    const items: {

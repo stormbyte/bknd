@@ -10,11 +10,11 @@ export class MediaApi extends ModuleApi<MediaApiOptions> {
       };
    }
 
-   async getFiles() {
+   getFiles() {
       return this.get(["files"]);
    }
 
-   async getFile(filename: string) {
+   getFile(filename: string) {
       return this.get(["file", filename]);
    }
 
@@ -32,13 +32,13 @@ export class MediaApi extends ModuleApi<MediaApiOptions> {
       });
    }
 
-   async uploadFile(file: File) {
+   uploadFile(file: File) {
       const formData = new FormData();
       formData.append("file", file);
       return this.post(["upload"], formData);
    }
 
-   async deleteFile(filename: string) {
+   deleteFile(filename: string) {
       return this.delete(["file", filename]);
    }
 }

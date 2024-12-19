@@ -1,4 +1,7 @@
 import type { CodeComponentMeta } from "@plasmicapp/host";
+import registerComponent, { type ComponentMeta } from "@plasmicapp/host/registerComponent";
+// biome-ignore lint/style/useImportType: <explanation>
+import React from "react";
 import { useEffect, useRef, useState } from "react";
 
 interface LazyRenderProps {
@@ -22,7 +25,7 @@ export const LazyRender: React.FC<LazyRenderProps> = ({
    threshold = 0.1,
    delay = 0,
    fallback = <DefaultFallback />,
-   onBecomesVisible,
+   onBecomesVisible
 }) => {
    const [isVisible, setIsVisible] = useState(forceLoad);
    const ref = useRef<HTMLDivElement>(null);
@@ -43,7 +46,7 @@ export const LazyRender: React.FC<LazyRenderProps> = ({
       }
 
       const observerOptions: IntersectionObserverInit = {
-         threshold: threshold < 1 ? threshold : 0.1,
+         threshold: threshold < 1 ? threshold : 0.1
       };
 
       const observerCallback: IntersectionObserverCallback = (entries) => {
@@ -74,38 +77,49 @@ export const LazyRender: React.FC<LazyRenderProps> = ({
    );
 };
 
-export const LazyRenderMeta: CodeComponentMeta<React.ComponentType<LazyRenderProps>> = {
+export function registerLazyRender(
+   loader?: { registerComponent: typeof registerComponent },
+   customMeta?: ComponentMeta<LazyRenderProps>
+) {
+   if (loader) {
+      loader.registerComponent(LazyRender, customMeta ?? LazyRenderMeta);
+   } else {
+      registerComponent(LazyRender, customMeta ?? LazyRenderMeta);
+   }
+}
+
+export const LazyRenderMeta: CodeComponentMeta<LazyRenderProps> = {
    name: "LazyRender",
-   importPath: import.meta.dir,
+   importPath: "@bknd/plasmic",
    props: {
       forceLoad: {
          type: "boolean",
-         defaultValue: false,
+         defaultValue: false
       },
       forceFallback: {
          type: "boolean",
-         defaultValue: false,
+         defaultValue: false
       },
       threshold: {
          type: "number",
-         defaultValue: 0.1,
+         defaultValue: 0.1
       },
       fallback: {
-         type: "slot",
+         type: "slot"
          //allowedComponents: ["*"],
       },
       delay: {
          type: "number",
-         defaultValue: 0,
+         defaultValue: 0
       },
       onBecomesVisible: {
          type: "code",
-         lang: "javascript",
+         lang: "javascript"
       },
 
       children: {
-         type: "slot",
+         type: "slot"
          //allowedComponents: ["*"],
-      },
-   },
+      }
+   }
 };

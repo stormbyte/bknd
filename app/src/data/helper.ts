@@ -18,6 +18,7 @@ export function getChangeSet(
    data: EntityData,
    fields: Field[]
 ): EntityData {
+   //console.log("getChangeSet", formData, data);
    return transform(
       formData,
       (acc, _value, key) => {
@@ -26,11 +27,12 @@ export function getChangeSet(
          if (!field || field.isVirtual()) return;
          const value = _value === "" ? null : _value;
 
-         const newValue = field.getValue(value, "submit");
+         // normalize to null if undefined
+         const newValue = field.getValue(value, "submit") || null;
          // @todo: add typing for "action"
          if (action === "create" || newValue !== data[key]) {
             acc[key] = newValue;
-            console.log("changed", {
+            /*console.log("changed", {
                key,
                value,
                valueType: typeof value,
@@ -38,7 +40,7 @@ export function getChangeSet(
                newValue,
                new: value,
                sent: acc[key]
-            });
+            });*/
          } else {
             //console.log("no change", key, value, data[key]);
          }

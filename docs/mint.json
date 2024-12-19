@@ -61,7 +61,7 @@
   "navigation": [
     {
       "group": "Getting Started",
-      "pages": ["introduction", "setup", "sdk", "cli"]
+      "pages": ["introduction", "setup", "sdk", "react", "cli"]
     },
     {
       "group": "Modules",

@@ -1,15 +1,8 @@
-import { Api } from "Api";
+import { Api, type AuthState } from "Api";
 import type { AuthResponse } from "auth";
 import type { AppAuthSchema } from "auth/auth-schema";
-import type { ApiResponse } from "modules/ModuleApi";
 import { useEffect, useState } from "react";
-import {
-   createClient,
-   createOrUseClient,
-   queryClient,
-   useBaseUrl,
-   useClient
-} from "../../ClientProvider";
+import { useApi, useInvalidate } from "ui/client";
 
 type LoginData = {
    email: string;
@@ -18,55 +11,54 @@ type LoginData = {
 };
 
 type UseAuth = {
-   data: (AuthResponse & { verified: boolean }) | undefined;
-   user: AuthResponse["user"] | undefined;
-   token: AuthResponse["token"] | undefined;
+   data: AuthState | undefined;
+   user: AuthState["user"] | undefined;
+   token: AuthState["token"] | undefined;
    verified: boolean;
-   login: (data: LoginData) => Promise<ApiResponse<AuthResponse>>;
-   register: (data: LoginData) => Promise<ApiResponse<AuthResponse>>;
+   login: (data: LoginData) => Promise<AuthResponse>;
+   register: (data: LoginData) => Promise<AuthResponse>;
    logout: () => void;
    verify: () => void;
    setToken: (token: string) => void;
 };
 
-// @todo: needs to use a specific auth endpoint to get strategy information
 export const useAuth = (options?: { baseUrl?: string }): UseAuth => {
-   const ctxBaseUrl = useBaseUrl();
-   //const client = useClient();
-   const client = createOrUseClient(options?.baseUrl ? options?.baseUrl : ctxBaseUrl);
-   const authState = client.auth().state();
+   const api = useApi(options?.baseUrl);
+   const invalidate = useInvalidate();
+   const authState = api.getAuthState();
    const [authData, setAuthData] = useState<UseAuth["data"]>(authState);
    const verified = authState?.verified ?? false;
 
+   function updateAuthState() {
+      setAuthData(api.getAuthState());
+   }
+
    async function login(input: LoginData) {
-      const res = await client.auth().login(input);
-      if (res.res.ok && res.data && "user" in res.data) {
-         setAuthData(res.data);
-      }
-      return res;
+      const res = await api.auth.loginWithPassword(input);
+      updateAuthState();
+      return res.data;
    }
 
    async function register(input: LoginData) {
-      const res = await client.auth().register(input);
-      if (res.res.ok && res.data && "user" in res.data) {
-         setAuthData(res.data);
-      }
-      return res;
+      const res = await api.auth.registerWithPassword(input);
+      updateAuthState();
+      return res.data;
    }
 
    function setToken(token: string) {
-      setAuthData(client.auth().setToken(token) as any);
+      api.updateToken(token);
+      updateAuthState();
    }
 
    async function logout() {
-      await client.auth().logout();
+      await api.updateToken(undefined);
       setAuthData(undefined);
-      queryClient.clear();
+      invalidate();
    }
 
    async function verify() {
-      await client.auth().verify();
-      setAuthData(client.auth().state());
+      await api.verifyAuth();
+      updateAuthState();
    }
 
    return {
@@ -87,10 +79,7 @@ export const useAuthStrategies = (options?: { baseUrl?: string }): Partial<AuthS
    loading: boolean;
 } => {
    const [data, setData] = useState<AuthStrategyData>();
-   const ctxBaseUrl = useBaseUrl();
-   const api = new Api({
-      host: options?.baseUrl ? options?.baseUrl : ctxBaseUrl
-   });
+   const api = useApi(options?.baseUrl);
 
    useEffect(() => {
       (async () => {

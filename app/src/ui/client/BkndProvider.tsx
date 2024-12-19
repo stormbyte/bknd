@@ -1,7 +1,7 @@
+import type { ModuleConfigs, ModuleSchemas } from "modules";
 import { getDefaultConfig, getDefaultSchema } from "modules/ModuleManager";
 import { createContext, startTransition, useContext, useEffect, useRef, useState } from "react";
-import type { ModuleConfigs, ModuleSchemas } from "../../modules";
-import { useClient } from "./ClientProvider";
+import { useApi } from "ui/client";
 import { type TSchemaActions, getSchemaActions } from "./schema/actions";
 import { AppReduced } from "./utils/AppReduced";
 
@@ -22,14 +22,18 @@ export type { TSchemaActions };
 export function BkndProvider({
    includeSecrets = false,
    adminOverride,
-   children
-}: { includeSecrets?: boolean; children: any } & Pick<BkndContext, "adminOverride">) {
+   children,
+   fallback = null
+}: { includeSecrets?: boolean; children: any; fallback?: React.ReactNode } & Pick<
+   BkndContext,
+   "adminOverride"
+>) {
    const [withSecrets, setWithSecrets] = useState<boolean>(includeSecrets);
    const [schema, setSchema] =
       useState<Pick<BkndContext, "version" | "schema" | "config" | "permissions">>();
    const [fetched, setFetched] = useState(false);
    const errorShown = useRef<boolean>();
-   const client = useClient();
+   const api = useApi();
 
    async function reloadSchema() {
       await fetchSchema(includeSecrets, true);
@@ -37,7 +41,7 @@ export function BkndProvider({
 
    async function fetchSchema(_includeSecrets: boolean = false, force?: boolean) {
       if (withSecrets && !force) return;
-      const { body, res } = await client.api.system.readSchema({
+      const res = await api.system.readSchema({
          config: true,
          secrets: _includeSecrets
       });
@@ -57,7 +61,7 @@ export function BkndProvider({
       }
 
       const schema = res.ok
-         ? body
+         ? res.body
          : ({
               version: 0,
               schema: getDefaultSchema(),
@@ -89,9 +93,9 @@ export function BkndProvider({
       fetchSchema(includeSecrets);
    }, []);
 
-   if (!fetched || !schema) return null;
+   if (!fetched || !schema) return fallback;
    const app = new AppReduced(schema?.config as any);
-   const actions = getSchemaActions({ client, setSchema, reloadSchema });
+   const actions = getSchemaActions({ api, setSchema, reloadSchema });
 
    return (
       <BkndContext.Provider value={{ ...schema, actions, requireSecrets, app, adminOverride }}>

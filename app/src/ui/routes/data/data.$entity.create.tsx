@@ -1,15 +1,16 @@
 import { Type } from "core/utils";
+import type { EntityData } from "data";
 import { useState } from "react";
+import { useEntityMutate } from "ui/client";
+import { useBknd } from "ui/client/BkndProvider";
+import { Button } from "ui/components/buttons/Button";
+import { useBrowserTitle } from "ui/hooks/use-browser-title";
+import { useSearch } from "ui/hooks/use-search";
+import * as AppShell from "ui/layouts/AppShell/AppShell";
+import { Breadcrumbs2 } from "ui/layouts/AppShell/Breadcrumbs2";
+import { routes } from "ui/lib/routes";
 import { EntityForm } from "ui/modules/data/components/EntityForm";
 import { useEntityForm } from "ui/modules/data/hooks/useEntityForm";
-import { useBknd } from "../../client/BkndProvider";
-import { Button } from "../../components/buttons/Button";
-import { type EntityData, useEntity } from "../../container";
-import { useBrowserTitle } from "../../hooks/use-browser-title";
-import { useSearch } from "../../hooks/use-search";
-import * as AppShell from "../../layouts/AppShell/AppShell";
-import { Breadcrumbs2 } from "../../layouts/AppShell/Breadcrumbs2";
-import { routes } from "../../lib/routes";
 
 export function DataEntityCreate({ params }) {
    const { app } = useBknd();
@@ -17,40 +18,37 @@ export function DataEntityCreate({ params }) {
    const [error, setError] = useState<string | null>(null);
    useBrowserTitle(["Data", entity.label, "Create"]);
 
-   const container = useEntity(entity.name);
+   const $q = useEntityMutate(entity.name);
+
    // @todo: use entity schema for prefilling
    const search = useSearch(Type.Object({}), {});
-   console.log("search", search.value);
 
-   function goBack(state?: Record<string, any>) {
+   function goBack() {
       window.history.go(-1);
    }
 
    async function onSubmitted(changeSet?: EntityData) {
       console.log("create:changeSet", changeSet);
-      //return;
-      const res = await container.actions.create(changeSet);
-      console.log("create:res", res);
-      if (res.data?.error) {
-         setError(res.data.error);
-      } else {
-         error && setError(null);
+      if (!changeSet) return;
+
+      try {
+         await $q.create(changeSet);
+         if (error) setError(null);
          // @todo: navigate to created?
          goBack();
+      } catch (e) {
+         setError(e instanceof Error ? e.message : "Failed to create");
       }
    }
 
-   const { Form, handleSubmit, values } = useEntityForm({
+   const { Form, handleSubmit } = useEntityForm({
       action: "create",
       entity,
       initialData: search.value,
       onSubmitted
    });
 
-   const fieldsDisabled =
-      container.raw.fetch?.isLoading ||
-      container.status.fetch.isUpdating ||
-      Form.state.isSubmitting;
+   const fieldsDisabled = $q.isLoading || $q.isValidating || Form.state.isSubmitting;
 
    return (
       <>

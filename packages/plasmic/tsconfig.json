@@ -4,19 +4,23 @@
     "lib": ["ESNext", "DOM"],
     "target": "ESNext",
     "module": "ESNext",
-    "jsx": "react-jsx",
+    "jsx": "react",
     "allowJs": true,
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": false,
     "verbatimModuleSyntax": true,
     "strict": true,
     "outDir": "dist",
+    "declarationDir": "dist",
     "declaration": true,
     "skipLibCheck": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": false,
-    "noPropertyAccessFromIndexSignature": false
+    "noPropertyAccessFromIndexSignature": false,
+    "rootDir": "src",
+    "baseUrl": "src",
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
   },
-  "include": ["index.ts", "loader.tsx", "components", "contexts"],
-  "exclude": ["@bknd/app", "@bknd/core", "dist", "node_modules", "build.ts"]
+  "include": ["src/**/*"],
+  "exclude": ["bknd", "dist", "node_modules"]
 }

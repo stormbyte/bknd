@@ -3,7 +3,7 @@
   "type": "module",
   "sideEffects": false,
   "bin": "./dist/cli/index.js",
-  "version": "0.3.3",
+  "version": "0.3.4-alpha1",
   "scripts": {
     "build:all": "bun run build && bun run build:cli",
     "dev": "vite",
@@ -22,18 +22,19 @@
   },
   "license": "FSL-1.1-MIT",
   "dependencies": {
+    "@cfworker/json-schema": "^2.0.1",
     "@libsql/client": "^0.14.0",
-    "@tanstack/react-form": "0.19.2",
     "@sinclair/typebox": "^0.32.34",
+    "@tanstack/react-form": "0.19.2",
+    "aws4fetch": "^1.0.18",
+    "dayjs": "^1.11.13",
+    "fast-xml-parser": "^4.4.0",
+    "hono": "^4.6.12",
     "kysely": "^0.27.4",
     "liquidjs": "^10.15.0",
     "lodash-es": "^4.17.21",
-    "hono": "^4.6.12",
-    "fast-xml-parser": "^4.4.0",
-    "@cfworker/json-schema": "^2.0.1",
-    "dayjs": "^1.11.13",
     "oauth4webapi": "^2.11.1",
-    "aws4fetch": "^1.0.18"
+    "swr": "^2.2.5"
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.613.0",
@@ -54,8 +55,6 @@
     "@radix-ui/react-scroll-area": "^1.2.0",
     "@rjsf/core": "^5.22.2",
     "@tabler/icons-react": "3.18.0",
-    "@tanstack/react-query": "^5.59.16",
-    "@tanstack/react-query-devtools": "^5.59.16",
     "@types/node": "^22.10.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",

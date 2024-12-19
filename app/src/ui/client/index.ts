@@ -2,9 +2,12 @@ export {
    ClientProvider,
    useBkndWindowContext,
    type ClientProviderProps,
-   useClient,
+   useApi,
    useBaseUrl
 } from "./ClientProvider";
 
+export * from "./api/use-api";
+export * from "./api/use-data";
+export * from "./api/use-entity";
 export { useAuth } from "./schema/auth/use-auth";
 export { Api } from "../../Api";

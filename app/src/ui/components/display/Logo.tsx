@@ -1,9 +1,13 @@
-import { useBknd } from "../../client/BkndProvider";
+import { useBknd } from "ui/client/bknd";
 
-export function Logo({ scale = 0.2, fill }: { scale?: number; fill?: string }) {
-   const { app } = useBknd();
-   const theme = app.getAdminConfig().color_scheme;
-   const svgFill = fill ? fill : theme === "light" ? "black" : "white";
+export function Logo({
+   scale = 0.2,
+   fill,
+   theme = "light"
+}: { scale?: number; fill?: string; theme?: string }) {
+   const $bknd = useBknd();
+   const _theme = theme ?? $bknd?.app?.getAdminConfig().color_scheme ?? "light";
+   const svgFill = fill ? fill : _theme === "light" ? "black" : "white";
 
    const dim = {
       width: Math.round(578 * scale),

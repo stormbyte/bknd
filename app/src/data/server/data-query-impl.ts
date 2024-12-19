@@ -72,6 +72,6 @@ export const querySchema = Type.Object(
    }
 );
 
-export type RepoQueryIn = Simplify<Static<typeof querySchema>>;
+export type RepoQueryIn = Static<typeof querySchema>;
 export type RepoQuery = Required<StaticDecode<typeof querySchema>>;
 export const defaultQuerySchema = Value.Default(querySchema, {}) as RepoQuery;

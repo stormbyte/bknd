@@ -1,3 +1,4 @@
+import type { ConfigUpdateResponse } from "modules/server/SystemController";
 import { ModuleApi } from "./ModuleApi";
 import type { ModuleConfigs, ModuleKey, ModuleSchemas } from "./ModuleManager";
 
@@ -15,37 +16,41 @@ export class SystemApi extends ModuleApi<any> {
       };
    }
 
-   async readSchema(options?: { config?: boolean; secrets?: boolean }) {
-      return await this.get<ApiSchemaResponse>("schema", {
+   readConfig() {
+      return this.get<{ version: number } & ModuleConfigs>("config");
+   }
+
+   readSchema(options?: { config?: boolean; secrets?: boolean }) {
+      return this.get<ApiSchemaResponse>("schema", {
          config: options?.config ? 1 : 0,
          secrets: options?.secrets ? 1 : 0
       });
    }
 
-   async setConfig<Module extends ModuleKey>(
+   setConfig<Module extends ModuleKey>(
       module: Module,
       value: ModuleConfigs[Module],
       force?: boolean
    ) {
-      return await this.post<any>(
+      return this.post<ConfigUpdateResponse>(
          ["config", "set", module].join("/") + `?force=${force ? 1 : 0}`,
          value
       );
    }
 
-   async addConfig<Module extends ModuleKey>(module: Module, path: string, value: any) {
-      return await this.post<any>(["config", "add", module, path], value);
+   addConfig<Module extends ModuleKey>(module: Module, path: string, value: any) {
+      return this.post<ConfigUpdateResponse>(["config", "add", module, path], value);
    }
 
-   async patchConfig<Module extends ModuleKey>(module: Module, path: string, value: any) {
-      return await this.patch<any>(["config", "patch", module, path], value);
+   patchConfig<Module extends ModuleKey>(module: Module, path: string, value: any) {
+      return this.patch<ConfigUpdateResponse>(["config", "patch", module, path], value);
    }
 
-   async overwriteConfig<Module extends ModuleKey>(module: Module, path: string, value: any) {
-      return await this.put<any>(["config", "overwrite", module, path], value);
+   overwriteConfig<Module extends ModuleKey>(module: Module, path: string, value: any) {
+      return this.put<ConfigUpdateResponse>(["config", "overwrite", module, path], value);
    }
 
-   async removeConfig<Module extends ModuleKey>(module: Module, path: string) {
-      return await this.delete<any>(["config", "remove", module, path]);
+   removeConfig<Module extends ModuleKey>(module: Module, path: string) {
+      return this.delete<ConfigUpdateResponse>(["config", "remove", module, path]);
    }
 }
