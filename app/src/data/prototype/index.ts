@@ -2,6 +2,7 @@ import { DummyConnection } from "data/connection/DummyConnection";
 import { EntityManager } from "data/entities/EntityManager";
 import type { Generated } from "kysely";
 import { MediaField, type MediaFieldConfig, type MediaItem } from "media/MediaField";
+import type { ModuleConfigs } from "modules";
 import {
    BooleanField,
    type BooleanFieldConfig,
@@ -284,13 +285,8 @@ export function em<Entities extends Record<string, Entity>>(
       entities: e.__entities,
       relations,
       indices: [],
-      toJSON: () => {
-         return e.toJSON() as unknown as {
-            entities: Schemas<Entities>;
-            relations: EntityRelation[];
-            indices: any[];
-         };
-      }
+      toJSON: () =>
+         e.toJSON() as unknown as Pick<ModuleConfigs["data"], "entities" | "relations" | "indices">
    };
 }
 
