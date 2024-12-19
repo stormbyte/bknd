@@ -10,6 +10,7 @@ import {
    type DateFieldConfig,
    Entity,
    type EntityConfig,
+   EntityIndex,
    type EntityRelation,
    EnumField,
    type EnumFieldConfig,
@@ -244,47 +245,83 @@ export function relation<Local extends Entity>(local: Local) {
    };
 }
 
+export function index<E extends Entity>(entity: E) {
+   return {
+      on: (fields: (keyof InsertSchema<E>)[], unique?: boolean) => {
+         const _fields = fields.map((f) => {
+            const field = entity.field(f as any);
+            if (!field) {
+               throw new Error(`Field "${String(f)}" not found on entity "${entity.name}"`);
+            }
+            return field;
+         });
+         return new EntityIndex(entity, _fields, unique);
+      }
+   };
+}
+
 class EntityManagerPrototype<Entities extends Record<string, Entity>> extends EntityManager<
    Schema<Entities>
 > {
    constructor(
       public __entities: Entities,
-      relations: EntityRelation[]
+      relations: EntityRelation[] = [],
+      indices: EntityIndex[] = []
    ) {
-      super(Object.values(__entities), new DummyConnection(), relations);
+      super(Object.values(__entities), new DummyConnection(), relations, indices);
    }
 }
 
+type Chained<Fn extends (...args: any[]) => any, Rt = ReturnType<Fn>> = <E extends Entity>(
+   e: E
+) => {
+   [K in keyof Rt]: Rt[K] extends (...args: any[]) => any
+      ? (...args: Parameters<Rt[K]>) => Rt
+      : never;
+};
+
 export function em<Entities extends Record<string, Entity>>(
    entities: Entities,
-   schema?: (rel: typeof relation, entities: Entities) => void
+   schema?: (
+      fns: { relation: Chained<typeof relation>; index: Chained<typeof index> },
+      entities: Entities
+   ) => void
 ) {
    const relations: EntityRelation[] = [];
-   const relationProxy = (local: Entity) => {
-      return new Proxy(relation(local), {
+   const indices: EntityIndex[] = [];
+
+   const relationProxy = (e: Entity) => {
+      return new Proxy(relation(e), {
          get(target, prop) {
-            if (typeof target[prop] === "function") {
-               return (...args: any[]) => {
-                  const result = target[prop](...args);
-                  relations.push(result);
-                  return result;
-               };
-            }
-            return target[prop];
+            return (...args: any[]) => {
+               relations.push(target[prop](...args));
+               return relationProxy(e);
+            };
          }
-      });
+      }) as any;
+   };
+
+   const indexProxy = (e: Entity) => {
+      return new Proxy(index(e), {
+         get(target, prop) {
+            return (...args: any[]) => {
+               indices.push(target[prop](...args));
+               return indexProxy(e);
+            };
+         }
+      }) as any;
    };
 
    if (schema) {
-      schema(relationProxy, entities);
+      schema({ relation: relationProxy, index: indexProxy }, entities);
    }
 
-   const e = new EntityManagerPrototype(entities, relations);
+   const e = new EntityManagerPrototype(entities, relations, indices);
    return {
       DB: e.__entities as unknown as Schemas<Entities>,
       entities: e.__entities,
       relations,
-      indices: [],
+      indices,
       toJSON: () =>
          e.toJSON() as unknown as Pick<ModuleConfigs["data"], "entities" | "relations" | "indices">
    };

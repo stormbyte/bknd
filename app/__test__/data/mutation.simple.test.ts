@@ -186,7 +186,7 @@ describe("Mutator simple", async () => {
       const newCount = (await em.repo(items).count()).count;
       expect(newCount).toBe(oldCount + inserts.length);
 
-      const { data: data2 } = await em.repo(items).findMany();
+      const { data: data2 } = await em.repo(items).findMany({ offset: oldCount });
       expect(data2).toEqual(data);
    });
 });

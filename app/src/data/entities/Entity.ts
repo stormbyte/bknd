@@ -220,7 +220,8 @@ export class Entity<
             readOnly: !field.isFillable("update") ? true : undefined,
             writeOnly: !field.isFillable("create") ? true : undefined,
             ...field.toJsonSchema()
-         }))
+         })),
+         { additionalProperties: false }
       );
 
       return clean ? JSON.parse(JSON.stringify(schema)) : schema;

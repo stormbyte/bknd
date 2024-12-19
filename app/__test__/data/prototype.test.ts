@@ -3,6 +3,7 @@ import {
    BooleanField,
    DateField,
    Entity,
+   EntityIndex,
    EntityManager,
    EnumField,
    JsonField,
@@ -278,23 +279,32 @@ describe("prototype", () => {
    test("schema", async () => {
       const _em = em(
          {
-            posts: entity("posts", { name: text() }),
-            comments: entity("comments", { some: text() })
+            posts: entity("posts", { name: text(), slug: text().required() }),
+            comments: entity("comments", { some: text() }),
+            users: entity("users", { email: text() })
          },
-         (relation, { posts, comments }) => {
-            relation(posts).manyToOne(comments);
+         ({ relation, index }, { posts, comments, users }) => {
+            relation(posts).manyToOne(comments).manyToOne(users);
+            index(posts).on(["name"]).on(["slug"], true);
          }
       );
 
       type LocalDb = (typeof _em)["DB"];
 
       const es = [
-         new Entity("posts", [new TextField("name")]),
-         new Entity("comments", [new TextField("some")])
+         new Entity("posts", [new TextField("name"), new TextField("slug", { required: true })]),
+         new Entity("comments", [new TextField("some")]),
+         new Entity("users", [new TextField("email")])
       ];
-      const _em2 = new EntityManager(es, new DummyConnection(), [
-         new ManyToOneRelation(es[0], es[1])
-      ]);
+      const _em2 = new EntityManager(
+         es,
+         new DummyConnection(),
+         [new ManyToOneRelation(es[0], es[1]), new ManyToOneRelation(es[0], es[2])],
+         [
+            new EntityIndex(es[0], [es[0].field("name")!]),
+            new EntityIndex(es[0], [es[0].field("slug")!], true)
+         ]
+      );
 
       // @ts-ignore
       expect(_em2.toJSON()).toEqual(_em.toJSON());
