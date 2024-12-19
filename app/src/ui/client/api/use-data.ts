@@ -10,7 +10,7 @@ type OmitFirstArg<F> = F extends (x: any, ...args: infer P) => any
  * the first argument "entity" for convenience
  * @param entity
  */
-export const useData = <T extends keyof DataApi>(entity: string) => {
+export const useData = <T extends keyof DataApi<DB>>(entity: string) => {
    const api = useApi().data;
    const methods = [
       "readOne",
