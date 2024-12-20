@@ -25,8 +25,12 @@ export type MutatorResponse<T = EntityData[]> = {
    data: T;
 };
 
-export class Mutator<DB = any, TB extends keyof DB = any, Data = Omit<DB[TB], "id">>
-   implements EmitsEvents
+export class Mutator<
+   DB = any,
+   TB extends keyof DB = any,
+   Output = DB[TB],
+   Input = Omit<Output, "id">
+> implements EmitsEvents
 {
    em: EntityManager<DB>;
    entity: Entity;
@@ -122,7 +126,7 @@ export class Mutator<DB = any, TB extends keyof DB = any, Data = Omit<DB[TB], "i
       return { ...response, data: data[0]! };
    }
 
-   async insertOne(data: Data): Promise<MutatorResponse<DB[TB]>> {
+   async insertOne(data: Input): Promise<MutatorResponse<Output>> {
       const entity = this.entity;
       if (entity.type === "system" && this.__unstable_disable_system_entity_creation) {
          throw new Error(`Creation of system entity "${entity.name}" is disabled`);
@@ -159,7 +163,7 @@ export class Mutator<DB = any, TB extends keyof DB = any, Data = Omit<DB[TB], "i
       return res as any;
    }
 
-   async updateOne(id: PrimaryFieldType, data: Data): Promise<MutatorResponse<DB[TB]>> {
+   async updateOne(id: PrimaryFieldType, data: Input): Promise<MutatorResponse<Output>> {
       const entity = this.entity;
       if (!Number.isInteger(id)) {
          throw new Error("ID must be provided for update");
@@ -190,7 +194,7 @@ export class Mutator<DB = any, TB extends keyof DB = any, Data = Omit<DB[TB], "i
       return res as any;
    }
 
-   async deleteOne(id: PrimaryFieldType): Promise<MutatorResponse<DB[TB]>> {
+   async deleteOne(id: PrimaryFieldType): Promise<MutatorResponse<Output>> {
       const entity = this.entity;
       if (!Number.isInteger(id)) {
          throw new Error("ID must be provided for deletion");
@@ -256,7 +260,7 @@ export class Mutator<DB = any, TB extends keyof DB = any, Data = Omit<DB[TB], "i
    }
 
    // @todo: decide whether entries should be deleted all at once or one by one (for events)
-   async deleteWhere(where?: RepoQuery["where"]): Promise<MutatorResponse<DB[TB][]>> {
+   async deleteWhere(where?: RepoQuery["where"]): Promise<MutatorResponse<Output[]>> {
       const entity = this.entity;
 
       const qb = this.appendWhere(this.conn.deleteFrom(entity.name), where).returning(
@@ -266,7 +270,7 @@ export class Mutator<DB = any, TB extends keyof DB = any, Data = Omit<DB[TB], "i
       return (await this.many(qb)) as any;
    }
 
-   async updateWhere(data: Data, where?: RepoQuery["where"]): Promise<MutatorResponse<DB[TB][]>> {
+   async updateWhere(data: Input, where?: RepoQuery["where"]): Promise<MutatorResponse<Output[]>> {
       const entity = this.entity;
       const validatedData = await this.getValidatedData(data, "update");
 
@@ -277,7 +281,7 @@ export class Mutator<DB = any, TB extends keyof DB = any, Data = Omit<DB[TB], "i
       return (await this.many(query)) as any;
    }
 
-   async insertMany(data: Data[]): Promise<MutatorResponse<DB[TB][]>> {
+   async insertMany(data: Input[]): Promise<MutatorResponse<Output[]>> {
       const entity = this.entity;
       if (entity.type === "system" && this.__unstable_disable_system_entity_creation) {
          throw new Error(`Creation of system entity "${entity.name}" is disabled`);

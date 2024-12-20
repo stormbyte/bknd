@@ -1,16 +1,23 @@
 import type { PrimaryFieldType } from "core";
-import { objectTransform } from "core/utils";
+import { encodeSearch, objectTransform } from "core/utils";
 import type { EntityData, RepoQuery } from "data";
 import type { ModuleApi, ResponseObject } from "modules/ModuleApi";
-import useSWR, { type SWRConfiguration, useSWRConfig } from "swr";
+import useSWR, { type SWRConfiguration, mutate } from "swr";
 import { useApi } from "ui/client";
 
 export class UseEntityApiError<Payload = any> extends Error {
    constructor(
-      public payload: Payload,
-      public response: Response,
-      message?: string
+      public response: ResponseObject<Payload>,
+      fallback?: string
    ) {
+      let message = fallback;
+      if ("error" in response) {
+         message = response.error as string;
+         if (fallback) {
+            message = `${fallback}: ${message}`;
+         }
+      }
+
       super(message ?? "UseEntityApiError");
    }
 }
@@ -38,14 +45,14 @@ export const useEntity = <
       create: async (input: Omit<Data, "id">) => {
          const res = await api.createOne(entity, input);
          if (!res.ok) {
-            throw new UseEntityApiError(res.data, res.res, "Failed to create entity");
+            throw new UseEntityApiError(res, `Failed to create entity "${entity}"`);
          }
          return res;
       },
       read: async (query: Partial<RepoQuery> = {}) => {
          const res = id ? await api.readOne(entity, id!, query) : await api.readMany(entity, query);
          if (!res.ok) {
-            throw new UseEntityApiError(res.data, res.res, "Failed to read entity");
+            throw new UseEntityApiError(res as any, `Failed to read entity "${entity}"`);
          }
          // must be manually typed
          return res as unknown as Id extends undefined
@@ -58,7 +65,7 @@ export const useEntity = <
          }
          const res = await api.updateOne(entity, _id, input);
          if (!res.ok) {
-            throw new UseEntityApiError(res.data, res.res, "Failed to update entity");
+            throw new UseEntityApiError(res, `Failed to update entity "${entity}"`);
          }
          return res;
       },
@@ -69,19 +76,26 @@ export const useEntity = <
 
          const res = await api.deleteOne(entity, _id);
          if (!res.ok) {
-            throw new UseEntityApiError(res.data, res.res, "Failed to delete entity");
+            throw new UseEntityApiError(res, `Failed to delete entity "${entity}"`);
          }
          return res;
       }
    };
 };
 
-export function makeKey(api: ModuleApi, entity: string, id?: PrimaryFieldType) {
+// @todo: try to get from ModuleApi directly
+export function makeKey(
+   api: ModuleApi,
+   entity: string,
+   id?: PrimaryFieldType,
+   query?: Partial<RepoQuery>
+) {
    return (
       "/" +
       [...(api.options?.basepath?.split("/") ?? []), entity, ...(id ? [id] : [])]
          .filter(Boolean)
-         .join("/")
+         .join("/") +
+      (query ? "?" + encodeSearch(query) : "")
    );
 }
 
@@ -92,29 +106,36 @@ export const useEntityQuery = <
    entity: Entity,
    id?: Id,
    query?: Partial<RepoQuery>,
-   options?: SWRConfiguration & { enabled?: boolean }
+   options?: SWRConfiguration & { enabled?: boolean; revalidateOnMutate?: boolean }
 ) => {
-   const { mutate } = useSWRConfig();
    const api = useApi().data;
-   const key = makeKey(api, entity, id);
+   const key = makeKey(api, entity, id, query);
    const { read, ...actions } = useEntity<Entity, Id>(entity, id);
    const fetcher = () => read(query);
 
    type T = Awaited<ReturnType<typeof fetcher>>;
    const swr = useSWR<T>(options?.enabled === false ? null : key, fetcher as any, {
       revalidateOnFocus: false,
-      keepPreviousData: false,
+      keepPreviousData: true,
       ...options
    });
+
+   const mutateAll = async () => {
+      const entityKey = makeKey(api, entity);
+      return mutate((key) => typeof key === "string" && key.startsWith(entityKey), undefined, {
+         revalidate: true
+      });
+   };
 
    const mapped = objectTransform(actions, (action) => {
       return async (...args: any) => {
          // @ts-ignore
          const res = await action(...args);
 
-         // mutate the key + list key
-         mutate(key);
-         if (id) mutate(makeKey(api, entity));
+         // mutate all keys of entity by default
+         if (options?.revalidateOnMutate !== false) {
+            await mutateAll();
+         }
          return res;
       };
    }) as Omit<ReturnType<typeof useEntity<Entity, Id>>, "read">;

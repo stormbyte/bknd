@@ -13,7 +13,9 @@ export default function SwrAndDataApi() {
 
 function QueryDataApi() {
    const [text, setText] = useState("");
-   const { data, update, ...r } = useEntityQuery("comments", 2);
+   const { data, update, ...r } = useEntityQuery("comments", 2, {
+      sort: { by: "id", dir: "desc" }
+   });
    const comment = data ? data : null;
 
    useEffect(() => {

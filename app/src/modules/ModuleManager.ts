@@ -75,6 +75,8 @@ export type ModuleManagerOptions = {
       module: Module,
       config: ModuleConfigs[Module]
    ) => Promise<void>;
+   // triggered when no config table existed
+   onFirstBoot?: () => Promise<void>;
    // base path for the hono instance
    basePath?: string;
    // doesn't perform validity checks for given/fetched config
@@ -480,6 +482,9 @@ export class ModuleManager {
       // perform a sync
       await ctx.em.schema().sync({ force: true });
       await this.options?.seed?.(ctx);
+
+      // run first boot event
+      await this.options?.onFirstBoot?.();
    }
 
    get<K extends keyof Modules>(key: K): Modules[K] {

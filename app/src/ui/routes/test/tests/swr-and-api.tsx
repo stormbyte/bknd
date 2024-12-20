@@ -39,12 +39,12 @@ export default function SWRAndAPI() {
                   e.preventDefault();
                   if (!comment) return;
 
-                  await r.mutate(async () => {
+                  /*await r.mutate(async () => {
                      const res = await r.api.data.updateOne("comments", comment.id, {
                         content: text
                      });
                      return res.data;
-                  });
+                  });*/
 
                   return false;
                }}

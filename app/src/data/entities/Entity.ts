@@ -158,7 +158,7 @@ export class Entity<
    }
 
    get label(): string {
-      return snakeToPascalWithSpaces(this.config.name || this.name);
+      return this.config.name ?? snakeToPascalWithSpaces(this.name);
    }
 
    field(name: string): Field | undefined {
@@ -210,21 +210,34 @@ export class Entity<
       return true;
    }
 
-   toSchema(clean?: boolean): object {
-      const fields = Object.fromEntries(this.fields.map((field) => [field.name, field]));
+   toSchema(options?: { clean: boolean; context?: "create" | "update" }): object {
+      let fields: Field[];
+      switch (options?.context) {
+         case "create":
+         case "update":
+            fields = this.getFillableFields(options.context);
+            break;
+         default:
+            fields = this.getFields(true);
+      }
+
+      const _fields = Object.fromEntries(fields.map((field) => [field.name, field]));
       const schema = Type.Object(
-         transformObject(fields, (field) => ({
-            title: field.config.label,
-            $comment: field.config.description,
-            $field: field.type,
-            readOnly: !field.isFillable("update") ? true : undefined,
-            writeOnly: !field.isFillable("create") ? true : undefined,
-            ...field.toJsonSchema()
-         })),
+         transformObject(_fields, (field) => {
+            //const hidden = field.isHidden(options?.context);
+            const fillable = field.isFillable(options?.context);
+            return {
+               title: field.config.label,
+               $comment: field.config.description,
+               $field: field.type,
+               readOnly: !fillable ? true : undefined,
+               ...field.toJsonSchema()
+            };
+         }),
          { additionalProperties: false }
       );
 
-      return clean ? JSON.parse(JSON.stringify(schema)) : schema;
+      return options?.clean ? JSON.parse(JSON.stringify(schema)) : schema;
    }
 
    toJSON() {

@@ -46,7 +46,7 @@ export class DataApi<DB> extends ModuleApi<DataApiOptions> {
 
    createOne<E extends keyof DB | string, Data = E extends keyof DB ? DB[E] : EntityData>(
       entity: E,
-      input: Data
+      input: Omit<Data, "id">
    ) {
       return this.post<RepositoryResponse<Data>>([entity as any], input);
    }
@@ -54,7 +54,7 @@ export class DataApi<DB> extends ModuleApi<DataApiOptions> {
    updateOne<E extends keyof DB | string, Data = E extends keyof DB ? DB[E] : EntityData>(
       entity: E,
       id: PrimaryFieldType,
-      input: Partial<Data>
+      input: Partial<Omit<Data, "id">>
    ) {
       return this.patch<RepositoryResponse<Data>>([entity as any, id], input);
    }

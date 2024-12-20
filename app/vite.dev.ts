@@ -24,8 +24,8 @@ export default {
    async fetch(request: Request) {
       const app = App.create({ connection });
 
-      app.emgr.on(
-         "app-built",
+      app.emgr.onEvent(
+         App.Events.AppBuiltEvent,
          async () => {
             app.registerAdminController({ forceDev: true });
             app.module.server.client.get("/assets/*", serveStatic({ root: "./" }));
