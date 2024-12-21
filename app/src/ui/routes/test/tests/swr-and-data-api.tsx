@@ -1,53 +1,69 @@
 import { useEffect, useState } from "react";
-import { useEntity, useEntityQuery } from "ui/client/api/use-entity";
+import { useEntity, useEntityMutate, useEntityQuery } from "ui/client/api/use-entity";
 import { Scrollable } from "ui/layouts/AppShell/AppShell";
 
 export default function SwrAndDataApi() {
    return (
-      <div>
+      <Scrollable>
+         asdf
          <DirectDataApi />
          <QueryDataApi />
-      </div>
+         <QueryMutateDataApi />
+      </Scrollable>
    );
 }
 
-function QueryDataApi() {
-   const [text, setText] = useState("");
-   const { data, update, ...r } = useEntityQuery("comments", 2, {
-      sort: { by: "id", dir: "desc" }
+function QueryMutateDataApi() {
+   const { mutate } = useEntityMutate("comments");
+   const { data, ...r } = useEntityQuery("comments", undefined, {
+      limit: 2
    });
-   const comment = data ? data : null;
-
-   useEffect(() => {
-      setText(comment?.content ?? "");
-   }, [comment]);
 
    return (
-      <Scrollable>
+      <div>
+         bla
          <pre>{JSON.stringify(r.key)}</pre>
          {r.error && <div>failed to load</div>}
          {r.isLoading && <div>loading...</div>}
          {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
          {data && (
-            <form
-               onSubmit={async (e) => {
-                  e.preventDefault();
-                  if (!comment) return;
-                  await update({ content: text });
-                  return false;
-               }}
-            >
-               <input type="text" value={text} onChange={(e) => setText(e.target.value)} />
-               <button type="submit">submit</button>
-            </form>
+            <div>
+               {data.map((comment) => (
+                  <input
+                     key={String(comment.id)}
+                     type="text"
+                     value={comment.content}
+                     onChange={async (e) => {
+                        await mutate(comment.id, { content: e.target.value });
+                     }}
+                     className="border border-black"
+                  />
+               ))}
+            </div>
          )}
-      </Scrollable>
+      </div>
+   );
+}
+
+function QueryDataApi() {
+   const { data, update, ...r } = useEntityQuery("comments", undefined, {
+      sort: { by: "id", dir: "asc" },
+      limit: 3
+   });
+
+   return (
+      <div>
+         <pre>{JSON.stringify(r.key)}</pre>
+         {r.error && <div>failed to load</div>}
+         {r.isLoading && <div>loading...</div>}
+         {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
+      </div>
    );
 }
 
 function DirectDataApi() {
    const [data, setData] = useState<any>();
-   const { create, read, update, _delete } = useEntity("users");
+   const { create, read, update, _delete } = useEntity("comments");
 
    useEffect(() => {
       read().then((data) => setData(data));

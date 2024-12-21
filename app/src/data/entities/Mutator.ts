@@ -270,7 +270,7 @@ export class Mutator<
       return (await this.many(qb)) as any;
    }
 
-   async updateWhere(data: Input, where?: RepoQuery["where"]): Promise<MutatorResponse<Output[]>> {
+   async updateWhere(data: Partial<Input>, where?: RepoQuery["where"]): Promise<MutatorResponse<Output[]>> {
       const entity = this.entity;
       const validatedData = await this.getValidatedData(data, "update");
 

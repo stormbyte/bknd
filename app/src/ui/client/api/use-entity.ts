@@ -3,7 +3,7 @@ import { encodeSearch, objectTransform } from "core/utils";
 import type { EntityData, RepoQuery } from "data";
 import type { ModuleApi, ResponseObject } from "modules/ModuleApi";
 import useSWR, { type SWRConfiguration, mutate } from "swr";
-import { useApi } from "ui/client";
+import { type Api, useApi } from "ui/client";
 
 export class UseEntityApiError<Payload = any> extends Error {
    constructor(
@@ -148,9 +148,44 @@ export const useEntityQuery = <
    };
 };
 
+export async function mutateEntityCache<
+   Entity extends keyof DB | string,
+   Data = Entity extends keyof DB ? Omit<DB[Entity], "id"> : EntityData
+>(api: Api["data"], entity: Entity, id: PrimaryFieldType, partialData: Partial<Data>) {
+   function update(prev: any, partialNext: any) {
+      if (
+         typeof prev !== "undefined" &&
+         typeof partialNext !== "undefined" &&
+         "id" in prev &&
+         prev.id === id
+      ) {
+         return { ...prev, ...partialNext };
+      }
+
+      return prev;
+   }
+
+   const entityKey = makeKey(api, entity);
+
+   return mutate(
+      (key) => typeof key === "string" && key.startsWith(entityKey),
+      async (data) => {
+         if (typeof data === "undefined") return;
+         if (Array.isArray(data)) {
+            return data.map((item) => update(item, partialData));
+         }
+         return update(data, partialData);
+      },
+      {
+         revalidate: false
+      }
+   );
+}
+
 export const useEntityMutate = <
    Entity extends keyof DB | string,
-   Id extends PrimaryFieldType | undefined = undefined
+   Id extends PrimaryFieldType | undefined = undefined,
+   Data = Entity extends keyof DB ? Omit<DB[Entity], "id"> : EntityData
 >(
    entity: Entity,
    id?: Id,
@@ -160,5 +195,15 @@ export const useEntityMutate = <
       ...options,
       enabled: false
    });
-   return $q;
+
+   const _mutate = id
+      ? (data) => mutateEntityCache($q.api, entity, id, data)
+      : (id, data) => mutateEntityCache($q.api, entity, id, data);
+
+   return {
+      ...$q,
+      mutate: _mutate as unknown as Id extends undefined
+         ? (id: PrimaryFieldType, data: Partial<Data>) => Promise<void>
+         : (data: Partial<Data>) => Promise<void>
+   };
 };
