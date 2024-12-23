@@ -272,7 +272,7 @@ export class Repository<DB = any, TB extends keyof DB = any> implements EmitsEve
    async findId(
       id: PrimaryFieldType,
       _options?: Partial<Omit<RepoQuery, "where" | "limit" | "offset">>
-   ): Promise<RepositoryResponse<DB[TB]>> {
+   ): Promise<RepositoryResponse<DB[TB] | undefined>> {
       const { qb, options } = this.buildQuery(
          {
             ..._options,

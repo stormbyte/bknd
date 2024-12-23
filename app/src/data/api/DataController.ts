@@ -1,5 +1,5 @@
 import { type ClassController, isDebug, tbValidator as tb } from "core";
-import { Type, objectCleanEmpty, objectTransform } from "core/utils";
+import { StringEnum, Type, objectCleanEmpty, objectTransform } from "core/utils";
 import {
    DataPermissions,
    type EntityData,
@@ -165,13 +165,12 @@ export class DataController implements ClassController {
          // read entity schema
          .get("/schema.json", async (c) => {
             this.guard.throwUnlessGranted(DataPermissions.entityRead);
-            const url = new URL(c.req.url);
-            const $id = `${url.origin}${this.config.basepath}/schema.json`;
+            const $id = `${this.config.basepath}/schema.json`;
             const schemas = Object.fromEntries(
                this.em.entities.map((e) => [
                   e.name,
                   {
-                     $ref: `schemas/${e.name}`
+                     $ref: `${this.config.basepath}/schemas/${e.name}`
                   }
                ])
             );
@@ -183,22 +182,28 @@ export class DataController implements ClassController {
          })
          // read schema
          .get(
-            "/schemas/:entity",
-            tb("param", Type.Object({ entity: Type.String() })),
+            "/schemas/:entity/:context?",
+            tb(
+               "param",
+               Type.Object({
+                  entity: Type.String(),
+                  context: Type.Optional(StringEnum(["create", "update"]))
+               })
+            ),
             async (c) => {
                this.guard.throwUnlessGranted(DataPermissions.entityRead);
 
                //console.log("request", c.req.raw);
-               const { entity } = c.req.param();
+               const { entity, context } = c.req.param();
                if (!this.entityExists(entity)) {
                   console.log("not found", entity, definedEntities);
                   return c.notFound();
                }
                const _entity = this.em.entity(entity);
-               const schema = _entity.toSchema();
+               const schema = _entity.toSchema({ context } as any);
                const url = new URL(c.req.url);
                const base = `${url.origin}${this.config.basepath}`;
-               const $id = `${base}/schemas/${entity}`;
+               const $id = `${this.config.basepath}/schemas/${entity}`;
                return c.json({
                   $schema: `${base}/schema.json`,
                   $id,

@@ -8,10 +8,7 @@ import { Button } from "ui/components/buttons/Button";
 import { IconButton } from "ui/components/buttons/IconButton";
 import { Alert } from "ui/components/display/Alert";
 import { Empty } from "ui/components/display/Empty";
-import {
-   JsonSchemaForm,
-   type JsonSchemaFormRef
-} from "ui/components/form/json-schema/JsonSchemaForm";
+import { JsonSchemaForm, type JsonSchemaFormRef } from "ui/components/form/json-schema";
 import { Dropdown } from "ui/components/overlay/Dropdown";
 import { DataTable } from "ui/components/table/DataTable";
 import { useEvent } from "ui/hooks/use-event";

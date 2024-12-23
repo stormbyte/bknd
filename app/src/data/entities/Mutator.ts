@@ -25,7 +25,13 @@ export type MutatorResponse<T = EntityData[]> = {
    data: T;
 };
 
-export class Mutator<DB> implements EmitsEvents {
+export class Mutator<
+   DB = any,
+   TB extends keyof DB = any,
+   Output = DB[TB],
+   Input = Omit<Output, "id">
+> implements EmitsEvents
+{
    em: EntityManager<DB>;
    entity: Entity;
    static readonly Events = MutatorEvents;
@@ -47,13 +53,13 @@ export class Mutator<DB> implements EmitsEvents {
       return this.em.connection.kysely;
    }
 
-   async getValidatedData(data: EntityData, context: TActionContext): Promise<EntityData> {
+   async getValidatedData<Given = any>(data: Given, context: TActionContext): Promise<Given> {
       const entity = this.entity;
       if (!context) {
          throw new Error("Context must be provided for validation");
       }
 
-      const keys = Object.keys(data);
+      const keys = Object.keys(data as any);
       const validatedData: EntityData = {};
 
       // get relational references/keys
@@ -95,7 +101,7 @@ export class Mutator<DB> implements EmitsEvents {
          throw new Error(`No data left to update "${entity.name}"`);
       }
 
-      return validatedData;
+      return validatedData as Given;
    }
 
    protected async many(qb: MutatorQB): Promise<MutatorResponse> {
@@ -120,7 +126,7 @@ export class Mutator<DB> implements EmitsEvents {
       return { ...response, data: data[0]! };
    }
 
-   async insertOne(data: EntityData): Promise<MutatorResponse<EntityData>> {
+   async insertOne(data: Input): Promise<MutatorResponse<Output>> {
       const entity = this.entity;
       if (entity.type === "system" && this.__unstable_disable_system_entity_creation) {
          throw new Error(`Creation of system entity "${entity.name}" is disabled`);
@@ -154,10 +160,10 @@ export class Mutator<DB> implements EmitsEvents {
 
       await this.emgr.emit(new Mutator.Events.MutatorInsertAfter({ entity, data: res.data }));
 
-      return res;
+      return res as any;
    }
 
-   async updateOne(id: PrimaryFieldType, data: EntityData): Promise<MutatorResponse<EntityData>> {
+   async updateOne(id: PrimaryFieldType, data: Input): Promise<MutatorResponse<Output>> {
       const entity = this.entity;
       if (!Number.isInteger(id)) {
          throw new Error("ID must be provided for update");
@@ -166,12 +172,16 @@ export class Mutator<DB> implements EmitsEvents {
       const validatedData = await this.getValidatedData(data, "update");
 
       await this.emgr.emit(
-         new Mutator.Events.MutatorUpdateBefore({ entity, entityId: id, data: validatedData })
+         new Mutator.Events.MutatorUpdateBefore({
+            entity,
+            entityId: id,
+            data: validatedData as any
+         })
       );
 
       const query = this.conn
          .updateTable(entity.name)
-         .set(validatedData)
+         .set(validatedData as any)
          .where(entity.id().name, "=", id)
          .returning(entity.getSelect());
 
@@ -181,10 +191,10 @@ export class Mutator<DB> implements EmitsEvents {
          new Mutator.Events.MutatorUpdateAfter({ entity, entityId: id, data: res.data })
       );
 
-      return res;
+      return res as any;
    }
 
-   async deleteOne(id: PrimaryFieldType): Promise<MutatorResponse<EntityData>> {
+   async deleteOne(id: PrimaryFieldType): Promise<MutatorResponse<Output>> {
       const entity = this.entity;
       if (!Number.isInteger(id)) {
          throw new Error("ID must be provided for deletion");
@@ -203,7 +213,7 @@ export class Mutator<DB> implements EmitsEvents {
          new Mutator.Events.MutatorDeleteAfter({ entity, entityId: id, data: res.data })
       );
 
-      return res;
+      return res as any;
    }
 
    private getValidOptions(options?: Partial<RepoQuery>): Partial<RepoQuery> {
@@ -250,47 +260,59 @@ export class Mutator<DB> implements EmitsEvents {
    }
 
    // @todo: decide whether entries should be deleted all at once or one by one (for events)
-   async deleteWhere(where?: RepoQuery["where"]): Promise<MutatorResponse<EntityData>> {
+   async deleteWhere(where?: RepoQuery["where"]): Promise<MutatorResponse<Output[]>> {
       const entity = this.entity;
 
       const qb = this.appendWhere(this.conn.deleteFrom(entity.name), where).returning(
          entity.getSelect()
       );
 
-      //await this.emgr.emit(new Mutator.Events.MutatorDeleteBefore({ entity, entityId: id }));
-
-      const res = await this.many(qb);
-
-      /*await this.emgr.emit(
-         new Mutator.Events.MutatorDeleteAfter({ entity, entityId: id, data: res.data })
-      );*/
-
-      return res;
+      return (await this.many(qb)) as any;
    }
 
-   async updateWhere(
-      data: EntityData,
-      where?: RepoQuery["where"]
-   ): Promise<MutatorResponse<EntityData>> {
+   async updateWhere(data: Partial<Input>, where?: RepoQuery["where"]): Promise<MutatorResponse<Output[]>> {
       const entity = this.entity;
-
       const validatedData = await this.getValidatedData(data, "update");
 
-      /*await this.emgr.emit(
-         new Mutator.Events.MutatorUpdateBefore({ entity, entityId: id, data: validatedData })
-      );*/
-
       const query = this.appendWhere(this.conn.updateTable(entity.name), where)
-         .set(validatedData)
-         //.where(entity.id().name, "=", id)
+         .set(validatedData as any)
          .returning(entity.getSelect());
 
-      const res = await this.many(query);
+      return (await this.many(query)) as any;
+   }
 
-      /*await this.emgr.emit(
-         new Mutator.Events.MutatorUpdateAfter({ entity, entityId: id, data: res.data })
-      );*/
+   async insertMany(data: Input[]): Promise<MutatorResponse<Output[]>> {
+      const entity = this.entity;
+      if (entity.type === "system" && this.__unstable_disable_system_entity_creation) {
+         throw new Error(`Creation of system entity "${entity.name}" is disabled`);
+      }
 
-      return res;
+      const validated: any[] = [];
+      for (const row of data) {
+         const validatedData = {
+            ...entity.getDefaultObject(),
+            ...(await this.getValidatedData(row, "create"))
+         };
+
+         // check if required fields are present
+         const required = entity.getRequiredFields();
+         for (const field of required) {
+            if (
+               typeof validatedData[field.name] === "undefined" ||
+               validatedData[field.name] === null
+            ) {
+               throw new Error(`Field "${field.name}" is required`);
+            }
+         }
+
+         validated.push(validatedData);
+      }
+
+      const query = this.conn
+         .insertInto(entity.name)
+         .values(validated)
+         .returning(entity.getSelect());
+
+      return (await this.many(query)) as any;
    }
 }

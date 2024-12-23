@@ -5,14 +5,14 @@ import { useApi } from "ui/client";
 
 export const useApiQuery = <
    Data,
-   RefineFn extends (data: ResponseObject<Data>) => any = (data: ResponseObject<Data>) => Data
+   RefineFn extends (data: ResponseObject<Data>) => unknown = (data: ResponseObject<Data>) => Data
 >(
    fn: (api: Api) => FetchPromise<Data>,
    options?: SWRConfiguration & { enabled?: boolean; refine?: RefineFn }
 ) => {
    const api = useApi();
    const promise = fn(api);
-   const refine = options?.refine ?? ((data: ResponseObject<Data>) => data);
+   const refine = options?.refine ?? ((data: any) => data);
    const fetcher = () => promise.execute().then(refine);
    const key = promise.key();
 

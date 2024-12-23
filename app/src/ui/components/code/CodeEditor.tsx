@@ -1,7 +1,6 @@
-import type { ReactCodeMirrorProps } from "@uiw/react-codemirror";
-import { Suspense, lazy } from "react";
+import { default as CodeMirror, type ReactCodeMirrorProps } from "@uiw/react-codemirror";
+
 import { useBknd } from "ui/client/bknd";
-const CodeMirror = lazy(() => import("@uiw/react-codemirror"));
 
 export default function CodeEditor({ editable, basicSetup, ...props }: ReactCodeMirrorProps) {
    const b = useBknd();
@@ -15,13 +14,11 @@ export default function CodeEditor({ editable, basicSetup, ...props }: ReactCode
       : basicSetup;
 
    return (
-      <Suspense>
-         <CodeMirror
-            theme={theme === "dark" ? "dark" : "light"}
-            editable={editable}
-            basicSetup={_basicSetup}
-            {...props}
-         />
-      </Suspense>
+      <CodeMirror
+         theme={theme === "dark" ? "dark" : "light"}
+         editable={editable}
+         basicSetup={_basicSetup}
+         {...props}
+      />
    );
 }

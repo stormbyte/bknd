@@ -1,6 +1,5 @@
 import type { App } from "App";
-import type { Entity, EntityRelation } from "data";
-import { AppData } from "data/AppData";
+import { type Entity, type EntityRelation, constructEntity, constructRelation } from "data";
 import { RelationAccessor } from "data/relations/RelationAccessor";
 import { Flow, TaskMap } from "flows";
 
@@ -20,11 +19,11 @@ export class AppReduced {
       //console.log("received appjson", appJson);
 
       this._entities = Object.entries(this.appJson.data.entities ?? {}).map(([name, entity]) => {
-         return AppData.constructEntity(name, entity);
+         return constructEntity(name, entity);
       });
 
       this._relations = Object.entries(this.appJson.data.relations ?? {}).map(([, relation]) => {
-         return AppData.constructRelation(relation, this.entity.bind(this));
+         return constructRelation(relation, this.entity.bind(this));
       });
 
       for (const [name, obj] of Object.entries(this.appJson.flows.flows ?? {})) {

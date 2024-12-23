@@ -197,7 +197,7 @@ export class AppAuth extends Module<typeof authConfigSchema> {
          throw new Exception("User already exists");
       }
 
-      const payload = {
+      const payload: any = {
          ...profile,
          strategy: strategy.getName(),
          strategy_value: identifier

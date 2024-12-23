@@ -5,10 +5,7 @@ import { useBkndAuth } from "ui/client/schema/auth/use-bknd-auth";
 import { useBkndData } from "ui/client/schema/data/use-bknd-data";
 import { Button } from "ui/components/buttons/Button";
 import { Alert } from "ui/components/display/Alert";
-import {
-   JsonSchemaForm,
-   type JsonSchemaFormRef
-} from "ui/components/form/json-schema/JsonSchemaForm";
+import { JsonSchemaForm, type JsonSchemaFormRef } from "ui/components/form/json-schema";
 import * as AppShell from "ui/layouts/AppShell/AppShell";
 import { useNavigate } from "ui/lib/routes";
 import { extractSchema } from "../settings/utils/schema";

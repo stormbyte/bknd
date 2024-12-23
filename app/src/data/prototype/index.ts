@@ -1,3 +1,8 @@
+import { DummyConnection } from "data/connection/DummyConnection";
+import { EntityManager } from "data/entities/EntityManager";
+import type { Generated } from "kysely";
+import { MediaField, type MediaFieldConfig, type MediaItem } from "media/MediaField";
+import type { ModuleConfigs } from "modules";
 import {
    BooleanField,
    type BooleanFieldConfig,
@@ -5,6 +10,8 @@ import {
    type DateFieldConfig,
    Entity,
    type EntityConfig,
+   EntityIndex,
+   type EntityRelation,
    EnumField,
    type EnumFieldConfig,
    type Field,
@@ -25,15 +32,14 @@ import {
    type TEntityType,
    TextField,
    type TextFieldConfig
-} from "data";
-import type { Generated } from "kysely";
-import { MediaField, type MediaFieldConfig, type MediaItem } from "media/MediaField";
+} from "../index";
 
 type Options<Config = any> = {
    entity: { name: string; fields: Record<string, Field<any, any, any>> };
    field_name: string;
    config: Config;
    is_required: boolean;
+   another?: string;
 };
 
 const FieldMap = {
@@ -239,7 +245,89 @@ export function relation<Local extends Entity>(local: Local) {
    };
 }
 
-type InferEntityFields<T> = T extends Entity<infer _N, infer Fields>
+export function index<E extends Entity>(entity: E) {
+   return {
+      on: (fields: (keyof InsertSchema<E>)[], unique?: boolean) => {
+         const _fields = fields.map((f) => {
+            const field = entity.field(f as any);
+            if (!field) {
+               throw new Error(`Field "${String(f)}" not found on entity "${entity.name}"`);
+            }
+            return field;
+         });
+         return new EntityIndex(entity, _fields, unique);
+      }
+   };
+}
+
+class EntityManagerPrototype<Entities extends Record<string, Entity>> extends EntityManager<
+   Schema<Entities>
+> {
+   constructor(
+      public __entities: Entities,
+      relations: EntityRelation[] = [],
+      indices: EntityIndex[] = []
+   ) {
+      super(Object.values(__entities), new DummyConnection(), relations, indices);
+   }
+}
+
+type Chained<Fn extends (...args: any[]) => any, Rt = ReturnType<Fn>> = <E extends Entity>(
+   e: E
+) => {
+   [K in keyof Rt]: Rt[K] extends (...args: any[]) => any
+      ? (...args: Parameters<Rt[K]>) => Rt
+      : never;
+};
+
+export function em<Entities extends Record<string, Entity>>(
+   entities: Entities,
+   schema?: (
+      fns: { relation: Chained<typeof relation>; index: Chained<typeof index> },
+      entities: Entities
+   ) => void
+) {
+   const relations: EntityRelation[] = [];
+   const indices: EntityIndex[] = [];
+
+   const relationProxy = (e: Entity) => {
+      return new Proxy(relation(e), {
+         get(target, prop) {
+            return (...args: any[]) => {
+               relations.push(target[prop](...args));
+               return relationProxy(e);
+            };
+         }
+      }) as any;
+   };
+
+   const indexProxy = (e: Entity) => {
+      return new Proxy(index(e), {
+         get(target, prop) {
+            return (...args: any[]) => {
+               indices.push(target[prop](...args));
+               return indexProxy(e);
+            };
+         }
+      }) as any;
+   };
+
+   if (schema) {
+      schema({ relation: relationProxy, index: indexProxy }, entities);
+   }
+
+   const e = new EntityManagerPrototype(entities, relations, indices);
+   return {
+      DB: e.__entities as unknown as Schemas<Entities>,
+      entities: e.__entities,
+      relations,
+      indices,
+      toJSON: () =>
+         e.toJSON() as unknown as Pick<ModuleConfigs["data"], "entities" | "relations" | "indices">
+   };
+}
+
+export type InferEntityFields<T> = T extends Entity<infer _N, infer Fields>
    ? {
         [K in keyof Fields]: Fields[K] extends { _type: infer Type; _required: infer Required }
            ? Required extends true
@@ -284,12 +372,16 @@ type OptionalUndefined<
    }
 >;
 
-type InferField<Field> = Field extends { _type: infer Type; _required: infer Required }
+export type InferField<Field> = Field extends { _type: infer Type; _required: infer Required }
    ? Required extends true
       ? Type
       : Type | undefined
    : never;
 
+export type Schemas<T extends Record<string, Entity>> = {
+   [K in keyof T]: Schema<T[K]>;
+};
+
 export type InsertSchema<T> = Simplify<OptionalUndefined<InferEntityFields<T>>>;
-export type Schema<T> = { id: Generated<number> } & InsertSchema<T>;
+export type Schema<T> = Simplify<{ id: Generated<number> } & InsertSchema<T>>;
 export type FieldSchema<T> = Simplify<OptionalUndefined<InferFields<T>>>;

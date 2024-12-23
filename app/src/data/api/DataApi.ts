@@ -5,7 +5,7 @@ export type DataApiOptions = BaseModuleApiOptions & {
    defaultQuery?: Partial<RepoQuery>;
 };
 
-export class DataApi extends ModuleApi<DataApiOptions> {
+export class DataApi<DB> extends ModuleApi<DataApiOptions> {
    protected override getDefaultOptions(): Partial<DataApiOptions> {
       return {
          basepath: "/api/data",
@@ -15,48 +15,60 @@ export class DataApi extends ModuleApi<DataApiOptions> {
       };
    }
 
-   readOne(
-      entity: string,
+   readOne<E extends keyof DB | string, Data = E extends keyof DB ? DB[E] : EntityData>(
+      entity: E,
       id: PrimaryFieldType,
       query: Partial<Omit<RepoQuery, "where" | "limit" | "offset">> = {}
    ) {
-      return this.get<RepositoryResponse<EntityData>>([entity, id], query);
+      return this.get<Pick<RepositoryResponse<Data>, "meta" | "data">>([entity as any, id], query);
    }
 
-   readMany(entity: string, query: Partial<RepoQuery> = {}) {
-      return this.get<Pick<RepositoryResponse, "meta" | "data">>(
-         [entity],
-         query ?? this.options.defaultQuery
-      );
-   }
-
-   readManyByReference(
-      entity: string,
-      id: PrimaryFieldType,
-      reference: string,
+   readMany<E extends keyof DB | string, Data = E extends keyof DB ? DB[E] : EntityData>(
+      entity: E,
       query: Partial<RepoQuery> = {}
    ) {
-      return this.get<Pick<RepositoryResponse, "meta" | "data">>(
-         [entity, id, reference],
+      return this.get<Pick<RepositoryResponse<Data[]>, "meta" | "data">>(
+         [entity as any],
          query ?? this.options.defaultQuery
       );
    }
 
-   createOne(entity: string, input: EntityData) {
-      return this.post<RepositoryResponse<EntityData>>([entity], input);
+   readManyByReference<
+      E extends keyof DB | string,
+      R extends keyof DB | string,
+      Data = R extends keyof DB ? DB[R] : EntityData
+   >(entity: E, id: PrimaryFieldType, reference: R, query: Partial<RepoQuery> = {}) {
+      return this.get<Pick<RepositoryResponse<Data[]>, "meta" | "data">>(
+         [entity as any, id, reference],
+         query ?? this.options.defaultQuery
+      );
    }
 
-   updateOne(entity: string, id: PrimaryFieldType, input: EntityData) {
-      return this.patch<RepositoryResponse<EntityData>>([entity, id], input);
+   createOne<E extends keyof DB | string, Data = E extends keyof DB ? DB[E] : EntityData>(
+      entity: E,
+      input: Omit<Data, "id">
+   ) {
+      return this.post<RepositoryResponse<Data>>([entity as any], input);
    }
 
-   deleteOne(entity: string, id: PrimaryFieldType) {
-      return this.delete<RepositoryResponse<EntityData>>([entity, id]);
+   updateOne<E extends keyof DB | string, Data = E extends keyof DB ? DB[E] : EntityData>(
+      entity: E,
+      id: PrimaryFieldType,
+      input: Partial<Omit<Data, "id">>
+   ) {
+      return this.patch<RepositoryResponse<Data>>([entity as any, id], input);
    }
 
-   count(entity: string, where: RepoQuery["where"] = {}) {
-      return this.post<RepositoryResponse<{ entity: string; count: number }>>(
-         [entity, "fn", "count"],
+   deleteOne<E extends keyof DB | string, Data = E extends keyof DB ? DB[E] : EntityData>(
+      entity: E,
+      id: PrimaryFieldType
+   ) {
+      return this.delete<RepositoryResponse<Data>>([entity as any, id]);
+   }
+
+   count<E extends keyof DB | string>(entity: E, where: RepoQuery["where"] = {}) {
+      return this.post<RepositoryResponse<{ entity: E; count: number }>>(
+         [entity as any, "fn", "count"],
          where
       );
    }

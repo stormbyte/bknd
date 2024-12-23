@@ -101,7 +101,7 @@ export function DataEntityUpdate({ params }) {
                                  data: {
                                     data: data as any,
                                     entity: entity.toJSON(),
-                                    schema: entity.toSchema(true),
+                                    schema: entity.toSchema({ clean: true }),
                                     form: Form.state.values,
                                     state: Form.state
                                  }

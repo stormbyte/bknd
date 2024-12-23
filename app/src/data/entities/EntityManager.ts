@@ -14,6 +14,14 @@ import { SchemaManager } from "../schema/SchemaManager";
 import { Entity } from "./Entity";
 import { type EntityData, Mutator, Repository } from "./index";
 
+type EntitySchema<E extends Entity | string, DB = any> = E extends Entity<infer Name>
+   ? Name extends keyof DB
+      ? Name
+      : never
+   : E extends keyof DB
+     ? E
+     : never;
+
 export class EntityManager<DB> {
    connection: Connection;
 
@@ -87,10 +95,16 @@ export class EntityManager<DB> {
       this.entities.push(entity);
    }
 
-   entity(name: string): Entity {
-      const entity = this.entities.find((e) => e.name === name);
+   entity(e: Entity | string): Entity {
+      let entity: Entity | undefined;
+      if (typeof e === "string") {
+         entity = this.entities.find((entity) => entity.name === e);
+      } else {
+         entity = e;
+      }
+
       if (!entity) {
-         throw new EntityNotDefinedException(name);
+         throw new EntityNotDefinedException(typeof e === "string" ? e : e.name);
       }
 
       return entity;
@@ -162,28 +176,16 @@ export class EntityManager<DB> {
       return this.relations.relationReferencesOf(this.entity(entity_name));
    }
 
-   repository(_entity: Entity | string) {
-      const entity = _entity instanceof Entity ? _entity : this.entity(_entity);
-      return new Repository(this, entity, this.emgr);
+   repository<E extends Entity | string>(entity: E): Repository<DB, EntitySchema<E, DB>> {
+      return this.repo(entity);
    }
 
-   repo<E extends Entity>(
-      _entity: E
-   ): Repository<
-      DB,
-      E extends Entity<infer Name> ? (Name extends keyof DB ? Name : never) : never
-   > {
-      return new Repository(this, _entity, this.emgr);
+   repo<E extends Entity | string>(entity: E): Repository<DB, EntitySchema<E, DB>> {
+      return new Repository(this, this.entity(entity), this.emgr);
    }
 
-   _repo<TB extends keyof DB>(_entity: TB): Repository<DB, TB> {
-      const entity = this.entity(_entity as any);
-      return new Repository(this, entity, this.emgr);
-   }
-
-   mutator(_entity: Entity | string) {
-      const entity = _entity instanceof Entity ? _entity : this.entity(_entity);
-      return new Mutator(this, entity, this.emgr);
+   mutator<E extends Entity | string>(entity: E): Mutator<DB, EntitySchema<E, DB>> {
+      return new Mutator(this, this.entity(entity), this.emgr);
    }
 
    addIndex(index: EntityIndex, force = false) {

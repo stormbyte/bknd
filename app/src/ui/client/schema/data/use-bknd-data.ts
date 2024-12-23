@@ -1,6 +1,5 @@
 import { Type, TypeInvalidError, parse, transformObject } from "core/utils";
-import type { Entity } from "data";
-import { AppData } from "data/AppData";
+import { constructEntity } from "data";
 import {
    type TAppDataEntity,
    type TAppDataEntityFields,
@@ -19,7 +18,7 @@ export function useBkndData() {
 
    // @todo: potentially store in ref, so it doesn't get recomputed? or use memo?
    const entities = transformObject(config.data.entities ?? {}, (entity, name) => {
-      return AppData.constructEntity(name, entity);
+      return constructEntity(name, entity);
    });
 
    const actions = {

@@ -1,6 +1,19 @@
 import { useEffect, useState } from "react";
-import { useApiQuery } from "ui/client";
+import { useApi, useApiQuery } from "ui/client";
 import { Scrollable } from "ui/layouts/AppShell/AppShell";
+
+function Bla() {
+   const api = useApi();
+
+   useEffect(() => {
+      (async () => {
+         const one = await api.data.readOne("users", 1);
+         const many = await api.data.readMany("users");
+      })();
+   }, []);
+
+   return null;
+}
 
 export default function SWRAndAPI() {
    const [text, setText] = useState("");
@@ -16,7 +29,7 @@ export default function SWRAndAPI() {
 
    return (
       <Scrollable>
-         <pre>{JSON.stringify(r.promise.keyArray({ search: false }))}</pre>
+         <pre>{JSON.stringify(r.key)}</pre>
          {r.error && <div>failed to load</div>}
          {r.isLoading && <div>loading...</div>}
          {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
@@ -26,12 +39,12 @@ export default function SWRAndAPI() {
                   e.preventDefault();
                   if (!comment) return;
 
-                  await r.mutate(async () => {
+                  /*await r.mutate(async () => {
                      const res = await r.api.data.updateOne("comments", comment.id, {
                         content: text
                      });
                      return res.data;
-                  });
+                  });*/
 
                   return false;
                }}

@@ -5,14 +5,14 @@
   "bin": "./dist/cli/index.js",
   "version": "0.3.4-alpha1",
   "scripts": {
-    "build:all": "bun run build && bun run build:cli",
+    "build:all": "NODE_ENV=production bun run build.ts --minify --types --clean && bun run build:cli",
     "dev": "vite",
     "test": "ALL_TESTS=1 bun test --bail",
     "build": "NODE_ENV=production bun run build.ts --minify --types",
     "watch": "bun run build.ts --types --watch",
     "types": "bun tsc --noEmit",
     "clean:types": "find ./dist -name '*.d.ts' -delete && rm -f ./dist/tsconfig.tsbuildinfo",
-    "build:types": "tsc --emitDeclarationOnly",
+    "build:types": "tsc --emitDeclarationOnly && tsc-alias",
     "build:css": "bun tailwindcss -i src/ui/main.css -o ./dist/static/styles.css",
     "watch:css": "bun tailwindcss --watch -i src/ui/main.css -o ./dist/styles.css",
     "updater": "bun x npm-check-updates -ui",
@@ -75,6 +75,7 @@
     "tailwind-merge": "^2.5.4",
     "tailwindcss": "^3.4.14",
     "tailwindcss-animate": "^1.0.7",
+    "tsc-alias": "^1.8.10",
     "tsup": "^8.3.5",
     "vite": "^5.4.10",
     "vite-plugin-static-copy": "^2.0.0",
@@ -90,75 +91,75 @@
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./dist/types/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
     "./ui": {
-      "types": "./dist/ui/index.d.ts",
+      "types": "./dist/types/ui/index.d.ts",
       "import": "./dist/ui/index.js",
       "require": "./dist/ui/index.cjs"
     },
     "./client": {
-      "types": "./dist/ui/client/index.d.ts",
+      "types": "./dist/types/ui/client/index.d.ts",
       "import": "./dist/ui/client/index.js",
       "require": "./dist/ui/client/index.cjs"
     },
     "./data": {
-      "types": "./dist/data/index.d.ts",
+      "types": "./dist/types/data/index.d.ts",
       "import": "./dist/data/index.js",
       "require": "./dist/data/index.cjs"
     },
     "./core": {
-      "types": "./dist/core/index.d.ts",
+      "types": "./dist/types/core/index.d.ts",
       "import": "./dist/core/index.js",
       "require": "./dist/core/index.cjs"
     },
     "./utils": {
-      "types": "./dist/core/utils/index.d.ts",
+      "types": "./dist/types/core/utils/index.d.ts",
       "import": "./dist/core/utils/index.js",
       "require": "./dist/core/utils/index.cjs"
     },
     "./cli": {
-      "types": "./dist/cli/index.d.ts",
+      "types": "./dist/types/cli/index.d.ts",
       "import": "./dist/cli/index.js",
       "require": "./dist/cli/index.cjs"
     },
     "./adapter/cloudflare": {
-      "types": "./dist/adapter/cloudflare/index.d.ts",
+      "types": "./dist/types/adapter/cloudflare/index.d.ts",
       "import": "./dist/adapter/cloudflare/index.js",
       "require": "./dist/adapter/cloudflare/index.cjs"
     },
     "./adapter/vite": {
-      "types": "./dist/adapter/vite/index.d.ts",
+      "types": "./dist/types/adapter/vite/index.d.ts",
       "import": "./dist/adapter/vite/index.js",
       "require": "./dist/adapter/vite/index.cjs"
     },
     "./adapter/nextjs": {
-      "types": "./dist/adapter/nextjs/index.d.ts",
+      "types": "./dist/types/adapter/nextjs/index.d.ts",
       "import": "./dist/adapter/nextjs/index.js",
       "require": "./dist/adapter/nextjs/index.cjs"
     },
     "./adapter/remix": {
-      "types": "./dist/adapter/remix/index.d.ts",
+      "types": "./dist/types/adapter/remix/index.d.ts",
       "import": "./dist/adapter/remix/index.js",
       "require": "./dist/adapter/remix/index.cjs"
     },
     "./adapter/bun": {
-      "types": "./dist/adapter/bun/index.d.ts",
+      "types": "./dist/types/adapter/bun/index.d.ts",
       "import": "./dist/adapter/bun/index.js",
       "require": "./dist/adapter/bun/index.cjs"
     },
     "./adapter/node": {
-      "types": "./dist/adapter/node/index.d.ts",
+      "types": "./dist/types/adapter/node/index.d.ts",
       "import": "./dist/adapter/node/index.js",
       "require": "./dist/adapter/node/index.cjs"
     },
     "./adapter/astro": {
-      "types": "./dist/adapter/astro/index.d.ts",
+      "types": "./dist/types/adapter/astro/index.d.ts",
       "import": "./dist/adapter/astro/index.js",
       "require": "./dist/adapter/astro/index.cjs"
     },
