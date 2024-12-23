@@ -1,7 +1,7 @@
 import { readFile, readdir, stat, unlink, writeFile } from "node:fs/promises";
 import { type Static, Type, parse } from "core/utils";
 import type { FileBody, FileListObject, FileMeta, StorageAdapter } from "../../Storage";
-import { guessMimeType } from "../../mime-types";
+import { guess } from "../../mime-types-tiny";
 
 export const localAdapterConfig = Type.Object(
    {
@@ -83,7 +83,7 @@ export class StorageLocalAdapter implements StorageAdapter {
    async getObject(key: string, headers: Headers): Promise<Response> {
       try {
          const content = await readFile(`${this.config.path}/${key}`);
-         const mimeType = guessMimeType(key);
+         const mimeType = guess(key);
 
          return new Response(content, {
             status: 200,
@@ -105,7 +105,7 @@ export class StorageLocalAdapter implements StorageAdapter {
    async getObjectMeta(key: string): Promise<FileMeta> {
       const stats = await stat(`${this.config.path}/${key}`);
       return {
-         type: guessMimeType(key) || "application/octet-stream",
+         type: guess(key) || "application/octet-stream",
          size: stats.size
       };
    }

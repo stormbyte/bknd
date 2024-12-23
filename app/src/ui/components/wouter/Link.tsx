@@ -42,7 +42,11 @@ const useLocationFromRouter = (router) => {
    ];
 };
 
-export function Link({ className, ...props }: { className?: string } & LinkProps) {
+export function Link({
+   className,
+   native,
+   ...props
+}: { className?: string; native?: boolean } & LinkProps) {
    const router = useRouter();
    const [path, navigate] = useLocationFromRouter(router);
 
@@ -54,8 +58,6 @@ export function Link({ className, ...props }: { className?: string } & LinkProps
 
       return false;
    }
-
-   function handleClick(e) {}
 
    const _href = props.href ?? props.to;
    const href = router
@@ -72,6 +74,10 @@ export function Link({ className, ...props }: { className?: string } & LinkProps
    /*if (active) {
       console.log("link", { a, path, absPath, href, to, active, router });
    }*/
+   if (native) {
+      return <a className={`${active ? "active " : ""}${className}`} {...props} />;
+   }
+
    return (
       // @ts-expect-error className is not typed on WouterLink
       <WouterLink className={`${active ? "active " : ""}${className}`} {...props} />

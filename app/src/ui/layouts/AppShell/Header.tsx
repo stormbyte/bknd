@@ -116,7 +116,7 @@ function SidebarToggler() {
 export function Header({ hasSidebar = true }) {
    //const logoReturnPath = "";
    const { app } = useBknd();
-   const logoReturnPath = app.getAdminConfig().logo_return_path ?? "/";
+   const { logo_return_path = "/", color_scheme = "light" } = app.getAdminConfig();
 
    return (
       <header
@@ -124,11 +124,11 @@ export function Header({ hasSidebar = true }) {
          className="flex flex-row w-full h-16 gap-2.5 border-muted border-b justify-start bg-muted/10"
       >
          <Link
-            href={logoReturnPath}
-            replace
+            href={logo_return_path}
+            native={logo_return_path !== "/"}
             className="max-h-full flex hover:bg-primary/5 link p-2.5 w-[134px] outline-none"
          >
-            <Logo />
+            <Logo theme={color_scheme} />
          </Link>
          <HeaderNavigation />
          <div className="flex flex-grow" />

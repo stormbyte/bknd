@@ -18,7 +18,6 @@ type GetServerSidePropsContext = {
 
 export function createApi({ req }: GetServerSidePropsContext) {
    const request = nodeRequestToRequest(req);
-   //console.log("createApi:request.headers", request.headers);
    return new Api({
       host: new URL(request.url).origin,
       headers: request.headers
@@ -43,10 +42,11 @@ function getCleanRequest(req: Request) {
 }
 
 let app: App;
-export function serve(config: CreateAppConfig) {
+export function serve(config: CreateAppConfig & { beforeBuild?: (app: App) => Promise<void> }) {
    return async (req: Request) => {
       if (!app) {
          app = App.create(config);
+         await config.beforeBuild?.(app);
          await app.build();
       }
       const request = getCleanRequest(req);

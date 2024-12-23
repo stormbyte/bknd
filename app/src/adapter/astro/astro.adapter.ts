@@ -18,11 +18,11 @@ export function getApi(Astro: TAstro, options: Options = { mode: "static" }) {
 }
 
 let app: App;
-export function serve(config: CreateAppConfig) {
+export function serve(config: CreateAppConfig & { beforeBuild?: (app: App) => Promise<void> }) {
    return async (args: TAstro) => {
       if (!app) {
          app = App.create(config);
-
+         await config.beforeBuild?.(app);
          await app.build();
       }
       return app.fetch(args.request);

@@ -3,6 +3,7 @@ import "bknd/dist/styles.css";
 
 export default adminPage({
    config: {
-      basepath: "/admin"
+      basepath: "/admin",
+      logo_return_path: "/../"
    }
 });

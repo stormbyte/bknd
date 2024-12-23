@@ -1,4 +1,5 @@
 import { type AuthAction, Authenticator, type ProfileExchange, Role, type Strategy } from "auth";
+import type { PasswordStrategy } from "auth/authenticate/strategies";
 import { Exception } from "core";
 import { type Static, secureRandomString, transformObject } from "core/utils";
 import { type Entity, EntityIndex, type EntityManager } from "data";
@@ -282,6 +283,21 @@ export class AppAuth extends Module<typeof authConfigSchema> {
          const field = make("strategy", enumm({ enum: strategies }));
          this.em.entity(users.name).__experimental_replaceField("strategy", field);
       } catch (e) {}
+   }
+
+   async createUser(input: { email: string; password: string }) {
+      const strategy = "password";
+      const pw = this.authenticator.strategy(strategy) as PasswordStrategy;
+      const strategy_value = await pw.hash(input.password);
+      const mutator = this.em.mutator(this.config.entity_name as "users");
+      mutator.__unstable_toggleSystemEntityCreation(false);
+      const { data: created } = await mutator.insertOne({
+         email: input.email,
+         strategy,
+         strategy_value
+      });
+      mutator.__unstable_toggleSystemEntityCreation(true);
+      return created;
    }
 
    override toJSON(secrets?: boolean): AppAuthSchema {

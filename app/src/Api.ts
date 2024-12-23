@@ -128,6 +128,14 @@ export class Api {
       };
    }
 
+   async getVerifiedAuthState(force?: boolean): Promise<AuthState> {
+      if (force === true || !this.verified) {
+         await this.verifyAuth();
+      }
+
+      return this.getAuthState();
+   }
+
    async verifyAuth() {
       try {
          const res = await this.auth.me();

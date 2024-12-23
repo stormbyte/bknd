@@ -1,5 +1,6 @@
 import type { IncomingMessage } from "node:http";
-import type { App, CreateAppConfig } from "bknd";
+import { type App, type CreateAppConfig, registries } from "bknd";
+import { StorageLocalAdapter } from "media/storage/adapters/StorageLocalAdapter";
 
 export type CloudflareBkndConfig<Env = any> = {
    mode?: "warm" | "fresh" | "cache" | "durable";
@@ -46,4 +47,8 @@ export function nodeRequestToRequest(req: IncomingMessage): Request {
       method,
       headers
    });
+}
+
+export function registerLocalMediaAdapter() {
+   registries.media.register("local", StorageLocalAdapter);
 }

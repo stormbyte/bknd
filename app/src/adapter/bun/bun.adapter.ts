@@ -1,9 +1,10 @@
 /// <reference types="bun-types" />
 
 import path from "node:path";
-import { App, type CreateAppConfig } from "bknd";
+import { App, type CreateAppConfig, registries } from "bknd";
 import type { Serve, ServeOptions } from "bun";
 import { serveStatic } from "hono/bun";
+import { registerLocalMediaAdapter } from "../index";
 
 let app: App;
 export type ExtendedAppCreateConfig = Partial<CreateAppConfig> & {
@@ -18,6 +19,7 @@ export async function createApp({
    buildOptions,
    ...config
 }: ExtendedAppCreateConfig) {
+   registerLocalMediaAdapter();
    const root = path.resolve(distPath ?? "./node_modules/bknd/dist", "static");
 
    if (!app) {

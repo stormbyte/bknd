@@ -1,7 +1,8 @@
 import path from "node:path";
 import { serve as honoServe } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
-import { App, type CreateAppConfig } from "bknd";
+import { App, type CreateAppConfig, registries } from "bknd";
+import { registerLocalMediaAdapter } from "../index";
 
 export type NodeAdapterOptions = CreateAppConfig & {
    relativeDistPath?: string;
@@ -21,6 +22,8 @@ export function serve({
    buildOptions = {},
    ...config
 }: NodeAdapterOptions = {}) {
+   registerLocalMediaAdapter();
+
    const root = path.relative(
       process.cwd(),
       path.resolve(relativeDistPath ?? "./node_modules/bknd/dist", "static")
