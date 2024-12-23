@@ -8,8 +8,8 @@ function createApp(config: BkndConfig, env: any) {
 }
 
 function setAppBuildListener(app: App, config: BkndConfig, html?: string) {
-   app.emgr.on(
-      "app-built",
+   app.emgr.onEvent(
+      App.Events.AppBuiltEvent,
       async () => {
          await config.onBuilt?.(app);
          if (config.setAdminHtml) {

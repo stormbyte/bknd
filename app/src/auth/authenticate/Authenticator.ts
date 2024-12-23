@@ -220,15 +220,23 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
    }
 
    private async getAuthCookie(c: Context): Promise<string | undefined> {
-      const secret = this.config.jwt.secret;
+      try {
+         const secret = this.config.jwt.secret;
 
-      const token = await getSignedCookie(c, secret, "auth");
-      if (typeof token !== "string") {
-         await deleteCookie(c, "auth", this.cookieOptions);
+         const token = await getSignedCookie(c, secret, "auth");
+         if (typeof token !== "string") {
+            await deleteCookie(c, "auth", this.cookieOptions);
+            return undefined;
+         }
+
+         return token;
+      } catch (e: any) {
+         if (e instanceof Error) {
+            console.error("[Error:getAuthCookie]", e.message);
+         }
+
          return undefined;
       }
-
-      return token;
    }
 
    async requestCookieRefresh(c: Context) {
