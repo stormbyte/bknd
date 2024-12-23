@@ -1,5 +1,5 @@
 import { Guard } from "auth";
-import { BkndError, DebugLogger, Exception, isDebug } from "core";
+import { BkndError, DebugLogger } from "core";
 import { EventManager } from "core/events";
 import { clone, diff } from "core/object/diff";
 import {
@@ -39,7 +39,7 @@ export type { ModuleBuildContext };
 
 export const MODULES = {
    server: AppServer,
-   data: AppData<any>,
+   data: AppData,
    auth: AppAuth,
    media: AppMedia,
    flows: AppFlows
@@ -112,9 +112,9 @@ const __bknd = entity(TABLE_NAME, {
    updated_at: datetime()
 });
 type ConfigTable2 = Schema<typeof __bknd>;
-type T_INTERNAL_EM = {
+interface T_INTERNAL_EM {
    __bknd: ConfigTable2;
-};
+}
 
 // @todo: cleanup old diffs on upgrade
 // @todo: cleanup multiple backups on upgrade
@@ -123,7 +123,7 @@ export class ModuleManager {
    // internal em for __bknd config table
    __em!: EntityManager<T_INTERNAL_EM>;
    // ctx for modules
-   em!: EntityManager<any>;
+   em!: EntityManager;
    server!: Hono;
    emgr!: EventManager;
    guard!: Guard;

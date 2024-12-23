@@ -1,4 +1,4 @@
-import { App } from "bknd";
+import { Api, App } from "bknd";
 import { serve } from "bknd/adapter/astro";
 import { registerLocalMediaAdapter } from "bknd/adapter/node";
 import { boolean, em, entity, text } from "bknd/data";
@@ -8,6 +8,20 @@ export const prerender = false;
 
 // since we're running in node, we can register the local media adapter
 registerLocalMediaAdapter();
+
+// the em() function makes it easy to create an initial schema
+const schema = em({
+   todos: entity("todos", {
+      title: text(),
+      done: boolean()
+   })
+});
+
+// register your schema to get automatic type completion
+type Database = (typeof schema)["DB"];
+declare module "bknd/core" {
+   interface DB extends Database {}
+}
 
 export const ALL = serve({
    // we can use any libsql config, and if omitted, uses in-memory
@@ -19,13 +33,7 @@ export const ALL = serve({
    },
    // an initial config is only applied if the database is empty
    initialConfig: {
-      // the em() function makes it easy to create an initial schema
-      data: em({
-         todos: entity("todos", {
-            title: text(),
-            done: boolean()
-         })
-      }).toJSON(),
+      data: schema.toJSON(),
       // we're enabling auth ...
       auth: {
          enabled: true,

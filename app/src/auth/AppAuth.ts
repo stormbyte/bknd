@@ -1,6 +1,6 @@
 import { type AuthAction, Authenticator, type ProfileExchange, Role, type Strategy } from "auth";
 import type { PasswordStrategy } from "auth/authenticate/strategies";
-import { Exception } from "core";
+import { Exception, type PrimaryFieldType } from "core";
 import { type Static, secureRandomString, transformObject } from "core/utils";
 import { type Entity, EntityIndex, type EntityManager } from "data";
 import { type FieldSchema, entity, enumm, make, text } from "data/prototype";
@@ -10,9 +10,9 @@ import { AuthController } from "./api/AuthController";
 import { type AppAuthSchema, STRATEGIES, authConfigSchema } from "./auth-schema";
 
 export type UserFieldSchema = FieldSchema<typeof AppAuth.usersFields>;
-declare global {
+declare module "core" {
    interface DB {
-      users: UserFieldSchema;
+      users: { id: PrimaryFieldType } & UserFieldSchema;
    }
 }
 
@@ -101,7 +101,7 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       return this._authenticator!;
    }
 
-   get em(): EntityManager<DB> {
+   get em(): EntityManager {
       return this.ctx.em as any;
    }
 
@@ -161,7 +161,9 @@ export class AppAuth extends Module<typeof authConfigSchema> {
 
       const users = this.getUsersEntity();
       this.toggleStrategyValueVisibility(true);
-      const result = await this.em.repo(users).findOne({ email: profile.email! });
+      const result = await this.em
+         .repo(users as unknown as "users")
+         .findOne({ email: profile.email! });
       this.toggleStrategyValueVisibility(false);
       if (!result.data) {
          throw new Exception("User not found", 404);

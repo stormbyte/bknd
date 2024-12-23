@@ -10,7 +10,7 @@ import * as SystemPermissions from "modules/permissions";
 import { AdminController, type AdminControllerOptions } from "modules/server/AdminController";
 import { SystemController } from "modules/server/SystemController";
 
-export type AppPlugin<DB> = (app: App<DB>) => void;
+export type AppPlugin = (app: App) => void;
 
 abstract class AppEvent<A = {}> extends Event<{ app: App } & A> {}
 export class AppConfigUpdatedEvent extends AppEvent {
@@ -32,13 +32,13 @@ export type CreateAppConfig = {
            config: LibSqlCredentials;
         };
    initialConfig?: InitialModuleConfigs;
-   plugins?: AppPlugin<any>[];
+   plugins?: AppPlugin[];
    options?: Omit<ModuleManagerOptions, "initial" | "onUpdated">;
 };
 
 export type AppConfig = InitialModuleConfigs;
 
-export class App<DB = any> {
+export class App {
    modules: ModuleManager;
    static readonly Events = AppEvents;
    adminController?: AdminController;
@@ -47,7 +47,7 @@ export class App<DB = any> {
    constructor(
       private connection: Connection,
       _initialConfig?: InitialModuleConfigs,
-      private plugins: AppPlugin<DB>[] = [],
+      private plugins: AppPlugin[] = [],
       moduleManagerOptions?: ModuleManagerOptions
    ) {
       this.modules = new ModuleManager(connection, {

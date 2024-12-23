@@ -11,7 +11,7 @@ import { Module } from "modules/Module";
 import { DataController } from "./api/DataController";
 import { type AppDataConfig, dataConfigSchema } from "./data-schema";
 
-export class AppData<DB> extends Module<typeof dataConfigSchema> {
+export class AppData extends Module<typeof dataConfigSchema> {
    override async build() {
       const entities = transformObject(this.config.entities ?? {}, (entityConfig, name) => {
          return constructEntity(name, entityConfig);
@@ -59,7 +59,7 @@ export class AppData<DB> extends Module<typeof dataConfigSchema> {
       return dataConfigSchema;
    }
 
-   get em(): EntityManager<DB> {
+   get em(): EntityManager {
       this.throwIfNotBuilt();
       return this.ctx.em;
    }

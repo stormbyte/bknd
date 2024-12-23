@@ -1,4 +1,4 @@
-import type { PrimaryFieldType } from "core";
+import type { DB as DefaultDB, PrimaryFieldType } from "core";
 import { type EmitsEvents, EventManager } from "core/events";
 import { type SelectQueryBuilder, sql } from "kysely";
 import { cloneDeep } from "lodash-es";
@@ -43,13 +43,15 @@ export type RepositoryExistsResponse = RepositoryRawResponse & {
    exists: boolean;
 };
 
-export class Repository<DB = any, TB extends keyof DB = any> implements EmitsEvents {
-   em: EntityManager<DB>;
+export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = any>
+   implements EmitsEvents
+{
+   em: EntityManager<TBD>;
    entity: Entity;
    static readonly Events = RepositoryEvents;
    emgr: EventManager<typeof Repository.Events>;
 
-   constructor(em: EntityManager<DB>, entity: Entity, emgr?: EventManager<any>) {
+   constructor(em: EntityManager<TBD>, entity: Entity, emgr?: EventManager<any>) {
       this.em = em;
       this.entity = entity;
       this.emgr = emgr ?? new EventManager(MutatorEvents);
@@ -272,7 +274,7 @@ export class Repository<DB = any, TB extends keyof DB = any> implements EmitsEve
    async findId(
       id: PrimaryFieldType,
       _options?: Partial<Omit<RepoQuery, "where" | "limit" | "offset">>
-   ): Promise<RepositoryResponse<DB[TB] | undefined>> {
+   ): Promise<RepositoryResponse<TBD[TB] | undefined>> {
       const { qb, options } = this.buildQuery(
          {
             ..._options,
@@ -288,7 +290,7 @@ export class Repository<DB = any, TB extends keyof DB = any> implements EmitsEve
    async findOne(
       where: RepoQuery["where"],
       _options?: Partial<Omit<RepoQuery, "where" | "limit" | "offset">>
-   ): Promise<RepositoryResponse<DB[TB] | undefined>> {
+   ): Promise<RepositoryResponse<TBD[TB] | undefined>> {
       const { qb, options } = this.buildQuery({
          ..._options,
          where,
@@ -298,7 +300,7 @@ export class Repository<DB = any, TB extends keyof DB = any> implements EmitsEve
       return this.single(qb, options) as any;
    }
 
-   async findMany(_options?: Partial<RepoQuery>): Promise<RepositoryResponse<DB[TB][]>> {
+   async findMany(_options?: Partial<RepoQuery>): Promise<RepositoryResponse<TBD[TB][]>> {
       const { qb, options } = this.buildQuery(_options);
       //console.log("findMany:options", options);
 

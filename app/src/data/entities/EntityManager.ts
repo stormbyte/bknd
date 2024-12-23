@@ -1,3 +1,4 @@
+import type { DB as DefaultDB } from "core";
 import { EventManager } from "core/events";
 import { sql } from "kysely";
 import { Connection } from "../connection/Connection";
@@ -14,15 +15,18 @@ import { SchemaManager } from "../schema/SchemaManager";
 import { Entity } from "./Entity";
 import { type EntityData, Mutator, Repository } from "./index";
 
-type EntitySchema<E extends Entity | string, DB = any> = E extends Entity<infer Name>
-   ? Name extends keyof DB
+type EntitySchema<
+   TBD extends object = DefaultDB,
+   E extends Entity | keyof TBD | string = string
+> = E extends Entity<infer Name>
+   ? Name extends keyof TBD
       ? Name
       : never
-   : E extends keyof DB
+   : E extends keyof TBD
      ? E
      : never;
 
-export class EntityManager<DB> {
+export class EntityManager<TBD extends object = DefaultDB> {
    connection: Connection;
 
    private _entities: Entity[] = [];
@@ -58,7 +62,7 @@ export class EntityManager<DB> {
     * Forks the EntityManager without the EventManager.
     * This is useful when used inside an event handler.
     */
-   fork(): EntityManager<DB> {
+   fork(): EntityManager {
       return new EntityManager(this._entities, this.connection, this._relations, this._indices);
    }
 
@@ -95,16 +99,17 @@ export class EntityManager<DB> {
       this.entities.push(entity);
    }
 
-   entity(e: Entity | string): Entity {
+   entity(e: Entity | keyof TBD | string): Entity {
       let entity: Entity | undefined;
       if (typeof e === "string") {
          entity = this.entities.find((entity) => entity.name === e);
-      } else {
+      } else if (e instanceof Entity) {
          entity = e;
       }
 
       if (!entity) {
-         throw new EntityNotDefinedException(typeof e === "string" ? e : e.name);
+         // @ts-ignore
+         throw new EntityNotDefinedException(e instanceof Entity ? e.name : e);
       }
 
       return entity;
@@ -176,15 +181,17 @@ export class EntityManager<DB> {
       return this.relations.relationReferencesOf(this.entity(entity_name));
    }
 
-   repository<E extends Entity | string>(entity: E): Repository<DB, EntitySchema<E, DB>> {
+   repository<E extends Entity | keyof TBD | string>(
+      entity: E
+   ): Repository<TBD, EntitySchema<TBD, E>> {
       return this.repo(entity);
    }
 
-   repo<E extends Entity | string>(entity: E): Repository<DB, EntitySchema<E, DB>> {
+   repo<E extends Entity | keyof TBD | string>(entity: E): Repository<TBD, EntitySchema<TBD, E>> {
       return new Repository(this, this.entity(entity), this.emgr);
    }
 
-   mutator<E extends Entity | string>(entity: E): Mutator<DB, EntitySchema<E, DB>> {
+   mutator<E extends Entity | keyof TBD | string>(entity: E): Mutator<TBD, EntitySchema<TBD, E>> {
       return new Mutator(this, this.entity(entity), this.emgr);
    }
 

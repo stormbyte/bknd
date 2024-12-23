@@ -1,4 +1,4 @@
-import type { PrimaryFieldType } from "core";
+import type { DB, PrimaryFieldType } from "core";
 import { encodeSearch, objectTransform } from "core/utils";
 import type { EntityData, RepoQuery } from "data";
 import type { ModuleApi, ResponseObject } from "modules/ModuleApi";

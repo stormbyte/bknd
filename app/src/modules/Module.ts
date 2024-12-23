@@ -5,10 +5,10 @@ import type { Static, TSchema } from "core/utils";
 import type { Connection, EntityManager } from "data";
 import type { Hono } from "hono";
 
-export type ModuleBuildContext<DB = any> = {
+export type ModuleBuildContext = {
    connection: Connection;
    server: Hono<any>;
-   em: EntityManager<DB>;
+   em: EntityManager;
    emgr: EventManager<any>;
    guard: Guard;
 };

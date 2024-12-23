@@ -1,4 +1,4 @@
-import type { PrimaryFieldType } from "core";
+import type { DB as DefaultDB, PrimaryFieldType } from "core";
 import { type EmitsEvents, EventManager } from "core/events";
 import type { DeleteQueryBuilder, InsertQueryBuilder, UpdateQueryBuilder } from "kysely";
 import { type TActionContext, WhereBuilder } from "..";
@@ -26,13 +26,13 @@ export type MutatorResponse<T = EntityData[]> = {
 };
 
 export class Mutator<
-   DB = any,
-   TB extends keyof DB = any,
-   Output = DB[TB],
+   TBD extends object = DefaultDB,
+   TB extends keyof TBD = any,
+   Output = TBD[TB],
    Input = Omit<Output, "id">
 > implements EmitsEvents
 {
-   em: EntityManager<DB>;
+   em: EntityManager<TBD>;
    entity: Entity;
    static readonly Events = MutatorEvents;
    emgr: EventManager<typeof MutatorEvents>;
@@ -43,7 +43,7 @@ export class Mutator<
       this.__unstable_disable_system_entity_creation = value;
    }
 
-   constructor(em: EntityManager<DB>, entity: Entity, emgr?: EventManager<any>) {
+   constructor(em: EntityManager<TBD>, entity: Entity, emgr?: EventManager<any>) {
       this.em = em;
       this.entity = entity;
       this.emgr = emgr ?? new EventManager(MutatorEvents);
@@ -163,7 +163,7 @@ export class Mutator<
       return res as any;
    }
 
-   async updateOne(id: PrimaryFieldType, data: Input): Promise<MutatorResponse<Output>> {
+   async updateOne(id: PrimaryFieldType, data: Partial<Input>): Promise<MutatorResponse<Output>> {
       const entity = this.entity;
       if (!Number.isInteger(id)) {
          throw new Error("ID must be provided for update");
@@ -270,7 +270,10 @@ export class Mutator<
       return (await this.many(qb)) as any;
    }
 
-   async updateWhere(data: Partial<Input>, where?: RepoQuery["where"]): Promise<MutatorResponse<Output[]>> {
+   async updateWhere(
+      data: Partial<Input>,
+      where?: RepoQuery["where"]
+   ): Promise<MutatorResponse<Output[]>> {
       const entity = this.entity;
       const validatedData = await this.getValidatedData(data, "update");
 

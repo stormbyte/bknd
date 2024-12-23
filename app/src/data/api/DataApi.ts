@@ -1,3 +1,4 @@
+import type { DB } from "core";
 import type { EntityData, RepoQuery, RepositoryResponse } from "data";
 import { type BaseModuleApiOptions, ModuleApi, type PrimaryFieldType } from "modules";
 
@@ -5,7 +6,7 @@ export type DataApiOptions = BaseModuleApiOptions & {
    defaultQuery?: Partial<RepoQuery>;
 };
 
-export class DataApi<DB> extends ModuleApi<DataApiOptions> {
+export class DataApi extends ModuleApi<DataApiOptions> {
    protected override getDefaultOptions(): Partial<DataApiOptions> {
       return {
          basepath: "/api/data",

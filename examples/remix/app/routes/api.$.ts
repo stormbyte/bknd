@@ -7,6 +7,19 @@ import { secureRandomString } from "bknd/utils";
 // since we're running in node, we can register the local media adapter
 registerLocalMediaAdapter();
 
+const schema = em({
+   todos: entity("todos", {
+      title: text(),
+      done: boolean()
+   })
+});
+
+// register your schema to get automatic type completion
+type Database = (typeof schema)["DB"];
+declare module "bknd/core" {
+   interface DB extends Database {}
+}
+
 const handler = serve({
    // we can use any libsql config, and if omitted, uses in-memory
    connection: {
@@ -17,13 +30,7 @@ const handler = serve({
    },
    // an initial config is only applied if the database is empty
    initialConfig: {
-      // the em() function makes it easy to create an initial schema
-      data: em({
-         todos: entity("todos", {
-            title: text(),
-            done: boolean()
-         })
-      }).toJSON(),
+      data: schema.toJSON(),
       // we're enabling auth ...
       auth: {
          enabled: true,
