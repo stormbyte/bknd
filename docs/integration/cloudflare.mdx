@@ -13,22 +13,23 @@ and then install bknd as a dependency:
 
 
 ## Serve the API
+If you don't choose anything specific, the following code will use the `warm` mode. See the
+chapter [Using a different mode](#using-a-different-mode) for available modes.
+
 ``` ts
 import { serve } from "bknd/adapter/cloudflare";
 
-export default serve(
-   {
-      app: (env: Env) => ({
-         connection: {
-            type: "libsql",
-            config: {
-               url: env.DB_URL,
-               authToken: env.DB_TOKEN
-            }
+export default serve({
+   app: (env: Env) => ({
+      connection: {
+         type: "libsql",
+         config: {
+            url: env.DB_URL,
+            authToken: env.DB_TOKEN
          }
-      })
-   }
-);
+      }
+   })
+});
 ```
 For more information about the connection object, refer to the [Setup](/setup) guide.
 
@@ -49,49 +50,152 @@ bucket = "node_modules/bknd/dist/static"
 ```
 
 And then modify the worker entry as follows:
-``` ts {2, 15, 17}
+``` ts {2, 14, 15}
 import { serve } from "bknd/adapter/cloudflare";
 import manifest from "__STATIC_CONTENT_MANIFEST";
 
-export default serve(
-   {
-      app: (env: Env) => ({
-         connection: {
-            type: "libsql",
-            config: {
-               url: env.DB_URL,
-               authToken: env.DB_TOKEN
-            }
+export default serve({
+   app: (env: Env) => ({
+      connection: {
+         type: "libsql",
+         config: {
+            url: env.DB_URL,
+            authToken: env.DB_TOKEN
          }
-      }),
-      setAdminHtml: true
-   },
-   manifest
-);
+      }
+   }),
+   setAdminHtml: true
+}, manifest);
 ```
 
 ## Adding custom routes
 You can also add custom routes by defining them after the app has been built, like so:
-```ts {15-17}
+```ts {14-16}
 import { serve } from "bknd/adapter/cloudflare";
 import manifest from "__STATIC_CONTENT_MANIFEST";
 
-export default serve(
-   {
-      app: (env: Env) => ({
-         connection: {
-            type: "libsql",
-            config: {
-               url: env.DB_URL,
-               authToken: env.DB_TOKEN
-            }
+export default serve({
+   app: (env: Env) => ({
+      connection: {
+         type: "libsql",
+         config: {
+            url: env.DB_URL,
+            authToken: env.DB_TOKEN
          }
-      }),
-      onBuilt: async (app) => {
-         app.modules.server.get("/hello", (c) => c.json({ hello: "world" }));
-      },
-      setAdminHtml: true
+      }
+   }),
+   onBuilt: async (app) => {
+      app.modules.server.get("/hello", (c) => c.json({ hello: "world" }));
    },
-   manifest
-);
+   setAdminHtml: true
+}, manifest);
+```
+
+## Using a different mode
+With the Cloudflare Workers adapter, you're being offered to 4 modes to choose from (default:
+`warm`):
+
+| Mode      | Description                                                                                | Use Case                                                                                                                                |
+|:----------|:-------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------|
+| `fresh`   | On every request, the configuration gets refetched, app built and then served.             | Ideal if you don't want to deal with eviction, KV or Durable Objects.                                                                   |
+| `warm`    | It tries to keep the built app in memory for as long as possible, and rebuilds if evicted. | Better response times, should be the default choice.                                                                                    |
+| `cache`   | The configuration is fetched from KV to reduce the initial roundtrip to the database.      | Generally faster response times with irregular access patterns.                                                                         |
+| `durable` | The bknd app is ran inside a Durable Object and can be configured to stay alive.           | Slowest boot time, but fastest responses. Can be kept alive for as long as you want, giving similar response times as server instances. |
+
+### Modes: `fresh` and `warm`
+To use either `fresh` or `warm`, all you have to do is adding the desired mode to `cloudflare.
+mode`, like so:
+```ts
+import { serve } from "bknd/adapter/cloudflare";
+
+export default serve({
+   app: (env: Env) => ({ /* ... */ }),
+   cloudflare: {
+      mode: "fresh"
+      // mode: "warm"
+   }
+});
+```
+
+### Mode: `cache`
+For the cache mode to work, you also need to specify the KV to be used. For this, use the
+`bindings` property:
+```ts
+import { serve } from "bknd/adapter/cloudflare";
+
+export default serve({
+   app: (env: Env) => ({ /* ... */ }),
+   cloudflare: {
+      mode: "cache",
+      bindings: (env: Env) => ({ kv: env.KV })
+   }
+});
+```
+
+### Mode: `durable` (advanced)
+To use the `durable` mode, you have to specify the Durable Object to extract from your
+environment, and additionally export the `DurableBkndApp` class:
+```ts
+import { serve, DurableBkndApp } from "bknd/adapter/cloudflare";
+
+export { DurableBkndApp };
+export default serve({
+   app: (env: Env) => ({ /* ... */ }),
+   cloudflare: {
+      mode: "durable",
+      bindings: (env: Env) => ({ dobj: env.DOBJ }),
+      keepAliveSeconds: 60 // optional
+   }
+});
+```
+
+Next, you need to define the Durable Object in your `wrangler.toml` file (refer to the [Durable
+Objects](https://developers.cloudflare.com/durable-objects/) documentation):
+```toml
+[[durable_objects.bindings]]
+name = "DOBJ"
+class_name = "DurableBkndApp"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["DurableBkndApp"]
+```
+
+Since the communication between the Worker and Durable Object is serialized, the `onBuilt`
+property won't work. To use it (e.g. to specify special routes), you need to extend from the
+`DurableBkndApp`:
+```ts
+import type { App } from "bknd";
+import { serve, DurableBkndApp } from "bknd/adapter/cloudflare";
+
+export default serve({
+   app: (env: Env) => ({ /* ... */ }),
+   cloudflare: {
+      mode: "durable",
+      bindings: (env: Env) => ({ dobj: env.DOBJ }),
+      keepAliveSeconds: 60 // optional
+   }
+});
+
+export class CustomDurableBkndApp extends DurableBkndApp {
+   async onBuilt(app: App) {
+      app.modules.server.get("/custom/endpoint", (c) => c.text("Custom"));
+   }
+}
+```
+In case you've already deployed your Worker, the deploy command may complain about a new class
+being used. To fix this issue, you need to add a "rename migration":
+```toml
+[[durable_objects.bindings]]
+name = "DOBJ"
+class_name = "CustomDurableBkndApp"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["DurableBkndApp"]
+
+[[migrations]]
+tag = "v2"
+renamed_classes = [{from = "DurableBkndApp", to = "CustomDurableBkndApp"}]
+deleted_classes = ["DurableBkndApp"]
 ```
