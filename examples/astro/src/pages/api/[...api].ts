@@ -1,4 +1,4 @@
-import { Api, App } from "bknd";
+import { App } from "bknd";
 import { serve } from "bknd/adapter/astro";
 import { registerLocalMediaAdapter } from "bknd/adapter/node";
 import { boolean, em, entity, text } from "bknd/data";

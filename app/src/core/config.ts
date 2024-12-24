@@ -9,6 +9,9 @@ export type PrimaryFieldType = number | Generated<number>;
 export interface DB {}
 
 export const config = {
+   server: {
+      default_port: 1337
+   },
    data: {
       default_primary_field: "id"
    }

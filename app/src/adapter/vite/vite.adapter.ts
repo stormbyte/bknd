@@ -1,47 +1,41 @@
 import { serveStatic } from "@hono/node-server/serve-static";
-import type { BkndConfig } from "bknd";
-import { App } from "bknd";
+import { type RuntimeBkndConfig, createRuntimeApp } from "adapter";
+import type { CreateAppConfig } from "bknd";
+import type { App } from "bknd";
 
-function createApp(config: BkndConfig, env: any) {
+export type ViteBkndConfig<Env = any> = RuntimeBkndConfig & {
+   app: CreateAppConfig | ((env: Env) => CreateAppConfig);
+   setAdminHtml?: boolean;
+   forceDev?: boolean;
+   html?: string;
+};
+
+async function createApp(config: ViteBkndConfig, env: any) {
    const create_config = typeof config.app === "function" ? config.app(env) : config.app;
-   return App.create(create_config);
+   return await createRuntimeApp({
+      ...create_config,
+      adminOptions: config.setAdminHtml
+         ? { html: config.html, forceDev: config.forceDev }
+         : undefined,
+      serveStatic: ["/assets/*", serveStatic({ root: config.distPath ?? "./" })]
+   });
 }
 
-function setAppBuildListener(app: App, config: BkndConfig, html?: string) {
-   app.emgr.onEvent(
-      App.Events.AppBuiltEvent,
-      async () => {
-         await config.onBuilt?.(app);
-         if (config.setAdminHtml) {
-            app.registerAdminController({ html, forceDev: true });
-            app.module.server.client.get("/assets/*", serveStatic({ root: "./" }));
-         }
-      },
-      "sync"
-   );
-}
-
-export async function serveFresh(config: BkndConfig, _html?: string) {
+export async function serveFresh(config: ViteBkndConfig) {
    return {
       async fetch(request: Request, env: any, ctx: ExecutionContext) {
-         const app = createApp(config, env);
-
-         setAppBuildListener(app, config, _html);
-         await app.build();
-
+         const app = await createApp(config, env);
          return app.fetch(request, env, ctx);
       }
    };
 }
 
 let app: App;
-export async function serveCached(config: BkndConfig, _html?: string) {
+export async function serveCached(config: ViteBkndConfig) {
    return {
       async fetch(request: Request, env: any, ctx: ExecutionContext) {
          if (!app) {
-            app = createApp(config, env);
-            setAppBuildListener(app, config, _html);
-            await app.build();
+            app = await createApp(config, env);
          }
 
          return app.fetch(request, env, ctx);

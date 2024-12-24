@@ -1,15 +1,15 @@
 import { DurableObject } from "cloudflare:workers";
-import type { BkndConfig } from "adapter";
-import type { Context } from "adapter/cloudflare";
-import { App, type CreateAppConfig } from "bknd";
+import { createRuntimeApp } from "adapter";
+import type { CloudflareBkndConfig, Context } from "adapter/cloudflare";
+import type { App, CreateAppConfig } from "bknd";
 
-export async function getDurable(config: BkndConfig, ctx: Context) {
-   const { dobj } = config.cloudflare?.bindings?.(ctx.env)!;
+export async function getDurable(config: CloudflareBkndConfig, ctx: Context) {
+   const { dobj } = config.bindings?.(ctx.env)!;
    if (!dobj) throw new Error("durable object is not defined in cloudflare.bindings");
-   const key = config.cloudflare?.key ?? "app";
+   const key = config.key ?? "app";
 
-   if (config.onBuilt) {
-      console.log("onBuilt() is not supported with DurableObject mode");
+   if ([config.onBuilt, config.beforeBuild].some((x) => x)) {
+      console.log("onBuilt and beforeBuild are not supported with DurableObject mode");
    }
 
    const start = performance.now();
@@ -21,8 +21,8 @@ export async function getDurable(config: BkndConfig, ctx: Context) {
 
    const res = await stub.fire(ctx.request, {
       config: create_config,
-      html: ctx.html,
-      keepAliveSeconds: config.cloudflare?.keepAliveSeconds,
+      html: config.html,
+      keepAliveSeconds: config.keepAliveSeconds,
       setAdminHtml: config.setAdminHtml
    });
 
@@ -64,10 +64,9 @@ export class DurableBkndApp extends DurableObject {
             config.connection.config.protocol = "wss";
          }
 
-         this.app = App.create(config);
-         this.app.emgr.onEvent(
-            App.Events.AppBuiltEvent,
-            async ({ params: { app } }) => {
+         this.app = await createRuntimeApp({
+            ...config,
+            onBuilt: async (app) => {
                app.modules.server.get("/__do", async (c) => {
                   // @ts-ignore
                   const context: any = c.req.raw.cf ? c.req.raw.cf : c.env.cf;
@@ -80,14 +79,11 @@ export class DurableBkndApp extends DurableObject {
 
                await this.onBuilt(app);
             },
-            "sync"
-         );
-
-         await this.app.build();
-
-         if (options.setAdminHtml) {
-            this.app.registerAdminController({ html: options.html });
-         }
+            adminOptions: { html: options.html },
+            beforeBuild: async (app) => {
+               await this.beforeBuild(app);
+            }
+         });
 
          buildtime = performance.now() - start;
       }
@@ -110,6 +106,7 @@ export class DurableBkndApp extends DurableObject {
    }
 
    async onBuilt(app: App) {}
+   async beforeBuild(app: App) {}
 
    protected keepAlive(seconds: number) {
       console.log("keep alive for", seconds);

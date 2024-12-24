@@ -1,36 +1,23 @@
-import type { BkndConfig } from "adapter";
-import { App } from "bknd";
-import type { Context } from "../index";
+import { createRuntimeApp } from "adapter";
+import type { App } from "bknd";
+import type { CloudflareBkndConfig, Context } from "../index";
 
-export async function makeApp(config: BkndConfig, { env, html }: Context) {
+export async function makeApp(config: CloudflareBkndConfig, { env }: Context) {
    const create_config = typeof config.app === "function" ? config.app(env) : config.app;
-   const app = App.create(create_config);
-
-   if (config.onBuilt) {
-      app.emgr.onEvent(
-         App.Events.AppBuiltEvent,
-         async ({ params: { app } }) => {
-            config.onBuilt!(app);
-         },
-         "sync"
-      );
-   }
-   await app.build();
-
-   if (config.setAdminHtml) {
-      app.registerAdminController({ html });
-   }
-
-   return app;
+   return await createRuntimeApp({
+      ...config,
+      ...create_config,
+      adminOptions: config.html ? { html: config.html } : undefined
+   });
 }
 
-export async function getFresh(config: BkndConfig, ctx: Context) {
+export async function getFresh(config: CloudflareBkndConfig, ctx: Context) {
    const app = await makeApp(config, ctx);
    return app.fetch(ctx.request);
 }
 
 let warm_app: App;
-export async function getWarm(config: BkndConfig, ctx: Context) {
+export async function getWarm(config: CloudflareBkndConfig, ctx: Context) {
    if (!warm_app) {
       warm_app = await makeApp(config, ctx);
    }
