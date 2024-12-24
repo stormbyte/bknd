@@ -299,6 +299,7 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       mutator.__unstable_toggleSystemEntityCreation(false);
       const { data: created } = await mutator.insertOne({
          ...(additional as any),
+         email,
          strategy,
          strategy_value
       });
