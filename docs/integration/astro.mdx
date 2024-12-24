@@ -45,12 +45,14 @@ export const ALL = serve({
    connection: {
       type: "libsql",
       config: {
-         url: "file:data.db"
+         // location of your local Astro DB
+         // make sure to use a remote URL in production
+         url: "file:.astro/content.db"
       }
    }
 });
 ```
-For more information about the connection object, refer to the [Setup](/setup) guide. In the
+For more information about the connection object, refer to the [Setup](/setup/introduction) guide. In the
 special case of astro, you may also use your Astro DB credentials since it's also using LibSQL
 under the hood. Refer to the [Astro DB documentation](https://docs.astro.build/en/guides/astro-db/) for more information.
 
@@ -73,7 +75,11 @@ export const prerender = false;
    <body>
       <Admin
          withProvider={{ user }}
-         config={{ basepath: "/admin", color_scheme: "dark" }}
+         config={{
+            basepath: "/admin",
+            color_scheme: "dark",
+            logo_return_path: "/../"
+         }}
          client:only
       />
    </body>

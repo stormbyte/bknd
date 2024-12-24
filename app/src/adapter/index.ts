@@ -4,15 +4,16 @@ import type { MiddlewareHandler } from "hono";
 import { StorageLocalAdapter } from "media/storage/adapters/StorageLocalAdapter";
 import type { AdminControllerOptions } from "modules/server/AdminController";
 
-type BaseExternalBkndConfig = CreateAppConfig & {
+export type BkndConfig<Env = any> = CreateAppConfig & {
+   app?: CreateAppConfig | ((env: Env) => CreateAppConfig);
    onBuilt?: (app: App) => Promise<void>;
    beforeBuild?: (app: App) => Promise<void>;
    buildConfig?: Parameters<App["build"]>[0];
 };
 
-export type FrameworkBkndConfig = BaseExternalBkndConfig;
+export type FrameworkBkndConfig<Env = any> = BkndConfig<Env>;
 
-export type RuntimeBkndConfig = BaseExternalBkndConfig & {
+export type RuntimeBkndConfig<Env = any> = BkndConfig<Env> & {
    distPath?: string;
 };
 
@@ -44,8 +45,27 @@ export function registerLocalMediaAdapter() {
    registries.media.register("local", StorageLocalAdapter);
 }
 
-export async function createFrameworkApp(config: FrameworkBkndConfig): Promise<App> {
-   const app = App.create(config);
+export function makeConfig<Env = any>(config: BkndConfig<Env>, env?: Env): CreateAppConfig {
+   let additionalConfig: CreateAppConfig = {};
+   if ("app" in config && config.app) {
+      if (typeof config.app === "function") {
+         if (!env) {
+            throw new Error("env is required when config.app is a function");
+         }
+         additionalConfig = config.app(env);
+      } else {
+         additionalConfig = config.app;
+      }
+   }
+
+   return { ...config, ...additionalConfig };
+}
+
+export async function createFrameworkApp<Env = any>(
+   config: FrameworkBkndConfig,
+   env?: Env
+): Promise<App> {
+   const app = App.create(makeConfig(config, env));
 
    if (config.onBuilt) {
       app.emgr.onEvent(
@@ -63,21 +83,24 @@ export async function createFrameworkApp(config: FrameworkBkndConfig): Promise<A
    return app;
 }
 
-export async function createRuntimeApp({
-   serveStatic,
-   registerLocalMedia,
-   adminOptions,
-   ...config
-}: RuntimeBkndConfig & {
-   serveStatic?: MiddlewareHandler | [string, MiddlewareHandler];
-   registerLocalMedia?: boolean;
-   adminOptions?: AdminControllerOptions | false;
-}): Promise<App> {
+export async function createRuntimeApp<Env = any>(
+   {
+      serveStatic,
+      registerLocalMedia,
+      adminOptions,
+      ...config
+   }: RuntimeBkndConfig & {
+      serveStatic?: MiddlewareHandler | [string, MiddlewareHandler];
+      registerLocalMedia?: boolean;
+      adminOptions?: AdminControllerOptions | false;
+   },
+   env?: Env
+): Promise<App> {
    if (registerLocalMedia) {
       registerLocalMediaAdapter();
    }
 
-   const app = App.create(config);
+   const app = App.create(makeConfig(config, env));
 
    app.emgr.onEvent(
       App.Events.AppBuiltEvent,

@@ -1,4 +1,4 @@
-import type { InferGetServerSidePropsType } from "next";
+import type { InferGetServerSidePropsType as InferProps } from "next";
 import dynamic from "next/dynamic";
 
 import { withApi } from "bknd/adapter/nextjs";
@@ -16,9 +16,7 @@ export const getServerSideProps = withApi(async (context) => {
    };
 });
 
-export default function AdminPage({
-   user
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function AdminPage({ user }: InferProps<typeof getServerSideProps>) {
    if (typeof document === "undefined") return null;
    return (
       <Admin withProvider={{ user }} config={{ basepath: "/admin", logo_return_path: "/../" }} />

@@ -61,7 +61,11 @@
   "navigation": [
     {
       "group": "Getting Started",
-      "pages": ["introduction", "setup", "sdk", "react", "cli"]
+      "pages": ["introduction", "sdk", "react", "cli"]
+    },
+    {
+      "group": "Setup",
+      "pages": ["setup/introduction", "setup/database"]
     },
     {
       "group": "Modules",
@@ -75,38 +79,16 @@
       ]
     },
     {
-      "group": "Configuration",
-      "pages": [
-        "config/overview",
-        "config/migration",
-        {
-          "group": "Modules",
-          "pages": [
-            "config/modules/overview",
-            "config/modules/server",
-            "config/modules/data",
-            "config/modules/auth",
-            "config/modules/flows",
-            "config/modules/media"
-          ]
-        }
-      ]
-    },
-    {
       "group": "Integration",
       "pages": [
         "integration/extending",
-        "integration/hono",
         "integration/nextjs",
         "integration/remix",
         "integration/cloudflare",
         "integration/bun",
-        "integration/vite",
-        "integration/express",
         "integration/astro",
         "integration/node",
         "integration/deno",
-        "integration/browser",
         "integration/docker"
       ]
     },

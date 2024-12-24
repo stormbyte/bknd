@@ -10,7 +10,7 @@ import * as SystemPermissions from "modules/permissions";
 import { AdminController, type AdminControllerOptions } from "modules/server/AdminController";
 import { SystemController } from "modules/server/SystemController";
 
-export type AppPlugin = (app: App) => void;
+export type AppPlugin = (app: App) => Promise<void> | void;
 
 abstract class AppEvent<A = {}> extends Event<{ app: App } & A> {}
 export class AppConfigUpdatedEvent extends AppEvent {
@@ -93,7 +93,7 @@ export class App {
 
       // load plugins
       if (this.plugins.length > 0) {
-         this.plugins.forEach((plugin) => plugin(this));
+         await Promise.all(this.plugins.map((plugin) => plugin(this)));
       }
 
       //console.log("emitting built", options);

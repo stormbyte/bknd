@@ -14,7 +14,7 @@ Install bknd as a dependency:
 import { serve } from "bknd/adapter/nextjs";
 
 export const config = {
-   runtime: "experimental-edge",
+   runtime: "experimental-edge", // or "edge", depending on your nextjs version
    unstable_allowDynamic: ["**/*.js"]
 };
 
@@ -28,12 +28,13 @@ export default serve({
    }
 });
 ```
-For more information about the connection object, refer to the [Setup](/setup) guide.
+For more information about the connection object, refer to the [Setup](/setup/introduction) guide.
 
 ## Enabling the Admin UI
 Create a file `[[...admin]].tsx` inside the `pages/admin` folder:
 ```tsx
 // pages/admin/[[...admin]].tsx
+import type { InferGetServerSidePropsType as InferProps } from "next";
 import { withApi } from "bknd/adapter/nextjs";
 import dynamic from "next/dynamic";
 import "bknd/dist/styles.css";
@@ -50,9 +51,12 @@ export const getServerSideProps = withApi(async (context) => {
    };
 });
 
-export default function AdminPage() {
+export default function AdminPage({ user }: InferProps<typeof getServerSideProps>) {
    if (typeof document === "undefined") return null;
-   return <Admin withProvider config={{ basepath: "/admin" }} />;
+   return <Admin
+      withProvider={{ user }}
+      config={{ basepath: "/admin", logo_return_path: "/../" }}
+   />;
 }
 ```
 

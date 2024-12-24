@@ -31,7 +31,7 @@ export default serve({
    })
 });
 ```
-For more information about the connection object, refer to the [Setup](/setup) guide.
+For more information about the connection object, refer to the [Setup](/setup/introduction) guide.
 
 Now run the worker:
 ```bash
@@ -64,8 +64,9 @@ export default serve({
          }
       }
    }),
+   manifest,
    setAdminHtml: true
-}, manifest);
+});
 ```
 
 ## Adding custom routes
@@ -87,8 +88,9 @@ export default serve({
    onBuilt: async (app) => {
       app.modules.server.get("/hello", (c) => c.json({ hello: "world" }));
    },
+   manifest,
    setAdminHtml: true
-}, manifest);
+});
 ```
 
 ## Using a different mode
@@ -109,11 +111,8 @@ mode`, like so:
 import { serve } from "bknd/adapter/cloudflare";
 
 export default serve({
-   app: (env: Env) => ({ /* ... */ }),
-   cloudflare: {
-      mode: "fresh"
-      // mode: "warm"
-   }
+   /* ... */,
+   mode: "fresh" // mode: "fresh" | "warm" | "cache" | "durable"
 });
 ```
 
@@ -124,11 +123,9 @@ For the cache mode to work, you also need to specify the KV to be used. For this
 import { serve } from "bknd/adapter/cloudflare";
 
 export default serve({
-   app: (env: Env) => ({ /* ... */ }),
-   cloudflare: {
-      mode: "cache",
-      bindings: (env: Env) => ({ kv: env.KV })
-   }
+   /* ... */,
+   mode: "cache",
+   bindings: (env: Env) => ({ kv: env.KV })
 });
 ```
 
@@ -140,12 +137,10 @@ import { serve, DurableBkndApp } from "bknd/adapter/cloudflare";
 
 export { DurableBkndApp };
 export default serve({
-   app: (env: Env) => ({ /* ... */ }),
-   cloudflare: {
-      mode: "durable",
-      bindings: (env: Env) => ({ dobj: env.DOBJ }),
-      keepAliveSeconds: 60 // optional
-   }
+   /* ... */,
+   mode: "durable",
+   bindings: (env: Env) => ({ dobj: env.DOBJ }),
+   keepAliveSeconds: 60 // optional
 });
 ```
 
@@ -169,12 +164,10 @@ import type { App } from "bknd";
 import { serve, DurableBkndApp } from "bknd/adapter/cloudflare";
 
 export default serve({
-   app: (env: Env) => ({ /* ... */ }),
-   cloudflare: {
-      mode: "durable",
-      bindings: (env: Env) => ({ dobj: env.DOBJ }),
-      keepAliveSeconds: 60 // optional
-   }
+   /* ... */,
+   mode: "durable",
+   bindings: (env: Env) => ({ dobj: env.DOBJ }),
+   keepAliveSeconds: 60 // optional
 });
 
 export class CustomDurableBkndApp extends DurableBkndApp {

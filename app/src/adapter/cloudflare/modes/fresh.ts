@@ -3,12 +3,13 @@ import type { App } from "bknd";
 import type { CloudflareBkndConfig, Context } from "../index";
 
 export async function makeApp(config: CloudflareBkndConfig, { env }: Context) {
-   const create_config = typeof config.app === "function" ? config.app(env) : config.app;
-   return await createRuntimeApp({
-      ...config,
-      ...create_config,
-      adminOptions: config.html ? { html: config.html } : undefined
-   });
+   return await createRuntimeApp(
+      {
+         ...config,
+         adminOptions: config.html ? { html: config.html } : undefined
+      },
+      env
+   );
 }
 
 export async function getFresh(config: CloudflareBkndConfig, ctx: Context) {
