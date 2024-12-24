@@ -1,6 +1,8 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { Api, App, type CreateAppConfig } from "bknd";
-import { nodeRequestToRequest } from "../index";
+import { Api, type App } from "bknd";
+import { type FrameworkBkndConfig, createFrameworkApp, nodeRequestToRequest } from "../index";
+
+export type NextjsBkndConfig = FrameworkBkndConfig;
 
 type GetServerSidePropsContext = {
    req: IncomingMessage;
@@ -42,12 +44,10 @@ function getCleanRequest(req: Request) {
 }
 
 let app: App;
-export function serve(config: CreateAppConfig & { beforeBuild?: (app: App) => Promise<void> }) {
+export function serve(config: NextjsBkndConfig = {}) {
    return async (req: Request) => {
       if (!app) {
-         app = App.create(config);
-         await config.beforeBuild?.(app);
-         await app.build();
+         app = await createFrameworkApp(config);
       }
       const request = getCleanRequest(req);
       return app.fetch(request, process.env);

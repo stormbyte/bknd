@@ -1,28 +1,19 @@
 import type { IncomingMessage } from "node:http";
-import { type App, type CreateAppConfig, registries } from "bknd";
+import { App, type CreateAppConfig, registries } from "bknd";
+import type { MiddlewareHandler } from "hono";
 import { StorageLocalAdapter } from "media/storage/adapters/StorageLocalAdapter";
+import type { AdminControllerOptions } from "modules/server/AdminController";
 
-export type CloudflareBkndConfig<Env = any> = {
-   mode?: "warm" | "fresh" | "cache" | "durable";
-   bindings?: (env: Env) => {
-      kv?: KVNamespace;
-      dobj?: DurableObjectNamespace;
-   };
-   key?: string;
-   keepAliveSeconds?: number;
-   forceHttps?: boolean;
+type BaseExternalBkndConfig = CreateAppConfig & {
+   onBuilt?: (app: App) => Promise<void>;
+   beforeBuild?: (app: App) => Promise<void>;
+   buildConfig?: Parameters<App["build"]>[0];
 };
 
-// @todo: move to App
-export type BkndConfig<Env = any> = {
-   app: CreateAppConfig | ((env: Env) => CreateAppConfig);
-   setAdminHtml?: boolean;
-   server?: {
-      port?: number;
-      platform?: "node" | "bun";
-   };
-   cloudflare?: CloudflareBkndConfig<Env>;
-   onBuilt?: (app: App) => Promise<void>;
+export type FrameworkBkndConfig = BaseExternalBkndConfig;
+
+export type RuntimeBkndConfig = BaseExternalBkndConfig & {
+   distPath?: string;
 };
 
 export function nodeRequestToRequest(req: IncomingMessage): Request {
@@ -51,4 +42,65 @@ export function nodeRequestToRequest(req: IncomingMessage): Request {
 
 export function registerLocalMediaAdapter() {
    registries.media.register("local", StorageLocalAdapter);
+}
+
+export async function createFrameworkApp(config: FrameworkBkndConfig): Promise<App> {
+   const app = App.create(config);
+
+   if (config.onBuilt) {
+      app.emgr.onEvent(
+         App.Events.AppBuiltEvent,
+         async () => {
+            await config.onBuilt?.(app);
+         },
+         "sync"
+      );
+   }
+
+   await config.beforeBuild?.(app);
+   await app.build(config.buildConfig);
+
+   return app;
+}
+
+export async function createRuntimeApp({
+   serveStatic,
+   registerLocalMedia,
+   adminOptions,
+   ...config
+}: RuntimeBkndConfig & {
+   serveStatic?: MiddlewareHandler | [string, MiddlewareHandler];
+   registerLocalMedia?: boolean;
+   adminOptions?: AdminControllerOptions | false;
+}): Promise<App> {
+   if (registerLocalMedia) {
+      registerLocalMediaAdapter();
+   }
+
+   const app = App.create(config);
+
+   app.emgr.onEvent(
+      App.Events.AppBuiltEvent,
+      async () => {
+         if (serveStatic) {
+            if (Array.isArray(serveStatic)) {
+               const [path, handler] = serveStatic;
+               app.modules.server.get(path, handler);
+            } else {
+               app.modules.server.get("/*", serveStatic);
+            }
+         }
+
+         await config.onBuilt?.(app);
+         if (adminOptions !== false) {
+            app.registerAdminController(adminOptions);
+         }
+      },
+      "sync"
+   );
+
+   await config.beforeBuild?.(app);
+   await app.build(config.buildConfig);
+
+   return app;
 }

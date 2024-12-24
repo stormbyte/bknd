@@ -1,22 +1,37 @@
+import type { CreateAppConfig } from "bknd";
 import { Hono } from "hono";
 import { serveStatic } from "hono/cloudflare-workers";
-import type { BkndConfig } from "../index";
+import type { FrameworkBkndConfig } from "../index";
 import { getCached } from "./modes/cached";
 import { getDurable } from "./modes/durable";
 import { getFresh, getWarm } from "./modes/fresh";
+
+export type CloudflareBkndConfig<Env = any> = Omit<FrameworkBkndConfig, "app"> & {
+   app: CreateAppConfig | ((env: Env) => CreateAppConfig);
+   mode?: "warm" | "fresh" | "cache" | "durable";
+   bindings?: (env: Env) => {
+      kv?: KVNamespace;
+      dobj?: DurableObjectNamespace;
+   };
+   key?: string;
+   keepAliveSeconds?: number;
+   forceHttps?: boolean;
+   manifest?: string;
+   setAdminHtml?: boolean;
+   html?: string;
+};
 
 export type Context = {
    request: Request;
    env: any;
    ctx: ExecutionContext;
-   manifest: any;
-   html?: string;
 };
 
-export function serve(_config: BkndConfig, manifest?: string, html?: string) {
+export function serve(config: CloudflareBkndConfig) {
    return {
       async fetch(request: Request, env: any, ctx: ExecutionContext) {
          const url = new URL(request.url);
+         const manifest = config.manifest;
 
          if (manifest) {
             const pathname = url.pathname.slice(1);
@@ -27,8 +42,7 @@ export function serve(_config: BkndConfig, manifest?: string, html?: string) {
                hono.all("*", async (c, next) => {
                   const res = await serveStatic({
                      path: `./${pathname}`,
-                     manifest,
-                     onNotFound: (path) => console.log("not found", path)
+                     manifest
                   })(c as any, next);
                   if (res instanceof Response) {
                      const ttl = 60 * 60 * 24 * 365;
@@ -43,12 +57,10 @@ export function serve(_config: BkndConfig, manifest?: string, html?: string) {
             }
          }
 
-         const config = {
-            ..._config,
-            setAdminHtml: _config.setAdminHtml ?? !!manifest
-         };
-         const context = { request, env, ctx, manifest, html } as Context;
-         const mode = config.cloudflare?.mode ?? "warm";
+         config.setAdminHtml = config.setAdminHtml && !!config.manifest;
+
+         const context = { request, env, ctx } as Context;
+         const mode = config.mode ?? "warm";
 
          switch (mode) {
             case "fresh":

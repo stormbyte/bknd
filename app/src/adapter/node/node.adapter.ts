@@ -1,33 +1,37 @@
 import path from "node:path";
 import { serve as honoServe } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
-import { App, type CreateAppConfig, registries } from "bknd";
-import { registerLocalMediaAdapter } from "../index";
+import type { App } from "bknd";
+import { config as $config } from "core";
+import { type RuntimeBkndConfig, createRuntimeApp } from "../index";
 
-export type NodeAdapterOptions = CreateAppConfig & {
-   relativeDistPath?: string;
+export type NodeBkndConfig = RuntimeBkndConfig & {
    port?: number;
    hostname?: string;
    listener?: Parameters<typeof honoServe>[1];
-   onBuilt?: (app: App) => Promise<void>;
-   buildOptions?: Parameters<App["build"]>[0];
+   /** @deprecated */
+   relativeDistPath?: string;
 };
 
 export function serve({
+   distPath,
    relativeDistPath,
-   port = 1337,
+   port = $config.server.default_port,
    hostname,
    listener,
    onBuilt,
-   buildOptions = {},
+   buildConfig = {},
+   beforeBuild,
    ...config
-}: NodeAdapterOptions = {}) {
-   registerLocalMediaAdapter();
-
+}: NodeBkndConfig = {}) {
    const root = path.relative(
       process.cwd(),
-      path.resolve(relativeDistPath ?? "./node_modules/bknd/dist", "static")
+      path.resolve(distPath ?? relativeDistPath ?? "./node_modules/bknd/dist", "static")
    );
+   if (relativeDistPath) {
+      console.warn("relativeDistPath is deprecated, please use distPath instead");
+   }
+
    let app: App;
 
    honoServe(
@@ -36,24 +40,11 @@ export function serve({
          hostname,
          fetch: async (req: Request) => {
             if (!app) {
-               app = App.create(config);
-
-               app.emgr.onEvent(
-                  App.Events.AppBuiltEvent,
-                  async () => {
-                     app.modules.server.get(
-                        "/*",
-                        serveStatic({
-                           root
-                        })
-                     );
-                     app.registerAdminController();
-                     await onBuilt?.(app);
-                  },
-                  "sync"
-               );
-
-               await app.build(buildOptions);
+               app = await createRuntimeApp({
+                  ...config,
+                  registerLocalMedia: true,
+                  serveStatic: serveStatic({ root })
+               });
             }
 
             return app.fetch(req);

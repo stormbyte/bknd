@@ -1,52 +1,35 @@
 /// <reference types="bun-types" />
 
 import path from "node:path";
-import { App, type CreateAppConfig, registries } from "bknd";
-import type { Serve, ServeOptions } from "bun";
+import type { App } from "bknd";
+import type { ServeOptions } from "bun";
+import { config } from "core";
 import { serveStatic } from "hono/bun";
-import { registerLocalMediaAdapter } from "../index";
+import { type RuntimeBkndConfig, createRuntimeApp } from "../index";
 
 let app: App;
-export type ExtendedAppCreateConfig = Partial<CreateAppConfig> & {
-   distPath?: string;
-   onBuilt?: (app: App) => Promise<void>;
-   buildOptions?: Parameters<App["build"]>[0];
-};
+
+export type BunBkndConfig = RuntimeBkndConfig & Omit<ServeOptions, "fetch">;
 
 export async function createApp({
    distPath,
    onBuilt,
-   buildOptions,
+   buildConfig,
+   beforeBuild,
    ...config
-}: ExtendedAppCreateConfig) {
-   registerLocalMediaAdapter();
+}: RuntimeBkndConfig = {}) {
    const root = path.resolve(distPath ?? "./node_modules/bknd/dist", "static");
 
    if (!app) {
-      app = App.create(config);
-
-      app.emgr.onEvent(
-         App.Events.AppBuiltEvent,
-         async () => {
-            app.modules.server.get(
-               "/*",
-               serveStatic({
-                  root
-               })
-            );
-            app.registerAdminController();
-            await onBuilt?.(app);
-         },
-         "sync"
-      );
-
-      await app.build(buildOptions);
+      app = await createRuntimeApp({
+         ...config,
+         registerLocalMedia: true,
+         serveStatic: serveStatic({ root })
+      });
    }
 
    return app;
 }
-
-export type BunAdapterOptions = Omit<ServeOptions, "fetch"> & ExtendedAppCreateConfig;
 
 export function serve({
    distPath,
@@ -54,11 +37,11 @@ export function serve({
    initialConfig,
    plugins,
    options,
-   port = 1337,
+   port = config.server.default_port,
    onBuilt,
-   buildOptions,
+   buildConfig,
    ...serveOptions
-}: BunAdapterOptions = {}) {
+}: BunBkndConfig = {}) {
    Bun.serve({
       ...serveOptions,
       port,
@@ -69,7 +52,7 @@ export function serve({
             plugins,
             options,
             onBuilt,
-            buildOptions,
+            buildConfig,
             distPath
          });
          return app.fetch(request);

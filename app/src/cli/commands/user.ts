@@ -1,10 +1,9 @@
 import { password as $password, text as $text } from "@clack/prompts";
 import type { App } from "App";
-import type { BkndConfig } from "adapter";
 import type { PasswordStrategy } from "auth/authenticate/strategies";
 import { makeConfigApp } from "cli/commands/run";
 import { getConfigPath } from "cli/commands/run/platform";
-import type { CliCommand } from "cli/types";
+import type { CliBkndConfig, CliCommand } from "cli/types";
 import { Argument } from "commander";
 
 export const user: CliCommand = (program) => {
@@ -22,7 +21,7 @@ async function action(action: "create" | "update", options: any) {
       return;
    }
 
-   const config = (await import(configFilePath).then((m) => m.default)) as BkndConfig;
+   const config = (await import(configFilePath).then((m) => m.default)) as CliBkndConfig;
    const app = await makeConfigApp(config, options.server);
 
    switch (action) {

@@ -287,14 +287,18 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       } catch (e) {}
    }
 
-   async createUser(input: { email: string; password: string }) {
+   async createUser({
+      email,
+      password,
+      ...additional
+   }: { email: string; password: string; [key: string]: any }) {
       const strategy = "password";
       const pw = this.authenticator.strategy(strategy) as PasswordStrategy;
-      const strategy_value = await pw.hash(input.password);
+      const strategy_value = await pw.hash(password);
       const mutator = this.em.mutator(this.config.entity_name as "users");
       mutator.__unstable_toggleSystemEntityCreation(false);
       const { data: created } = await mutator.insertOne({
-         email: input.email,
+         ...(additional as any),
          strategy,
          strategy_value
       });
