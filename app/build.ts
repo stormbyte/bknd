@@ -9,14 +9,42 @@ const watch = args.includes("--watch");
 const minify = args.includes("--minify");
 const types = args.includes("--types");
 const sourcemap = args.includes("--sourcemap");
+const clean = args.includes("--clean");
 
-await $`rm -rf dist`;
-if (types) {
+if (clean) {
+   console.log("Cleaning dist");
+   await $`rm -rf dist`;
+}
+
+let types_running = false;
+function buildTypes() {
+   if (types_running) return;
+   types_running = true;
+
    Bun.spawn(["bun", "build:types"], {
       onExit: () => {
          console.log("Types built");
+         Bun.spawn(["bun", "tsc-alias"], {
+            onExit: () => {
+               console.log("Types aliased");
+               types_running = false;
+            }
+         });
       }
    });
+}
+
+let watcher_timeout: any;
+function delayTypes() {
+   if (!watch) return;
+   if (watcher_timeout) {
+      clearTimeout(watcher_timeout);
+   }
+   watcher_timeout = setTimeout(buildTypes, 1000);
+}
+
+if (types && !watch) {
+   buildTypes();
 }
 
 /**
@@ -46,7 +74,8 @@ const result = await esbuild.build({
       __isDev: "0",
       "process.env.NODE_ENV": '"production"'
    },
-   chunkNames: "chunks/[name]-[hash]"
+   chunkNames: "chunks/[name]-[hash]",
+   logLevel: "error"
 });
 
 // Write manifest
@@ -96,6 +125,9 @@ await tsup.build({
    treeshake: true,
    loader: {
       ".svg": "dataurl"
+   },
+   onSuccess: async () => {
+      delayTypes();
    }
 });
 
@@ -117,11 +149,12 @@ await tsup.build({
    loader: {
       ".svg": "dataurl"
    },
-   onSuccess: async () => {
-      console.log("--- ui built");
-   },
    esbuildOptions: (options) => {
+      options.logLevel = "silent";
       options.chunkNames = "chunks/[name]-[hash]";
+   },
+   onSuccess: async () => {
+      delayTypes();
    }
 });
 
@@ -148,7 +181,10 @@ function baseConfig(adapter: string): tsup.Options {
       ],
       metafile: true,
       splitting: false,
-      treeshake: true
+      treeshake: true,
+      onSuccess: async () => {
+         delayTypes();
+      }
    };
 }
 

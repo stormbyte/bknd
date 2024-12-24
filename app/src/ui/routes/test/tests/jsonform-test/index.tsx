@@ -2,12 +2,9 @@ import Form from "@rjsf/core";
 import type { RJSFSchema, UiSchema } from "@rjsf/utils";
 import { useRef } from "react";
 import { TbPlus, TbTrash } from "react-icons/tb";
-import { Button } from "../../../../components/buttons/Button";
+import { Button } from "ui/components/buttons/Button";
+import { JsonSchemaForm, type JsonSchemaFormRef } from "ui/components/form/json-schema";
 import * as Formy from "../../../../components/form/Formy";
-import {
-   JsonSchemaForm,
-   type JsonSchemaFormRef
-} from "../../../../components/form/json-schema/JsonSchemaForm";
 import * as AppShell from "../../../../layouts/AppShell/AppShell";
 
 class CfJsonSchemaValidator {}

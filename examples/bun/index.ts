@@ -1,11 +1,11 @@
 // @ts-ignore somehow causes types:build issues on app
-import { type BunAdapterOptions, serve } from "bknd/adapter/bun";
+import { type BunBkndConfig, serve } from "bknd/adapter/bun";
 
 // Actually, all it takes is the following line:
 // serve();
 
 // this is optional, if omitted, it uses an in-memory database
-const config: BunAdapterOptions = {
+const config: BunBkndConfig = {
    connection: {
       type: "libsql",
       config: {

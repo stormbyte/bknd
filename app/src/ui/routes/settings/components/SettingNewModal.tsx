@@ -3,16 +3,13 @@ import type { TObject } from "core/utils";
 import { omit } from "lodash-es";
 import { useRef, useState } from "react";
 import { TbCirclePlus, TbVariable } from "react-icons/tb";
+import { useBknd } from "ui/client/BkndProvider";
+import { Button } from "ui/components/buttons/Button";
+import * as Formy from "ui/components/form/Formy";
+import { JsonSchemaForm, type JsonSchemaFormRef } from "ui/components/form/json-schema";
+import { Dropdown } from "ui/components/overlay/Dropdown";
+import { Modal } from "ui/components/overlay/Modal";
 import { useLocation } from "wouter";
-import { useBknd } from "../../../client/BkndProvider";
-import { Button } from "../../../components/buttons/Button";
-import * as Formy from "../../../components/form/Formy";
-import {
-   JsonSchemaForm,
-   type JsonSchemaFormRef
-} from "../../../components/form/json-schema/JsonSchemaForm";
-import { Dropdown } from "../../../components/overlay/Dropdown";
-import { Modal } from "../../../components/overlay/Modal";
 
 export type SettingsNewModalProps = {
    schema: TObject;

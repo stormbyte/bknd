@@ -1,52 +1,20 @@
 import { transformObject } from "core/utils";
-import { DataPermissions, Entity, EntityIndex, type EntityManager, type Field } from "data";
+import {
+   DataPermissions,
+   type Entity,
+   EntityIndex,
+   type EntityManager,
+   constructEntity,
+   constructRelation
+} from "data";
 import { Module } from "modules/Module";
 import { DataController } from "./api/DataController";
-import {
-   type AppDataConfig,
-   FIELDS,
-   RELATIONS,
-   type TAppDataEntity,
-   type TAppDataRelation,
-   dataConfigSchema
-} from "./data-schema";
+import { type AppDataConfig, dataConfigSchema } from "./data-schema";
 
-export class AppData<DB> extends Module<typeof dataConfigSchema> {
-   static constructEntity(name: string, entityConfig: TAppDataEntity) {
-      const fields = transformObject(entityConfig.fields ?? {}, (fieldConfig, name) => {
-         const { type } = fieldConfig;
-         if (!(type in FIELDS)) {
-            throw new Error(`Field type "${type}" not found`);
-         }
-
-         const { field } = FIELDS[type as any];
-         const returnal = new field(name, fieldConfig.config) as Field;
-         return returnal;
-      });
-
-      // @todo: entity must be migrated to typebox
-      return new Entity(
-         name,
-         Object.values(fields),
-         entityConfig.config as any,
-         entityConfig.type as any
-      );
-   }
-
-   static constructRelation(
-      relationConfig: TAppDataRelation,
-      resolver: (name: Entity | string) => Entity
-   ) {
-      return new RELATIONS[relationConfig.type].cls(
-         resolver(relationConfig.source),
-         resolver(relationConfig.target),
-         relationConfig.config
-      );
-   }
-
+export class AppData extends Module<typeof dataConfigSchema> {
    override async build() {
       const entities = transformObject(this.config.entities ?? {}, (entityConfig, name) => {
-         return AppData.constructEntity(name, entityConfig);
+         return constructEntity(name, entityConfig);
       });
 
       const _entity = (_e: Entity | string): Entity => {
@@ -57,7 +25,7 @@ export class AppData<DB> extends Module<typeof dataConfigSchema> {
       };
 
       const relations = transformObject(this.config.relations ?? {}, (relation) =>
-         AppData.constructRelation(relation, _entity)
+         constructRelation(relation, _entity)
       );
 
       const indices = transformObject(this.config.indices ?? {}, (index, name) => {
@@ -91,7 +59,7 @@ export class AppData<DB> extends Module<typeof dataConfigSchema> {
       return dataConfigSchema;
    }
 
-   get em(): EntityManager<DB> {
+   get em(): EntityManager {
       this.throwIfNotBuilt();
       return this.ctx.em;
    }

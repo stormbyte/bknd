@@ -1,24 +1,15 @@
+import type { PrimaryFieldType } from "core";
 import { EntityIndex, type EntityManager } from "data";
 import { type FileUploadedEventData, Storage, type StorageAdapter } from "media";
 import { Module } from "modules/Module";
-import {
-   type FieldSchema,
-   type InferFields,
-   type Schema,
-   boolean,
-   datetime,
-   entity,
-   json,
-   number,
-   text
-} from "../data/prototype";
+import { type FieldSchema, boolean, datetime, entity, json, number, text } from "../data/prototype";
 import { MediaController } from "./api/MediaController";
 import { ADAPTERS, buildMediaSchema, type mediaConfigSchema, registry } from "./media-schema";
 
 export type MediaFieldSchema = FieldSchema<typeof AppMedia.mediaFields>;
-declare global {
+declare module "core" {
    interface DB {
-      media: MediaFieldSchema;
+      media: { id: PrimaryFieldType } & MediaFieldSchema;
    }
 }
 
@@ -112,14 +103,14 @@ export class AppMedia extends Module<typeof mediaConfigSchema> {
       return this.em.entity(entity_name);
    }
 
-   get em(): EntityManager<DB> {
+   get em(): EntityManager {
       return this.ctx.em;
    }
 
    private setupListeners() {
       //const media = this._entity;
       const { emgr, em } = this.ctx;
-      const media = this.getMediaEntity();
+      const media = this.getMediaEntity().name as "media";
 
       // when file is uploaded, sync with media entity
       // @todo: need a way for singleton events!
@@ -140,10 +131,10 @@ export class AppMedia extends Module<typeof mediaConfigSchema> {
          Storage.Events.FileDeletedEvent,
          async (e) => {
             // simple file deletion sync
-            const item = await em.repo(media).findOne({ path: e.params.name });
-            if (item.data) {
-               console.log("item.data", item.data);
-               await em.mutator(media).deleteOne(item.data.id);
+            const { data } = await em.repo(media).findOne({ path: e.params.name });
+            if (data) {
+               console.log("item.data", data);
+               await em.mutator(media).deleteOne(data.id);
             }
 
             console.log("App:storage:file deleted", e);

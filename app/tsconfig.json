@@ -26,14 +26,13 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "rootDir": "./src",
-    "outDir": "./dist",
-    "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo",
+    "outDir": "./dist/types",
     "baseUrl": ".",
     "paths": {
       "*": ["./src/*"],
       "bknd": ["./src/*"]
     }
   },
-  "include": ["./src/**/*.ts", "./src/**/*.tsx", "./env.d.ts"],
-  "exclude": ["node_modules", "dist/**/*", "../examples/bun"]
+  "include": ["./src/**/*.ts", "./src/**/*.tsx"],
+  "exclude": ["node_modules", "dist", "dist/types", "**/*.d.ts"]
 }

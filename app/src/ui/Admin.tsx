@@ -63,7 +63,7 @@ const Skeleton = ({ theme = "light" }: { theme?: string }) => {
                className="flex flex-row w-full h-16 gap-2.5 border-muted border-b justify-start bg-muted/10"
             >
                <div className="max-h-full flex hover:bg-primary/5 link p-2.5 w-[134px] outline-none">
-                  <Logo />
+                  <Logo theme={theme} />
                </div>
                <nav className="hidden md:flex flex-row gap-2.5 pl-0 p-2.5 items-center">
                   {[...new Array(5)].map((item, key) => (

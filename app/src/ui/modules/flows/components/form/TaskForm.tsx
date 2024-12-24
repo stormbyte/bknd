@@ -1,12 +1,5 @@
 import type { Task } from "flows";
-import { Suspense, lazy } from "react";
-import { TemplateField } from "./TemplateField";
-
-const JsonSchemaForm = lazy(() =>
-   import("ui/components/form/json-schema/JsonSchemaForm").then((m) => ({
-      default: m.JsonSchemaForm
-   }))
-);
+import { JsonSchemaForm } from "ui/components/form/json-schema";
 
 export type TaskFormProps = {
    task: Task;
@@ -26,16 +19,14 @@ export function TaskForm({ task, onChange, ...props }: TaskFormProps) {
    //console.log("uiSchema", uiSchema);
 
    return (
-      <Suspense fallback={<div>Loading...</div>}>
-         <JsonSchemaForm
-            className="legacy"
-            schema={schema}
-            onChange={onChange}
-            formData={params}
-            {...props}
-            /*uiSchema={uiSchema}*/
-            /*fields={{ template: TemplateField }}*/
-         />
-      </Suspense>
+      <JsonSchemaForm
+         className="legacy"
+         schema={schema}
+         onChange={onChange}
+         formData={params}
+         {...props}
+         /*uiSchema={uiSchema}*/
+         /*fields={{ template: TemplateField }}*/
+      />
    );
 }

@@ -1,14 +1,10 @@
 import { serveStatic } from "@hono/node-server/serve-static";
 import { createClient } from "@libsql/client/node";
-import { App } from "./src";
+import { App, registries } from "./src";
 import { LibsqlConnection } from "./src/data";
 import { StorageLocalAdapter } from "./src/media/storage/adapters/StorageLocalAdapter";
-import { registries } from "./src/modules/registries";
 
-registries.media.add("local", {
-   cls: StorageLocalAdapter,
-   schema: StorageLocalAdapter.prototype.getSchema()
-});
+registries.media.register("local", StorageLocalAdapter);
 
 const credentials = {
    url: import.meta.env.VITE_DB_URL!,
@@ -24,8 +20,8 @@ export default {
    async fetch(request: Request) {
       const app = App.create({ connection });
 
-      app.emgr.on(
-         "app-built",
+      app.emgr.onEvent(
+         App.Events.AppBuiltEvent,
          async () => {
             app.registerAdminController({ forceDev: true });
             app.module.server.client.get("/assets/*", serveStatic({ root: "./" }));

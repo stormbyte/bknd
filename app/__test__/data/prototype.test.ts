@@ -3,6 +3,8 @@ import {
    BooleanField,
    DateField,
    Entity,
+   EntityIndex,
+   EntityManager,
    EnumField,
    JsonField,
    ManyToManyRelation,
@@ -12,6 +14,7 @@ import {
    PolymorphicRelation,
    TextField
 } from "../../src/data";
+import { DummyConnection } from "../../src/data/connection/DummyConnection";
 import {
    FieldPrototype,
    type FieldSchema,
@@ -20,6 +23,7 @@ import {
    boolean,
    date,
    datetime,
+   em,
    entity,
    enumm,
    json,
@@ -46,12 +50,17 @@ describe("prototype", () => {
    });
 
    test("...2", async () => {
-      const user = entity("users", {
-         name: text().required(),
+      const users = entity("users", {
+         name: text(),
          bio: text(),
          age: number(),
-         some: number().required()
+         some: number()
       });
+      type db = {
+         users: Schema<typeof users>;
+      };
+
+      const obj: Schema<typeof users> = {} as any;
 
       //console.log("user", user.toJSON());
    });
@@ -265,5 +274,39 @@ describe("prototype", () => {
       ];
 
       const obj: Schema<typeof test> = {} as any;
+   });
+
+   test("schema", async () => {
+      const _em = em(
+         {
+            posts: entity("posts", { name: text(), slug: text().required() }),
+            comments: entity("comments", { some: text() }),
+            users: entity("users", { email: text() })
+         },
+         ({ relation, index }, { posts, comments, users }) => {
+            relation(posts).manyToOne(comments).manyToOne(users);
+            index(posts).on(["name"]).on(["slug"], true);
+         }
+      );
+
+      type LocalDb = (typeof _em)["DB"];
+
+      const es = [
+         new Entity("posts", [new TextField("name"), new TextField("slug", { required: true })]),
+         new Entity("comments", [new TextField("some")]),
+         new Entity("users", [new TextField("email")])
+      ];
+      const _em2 = new EntityManager(
+         es,
+         new DummyConnection(),
+         [new ManyToOneRelation(es[0], es[1]), new ManyToOneRelation(es[0], es[2])],
+         [
+            new EntityIndex(es[0], [es[0].field("name")!]),
+            new EntityIndex(es[0], [es[0].field("slug")!], true)
+         ]
+      );
+
+      // @ts-ignore
+      expect(_em2.toJSON()).toEqual(_em.toJSON());
    });
 });

@@ -1,5 +1,5 @@
 import { Guard } from "auth";
-import { BkndError, DebugLogger, Exception, isDebug } from "core";
+import { BkndError, DebugLogger } from "core";
 import { EventManager } from "core/events";
 import { clone, diff } from "core/object/diff";
 import {
@@ -35,9 +35,11 @@ import { AppFlows } from "../flows/AppFlows";
 import { AppMedia } from "../media/AppMedia";
 import type { Module, ModuleBuildContext } from "./Module";
 
+export type { ModuleBuildContext };
+
 export const MODULES = {
    server: AppServer,
-   data: AppData<any>,
+   data: AppData,
    auth: AppAuth,
    media: AppMedia,
    flows: AppFlows
@@ -73,9 +75,14 @@ export type ModuleManagerOptions = {
       module: Module,
       config: ModuleConfigs[Module]
    ) => Promise<void>;
+   // triggered when no config table existed
+   onFirstBoot?: () => Promise<void>;
    // base path for the hono instance
    basePath?: string;
+   // doesn't perform validity checks for given/fetched config
    trustFetched?: boolean;
+   // runs when initial config provided on a fresh database
+   seed?: (ctx: ModuleBuildContext) => Promise<void>;
 };
 
 type ConfigTable<Json = ModuleConfigs> = {
@@ -105,9 +112,9 @@ const __bknd = entity(TABLE_NAME, {
    updated_at: datetime()
 });
 type ConfigTable2 = Schema<typeof __bknd>;
-type T_INTERNAL_EM = {
+interface T_INTERNAL_EM {
    __bknd: ConfigTable2;
-};
+}
 
 // @todo: cleanup old diffs on upgrade
 // @todo: cleanup multiple backups on upgrade
@@ -116,7 +123,7 @@ export class ModuleManager {
    // internal em for __bknd config table
    __em!: EntityManager<T_INTERNAL_EM>;
    // ctx for modules
-   em!: EntityManager<any>;
+   em!: EntityManager;
    server!: Hono;
    emgr!: EventManager;
    guard!: Guard;
@@ -294,7 +301,7 @@ export class ModuleManager {
                      version,
                      json: configs,
                      updated_at: new Date()
-                  },
+                  } as any,
                   {
                      type: "config",
                      version
@@ -448,6 +455,9 @@ export class ModuleManager {
             await this.buildModules();
             await this.save();
 
+            // run initial setup
+            await this.setupInitial();
+
             this.logger.clear();
             return this;
          }
@@ -460,6 +470,21 @@ export class ModuleManager {
       this.logger.log("building");
       await this.buildModules();
       return this;
+   }
+
+   protected async setupInitial() {
+      const ctx = {
+         ...this.ctx(),
+         // disable events for initial setup
+         em: this.ctx().em.fork()
+      };
+
+      // perform a sync
+      await ctx.em.schema().sync({ force: true });
+      await this.options?.seed?.(ctx);
+
+      // run first boot event
+      await this.options?.onFirstBoot?.();
    }
 
    get<K extends keyof Modules>(key: K): Modules[K] {

@@ -8,7 +8,7 @@ import type { Hono } from "hono";
 export type ModuleBuildContext = {
    connection: Connection;
    server: Hono<any>;
-   em: EntityManager<any>;
+   em: EntityManager;
    emgr: EventManager<any>;
    guard: Guard;
 };

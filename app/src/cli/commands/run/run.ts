@@ -1,8 +1,10 @@
 import type { Config } from "@libsql/client/node";
 import { App, type CreateAppConfig } from "App";
-import type { BkndConfig } from "adapter";
-import type { CliCommand } from "cli/types";
+import { StorageLocalAdapter } from "adapter/node";
+import type { CliBkndConfig, CliCommand } from "cli/types";
 import { Option } from "commander";
+import { config } from "core";
+import { registries } from "modules/registries";
 import {
    PLATFORMS,
    type Platform,
@@ -19,7 +21,7 @@ export const run: CliCommand = (program) => {
       .addOption(
          new Option("-p, --port <port>", "port to run on")
             .env("PORT")
-            .default(1337)
+            .default(config.server.default_port)
             .argParser((v) => Number.parseInt(v))
       )
       .addOption(new Option("-c, --config <config>", "config file"))
@@ -37,6 +39,12 @@ export const run: CliCommand = (program) => {
       .action(action);
 };
 
+// automatically register local adapter
+const local = StorageLocalAdapter.prototype.getName();
+if (!registries.media.has(local)) {
+   registries.media.register(local, StorageLocalAdapter);
+}
+
 type MakeAppConfig = {
    connection?: CreateAppConfig["connection"];
    server?: { platform?: Platform };
@@ -47,8 +55,8 @@ type MakeAppConfig = {
 async function makeApp(config: MakeAppConfig) {
    const app = App.create({ connection: config.connection });
 
-   app.emgr.on(
-      "app-built",
+   app.emgr.onEvent(
+      App.Events.AppBuiltEvent,
       async () => {
          await attachServeStatic(app, config.server?.platform ?? "node");
          app.registerAdminController();
@@ -64,24 +72,23 @@ async function makeApp(config: MakeAppConfig) {
    return app;
 }
 
-export async function makeConfigApp(config: BkndConfig, platform?: Platform) {
+export async function makeConfigApp(config: CliBkndConfig, platform?: Platform) {
    const appConfig = typeof config.app === "function" ? config.app(process.env) : config.app;
    const app = App.create(appConfig);
 
-   app.emgr.on(
-      "app-built",
+   app.emgr.onEvent(
+      App.Events.AppBuiltEvent,
       async () => {
          await attachServeStatic(app, platform ?? "node");
          app.registerAdminController();
 
-         if (config.onBuilt) {
-            await config.onBuilt(app);
-         }
+         await config.onBuilt?.(app);
       },
       "sync"
    );
 
-   await app.build();
+   await config.beforeBuild?.(app);
+   await app.build(config.buildConfig);
    return app;
 }
 
@@ -102,7 +109,7 @@ async function action(options: {
       app = await makeApp({ connection, server: { platform: options.server } });
    } else {
       console.log("Using config from:", configFilePath);
-      const config = (await import(configFilePath).then((m) => m.default)) as BkndConfig;
+      const config = (await import(configFilePath).then((m) => m.default)) as CliBkndConfig;
       app = await makeConfigApp(config, options.server);
    }
 

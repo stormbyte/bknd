@@ -22,7 +22,7 @@ describe("[data] Mutator (base)", async () => {
       new TextField("hidden", { hidden: true }),
       new TextField("not_fillable", { fillable: false })
    ]);
-   const em = new EntityManager([entity], dummyConnection);
+   const em = new EntityManager<any>([entity], dummyConnection);
    await em.schema().sync({ force: true });
 
    const payload = { label: "item 1", count: 1 };
@@ -61,7 +61,7 @@ describe("[data] Mutator (ManyToOne)", async () => {
    const posts = new Entity("posts", [new TextField("title")]);
    const users = new Entity("users", [new TextField("username")]);
    const relations = [new ManyToOneRelation(posts, users)];
-   const em = new EntityManager([posts, users], dummyConnection, relations);
+   const em = new EntityManager<any>([posts, users], dummyConnection, relations);
    await em.schema().sync({ force: true });
 
    test("RelationMutator", async () => {
@@ -192,7 +192,7 @@ describe("[data] Mutator (OneToOne)", async () => {
    const users = new Entity("users", [new TextField("username")]);
    const settings = new Entity("settings", [new TextField("theme")]);
    const relations = [new OneToOneRelation(users, settings)];
-   const em = new EntityManager([users, settings], dummyConnection, relations);
+   const em = new EntityManager<any>([users, settings], dummyConnection, relations);
    await em.schema().sync({ force: true });
 
    test("insertOne: missing ref", async () => {
@@ -276,7 +276,7 @@ describe("[data] Mutator (ManyToMany)", async () => {
 
 describe("[data] Mutator (Events)", async () => {
    const entity = new Entity("test", [new TextField("label")]);
-   const em = new EntityManager([entity], dummyConnection);
+   const em = new EntityManager<any>([entity], dummyConnection);
    await em.schema().sync({ force: true });
    const events = new Map<string, any>();
 

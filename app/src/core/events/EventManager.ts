@@ -15,6 +15,7 @@ export class EventManager<
 > {
    protected events: EventClass[] = [];
    protected listeners: EventListener[] = [];
+   enabled: boolean = true;
 
    constructor(events?: RegisteredEvents, listeners?: EventListener[]) {
       if (events) {
@@ -28,6 +29,16 @@ export class EventManager<
       }
    }
 
+   enable() {
+      this.enabled = true;
+      return this;
+   }
+
+   disable() {
+      this.enabled = false;
+      return this;
+   }
+
    clearEvents() {
       this.events = [];
       return this;
@@ -37,6 +48,10 @@ export class EventManager<
       this.clearEvents();
       this.listeners = [];
       return this;
+   }
+
+   getListeners(): EventListener[] {
+      return [...this.listeners];
    }
 
    get Events(): { [K in keyof RegisteredEvents]: RegisteredEvents[K] } {
@@ -133,6 +148,11 @@ export class EventManager<
    async emit(event: Event) {
       // @ts-expect-error slug is static
       const slug = event.constructor.slug;
+      if (!this.enabled) {
+         console.log("EventManager disabled, not emitting", slug);
+         return;
+      }
+
       if (!this.eventExists(event)) {
          throw new Error(`Event "${slug}" not registered`);
       }

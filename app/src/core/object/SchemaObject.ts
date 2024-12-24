@@ -69,7 +69,8 @@ export class SchemaObject<Schema extends TObject> {
          forceParse: true,
          skipMark: this.isForceParse()
       });
-      const updatedConfig = noEmit ? valid : await this.onBeforeUpdate(this._config, valid);
+      // regardless of "noEmit" – this should always be triggered
+      const updatedConfig = await this.onBeforeUpdate(this._config, valid);
 
       this._value = updatedConfig;
       this._config = Object.freeze(updatedConfig);

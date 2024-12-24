@@ -1,9 +1,9 @@
 import { password as $password, text as $text } from "@clack/prompts";
+import type { App } from "App";
 import type { PasswordStrategy } from "auth/authenticate/strategies";
-import type { App, BkndConfig } from "bknd";
 import { makeConfigApp } from "cli/commands/run";
 import { getConfigPath } from "cli/commands/run/platform";
-import type { CliCommand } from "cli/types";
+import type { CliBkndConfig, CliCommand } from "cli/types";
 import { Argument } from "commander";
 
 export const user: CliCommand = (program) => {
@@ -21,7 +21,7 @@ async function action(action: "create" | "update", options: any) {
       return;
    }
 
-   const config = (await import(configFilePath).then((m) => m.default)) as BkndConfig;
+   const config = (await import(configFilePath).then((m) => m.default)) as CliBkndConfig;
    const app = await makeConfigApp(config, options.server);
 
    switch (action) {
@@ -37,7 +37,7 @@ async function action(action: "create" | "update", options: any) {
 async function create(app: App, options: any) {
    const config = app.module.auth.toJSON(true);
    const strategy = app.module.auth.authenticator.strategy("password") as PasswordStrategy;
-   const users_entity = config.entity_name;
+   const users_entity = config.entity_name as "users";
 
    const email = await $text({
       message: "Enter email",
@@ -83,7 +83,7 @@ async function create(app: App, options: any) {
 async function update(app: App, options: any) {
    const config = app.module.auth.toJSON(true);
    const strategy = app.module.auth.authenticator.strategy("password") as PasswordStrategy;
-   const users_entity = config.entity_name;
+   const users_entity = config.entity_name as "users";
    const em = app.modules.ctx().em;
 
    const email = (await $text({

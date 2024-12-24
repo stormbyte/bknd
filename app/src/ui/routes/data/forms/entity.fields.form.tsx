@@ -22,7 +22,7 @@ import { Button } from "ui/components/buttons/Button";
 import { IconButton } from "ui/components/buttons/IconButton";
 import { JsonViewer } from "ui/components/code/JsonViewer";
 import { MantineSwitch } from "ui/components/form/hook-form-mantine/MantineSwitch";
-import { JsonSchemaForm } from "ui/components/form/json-schema/JsonSchemaForm";
+import { JsonSchemaForm } from "ui/components/form/json-schema";
 import { type SortableItemProps, SortableList } from "ui/components/list/SortableList";
 import { Popover } from "ui/components/overlay/Popover";
 import { fieldSpecs } from "ui/modules/data/components/fields-specs";

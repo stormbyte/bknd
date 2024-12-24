@@ -1,41 +1,35 @@
 /// <reference types="bun-types" />
 
 import path from "node:path";
-import { App, type CreateAppConfig } from "bknd";
-import type { Serve, ServeOptions } from "bun";
+import type { App } from "bknd";
+import type { ServeOptions } from "bun";
+import { config } from "core";
 import { serveStatic } from "hono/bun";
+import { type RuntimeBkndConfig, createRuntimeApp } from "../index";
 
 let app: App;
-export async function createApp(_config: Partial<CreateAppConfig> = {}, distPath?: string) {
+
+export type BunBkndConfig = RuntimeBkndConfig & Omit<ServeOptions, "fetch">;
+
+export async function createApp({
+   distPath,
+   onBuilt,
+   buildConfig,
+   beforeBuild,
+   ...config
+}: RuntimeBkndConfig = {}) {
    const root = path.resolve(distPath ?? "./node_modules/bknd/dist", "static");
 
    if (!app) {
-      app = App.create(_config);
-
-      app.emgr.on(
-         "app-built",
-         async () => {
-            app.modules.server.get(
-               "/*",
-               serveStatic({
-                  root
-               })
-            );
-            app.registerAdminController();
-         },
-         "sync"
-      );
-
-      await app.build();
+      app = await createRuntimeApp({
+         ...config,
+         registerLocalMedia: true,
+         serveStatic: serveStatic({ root })
+      });
    }
 
    return app;
 }
-
-export type BunAdapterOptions = Omit<ServeOptions, "fetch"> &
-   CreateAppConfig & {
-      distPath?: string;
-   };
 
 export function serve({
    distPath,
@@ -43,14 +37,24 @@ export function serve({
    initialConfig,
    plugins,
    options,
-   port = 1337,
+   port = config.server.default_port,
+   onBuilt,
+   buildConfig,
    ...serveOptions
-}: BunAdapterOptions = {}) {
+}: BunBkndConfig = {}) {
    Bun.serve({
       ...serveOptions,
       port,
       fetch: async (request: Request) => {
-         const app = await createApp({ connection, initialConfig, plugins, options }, distPath);
+         const app = await createApp({
+            connection,
+            initialConfig,
+            plugins,
+            options,
+            onBuilt,
+            buildConfig,
+            distPath
+         });
          return app.fetch(request);
       }
    });

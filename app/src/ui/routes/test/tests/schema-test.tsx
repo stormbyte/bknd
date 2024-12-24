@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { twMerge } from "tailwind-merge";
-import { useBknd } from "../../../client/BkndProvider";
-import { JsonSchemaForm } from "../../../components/form/json-schema/JsonSchemaForm";
-import { Scrollable } from "../../../layouts/AppShell/AppShell";
+import { useBknd } from "ui/client/BkndProvider";
+import { JsonSchemaForm } from "ui/components/form/json-schema";
+import { Scrollable } from "ui/layouts/AppShell/AppShell";
 
 function useSchema() {
    const [schema, setSchema] = useState<any>();

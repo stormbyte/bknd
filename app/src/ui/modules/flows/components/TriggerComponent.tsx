@@ -1,14 +1,9 @@
 import { Handle, type Node, type NodeProps, Position } from "@xyflow/react";
 import { Const, Type, transformObject } from "core/utils";
-import { type TaskRenderProps, type Trigger, TriggerMap } from "flows";
-import { Suspense, lazy } from "react";
+import { type Trigger, TriggerMap } from "flows";
 import type { IconType } from "react-icons";
 import { TbCircleLetterT } from "react-icons/tb";
-const JsonSchemaForm = lazy(() =>
-   import("ui/components/form/json-schema/JsonSchemaForm").then((m) => ({
-      default: m.JsonSchemaForm
-   }))
-);
+import { JsonSchemaForm } from "ui/components/form/json-schema";
 
 export type TaskComponentProps = NodeProps<Node<{ trigger: Trigger }>> & {
    Icon?: IconType;
@@ -48,17 +43,15 @@ export function TriggerComponent({
             </div>
             <div className="w-full h-px bg-primary/10" />
             <div className="flex flex-col gap-2 px-3 py-2">
-               <Suspense fallback={<div>Loading...</div>}>
-                  <JsonSchemaForm
-                     className="legacy"
-                     schema={Type.Union(triggerSchemas)}
-                     onChange={console.log}
-                     formData={trigger}
-                     {...props}
-                     /*uiSchema={uiSchema}*/
-                     /*fields={{ template: TemplateField }}*/
-                  />
-               </Suspense>
+               <JsonSchemaForm
+                  className="legacy"
+                  schema={Type.Union(triggerSchemas)}
+                  onChange={console.log}
+                  formData={trigger}
+                  {...props}
+                  /*uiSchema={uiSchema}*/
+                  /*fields={{ template: TemplateField }}*/
+               />
             </div>
          </div>
          <Handle

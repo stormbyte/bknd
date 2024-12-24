@@ -18,6 +18,8 @@ export { LibsqlConnection, type LibSqlCredentials } from "./connection/LibsqlCon
 export { SqliteConnection } from "./connection/SqliteConnection";
 export { SqliteLocalConnection } from "./connection/SqliteLocalConnection";
 
+export { constructEntity, constructRelation } from "./schema/constructor";
+
 export const DatabaseEvents = {
    ...MutatorEvents,
    ...RepositoryEvents

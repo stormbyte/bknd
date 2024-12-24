@@ -1,14 +1,8 @@
 import type { FieldApi } from "@tanstack/react-form";
 import type { EntityData, JsonSchemaField } from "data";
-import { Suspense, lazy } from "react";
 import * as Formy from "ui/components/form/Formy";
 import { FieldLabel } from "ui/components/form/Formy";
-
-const JsonSchemaForm = lazy(() =>
-   import("ui/components/form/json-schema/JsonSchemaForm").then((m) => ({
-      default: m.JsonSchemaForm
-   }))
-);
+import { JsonSchemaForm } from "ui/components/form/json-schema";
 
 export function EntityJsonSchemaFormField({
    fieldApi,
@@ -34,23 +28,21 @@ export function EntityJsonSchemaFormField({
    return (
       <Formy.Group>
          <FieldLabel htmlFor={fieldApi.name} field={field} />
-         <Suspense fallback={<div>Loading...</div>}>
-            <div
-               data-disabled={disabled ? 1 : undefined}
-               className="data-[disabled]:opacity-70 data-[disabled]:pointer-events-none"
-            >
-               <JsonSchemaForm
-                  schema={field.getJsonSchema()}
-                  onChange={handleChange}
-                  direction="horizontal"
-                  formData={formData}
-                  uiSchema={{
-                     "ui:globalOptions": { flexDirection: "row" },
-                     ...field.getJsonUiSchema()
-                  }}
-               />
-            </div>
-         </Suspense>
+         <div
+            data-disabled={disabled ? 1 : undefined}
+            className="data-[disabled]:opacity-70 data-[disabled]:pointer-events-none"
+         >
+            <JsonSchemaForm
+               schema={field.getJsonSchema()}
+               onChange={handleChange}
+               direction="horizontal"
+               formData={formData}
+               uiSchema={{
+                  "ui:globalOptions": { flexDirection: "row" },
+                  ...field.getJsonUiSchema()
+               }}
+            />
+         </div>
       </Formy.Group>
    );
 }

@@ -4,8 +4,12 @@ export {
    getDefaultConfig,
    getDefaultSchema,
    type ModuleConfigs,
-   type ModuleSchemas
-} from "modules/ModuleManager";
+   type ModuleSchemas,
+   type ModuleManagerOptions,
+   type ModuleBuildContext
+} from "./modules/ModuleManager";
+
+export { registries } from "modules/registries";
 
 export type * from "./adapter";
 export { Api, type ApiOptions } from "./Api";

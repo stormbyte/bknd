@@ -174,7 +174,7 @@ export class MediaController implements ClassController {
             const result = await mutator.insertOne({
                ...this.media.uploadedEventDataToMediaPayload(info),
                ...mediaRef
-            });
+            } as any);
             mutator.__unstable_toggleSystemEntityCreation(true);
 
             // delete items if needed

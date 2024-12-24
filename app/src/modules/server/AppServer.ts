@@ -74,6 +74,21 @@ export class AppServer extends Module<typeof serverConfigSchema> {
          })
       );
 
+      // add an initial fallback route
+      this.client.use("/", async (c, next) => {
+         await next();
+         // if not finalized or giving a 404
+         if (!c.finalized || c.res.status === 404) {
+            // double check it's root
+            if (new URL(c.req.url).pathname === "/") {
+               c.res = undefined;
+               c.res = Response.json({
+                  bknd: "hello world!"
+               });
+            }
+         }
+      });
+
       this.client.onError((err, c) => {
          //throw err;
          console.error(err);
@@ -81,21 +96,6 @@ export class AppServer extends Module<typeof serverConfigSchema> {
          if (err instanceof Response) {
             return err;
          }
-
-         /*if (isDebug()) {
-            console.log("accept", c.req.header("Accept"));
-            if (c.req.header("Accept") === "application/json") {
-               const stack = err.stack;
-
-               if ("toJSON" in err && typeof err.toJSON === "function") {
-                  return c.json({ ...err.toJSON(), stack }, 500);
-               }
-
-               return c.json({ message: String(err), stack }, 500);
-            } else {
-               throw err;
-            }
-         }*/
 
          if (err instanceof Exception) {
             console.log("---is exception", err.code);
@@ -106,32 +106,6 @@ export class AppServer extends Module<typeof serverConfigSchema> {
       });
       this.setBuilt();
    }
-
-   /*setAdminHtml(html: string) {
-      this.admin_html = html;
-      const basepath = (String(this.config.admin.basepath) + "/").replace(/\/+$/, "/");
-
-      const allowed_prefix = basepath + "auth";
-      const login_path = basepath + "auth/login";
-
-      this.client.get(basepath + "*", async (c, next) => {
-         const path = new URL(c.req.url).pathname;
-         if (!path.startsWith(allowed_prefix)) {
-            console.log("guard check permissions");
-            try {
-               this.ctx.guard.throwUnlessGranted(SystemPermissions.admin);
-            } catch (e) {
-               return c.redirect(login_path);
-            }
-         }
-
-         return c.html(this.admin_html!);
-      });
-   }
-
-   getAdminHtml() {
-      return this.admin_html;
-   }*/
 
    override toJSON(secrets?: boolean) {
       return this.config;

@@ -104,6 +104,12 @@ export class TextField<Required extends true | false = false> extends Field<
          );
       }
 
+      if (this.config.pattern && value && !new RegExp(this.config.pattern).test(value)) {
+         throw new TransformPersistFailedException(
+            `Field "${this.name}" must match the pattern ${this.config.pattern}`
+         );
+      }
+
       return value;
    }
 

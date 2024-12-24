@@ -35,8 +35,9 @@ export const loader = async (args: LoaderFunctionArgs) => {
    // add api to the context
    args.context.api = api;
 
+   await api.verifyAuth();
    return {
-      user: api.getAuthState().user
+      user: api.getAuthState()?.user
    };
 };
 

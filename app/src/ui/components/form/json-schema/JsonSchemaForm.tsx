@@ -1,15 +1,12 @@
 import type { Schema } from "@cfworker/json-schema";
 import Form from "@rjsf/core";
 import type { RJSFSchema, UiSchema } from "@rjsf/utils";
+import { cloneDeep } from "lodash-es";
 import { forwardRef, useId, useImperativeHandle, useRef, useState } from "react";
-//import { JsonSchemaValidator } from "./JsonSchemaValidator";
 import { fields as Fields } from "./fields";
 import { templates as Templates } from "./templates";
-import { widgets as Widgets } from "./widgets";
-import "./styles.css";
-import { filterKeys } from "core/utils";
-import { cloneDeep } from "lodash-es";
 import { RJSFTypeboxValidator } from "./typebox/RJSFTypeboxValidator";
+import { widgets as Widgets } from "./widgets";
 
 const validator = new RJSFTypeboxValidator();
 

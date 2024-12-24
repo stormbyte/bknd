@@ -1,5 +1,6 @@
 import { type AuthAction, Authenticator, type ProfileExchange, Role, type Strategy } from "auth";
-import { Exception } from "core";
+import type { PasswordStrategy } from "auth/authenticate/strategies";
+import { Exception, type PrimaryFieldType } from "core";
 import { type Static, secureRandomString, transformObject } from "core/utils";
 import { type Entity, EntityIndex, type EntityManager } from "data";
 import { type FieldSchema, entity, enumm, make, text } from "data/prototype";
@@ -9,9 +10,9 @@ import { AuthController } from "./api/AuthController";
 import { type AppAuthSchema, STRATEGIES, authConfigSchema } from "./auth-schema";
 
 export type UserFieldSchema = FieldSchema<typeof AppAuth.usersFields>;
-declare global {
+declare module "core" {
    interface DB {
-      users: UserFieldSchema;
+      users: { id: PrimaryFieldType } & UserFieldSchema;
    }
 }
 
@@ -100,7 +101,7 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       return this._authenticator!;
    }
 
-   get em(): EntityManager<DB> {
+   get em(): EntityManager {
       return this.ctx.em as any;
    }
 
@@ -160,7 +161,9 @@ export class AppAuth extends Module<typeof authConfigSchema> {
 
       const users = this.getUsersEntity();
       this.toggleStrategyValueVisibility(true);
-      const result = await this.em.repo(users).findOne({ email: profile.email! });
+      const result = await this.em
+         .repo(users as unknown as "users")
+         .findOne({ email: profile.email! });
       this.toggleStrategyValueVisibility(false);
       if (!result.data) {
          throw new Exception("User not found", 404);
@@ -197,7 +200,7 @@ export class AppAuth extends Module<typeof authConfigSchema> {
          throw new Exception("User already exists");
       }
 
-      const payload = {
+      const payload: any = {
          ...profile,
          strategy: strategy.getName(),
          strategy_value: identifier
@@ -282,6 +285,25 @@ export class AppAuth extends Module<typeof authConfigSchema> {
          const field = make("strategy", enumm({ enum: strategies }));
          this.em.entity(users.name).__experimental_replaceField("strategy", field);
       } catch (e) {}
+   }
+
+   async createUser({
+      email,
+      password,
+      ...additional
+   }: { email: string; password: string; [key: string]: any }) {
+      const strategy = "password";
+      const pw = this.authenticator.strategy(strategy) as PasswordStrategy;
+      const strategy_value = await pw.hash(password);
+      const mutator = this.em.mutator(this.config.entity_name as "users");
+      mutator.__unstable_toggleSystemEntityCreation(false);
+      const { data: created } = await mutator.insertOne({
+         ...(additional as any),
+         strategy,
+         strategy_value
+      });
+      mutator.__unstable_toggleSystemEntityCreation(true);
+      return created;
    }
 
    override toJSON(secrets?: boolean): AppAuthSchema {
