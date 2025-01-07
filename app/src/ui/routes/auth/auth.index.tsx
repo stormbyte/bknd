@@ -12,7 +12,9 @@ export function AuthIndex() {
       config: { roles, strategies, entity_name, enabled }
    } = useBkndAuth();
    const users_entity = entity_name;
-   const $q = useApiQuery((api) => api.data.count(users_entity));
+   const $q = useApiQuery((api) => api.data.count(users_entity), {
+      enabled
+   });
    const usersTotal = $q.data?.count ?? 0;
    const rolesTotal = Object.keys(roles ?? {}).length ?? 0;
    const strategiesTotal = Object.keys(strategies ?? {}).length ?? 0;

@@ -1,3 +1,4 @@
+import type { App } from "App";
 import type { Guard } from "auth";
 import { SchemaObject } from "core";
 import type { EventManager } from "core/events";
@@ -5,9 +6,17 @@ import type { Static, TSchema } from "core/utils";
 import type { Connection, EntityManager } from "data";
 import type { Hono } from "hono";
 
+export type ServerEnv = {
+   Variables: {
+      app: App;
+      auth_resolved: boolean;
+      html?: string;
+   };
+};
+
 export type ModuleBuildContext = {
    connection: Connection;
-   server: Hono<any>;
+   server: Hono<ServerEnv>;
    em: EntityManager;
    emgr: EventManager<any>;
    guard: Guard;
@@ -76,6 +85,10 @@ export abstract class Module<Schema extends TSchema = TSchema, ConfigSchema = St
 
    schema() {
       return this._schema;
+   }
+
+   getMiddleware() {
+      return undefined;
    }
 
    get ctx() {

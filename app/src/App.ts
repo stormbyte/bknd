@@ -1,3 +1,4 @@
+import type { CreateUserPayload } from "auth/AppAuth";
 import { Event } from "core/events";
 import { Connection, type LibSqlCredentials, LibsqlConnection } from "data";
 import {
@@ -68,6 +69,12 @@ export class App {
          onFirstBoot: async () => {
             console.log("[APP] first boot");
             this.trigger_first_boot = true;
+         },
+         onServerInit: async (server) => {
+            server.use(async (c, next) => {
+               c.set("app", this);
+               await next();
+            })
          }
       });
       this.modules.ctx().emgr.registerEvents(AppEvents);
@@ -87,9 +94,11 @@ export class App {
          //console.log("syncing", syncResult);
       }
 
+      const { guard, server } = this.modules.ctx();
+
       // load system controller
-      this.modules.ctx().guard.registerPermissions(Object.values(SystemPermissions));
-      this.modules.server.route("/api/system", new SystemController(this).getController());
+      guard.registerPermissions(Object.values(SystemPermissions));
+      server.route("/api/system", new SystemController(this).getController());
 
       // load plugins
       if (this.plugins.length > 0) {
@@ -99,8 +108,8 @@ export class App {
       //console.log("emitting built", options);
       await this.emgr.emit(new AppBuiltEvent({ app: this }));
 
-      // not found on any not registered api route
-      this.modules.server.all("/api/*", async (c) => c.notFound());
+
+      server.all("/api/*", async (c) => c.notFound());
 
       if (options?.save) {
          await this.modules.save();
@@ -157,6 +166,10 @@ export class App {
 
    static create(config: CreateAppConfig) {
       return createApp(config);
+   }
+
+   async createUser(p: CreateUserPayload) {
+      return this.module.auth.createUser(p);
    }
 }
 

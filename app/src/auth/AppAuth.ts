@@ -1,6 +1,6 @@
 import { type AuthAction, Authenticator, type ProfileExchange, Role, type Strategy } from "auth";
 import type { PasswordStrategy } from "auth/authenticate/strategies";
-import { Exception, type PrimaryFieldType } from "core";
+import { type DB, Exception, type PrimaryFieldType } from "core";
 import { type Static, secureRandomString, transformObject } from "core/utils";
 import { type Entity, EntityIndex, type EntityManager } from "data";
 import { type FieldSchema, entity, enumm, make, text } from "data/prototype";
@@ -17,6 +17,7 @@ declare module "core" {
 }
 
 type AuthSchema = Static<typeof authConfigSchema>;
+export type CreateUserPayload = { email: string; password: string; [key: string]: any };
 
 export class AppAuth extends Module<typeof authConfigSchema> {
    private _authenticator?: Authenticator;
@@ -36,8 +37,12 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       return to;
    }
 
+   get enabled() {
+      return this.config.enabled;
+   }
+
    override async build() {
-      if (!this.config.enabled) {
+      if (!this.enabled) {
          this.setBuilt();
          return;
       }
@@ -82,14 +87,6 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       }
 
       return this._controller;
-   }
-
-   getMiddleware() {
-      if (!this.config.enabled) {
-         return;
-      }
-
-      return new AuthController(this).getMiddleware;
    }
 
    getSchema() {
@@ -287,11 +284,7 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       } catch (e) {}
    }
 
-   async createUser({
-      email,
-      password,
-      ...additional
-   }: { email: string; password: string; [key: string]: any }) {
+   async createUser({ email, password, ...additional }: CreateUserPayload): Promise<DB["users"]> {
       const strategy = "password";
       const pw = this.authenticator.strategy(strategy) as PasswordStrategy;
       const strategy_value = await pw.hash(password);

@@ -1,3 +1,4 @@
+import type { App } from "App";
 import { Guard } from "auth";
 import { BkndError, DebugLogger } from "core";
 import { EventManager } from "core/events";
@@ -33,7 +34,7 @@ import { AppAuth } from "../auth/AppAuth";
 import { AppData } from "../data/AppData";
 import { AppFlows } from "../flows/AppFlows";
 import { AppMedia } from "../media/AppMedia";
-import type { Module, ModuleBuildContext } from "./Module";
+import type { Module, ModuleBuildContext, ServerEnv } from "./Module";
 
 export type { ModuleBuildContext };
 
@@ -79,6 +80,8 @@ export type ModuleManagerOptions = {
    onFirstBoot?: () => Promise<void>;
    // base path for the hono instance
    basePath?: string;
+   // callback after server was created
+   onServerInit?: (server: Hono<ServerEnv>) => void;
    // doesn't perform validity checks for given/fetched config
    trustFetched?: boolean;
    // runs when initial config provided on a fresh database
@@ -124,15 +127,12 @@ export class ModuleManager {
    __em!: EntityManager<T_INTERNAL_EM>;
    // ctx for modules
    em!: EntityManager;
-   server!: Hono;
+   server!: Hono<ServerEnv>;
    emgr!: EventManager;
    guard!: Guard;
 
    private _version: number = 0;
    private _built = false;
-   private _fetched = false;
-
-   // @todo: keep? not doing anything with it
    private readonly _booted_with?: "provided" | "partial";
 
    private logger = new DebugLogger(false);
@@ -204,9 +204,12 @@ export class ModuleManager {
    }
 
    private rebuildServer() {
-      this.server = new Hono();
+      this.server = new Hono<ServerEnv>();
       if (this.options?.basePath) {
          this.server = this.server.basePath(this.options.basePath);
+      }
+      if (this.options?.onServerInit) {
+         this.options.onServerInit(this.server);
       }
 
       // @todo: this is a current workaround, controllers must be reworked

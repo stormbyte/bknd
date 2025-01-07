@@ -1,32 +1,26 @@
-import { type ClassController, isDebug, tbValidator as tb } from "core";
-import { StringEnum, Type, objectCleanEmpty, objectTransform } from "core/utils";
+import { isDebug, tbValidator as tb } from "core";
+import { StringEnum, Type } from "core/utils";
 import {
    DataPermissions,
    type EntityData,
    type EntityManager,
-   FieldClassMap,
    type MutatorResponse,
-   PrimaryField,
    type RepoQuery,
    type RepositoryResponse,
-   TextField,
    querySchema
 } from "data";
-import { Hono } from "hono";
 import type { Handler } from "hono/types";
 import type { ModuleBuildContext } from "modules";
+import { Controller } from "modules/Controller";
 import * as SystemPermissions from "modules/permissions";
-import { type AppDataConfig, FIELDS } from "../data-schema";
+import type { AppDataConfig } from "../data-schema";
 
-export class DataController implements ClassController {
+export class DataController extends Controller {
    constructor(
       private readonly ctx: ModuleBuildContext,
       private readonly config: AppDataConfig
    ) {
-      /*console.log(
-         "data controller",
-         this.em.entities.map((e) => e.name)
-      );*/
+      super();
    }
 
    get em(): EntityManager<any> {
@@ -74,8 +68,9 @@ export class DataController implements ClassController {
       }
    }
 
-   getController(): Hono<any> {
-      const hono = new Hono();
+   override getController() {
+      const hono = this.create();
+      const { permission } = this.middlewares;
       const definedEntities = this.em.entities.map((e) => e.name);
       const tbNumber = Type.Transform(Type.String({ pattern: "^[1-9][0-9]{0,}$" }))
          .Decode(Number.parseInt)
@@ -89,10 +84,7 @@ export class DataController implements ClassController {
          return func;
       }
 
-      hono.use("*", async (c, next) => {
-         this.ctx.guard.throwUnlessGranted(SystemPermissions.accessApi);
-         await next();
-      });
+      hono.use("*", permission(SystemPermissions.accessApi));
 
       // info
       hono.get(
@@ -104,9 +96,7 @@ export class DataController implements ClassController {
       );
 
       // sync endpoint
-      hono.get("/sync", async (c) => {
-         this.guard.throwUnlessGranted(DataPermissions.databaseSync);
-
+      hono.get("/sync", permission(DataPermissions.databaseSync), async (c) => {
          const force = c.req.query("force") === "1";
          const drop = c.req.query("drop") === "1";
          //console.log("force", force);
@@ -126,10 +116,9 @@ export class DataController implements ClassController {
          // fn: count
          .post(
             "/:entity/fn/count",
+            permission(DataPermissions.entityRead),
             tb("param", Type.Object({ entity: Type.String() })),
             async (c) => {
-               this.guard.throwUnlessGranted(DataPermissions.entityRead);
-
                const { entity } = c.req.valid("param");
                if (!this.entityExists(entity)) {
                   return c.notFound();
@@ -143,10 +132,9 @@ export class DataController implements ClassController {
          // fn: exists
          .post(
             "/:entity/fn/exists",
+            permission(DataPermissions.entityRead),
             tb("param", Type.Object({ entity: Type.String() })),
             async (c) => {
-               this.guard.throwUnlessGranted(DataPermissions.entityRead);
-
                const { entity } = c.req.valid("param");
                if (!this.entityExists(entity)) {
                   return c.notFound();
@@ -163,8 +151,7 @@ export class DataController implements ClassController {
        */
       hono
          // read entity schema
-         .get("/schema.json", async (c) => {
-            this.guard.throwUnlessGranted(DataPermissions.entityRead);
+         .get("/schema.json", permission(DataPermissions.entityRead), async (c) => {
             const $id = `${this.config.basepath}/schema.json`;
             const schemas = Object.fromEntries(
                this.em.entities.map((e) => [
@@ -183,6 +170,7 @@ export class DataController implements ClassController {
          // read schema
          .get(
             "/schemas/:entity/:context?",
+            permission(DataPermissions.entityRead),
             tb(
                "param",
                Type.Object({
@@ -191,8 +179,6 @@ export class DataController implements ClassController {
                })
             ),
             async (c) => {
-               this.guard.throwUnlessGranted(DataPermissions.entityRead);
-
                //console.log("request", c.req.raw);
                const { entity, context } = c.req.param();
                if (!this.entityExists(entity)) {
@@ -216,11 +202,10 @@ export class DataController implements ClassController {
          // read many
          .get(
             "/:entity",
+            permission(DataPermissions.entityRead),
             tb("param", Type.Object({ entity: Type.String() })),
             tb("query", querySchema),
             async (c) => {
-               this.guard.throwUnlessGranted(DataPermissions.entityRead);
-
                //console.log("request", c.req.raw);
                const { entity } = c.req.param();
                if (!this.entityExists(entity)) {
@@ -238,6 +223,7 @@ export class DataController implements ClassController {
          // read one
          .get(
             "/:entity/:id",
+            permission(DataPermissions.entityRead),
             tb(
                "param",
                Type.Object({
@@ -246,11 +232,7 @@ export class DataController implements ClassController {
                })
             ),
             tb("query", querySchema),
-            /*zValidator("param", z.object({ entity: z.string(), id: z.coerce.number() })),
-            zValidator("query", repoQuerySchema),*/
             async (c) => {
-               this.guard.throwUnlessGranted(DataPermissions.entityRead);
-
                const { entity, id } = c.req.param();
                if (!this.entityExists(entity)) {
                   return c.notFound();
@@ -264,6 +246,7 @@ export class DataController implements ClassController {
          // read many by reference
          .get(
             "/:entity/:id/:reference",
+            permission(DataPermissions.entityRead),
             tb(
                "param",
                Type.Object({
@@ -274,8 +257,6 @@ export class DataController implements ClassController {
             ),
             tb("query", querySchema),
             async (c) => {
-               this.guard.throwUnlessGranted(DataPermissions.entityRead);
-
                const { entity, id, reference } = c.req.param();
                if (!this.entityExists(entity)) {
                   return c.notFound();
@@ -292,11 +273,10 @@ export class DataController implements ClassController {
          // func query
          .post(
             "/:entity/query",
+            permission(DataPermissions.entityRead),
             tb("param", Type.Object({ entity: Type.String() })),
             tb("json", querySchema),
             async (c) => {
-               this.guard.throwUnlessGranted(DataPermissions.entityRead);
-
                const { entity } = c.req.param();
                if (!this.entityExists(entity)) {
                   return c.notFound();
@@ -314,25 +294,27 @@ export class DataController implements ClassController {
        */
       // insert one
       hono
-         .post("/:entity", tb("param", Type.Object({ entity: Type.String() })), async (c) => {
-            this.guard.throwUnlessGranted(DataPermissions.entityCreate);
+         .post(
+            "/:entity",
+            permission(DataPermissions.entityCreate),
+            tb("param", Type.Object({ entity: Type.String() })),
+            async (c) => {
+               const { entity } = c.req.param();
+               if (!this.entityExists(entity)) {
+                  return c.notFound();
+               }
+               const body = (await c.req.json()) as EntityData;
+               const result = await this.em.mutator(entity).insertOne(body);
 
-            const { entity } = c.req.param();
-            if (!this.entityExists(entity)) {
-               return c.notFound();
+               return c.json(this.mutatorResult(result), 201);
             }
-            const body = (await c.req.json()) as EntityData;
-            const result = await this.em.mutator(entity).insertOne(body);
-
-            return c.json(this.mutatorResult(result), 201);
-         })
+         )
          // update one
          .patch(
             "/:entity/:id",
+            permission(DataPermissions.entityUpdate),
             tb("param", Type.Object({ entity: Type.String(), id: tbNumber })),
             async (c) => {
-               this.guard.throwUnlessGranted(DataPermissions.entityUpdate);
-
                const { entity, id } = c.req.param();
                if (!this.entityExists(entity)) {
                   return c.notFound();
@@ -346,6 +328,8 @@ export class DataController implements ClassController {
          // delete one
          .delete(
             "/:entity/:id",
+
+            permission(DataPermissions.entityDelete),
             tb("param", Type.Object({ entity: Type.String(), id: tbNumber })),
             async (c) => {
                this.guard.throwUnlessGranted(DataPermissions.entityDelete);
@@ -363,11 +347,10 @@ export class DataController implements ClassController {
          // delete many
          .delete(
             "/:entity",
+            permission(DataPermissions.entityDelete),
             tb("param", Type.Object({ entity: Type.String() })),
             tb("json", querySchema.properties.where),
             async (c) => {
-               this.guard.throwUnlessGranted(DataPermissions.entityDelete);
-
                //console.log("request", c.req.raw);
                const { entity } = c.req.param();
                if (!this.entityExists(entity)) {

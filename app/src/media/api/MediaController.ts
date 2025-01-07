@@ -1,10 +1,10 @@
-import { type ClassController, tbValidator as tb } from "core";
+import { tbValidator as tb } from "core";
 import { Type } from "core/utils";
-import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import type { StorageAdapter } from "media";
 import { StorageEvents } from "media";
 import { getRandomizedFilename } from "media";
+import { Controller } from "modules/Controller";
 import type { AppMedia } from "../AppMedia";
 import { MediaField } from "../MediaField";
 
@@ -12,8 +12,10 @@ const booleanLike = Type.Transform(Type.String())
    .Decode((v) => v === "1")
    .Encode((v) => (v ? "1" : "0"));
 
-export class MediaController implements ClassController {
-   constructor(private readonly media: AppMedia) {}
+export class MediaController extends Controller {
+   constructor(private readonly media: AppMedia) {
+      super();
+   }
 
    private getStorageAdapter(): StorageAdapter {
       return this.getStorage().getAdapter();
@@ -23,11 +25,11 @@ export class MediaController implements ClassController {
       return this.media.storage;
    }
 
-   getController(): Hono<any> {
+   override getController() {
       // @todo: multiple providers?
       // @todo: implement range requests
 
-      const hono = new Hono();
+      const hono = this.create();
 
       // get files list (temporary)
       hono.get("/files", async (c) => {

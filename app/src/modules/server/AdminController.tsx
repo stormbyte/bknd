@@ -1,11 +1,11 @@
 /** @jsxImportSource hono/jsx */
 
 import type { App } from "App";
-import { type ClassController, isDebug } from "core";
+import { isDebug } from "core";
 import { addFlashMessage } from "core/server/flash";
-import { Hono } from "hono";
 import { html } from "hono/html";
 import { Fragment } from "hono/jsx";
+import { Controller } from "modules/Controller";
 import * as SystemPermissions from "modules/permissions";
 
 const htmlBkndContextReplace = "<!-- BKND_CONTEXT -->";
@@ -17,11 +17,13 @@ export type AdminControllerOptions = {
    forceDev?: boolean | { mainPath: string };
 };
 
-export class AdminController implements ClassController {
+export class AdminController extends Controller {
    constructor(
       private readonly app: App,
       private options: AdminControllerOptions = {}
-   ) {}
+   ) {
+      super();
+   }
 
    get ctx() {
       return this.app.modules.ctx();
@@ -32,19 +34,16 @@ export class AdminController implements ClassController {
    }
 
    private withBasePath(route: string = "") {
-      return (this.basepath + route).replace(/\/+$/, "/");
+      return (this.basepath + route).replace(/(?<!:)\/+/g, "/");
    }
 
-   getController(): Hono<any> {
+   override getController() {
+      const hono = this.create().basePath(this.withBasePath());
       const auth = this.app.module.auth;
       const configs = this.app.modules.configs();
       // if auth is not enabled, authenticator is undefined
       const auth_enabled = configs.auth.enabled;
-      const hono = new Hono<{
-         Variables: {
-            html: string;
-         };
-      }>().basePath(this.withBasePath());
+
       const authRoutes = {
          root: "/",
          success: configs.auth.cookie.pathSuccess ?? "/",
@@ -80,8 +79,7 @@ export class AdminController implements ClassController {
                return c.redirect(authRoutes.success);
             }
 
-            const html = c.get("html");
-            return c.html(html);
+            return c.html(c.get("html")!);
          });
 
          hono.get(authRoutes.logout, async (c) => {
@@ -96,8 +94,7 @@ export class AdminController implements ClassController {
             return c.redirect(authRoutes.login);
          }
 
-         const html = c.get("html");
-         return c.html(html);
+         return c.html(c.get("html")!);
       });
 
       return hono;
