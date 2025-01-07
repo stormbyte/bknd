@@ -1,6 +1,6 @@
 {
-  "include": ["packages/app/env.d.ts", "./scripts/**/*.ts"],
-  "exclude": ["node_modules", "dist/**/*", "build", "public"],
+  "include": ["./scripts/**/*.ts"],
+  "exclude": ["node_modules"],
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "types": ["bun-types"],

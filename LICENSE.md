@@ -6,7 +6,7 @@ FSL-1.1-MIT
 
 ## Notice
 
-Copyright 2024 Webintex GmbH
+Copyright 2025 Dennis Senn
 
 ## Terms and Conditions
 
