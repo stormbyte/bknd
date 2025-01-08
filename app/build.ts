@@ -166,7 +166,7 @@ function baseConfig(adapter: string): tsup.Options {
       minify,
       sourcemap,
       watch,
-      entry: [`src/adapter/${adapter}`],
+      entry: [`src/adapter/${adapter}/index.ts`],
       format: ["esm"],
       platform: "neutral",
       outDir: `dist/adapter/${adapter}`,
