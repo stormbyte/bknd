@@ -1,33 +1,25 @@
 import { type ClassController, isDebug, tbValidator as tb } from "core";
-import { StringEnum, Type, objectCleanEmpty, objectTransform } from "core/utils";
+import { StringEnum, Type } from "core/utils";
 import {
    DataPermissions,
    type EntityData,
    type EntityManager,
-   FieldClassMap,
    type MutatorResponse,
-   PrimaryField,
    type RepoQuery,
    type RepositoryResponse,
-   TextField,
    querySchema
 } from "data";
 import { Hono } from "hono";
 import type { Handler } from "hono/types";
 import type { ModuleBuildContext } from "modules";
 import * as SystemPermissions from "modules/permissions";
-import { type AppDataConfig, FIELDS } from "../data-schema";
+import type { AppDataConfig } from "../data-schema";
 
 export class DataController implements ClassController {
    constructor(
       private readonly ctx: ModuleBuildContext,
       private readonly config: AppDataConfig
-   ) {
-      /*console.log(
-         "data controller",
-         this.em.entities.map((e) => e.name)
-      );*/
-   }
+   ) {}
 
    get em(): EntityManager<any> {
       return this.ctx.em;
