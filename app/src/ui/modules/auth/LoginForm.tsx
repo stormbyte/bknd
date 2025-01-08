@@ -1,7 +1,7 @@
-import { typeboxResolver } from "@hookform/resolvers/typebox";
-import { Type } from "core/utils";
+import type { ValueError } from "@sinclair/typebox/value";
+import { type TSchema, Type, Value } from "core/utils";
+import { Form, type Validator } from "json-schema-form-react";
 import type { ComponentPropsWithoutRef } from "react";
-import { useForm } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
 import { Button } from "ui/components/buttons/Button";
 import * as Formy from "ui/components/form/Formy";
@@ -10,6 +10,13 @@ export type LoginFormProps = Omit<ComponentPropsWithoutRef<"form">, "onSubmit"> 
    className?: string;
    formData?: any;
 };
+
+class TypeboxValidator implements Validator<ValueError> {
+   async validate(schema: TSchema, data: any) {
+      return Value.Check(schema, data) ? [] : [...Value.Errors(schema, data)];
+   }
+}
+const validator = new TypeboxValidator();
 
 const schema = Type.Object({
    email: Type.String({
@@ -20,36 +27,39 @@ const schema = Type.Object({
    })
 });
 
-export function LoginForm({ formData, className, method = "POST", ...props }: LoginFormProps) {
-   const {
-      register,
-      formState: { isValid, errors }
-   } = useForm({
-      mode: "onChange",
-      defaultValues: formData,
-      resolver: typeboxResolver(schema)
-   });
-
+export function LoginForm({ formData, className, ...props }: LoginFormProps) {
    return (
-      <form {...props} method={method} className={twMerge("flex flex-col gap-3 w-full", className)}>
-         <Formy.Group>
-            <Formy.Label htmlFor="email">Email address</Formy.Label>
-            <Formy.Input type="email" {...register("email")} />
-         </Formy.Group>
-         <Formy.Group>
-            <Formy.Label htmlFor="password">Password</Formy.Label>
-            <Formy.Input type="password" {...register("password")} />
-         </Formy.Group>
+      <Form
+         method="POST"
+         {...props}
+         schema={schema}
+         validator={validator}
+         validationMode="change"
+         className={twMerge("flex flex-col gap-3 w-full", className)}
+      >
+         {({ errors, submitting }) => (
+            <>
+               <pre>{JSON.stringify(errors, null, 2)}</pre>
+               <Formy.Group>
+                  <Formy.Label htmlFor="email">Email address</Formy.Label>
+                  <Formy.Input type="email" name="email" />
+               </Formy.Group>
+               <Formy.Group>
+                  <Formy.Label htmlFor="password">Password</Formy.Label>
+                  <Formy.Input type="password" name="password" />
+               </Formy.Group>
 
-         <Button
-            type="submit"
-            variant="primary"
-            size="large"
-            className="w-full mt-2 justify-center"
-            disabled={!isValid}
-         >
-            Sign in
-         </Button>
-      </form>
+               <Button
+                  type="submit"
+                  variant="primary"
+                  size="large"
+                  className="w-full mt-2 justify-center"
+                  disabled={errors.length > 0 || submitting}
+               >
+                  Sign in
+               </Button>
+            </>
+         )}
+      </Form>
    );
 }

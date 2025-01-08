@@ -22,7 +22,6 @@ export function AuthLogin() {
       },
       {}
    ) as Record<string, AppAuthOAuthStrategy>;
-   //console.log("oauth", oauth, strategies);
 
    return (
       <AppShell.Root>
