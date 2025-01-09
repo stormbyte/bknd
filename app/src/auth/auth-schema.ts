@@ -33,6 +33,7 @@ const strategiesSchemaObject = objectTransform(STRATEGIES, (strategy, name) => {
 const strategiesSchema = Type.Union(Object.values(strategiesSchemaObject));
 export type AppAuthStrategies = Static<typeof strategiesSchema>;
 export type AppAuthOAuthStrategy = Static<typeof STRATEGIES.oauth.schema>;
+export type AppAuthCustomOAuthStrategy = Static<typeof STRATEGIES.custom_oauth.schema>;
 
 const guardConfigSchema = Type.Object({
    enabled: Type.Optional(Type.Boolean({ default: false }))

@@ -104,6 +104,11 @@
       "import": "./dist/ui/index.js",
       "require": "./dist/ui/index.cjs"
     },
+    "./elements": {
+      "types": "./dist/types/ui/elements/index.d.ts",
+      "import": "./dist/ui/elements/index.js",
+      "require": "./dist/ui/elements/index.cjs"
+    },
     "./client": {
       "types": "./dist/types/ui/client/index.d.ts",
       "import": "./dist/ui/client/index.js",

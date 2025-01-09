@@ -138,7 +138,12 @@ await tsup.build({
    minify,
    sourcemap,
    watch,
-   entry: ["src/ui/index.ts", "src/ui/client/index.ts", "src/ui/main.css"],
+   entry: [
+      "src/ui/index.ts",
+      "src/ui/client/index.ts",
+      "src/ui/elements/index.ts",
+      "src/ui/main.css"
+   ],
    outDir: "dist/ui",
    external: ["bun:test", "react", "react-dom", "use-sync-external-store"],
    metafile: true,

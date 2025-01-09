@@ -144,7 +144,7 @@ export function Header({ hasSidebar = true }) {
 }
 
 function UserMenu() {
-   const { adminOverride } = useBknd();
+   const { adminOverride, config } = useBknd();
    const auth = useAuth();
    const [navigate] = useNavigate();
    const { logout_route } = useBkndWindowContext();
@@ -163,10 +163,16 @@ function UserMenu() {
       { label: "Settings", onClick: () => navigate("/settings"), icon: IconSettings }
    ];
 
-   if (!auth.user) {
-      items.push({ label: "Login", onClick: handleLogin, icon: IconUser });
-   } else {
-      items.push({ label: `Logout ${auth.user.email}`, onClick: handleLogout, icon: IconKeyOff });
+   if (config.auth.enabled) {
+      if (!auth.user) {
+         items.push({ label: "Login", onClick: handleLogin, icon: IconUser });
+      } else {
+         items.push({
+            label: `Logout ${auth.user.email}`,
+            onClick: handleLogout,
+            icon: IconKeyOff
+         });
+      }
    }
 
    if (!adminOverride) {
