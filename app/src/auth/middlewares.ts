@@ -34,11 +34,14 @@ export const auth = createMiddleware<ServerEnv>(async (c, next) => {
 export const permission = (...permissions: Permission[]) =>
    createMiddleware<ServerEnv>(async (c, next) => {
       const app = c.get("app");
-
-      const p = Array.isArray(permissions) ? permissions : [permissions];
-      const guard = app.modules.ctx().guard;
-      for (const permission of p) {
-         guard.throwUnlessGranted(permission);
+      if (app) {
+         const p = Array.isArray(permissions) ? permissions : [permissions];
+         const guard = app.modules.ctx().guard;
+         for (const permission of p) {
+            guard.throwUnlessGranted(permission);
+         }
+      } else {
+         console.warn("app not in context, skip permission check");
       }
 
       await next();
