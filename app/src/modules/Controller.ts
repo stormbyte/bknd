@@ -6,14 +6,10 @@ export class Controller {
    protected middlewares = {
       auth,
       permission
-   }
+   };
 
-   protected create({ auth }: { auth?: boolean } = {}): Hono<ServerEnv> {
-      const server = Controller.createServer();
-      if (auth !== false) {
-         server.use(this.middlewares.auth);
-      }
-      return server;
+   protected create(): Hono<ServerEnv> {
+      return Controller.createServer();
    }
 
    static createServer(): Hono<ServerEnv> {

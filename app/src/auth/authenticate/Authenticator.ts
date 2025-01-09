@@ -243,7 +243,6 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
       if (this.config.cookie.renew) {
          const token = await this.getAuthCookie(c);
          if (token) {
-            console.log("renewing cookie", c.req.url);
             await this.setAuthCookie(c, token);
          }
       }

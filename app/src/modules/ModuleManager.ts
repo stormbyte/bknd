@@ -212,14 +212,9 @@ export class ModuleManager {
          this.options.onServerInit(this.server);
       }
 
-      // @todo: this is a current workaround, controllers must be reworked
+      // optional method for each module to register global middlewares, etc.
       objectEach(this.modules, (module) => {
-         if ("getMiddleware" in module) {
-            const middleware = module.getMiddleware();
-            if (middleware) {
-               this.server.use(middleware);
-            }
-         }
+         module.onServerInit(this.server);
       });
    }
 

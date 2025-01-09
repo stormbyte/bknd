@@ -1,4 +1,5 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, test } from "bun:test";
+import { afterAll, beforeAll, beforeEach, describe, expect, spyOn, test } from "bun:test";
+import { createApp } from "../../src";
 import { AuthController } from "../../src/auth/api/AuthController";
 import { AppAuth, type ModuleBuildContext } from "../../src/modules";
 import { disableConsoleLog, enableConsoleLog } from "../helper";
@@ -75,5 +76,30 @@ describe("AppAuth", () => {
          expect(users.length).toBe(1);
          expect(users[0].email).toBe("some@body.com");
       }
+   });
+
+   test("registers auth middleware automatically", async () => {
+      const app = createApp({
+         initialConfig: {
+            auth: {
+               enabled: true,
+               jwt: {
+                  secret: "123456"
+               }
+            }
+         }
+      });
+
+      await app.build();
+      const spy = spyOn(app.module.auth.authenticator, "requestCookieRefresh");
+
+      // register custom route
+      app.server.get("/test", async (c) => c.text("test"));
+
+      // call a system api and then the custom route
+      await app.server.request("/api/system/ping");
+      await app.server.request("/test");
+
+      expect(spy.mock.calls.length).toBe(2);
    });
 });

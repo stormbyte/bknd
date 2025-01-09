@@ -1,9 +1,11 @@
 import { type AuthAction, Authenticator, type ProfileExchange, Role, type Strategy } from "auth";
 import type { PasswordStrategy } from "auth/authenticate/strategies";
+import { auth } from "auth/middlewares";
 import { type DB, Exception, type PrimaryFieldType } from "core";
 import { type Static, secureRandomString, transformObject } from "core/utils";
 import { type Entity, EntityIndex, type EntityManager } from "data";
 import { type FieldSchema, entity, enumm, make, text } from "data/prototype";
+import type { Hono } from "hono";
 import { pick } from "lodash-es";
 import { Module } from "modules/Module";
 import { AuthController } from "./api/AuthController";
@@ -87,6 +89,10 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       }
 
       return this._controller;
+   }
+
+   override onServerInit(hono: Hono<any>) {
+      hono.use(auth);
    }
 
    getSchema() {

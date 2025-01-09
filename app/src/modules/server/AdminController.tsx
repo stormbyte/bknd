@@ -65,8 +65,6 @@ export class AdminController extends Controller {
          }
          c.set("html", html);
 
-         // refresh cookie if needed
-         await auth.authenticator?.requestCookieRefresh(c);
          await next();
       });
 

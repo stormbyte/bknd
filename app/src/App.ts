@@ -74,7 +74,7 @@ export class App {
             server.use(async (c, next) => {
                c.set("app", this);
                await next();
-            })
+            });
          }
       });
       this.modules.ctx().emgr.registerEvents(AppEvents);
@@ -108,7 +108,6 @@ export class App {
       //console.log("emitting built", options);
       await this.emgr.emit(new AppBuiltEvent({ app: this }));
 
-
       server.all("/api/*", async (c) => c.notFound());
 
       if (options?.save) {
@@ -128,6 +127,10 @@ export class App {
 
    get server() {
       return this.modules.server;
+   }
+
+   get em() {
+      return this.modules.ctx().em;
    }
 
    get fetch(): any {

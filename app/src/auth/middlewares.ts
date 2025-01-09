@@ -16,17 +16,24 @@ async function resolveAuth(app: ServerEnv["Variables"]["app"], c: Context<Server
    const guard = app.modules.ctx().guard;
 
    guard.setUserContext(await authenticator.resolveAuthFromRequest(c));
+
+   // renew cookie if applicable
+   authenticator.requestCookieRefresh(c);
 }
 
 export const auth = createMiddleware<ServerEnv>(async (c, next) => {
+   // make sure to only register once
+   if (c.get("auth_registered")) {
+      return;
+   }
    await resolveAuth(c.get("app"), c);
+   c.set("auth_registered", true);
    await next();
 });
 
 export const permission = (...permissions: Permission[]) =>
    createMiddleware<ServerEnv>(async (c, next) => {
       const app = c.get("app");
-      await resolveAuth(app, c);
 
       const p = Array.isArray(permissions) ? permissions : [permissions];
       const guard = app.modules.ctx().guard;

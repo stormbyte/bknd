@@ -10,6 +10,7 @@ export type ServerEnv = {
    Variables: {
       app: App;
       auth_resolved: boolean;
+      auth_registered: boolean;
       html?: string;
    };
 };
@@ -87,9 +88,9 @@ export abstract class Module<Schema extends TSchema = TSchema, ConfigSchema = St
       return this._schema;
    }
 
-   getMiddleware() {
-      return undefined;
-   }
+   // action performed when server has been initialized
+   // can be used to assign global middlewares
+   onServerInit(hono: Hono<ServerEnv>) {}
 
    get ctx() {
       if (!this._ctx) {
