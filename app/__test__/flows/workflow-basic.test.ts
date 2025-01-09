@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-unresolved
 import { describe, expect, test } from "bun:test";
 import { isEqual } from "lodash-es";
-import { type Static, Type, _jsonp } from "../../src/core/utils";
+import { type Static, Type, _jsonp, withDisabledConsole } from "../../src/core/utils";
 import { Condition, ExecutionEvent, FetchTask, Flow, LogTask, Task } from "../../src/flows";
 
 /*beforeAll(disableConsoleLog);
@@ -232,7 +232,9 @@ describe("Flow tests", async () => {
       ).toEqual(["second", "fourth"]);
 
       const execution = back.createExecution();
-      expect(execution.start()).rejects.toThrow();
+      withDisabledConsole(async () => {
+         expect(execution.start()).rejects.toThrow();
+      });
    });
 
    test("Flow with back step: enough retries", async () => {
