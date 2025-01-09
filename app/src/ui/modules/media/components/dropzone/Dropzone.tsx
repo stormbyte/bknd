@@ -1,5 +1,6 @@
 import {
    type ComponentPropsWithRef,
+   type ComponentPropsWithoutRef,
    type RefObject,
    memo,
    useEffect,
@@ -28,10 +29,11 @@ export type DropzoneRenderProps = {
    state: {
       files: FileState[];
       isOver: boolean;
+      isOverAccepted: boolean;
       showPlaceholder: boolean;
    };
    actions: {
-      uploadFileProgress: (file: FileState) => Promise<void>;
+      uploadFile: (file: FileState) => Promise<void>;
       deleteFile: (file: FileState) => Promise<void>;
       openFileInput: () => void;
    };
@@ -43,11 +45,16 @@ export type DropzoneProps = {
    handleDelete: (file: FileState) => Promise<boolean>;
    initialItems?: FileState[];
    maxItems?: number;
+   overwrite?: boolean;
    autoUpload?: boolean;
+   onRejected?: (files: FileWithPath[]) => void;
+   onDeleted?: (file: FileState) => void;
+   onUploaded?: (file: FileState) => void;
    placeholder?: {
       show?: boolean;
       text?: string;
    };
+   children?: (props: DropzoneRenderProps) => JSX.Element;
 };
 
 export function Dropzone({
@@ -55,23 +62,65 @@ export function Dropzone({
    handleDelete,
    initialItems = [],
    maxItems,
+   overwrite,
    autoUpload,
-   placeholder
+   placeholder,
+   onRejected,
+   onDeleted,
+   onUploaded,
+   children
 }: DropzoneProps) {
    const [files, setFiles] = useState<FileState[]>(initialItems);
    const [uploading, setUploading] = useState<boolean>(false);
    const inputRef = useRef<HTMLInputElement>(null);
+   const [isOverAccepted, setIsOverAccepted] = useState(false);
+
+   function isMaxReached(added: number): boolean {
+      if (!maxItems) {
+         console.log("maxItems is undefined, never reached");
+         return false;
+      }
+
+      const current = files.length;
+      const remaining = maxItems - current;
+      console.log("isMaxReached", { added, current, remaining, maxItems, overwrite });
+
+      // if overwrite is set, but added is bigger than max items
+      if (overwrite) {
+         console.log("added > maxItems, stop?", added > maxItems);
+         return added > maxItems;
+      }
+      console.log("remaining > added, stop?", remaining > added);
+      // or remaining doesn't suffice, stop
+      return added > remaining;
+   }
 
    const { isOver, handleFileInputChange, ref } = useDropzone({
       onDropped: (newFiles: FileWithPath[]) => {
-         if (maxItems && files.length + newFiles.length > maxItems) {
-            alert("Max items reached");
-            return;
+         let to_drop = 0;
+         const added = newFiles.length;
+
+         if (maxItems) {
+            if (isMaxReached(added)) {
+               if (onRejected) {
+                  onRejected(newFiles);
+               } else {
+                  console.warn("maxItems reached");
+               }
+
+               return;
+            }
+
+            to_drop = added;
          }
 
-         console.log("files", newFiles);
+         console.log("files", newFiles, { to_drop });
          setFiles((prev) => {
-            const currentPaths = prev.map((f) => f.path);
+            // drop amount calculated
+            const _prev = prev.slice(to_drop);
+
+            // prep new files
+            const currentPaths = _prev.map((f) => f.path);
             const filteredFiles: FileState[] = newFiles
                .filter((f) => f.path && !currentPaths.includes(f.path))
                .map((f) => ({
@@ -84,7 +133,7 @@ export function Dropzone({
                   progress: 0
                }));
 
-            return [...prev, ...filteredFiles];
+            return [..._prev, ...filteredFiles];
          });
 
          if (autoUpload) {
@@ -92,17 +141,12 @@ export function Dropzone({
          }
       },
       onOver: (items) => {
-         if (maxItems && files.length + items.length >= maxItems) {
-            // indicate that the drop is not allowed
-            return;
-         }
+         const max_reached = isMaxReached(items.length);
+         setIsOverAccepted(!max_reached);
+      },
+      onLeave: () => {
+         setIsOverAccepted(false);
       }
-      /*onOver: (items) =>
-         console.log(
-            "onOver",
-            items,
-            items.map((i) => [i.kind, i.type].join(":"))
-         )*/
    });
 
    useEffect(() => {
@@ -180,7 +224,14 @@ export function Dropzone({
          formData.append("file", file.body);
 
          const xhr = new XMLHttpRequest();
-         xhr.open(method, url, true);
+         const urlWithParams = new URL(url);
+         if (overwrite) {
+            urlWithParams.searchParams.append("overwrite", "1");
+         }
+         console.log("url", urlWithParams.toString());
+         //return;
+
+         xhr.open(method, urlWithParams.toString(), true);
 
          if (headers) {
             headers.forEach((value, key) => {
@@ -207,6 +258,8 @@ export function Dropzone({
             if (xhr.status === 200) {
                //setFileState(file.path, "uploaded", 1);
                console.log("Upload complete");
+               onUploaded?.(file);
+
                try {
                   const response = JSON.parse(xhr.responseText);
 
@@ -252,6 +305,7 @@ export function Dropzone({
                setFileState(file.path, "deleting");
                await handleDelete(file);
                removeFileFromState(file.path);
+               onDeleted?.(file);
             }
             break;
       }
@@ -262,54 +316,61 @@ export function Dropzone({
       placeholder?.show === true || !maxItems || (maxItems && files.length < maxItems)
    );
 
-   const Component = DropzoneInner;
+   const renderProps: DropzoneRenderProps = {
+      wrapperRef: ref,
+      inputProps: {
+         ref: inputRef,
+         type: "file",
+         multiple: !maxItems || maxItems > 1,
+         onChange: handleFileInputChange
+      },
+      state: {
+         files,
+         isOver,
+         isOverAccepted,
+         showPlaceholder
+      },
+      actions: {
+         uploadFile: uploadFileProgress,
+         deleteFile,
+         openFileInput
+      },
+      dropzoneProps: {
+         maxItems,
+         placeholder,
+         autoUpload
+      }
+   };
 
-   return (
-      <Component
-         wrapperRef={ref}
-         inputProps={{
-            ref: inputRef,
-            type: "file",
-            multiple: !maxItems || maxItems > 1,
-            onChange: handleFileInputChange
-         }}
-         state={{ files, isOver, showPlaceholder }}
-         actions={{ uploadFileProgress, deleteFile, openFileInput }}
-         dropzoneProps={{ maxItems, placeholder, autoUpload }}
-      />
-   );
+   return children ? children(renderProps) : <DropzoneInner {...renderProps} />;
 }
 
 const DropzoneInner = ({
    wrapperRef,
    inputProps,
-   state: { files, isOver, showPlaceholder },
-   actions: { uploadFileProgress, deleteFile, openFileInput },
+   state: { files, isOver, isOverAccepted, showPlaceholder },
+   actions: { uploadFile, deleteFile, openFileInput },
    dropzoneProps: { placeholder }
 }: DropzoneRenderProps) => {
    return (
       <div
          ref={wrapperRef}
-         /*data-drag-over={"1"}*/
-         data-drag-over={isOver ? "1" : undefined}
-         className="dropzone data-[drag-over]:bg-green-200/10 w-full h-full align-start flex flex-col select-none"
+         className={twMerge(
+            "dropzone w-full h-full align-start flex flex-col select-none",
+            isOver && isOverAccepted && "bg-green-200/10",
+            isOver && !isOverAccepted && "bg-red-200/40 cursor-not-allowed"
+         )}
       >
          <div className="hidden">
-            <input
-               {...inputProps}
-               /*ref={inputRef}
-               type="file"
-               multiple={!maxItems || maxItems > 1}
-               onChange={handleFileInputChange}*/
-            />
+            <input {...inputProps} />
          </div>
          <div className="flex flex-1 flex-col">
             <div className="flex flex-row flex-wrap gap-2 md:gap-3">
-               {files.map((file, i) => (
+               {files.map((file) => (
                   <Preview
                      key={file.path}
                      file={file}
-                     handleUpload={uploadFileProgress}
+                     handleUpload={uploadFile}
                      handleDelete={deleteFile}
                   />
                ))}
@@ -333,18 +394,29 @@ const UploadPlaceholder = ({ onClick, text = "Upload files" }) => {
    );
 };
 
-const Wrapper = ({ file }: { file: FileState }) => {
+export type PreviewComponentProps = {
+   file: FileState;
+   fallback?: (props: { file: FileState }) => JSX.Element;
+   className?: string;
+   onClick?: () => void;
+   onTouchStart?: () => void;
+};
+
+const Wrapper = ({ file, fallback, ...props }: PreviewComponentProps) => {
    if (file.type.startsWith("image/")) {
-      return <ImagePreview file={file} />;
+      return <ImagePreview {...props} file={file} />;
    }
 
    if (file.type.startsWith("video/")) {
-      return <VideoPreview file={file} />;
+      return <VideoPreview {...props} file={file} />;
    }
 
-   return <FallbackPreview file={file} />;
+   return fallback ? fallback({ file }) : null;
 };
-const WrapperMemoized = memo(Wrapper, (prev, next) => prev.file.path === next.file.path);
+export const PreviewWrapperMemoized = memo(
+   Wrapper,
+   (prev, next) => prev.file.path === next.file.path
+);
 
 type PreviewProps = {
    file: FileState;
@@ -370,7 +442,6 @@ const Preview: React.FC<PreviewProps> = ({ file, handleUpload, handleDelete }) =
             file.state === "deleting" && "opacity-70"
          )}
       >
-         {/*{file.state}*/}
          <div className="absolute top-2 right-2">
             <Dropdown items={dropdownItems} position="bottom-end">
                <IconButton Icon={TbDots} />
@@ -385,7 +456,11 @@ const Preview: React.FC<PreviewProps> = ({ file, handleUpload, handleDelete }) =
             </div>
          )}
          <div className="flex bg-primary/5 aspect-[1/0.8] overflow-hidden items-center justify-center">
-            <WrapperMemoized file={file} />
+            <PreviewWrapperMemoized
+               file={file}
+               fallback={FallbackPreview}
+               className="max-w-full max-h-full"
+            />
          </div>
          <div className="flex flex-col px-1.5 py-1">
             <p className="truncate">{file.name}</p>
@@ -398,14 +473,20 @@ const Preview: React.FC<PreviewProps> = ({ file, handleUpload, handleDelete }) =
    );
 };
 
-const ImagePreview = ({ file }: { file: FileState }) => {
+const ImagePreview = ({
+   file,
+   ...props
+}: { file: FileState } & ComponentPropsWithoutRef<"img">) => {
    const objectUrl = typeof file.body === "string" ? file.body : URL.createObjectURL(file.body);
-   return <img className="max-w-full max-h-full" src={objectUrl} />;
+   return <img {...props} src={objectUrl} />;
 };
 
-const VideoPreview = ({ file }: { file: FileState }) => {
+const VideoPreview = ({
+   file,
+   ...props
+}: { file: FileState } & ComponentPropsWithoutRef<"video">) => {
    const objectUrl = typeof file.body === "string" ? file.body : URL.createObjectURL(file.body);
-   return <video src={objectUrl} />;
+   return <video {...props} src={objectUrl} />;
 };
 
 const FallbackPreview = ({ file }: { file: FileState }) => {

@@ -143,6 +143,8 @@ export const useEntityQuery = <
    return {
       ...swr,
       ...mapped,
+      mutate: mutateAll,
+      mutateRaw: swr.mutate,
       api,
       key
    };

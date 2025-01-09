@@ -1,16 +1,12 @@
 import { IconPhoto } from "@tabler/icons-react";
-import type { MediaFieldSchema } from "modules";
 import { TbSettings } from "react-icons/tb";
-import { useApi, useBaseUrl, useEntityQuery } from "ui/client";
 import { useBknd } from "ui/client/BkndProvider";
 import { IconButton } from "ui/components/buttons/IconButton";
 import { Empty } from "ui/components/display/Empty";
 import { Link } from "ui/components/wouter/Link";
+import { Media } from "ui/elements";
 import { useBrowserTitle } from "ui/hooks/use-browser-title";
-import { useEvent } from "ui/hooks/use-event";
 import * as AppShell from "ui/layouts/AppShell/AppShell";
-import { Dropzone, type FileState } from "ui/modules/media/components/dropzone/Dropzone";
-import { mediaItemsToFileStates } from "ui/modules/media/helper";
 import { useLocation } from "wouter";
 
 export function MediaRoot({ children }) {
@@ -63,35 +59,11 @@ export function MediaRoot({ children }) {
 // @todo: add infinite load
 export function MediaEmpty() {
    useBrowserTitle(["Media"]);
-   const baseUrl = useBaseUrl();
-   const api = useApi();
-   const $q = useEntityQuery("media", undefined, { limit: 50 });
-
-   const getUploadInfo = useEvent((file) => {
-      return {
-         url: api.media.getFileUploadUrl(file),
-         headers: api.media.getUploadHeaders(),
-         method: "POST"
-      };
-   });
-
-   const handleDelete = useEvent(async (file: FileState) => {
-      return api.media.deleteFile(file.path);
-   });
-
-   const media = ($q.data || []) as MediaFieldSchema[];
-   const initialItems = mediaItemsToFileStates(media, { baseUrl });
 
    return (
       <AppShell.Scrollable>
          <div className="flex flex-1 p-3">
-            <Dropzone
-               key={$q.isLoading ? "loaded" : "initial"}
-               getUploadInfo={getUploadInfo}
-               handleDelete={handleDelete}
-               autoUpload
-               initialItems={initialItems}
-            />
+            <Media.Dropzone />
          </div>
       </AppShell.Scrollable>
    );

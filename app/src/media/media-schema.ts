@@ -1,4 +1,4 @@
-import { Const, Type, objectTransform } from "core/utils";
+import { Const, type Static, Type, objectTransform } from "core/utils";
 import { Adapters } from "media";
 import { registries } from "modules/registries";
 
@@ -47,3 +47,4 @@ export function buildMediaSchema() {
 }
 
 export const mediaConfigSchema = buildMediaSchema();
+export type TAppMediaConfig = Static<typeof mediaConfigSchema>;

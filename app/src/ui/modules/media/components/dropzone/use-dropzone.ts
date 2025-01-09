@@ -4,15 +4,16 @@ import { type FileWithPath, fromEvent } from "./file-selector";
 type DropzoneProps = {
    onDropped: (files: FileWithPath[]) => void;
    onOver?: (items: DataTransferItem[]) => void;
+   onLeave?: () => void;
 };
 
 const events = {
    enter: ["dragenter", "dragover", "dragstart"],
-   leave: ["dragleave", "drop"],
+   leave: ["dragleave", "drop"]
 };
 const allEvents = [...events.enter, ...events.leave];
 
-export function useDropzone({ onDropped, onOver }: DropzoneProps) {
+export function useDropzone({ onDropped, onOver, onLeave }: DropzoneProps) {
    const [isOver, setIsOver] = useState(false);
    const ref = useRef<HTMLDivElement>(null);
    const onOverCalled = useRef(false);
@@ -31,8 +32,10 @@ export function useDropzone({ onDropped, onOver }: DropzoneProps) {
       }
 
       setIsOver(_isOver);
+
       if (_isOver === false && onOverCalled.current) {
          onOverCalled.current = false;
+         onLeave?.();
       }
    }, []);
 
@@ -42,7 +45,7 @@ export function useDropzone({ onDropped, onOver }: DropzoneProps) {
          onDropped?.(files as any);
          onOverCalled.current = false;
       },
-      [onDropped],
+      [onDropped]
    );
 
    const handleFileInputChange = useCallback(
@@ -50,7 +53,7 @@ export function useDropzone({ onDropped, onOver }: DropzoneProps) {
          const files = await fromEvent(e);
          onDropped?.(files as any);
       },
-      [onDropped],
+      [onDropped]
    );
 
    useEffect(() => {
