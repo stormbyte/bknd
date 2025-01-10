@@ -1,16 +1,15 @@
 import { describe, expect, test } from "bun:test";
-import type { QueryObject } from "ufo";
-import { WhereBuilder, type WhereQuery } from "../../src/data/entities/query/WhereBuilder";
+import { Value } from "../../src/core/utils";
+import { WhereBuilder, type WhereQuery, querySchema } from "../../src/data";
 import { getDummyConnection } from "./helper";
 
-const t = "t";
 describe("data-query-impl", () => {
    function qb() {
       const c = getDummyConnection();
       const kysely = c.dummyConnection.kysely;
-      return kysely.selectFrom(t).selectAll();
+      return kysely.selectFrom("t").selectAll();
    }
-   function compile(q: QueryObject) {
+   function compile(q: WhereQuery) {
       const { sql, parameters } = WhereBuilder.addClause(qb(), q).compile();
       return { sql, parameters };
    }
@@ -88,5 +87,22 @@ describe("data-query-impl", () => {
          const keys = WhereBuilder.getPropertyNames(query);
          expect(keys).toEqual(expectedKeys);
       }
+   });
+});
+
+describe("data-query-impl: Typebox", () => {
+   test("sort", async () => {
+      const decode = (input: any, expected: any) => {
+         const result = Value.Decode(querySchema, input);
+         expect(result.sort).toEqual(expected);
+      };
+      const _dflt = { by: "id", dir: "asc" };
+
+      decode({ sort: "" }, _dflt);
+      decode({ sort: "name" }, { by: "name", dir: "asc" });
+      decode({ sort: "-name" }, { by: "name", dir: "desc" });
+      decode({ sort: "-posts.name" }, { by: "posts.name", dir: "desc" });
+      decode({ sort: "-1name" }, _dflt);
+      decode({ sort: { by: "name", dir: "desc" } }, { by: "name", dir: "desc" });
    });
 });
