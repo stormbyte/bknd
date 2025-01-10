@@ -10,7 +10,8 @@ export interface DB {}
 
 export const config = {
    server: {
-      default_port: 1337
+      default_port: 1337,
+      assets_path: "/assets/"
    },
    data: {
       default_primary_field: "id"

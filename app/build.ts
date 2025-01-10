@@ -58,7 +58,7 @@ const result = await esbuild.build({
    sourcemap,
    entryPoints: ["src/ui/main.tsx"],
    entryNames: "[dir]/[name]-[hash]",
-   outdir: "dist/static",
+   outdir: "dist/static/assets",
    platform: "browser",
    bundle: true,
    splitting: true,

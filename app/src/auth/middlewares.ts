@@ -1,4 +1,4 @@
-import type { Permission } from "core";
+import { type Permission, config } from "core";
 import type { Context } from "hono";
 import { createMiddleware } from "hono/factory";
 import type { ServerEnv } from "modules/Module";
@@ -21,27 +21,37 @@ async function resolveAuth(app: ServerEnv["Variables"]["app"], c: Context<Server
    authenticator.requestCookieRefresh(c);
 }
 
+export function shouldSkipAuth(c: { req: Request }) {
+   return new URL(c.req.url).pathname.startsWith(config.server.assets_path);
+}
+
 export const auth = createMiddleware<ServerEnv>(async (c, next) => {
-   // make sure to only register once
-   if (c.get("auth_registered")) {
-      return;
+   if (!shouldSkipAuth) {
+      // make sure to only register once
+      if (c.get("auth_registered")) {
+         return;
+      }
+
+      await resolveAuth(c.get("app"), c);
+      c.set("auth_registered", true);
    }
-   await resolveAuth(c.get("app"), c);
-   c.set("auth_registered", true);
+
    await next();
 });
 
 export const permission = (...permissions: Permission[]) =>
    createMiddleware<ServerEnv>(async (c, next) => {
-      const app = c.get("app");
-      if (app) {
-         const p = Array.isArray(permissions) ? permissions : [permissions];
-         const guard = app.modules.ctx().guard;
-         for (const permission of p) {
-            guard.throwUnlessGranted(permission);
+      if (!shouldSkipAuth) {
+         const app = c.get("app");
+         if (app) {
+            const p = Array.isArray(permissions) ? permissions : [permissions];
+            const guard = app.modules.ctx().guard;
+            for (const permission of p) {
+               guard.throwUnlessGranted(permission);
+            }
+         } else {
+            console.warn("app not in context, skip permission check");
          }
-      } else {
-         console.warn("app not in context, skip permission check");
       }
 
       await next();

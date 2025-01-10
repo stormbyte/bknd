@@ -1,7 +1,7 @@
 /** @jsxImportSource hono/jsx */
 
 import type { App } from "App";
-import { isDebug } from "core";
+import { config, isDebug } from "core";
 import { addFlashMessage } from "core/server/flash";
 import { html } from "hono/html";
 import { Fragment } from "hono/jsx";
@@ -13,6 +13,7 @@ const htmlBkndContextReplace = "<!-- BKND_CONTEXT -->";
 // @todo: add migration to remove admin path from config
 export type AdminControllerOptions = {
    basepath?: string;
+   assets_path?: string;
    html?: string;
    forceDev?: boolean | { mainPath: string };
 };
@@ -20,13 +21,21 @@ export type AdminControllerOptions = {
 export class AdminController extends Controller {
    constructor(
       private readonly app: App,
-      private options: AdminControllerOptions = {}
+      private _options: AdminControllerOptions = {}
    ) {
       super();
    }
 
    get ctx() {
       return this.app.modules.ctx();
+   }
+
+   get options() {
+      return {
+         ...this._options,
+         basepath: this._options.basepath ?? "/",
+         assets_path: this._options.assets_path ?? config.server.assets_path
+      };
    }
 
    get basepath() {
@@ -156,8 +165,16 @@ export class AdminController extends Controller {
                   <title>BKND</title>
                   {isProd ? (
                      <Fragment>
-                        <script type="module" CrossOrigin src={"/" + assets?.js} />
-                        <link rel="stylesheet" crossOrigin href={"/" + assets?.css} />
+                        <script
+                           type="module"
+                           CrossOrigin
+                           src={this.options.assets_path + assets?.js}
+                        />
+                        <link
+                           rel="stylesheet"
+                           crossOrigin
+                           href={this.options.assets_path + assets?.css}
+                        />
                      </Fragment>
                   ) : (
                      <Fragment>

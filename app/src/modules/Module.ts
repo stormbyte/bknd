@@ -10,7 +10,9 @@ import type { Hono } from "hono";
 export type ServerEnv = {
    Variables: {
       app: App;
+      // to prevent resolving auth multiple times
       auth_resolved: boolean;
+      // to only register once
       auth_registered: boolean;
       html?: string;
    };
