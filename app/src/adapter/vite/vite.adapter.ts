@@ -2,8 +2,10 @@ import { serveStatic } from "@hono/node-server/serve-static";
 import { type DevServerOptions, default as honoViteDevServer } from "@hono/vite-dev-server";
 import { type RuntimeBkndConfig, createRuntimeApp } from "adapter";
 import type { App } from "bknd";
+import { devServerConfig } from "./dev-server-config";
 
 export type ViteBkndConfig<Env = any> = RuntimeBkndConfig<Env> & {
+   mode?: "cached" | "fresh";
    setAdminHtml?: boolean;
    forceDev?: boolean | { mainPath: string };
    html?: string;
@@ -29,6 +31,7 @@ async function createApp(config: ViteBkndConfig = {}, env?: any) {
    return await createRuntimeApp(
       {
          ...config,
+         registerLocalMedia: true,
          adminOptions:
             config.setAdminHtml === false
                ? undefined
@@ -44,7 +47,7 @@ async function createApp(config: ViteBkndConfig = {}, env?: any) {
    );
 }
 
-export function serveFresh(config: ViteBkndConfig = {}) {
+export function serveFresh(config: Omit<ViteBkndConfig, "mode"> = {}) {
    return {
       async fetch(request: Request, env: any, ctx: ExecutionContext) {
          const app = await createApp(config, env);
@@ -54,7 +57,7 @@ export function serveFresh(config: ViteBkndConfig = {}) {
 }
 
 let app: App;
-export function serveCached(config: ViteBkndConfig = {}) {
+export function serveCached(config: Omit<ViteBkndConfig, "mode"> = {}) {
    return {
       async fetch(request: Request, env: any, ctx: ExecutionContext) {
          if (!app) {
@@ -66,20 +69,13 @@ export function serveCached(config: ViteBkndConfig = {}) {
    };
 }
 
+export function serve({ mode, ...config }: ViteBkndConfig = {}) {
+   return mode === "fresh" ? serveFresh(config) : serveCached(config);
+}
+
 export function devServer(options: DevServerOptions) {
    return honoViteDevServer({
-      entry: "./server.ts",
-      exclude: [
-         /.*\.tsx?($|\?)/,
-         /^(?!.*\/__admin).*\.(s?css|less)($|\?)/,
-         // exclude except /api
-         /^(?!.*\/api).*\.(ico|mp4|jpg|jpeg|svg|png|vtt|mp3|js)($|\?)/,
-         /^\/@.+$/,
-         /\/components.*?\.json.*/, // @todo: improve
-         /^\/(public|assets|static)\/.+/,
-         /^\/node_modules\/.*/
-      ],
-      injectClientScript: false,
+      ...devServerConfig,
       ...options
    });
 }
