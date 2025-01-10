@@ -174,23 +174,14 @@ export class AdminController extends Controller {
                         <script type="module" src={"/@vite/client"} />
                      </Fragment>
                   )}
+                  <style dangerouslySetInnerHTML={{ __html: "body { margin: 0; padding: 0; }" }} />
                </head>
-               <body style={{ backgroundColor: theme === "light" ? "#fff" : "#000" }}>
-                  <div id="root" />
-                  <div id="app">
-                     <div
-                        id="loading"
-                        style={{
-                           height: "100vh",
-                           width: "100vw",
-                           display: "flex",
-                           justifyContent: "center",
-                           alignItems: "center",
-                           fontFamily: "monospace",
-                           opacity: 0.3
-                        }}
-                     >
-                        Initializing...
+               <body>
+                  <div id="root">
+                     <div id="loading" style={style(theme)}>
+                        <span style={{ opacity: 0.3, fontSize: 14, fontFamily: "monospace" }}>
+                           Initializing...
+                        </span>
                      </div>
                   </div>
                   <script
@@ -205,3 +196,32 @@ export class AdminController extends Controller {
       );
    }
 }
+
+const style = (theme: "light" | "dark" = "light") => {
+   const base = {
+      margin: 0,
+      padding: 0,
+      height: "100vh",
+      width: "100vw",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      "-webkit-font-smoothing": "antialiased",
+      "-moz-osx-font-smoothing": "grayscale"
+   };
+   const styles = {
+      light: {
+         color: "rgb(9,9,11)",
+         backgroundColor: "rgb(250,250,250)"
+      },
+      dark: {
+         color: "rgb(250,250,250)",
+         backgroundColor: "rgb(30,31,34)"
+      }
+   };
+
+   return {
+      ...base,
+      ...styles[theme]
+   };
+};
