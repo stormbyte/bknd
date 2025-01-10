@@ -22,9 +22,11 @@ function buildTypes() {
    types_running = true;
 
    Bun.spawn(["bun", "build:types"], {
+      stdout: "inherit",
       onExit: () => {
          console.log("Types built");
          Bun.spawn(["bun", "tsc-alias"], {
+            stdout: "inherit",
             onExit: () => {
                console.log("Types aliased");
                types_running = false;
@@ -120,7 +122,7 @@ await tsup.build({
    external: ["bun:test", "@libsql/client"],
    metafile: true,
    platform: "browser",
-   format: ["esm", "cjs"],
+   format: ["esm"],
    splitting: false,
    treeshake: true,
    loader: {
@@ -148,7 +150,7 @@ await tsup.build({
    external: ["bun:test", "react", "react-dom", "use-sync-external-store"],
    metafile: true,
    platform: "browser",
-   format: ["esm", "cjs"],
+   format: ["esm"],
    splitting: true,
    treeshake: true,
    loader: {
@@ -204,13 +206,11 @@ await tsup.build({
 
 await tsup.build({
    ...baseConfig("nextjs"),
-   format: ["esm", "cjs"],
    platform: "node"
 });
 
 await tsup.build({
-   ...baseConfig("remix"),
-   format: ["esm", "cjs"]
+   ...baseConfig("remix")
 });
 
 await tsup.build({
@@ -219,11 +219,9 @@ await tsup.build({
 
 await tsup.build({
    ...baseConfig("node"),
-   platform: "node",
-   format: ["esm", "cjs"]
+   platform: "node"
 });
 
 await tsup.build({
-   ...baseConfig("astro"),
-   format: ["esm", "cjs"]
+   ...baseConfig("astro")
 });
