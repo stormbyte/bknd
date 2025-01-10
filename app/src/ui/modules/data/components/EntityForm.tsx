@@ -10,13 +10,11 @@ import {
 } from "data";
 import { MediaField } from "media/MediaField";
 import { type ComponentProps, Suspense } from "react";
-import { useApi, useBaseUrl, useInvalidate } from "ui/client";
 import { JsonEditor } from "ui/components/code/JsonEditor";
 import * as Formy from "ui/components/form/Formy";
 import { FieldLabel } from "ui/components/form/Formy";
+import { Media } from "ui/elements";
 import { useEvent } from "ui/hooks/use-event";
-import { Dropzone, type FileState } from "../../media/components/dropzone/Dropzone";
-import { mediaItemsToFileStates } from "../../media/helper";
 import { EntityJsonSchemaFormField } from "./fields/EntityJsonSchemaFormField";
 import { EntityRelationalFormField } from "./fields/EntityRelationalFormField";
 
@@ -215,9 +213,6 @@ function EntityMediaFormField({
 }) {
    if (!entityId) return;
 
-   const api = useApi();
-   const baseUrl = useBaseUrl();
-   const invalidate = useInvalidate();
    const value = formApi.useStore((state) => {
       const val = state.values[field.name];
       if (!val || typeof val === "undefined") return [];
@@ -225,37 +220,20 @@ function EntityMediaFormField({
       return [val];
    });
 
-   const initialItems: FileState[] =
-      value.length === 0
-         ? []
-         : mediaItemsToFileStates(value, {
-              baseUrl: api.baseUrl,
-              overrides: { state: "uploaded" }
-           });
-
-   const getUploadInfo = useEvent(() => {
-      return {
-         url: api.media.getEntityUploadUrl(entity.name, entityId, field.name),
-         headers: api.media.getUploadHeaders(),
-         method: "POST"
-      };
-   });
-
-   const handleDelete = useEvent(async (file: FileState) => {
-      invalidate((api) => api.data.readOne(entity.name, entityId));
-      return api.media.deleteFile(file.path);
-   });
+   const key = JSON.stringify([entity, entityId, field.name, value.length]);
 
    return (
       <Formy.Group>
          <FieldLabel field={field} />
-         <Dropzone
-            key={`${entity.name}-${entityId}-${field.name}-${value.length === 0 ? "initial" : "loaded"}`}
-            getUploadInfo={getUploadInfo}
-            handleDelete={handleDelete}
-            initialItems={initialItems}
+         <Media.Dropzone
+            key={key}
             maxItems={field.getMaxItems()}
-            autoUpload
+            initialItems={value} /* @todo: test if better be omitted, so it fetches */
+            entity={{
+               name: entity.name,
+               id: entityId,
+               field: field.name
+            }}
          />
       </Formy.Group>
    );

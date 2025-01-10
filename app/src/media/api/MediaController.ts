@@ -2,8 +2,7 @@ import { tbValidator as tb } from "core";
 import { Type } from "core/utils";
 import { bodyLimit } from "hono/body-limit";
 import type { StorageAdapter } from "media";
-import { StorageEvents } from "media";
-import { getRandomizedFilename } from "media";
+import { StorageEvents, getRandomizedFilename } from "media";
 import { Controller } from "modules/Controller";
 import type { AppMedia } from "../AppMedia";
 import { MediaField } from "../MediaField";
@@ -109,7 +108,7 @@ export class MediaController extends Controller {
                return c.json({ error: `Invalid field "${field_name}"` }, 400);
             }
 
-            const mediaEntity = this.media.getMediaEntity();
+            const media_entity = this.media.getMediaEntity().name as "media";
             const reference = `${entity_name}.${field_name}`;
             const mediaRef = {
                scope: field_name,
@@ -119,11 +118,10 @@ export class MediaController extends Controller {
 
             // check max items
             const max_items = field.getMaxItems();
-            const ids_to_delete: number[] = [];
-            const id_field = mediaEntity.getPrimaryField().name;
+            const paths_to_delete: string[] = [];
             if (max_items) {
                const { overwrite } = c.req.valid("query");
-               const { count } = await this.media.em.repository(mediaEntity).count(mediaRef);
+               const { count } = await this.media.em.repository(media_entity).count(mediaRef);
 
                // if there are more than or equal to max items
                if (count >= max_items) {
@@ -142,18 +140,18 @@ export class MediaController extends Controller {
                   }
 
                   // collect items to delete
-                  const deleteRes = await this.media.em.repo(mediaEntity).findMany({
-                     select: [id_field],
+                  const deleteRes = await this.media.em.repo(media_entity).findMany({
+                     select: ["path"],
                      where: mediaRef,
                      sort: {
-                        by: id_field,
+                        by: "id",
                         dir: "asc"
                      },
                      limit: count - max_items + 1
                   });
 
                   if (deleteRes.data && deleteRes.data.length > 0) {
-                     deleteRes.data.map((item) => ids_to_delete.push(item[id_field]));
+                     deleteRes.data.map((item) => paths_to_delete.push(item.path));
                   }
                }
             }
@@ -171,7 +169,7 @@ export class MediaController extends Controller {
             const file_name = getRandomizedFilename(file as File);
             const info = await this.getStorage().uploadFile(file, file_name, true);
 
-            const mutator = this.media.em.mutator(mediaEntity);
+            const mutator = this.media.em.mutator(media_entity);
             mutator.__unstable_toggleSystemEntityCreation(false);
             const result = await mutator.insertOne({
                ...this.media.uploadedEventDataToMediaPayload(info),
@@ -180,10 +178,11 @@ export class MediaController extends Controller {
             mutator.__unstable_toggleSystemEntityCreation(true);
 
             // delete items if needed
-            if (ids_to_delete.length > 0) {
-               await this.media.em
-                  .mutator(mediaEntity)
-                  .deleteWhere({ [id_field]: { $in: ids_to_delete } });
+            if (paths_to_delete.length > 0) {
+               // delete files from db & adapter
+               for (const path of paths_to_delete) {
+                  await this.getStorage().deleteFile(path);
+               }
             }
 
             return c.json({ ok: true, result: result.data, ...info });
