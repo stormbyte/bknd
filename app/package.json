@@ -35,7 +35,7 @@
     "lodash-es": "^4.17.21",
     "oauth4webapi": "^2.11.1",
     "swr": "^2.2.5",
-    "json-schema-form-react": "link:json-schema-form-react"
+    "json-schema-form-react": "^0.0.2"
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.613.0",
