@@ -3,7 +3,7 @@ import type { Guard } from "auth";
 import { SchemaObject } from "core";
 import type { EventManager } from "core/events";
 import type { Static, TSchema } from "core/utils";
-import type { Connection, EntityManager } from "data";
+import type { Connection, Entity, EntityIndex, EntityManager, em as prototypeEm } from "data";
 import type { Hono } from "hono";
 
 export type ServerEnv = {
@@ -21,6 +21,7 @@ export type ModuleBuildContext = {
    em: EntityManager;
    emgr: EventManager<any>;
    guard: Guard;
+   flags: (typeof Module)["ctx_flags"];
 };
 
 export abstract class Module<Schema extends TSchema = TSchema, ConfigSchema = Static<Schema>> {
@@ -42,6 +43,13 @@ export abstract class Module<Schema extends TSchema = TSchema, ConfigSchema = St
          onBeforeUpdate: this.onBeforeUpdate.bind(this)
       });
    }
+
+   static ctx_flags = {
+      sync_required: false
+   } as {
+      // signal that a sync is required at the end of build
+      sync_required: boolean;
+   };
 
    onBeforeUpdate(from: ConfigSchema, to: ConfigSchema): ConfigSchema | Promise<ConfigSchema> {
       return to;
@@ -128,5 +136,42 @@ export abstract class Module<Schema extends TSchema = TSchema, ConfigSchema = St
 
    toJSON(secrets?: boolean): Static<ReturnType<(typeof this)["getSchema"]>> {
       return this.config;
+   }
+
+   // @todo: add a method to signal the requirement of database sync!!!
+
+   protected ensureEntity(entity: Entity) {
+      // check fields
+      if (!this.ctx.em.hasEntity(entity.name)) {
+         this.ctx.em.addEntity(entity);
+         this.ctx.flags.sync_required = true;
+         return;
+      }
+
+      const instance = this.ctx.em.entity(entity.name);
+
+      // if exists, check all fields required are there
+      // @todo: check if the field also equal
+      for (const field of entity.fields) {
+         const _field = instance.field(field.name);
+         if (!_field) {
+            instance.addField(field);
+            this.ctx.flags.sync_required = true;
+         }
+      }
+   }
+
+   protected ensureIndex(index: EntityIndex) {
+      if (!this.ctx.em.hasIndex(index)) {
+         this.ctx.em.addIndex(index);
+         this.ctx.flags.sync_required = true;
+      }
+   }
+
+   protected ensureSchema<Schema extends ReturnType<typeof prototypeEm>>(schema: Schema): Schema {
+      Object.values(schema.entities ?? {}).forEach(this.ensureEntity.bind(this));
+      schema.indices?.forEach(this.ensureIndex.bind(this));
+
+      return schema;
    }
 }

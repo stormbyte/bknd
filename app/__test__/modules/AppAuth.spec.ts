@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, spyOn, test } from "bun:test";
 import { createApp } from "../../src";
 import { AuthController } from "../../src/auth/api/AuthController";
+import { em, entity, text } from "../../src/data";
 import { AppAuth, type ModuleBuildContext } from "../../src/modules";
 import { disableConsoleLog, enableConsoleLog } from "../helper";
 import { makeCtx, moduleTestSuite } from "./module-test-suite";
@@ -101,5 +102,34 @@ describe("AppAuth", () => {
       await app.server.request("/test");
 
       expect(spy.mock.calls.length).toBe(2);
+   });
+
+   test("should allow additional user fields", async () => {
+      const app = createApp({
+         initialConfig: {
+            auth: {
+               entity_name: "users",
+               enabled: true
+            },
+            data: em({
+               users: entity("users", {
+                  additional: text()
+               })
+            }).toJSON()
+         }
+      });
+
+      await app.build();
+
+      const userfields = app.modules.em.entity("users").fields.map((f) => f.name);
+      expect(userfields).toContain("additional");
+      expect(userfields).toEqual([
+         "id",
+         "additional",
+         "email",
+         "strategy",
+         "strategy_value",
+         "role"
+      ]);
    });
 });
