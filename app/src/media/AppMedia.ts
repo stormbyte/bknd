@@ -48,10 +48,9 @@ export class AppMedia extends Module<typeof mediaConfigSchema> {
          this.setupListeners();
          this.ctx.server.route(this.basepath, new MediaController(this).getController());
 
-         const mediaEntity = this.getMediaEntity(true);
-         const name = mediaEntity.name as "media";
+         const media = this.getMediaEntity(true);
          this.ensureSchema(
-            em({ [name]: mediaEntity }, ({ index }, { media }) => {
+            em({ [media.name as "media"]: media }, ({ index }, { media }) => {
                index(media).on(["path"], true).on(["reference"]);
             })
          );

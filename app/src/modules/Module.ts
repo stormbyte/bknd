@@ -3,7 +3,8 @@ import type { Guard } from "auth";
 import { SchemaObject } from "core";
 import type { EventManager } from "core/events";
 import type { Static, TSchema } from "core/utils";
-import type { Connection, Entity, EntityIndex, EntityManager, em as prototypeEm } from "data";
+import type { Connection, EntityIndex, EntityManager, em as prototypeEm } from "data";
+import { Entity } from "data";
 import type { Hono } from "hono";
 
 export type ServerEnv = {
@@ -138,8 +139,6 @@ export abstract class Module<Schema extends TSchema = TSchema, ConfigSchema = St
       return this.config;
    }
 
-   // @todo: add a method to signal the requirement of database sync!!!
-
    protected ensureEntity(entity: Entity) {
       // check fields
       if (!this.ctx.em.hasEntity(entity.name)) {
@@ -152,13 +151,18 @@ export abstract class Module<Schema extends TSchema = TSchema, ConfigSchema = St
 
       // if exists, check all fields required are there
       // @todo: check if the field also equal
-      for (const field of entity.fields) {
-         const _field = instance.field(field.name);
+      for (const field of instance.fields) {
+         const _field = entity.field(field.name);
          if (!_field) {
-            instance.addField(field);
+            entity.addField(field);
             this.ctx.flags.sync_required = true;
          }
       }
+
+      // replace entity (mainly to keep the ensured type)
+      this.ctx.em.__replaceEntity(
+         new Entity(entity.name, entity.fields, instance.config, entity.type)
+      );
    }
 
    protected ensureIndex(index: EntityIndex) {

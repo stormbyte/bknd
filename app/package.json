@@ -3,7 +3,7 @@
   "type": "module",
   "sideEffects": false,
   "bin": "./dist/cli/index.js",
-  "version": "0.4.0",
+  "version": "0.5.0-rc5",
   "scripts": {
     "build:all": "NODE_ENV=production bun run build.ts --minify --types --clean && bun run build:cli",
     "dev": "vite",

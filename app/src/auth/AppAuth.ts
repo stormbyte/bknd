@@ -250,13 +250,11 @@ export class AppAuth extends Module<typeof authConfigSchema> {
    };
 
    registerEntities() {
-      const name = this.config.entity_name as "users";
-      const {
-         entities: { users }
-      } = this.ensureSchema(
+      const users = this.getUsersEntity(true);
+      this.ensureSchema(
          em(
             {
-               [name]: entity(name, AppAuth.usersFields)
+               [users.name as "users"]: users
             },
             ({ index }, { users }) => {
                index(users).on(["email"], true).on(["strategy"]).on(["strategy_value"]);
@@ -267,13 +265,13 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       try {
          const roles = Object.keys(this.config.roles ?? {});
          const field = make("role", enumm({ enum: roles }));
-         users.__experimental_replaceField("role", field);
+         users.__replaceField("role", field);
       } catch (e) {}
 
       try {
          const strategies = Object.keys(this.config.strategies ?? {});
          const field = make("strategy", enumm({ enum: strategies }));
-         users.__experimental_replaceField("strategy", field);
+         users.__replaceField("strategy", field);
       } catch (e) {}
    }
 

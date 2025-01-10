@@ -99,6 +99,16 @@ export class EntityManager<TBD extends object = DefaultDB> {
       this.entities.push(entity);
    }
 
+   __replaceEntity(entity: Entity, name: string | undefined = entity.name) {
+      const entityIndex = this._entities.findIndex((e) => e.name === name);
+
+      if (entityIndex === -1) {
+         throw new Error(`Entity "${name}" not found and cannot be replaced`);
+      }
+
+      this._entities[entityIndex] = entity;
+   }
+
    entity(e: Entity | keyof TBD | string): Entity {
       let entity: Entity | undefined;
       if (typeof e === "string") {

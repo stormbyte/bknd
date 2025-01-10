@@ -68,7 +68,8 @@ describe("Module", async () => {
          return {
             entities: _em.entities.map((e) => ({
                name: e.name,
-               fields: e.fields.map((f) => f.name)
+               fields: e.fields.map((f) => f.name),
+               type: e.type
             })),
             indices: _em.indices.map((i) => ({
                name: i.name,
@@ -105,7 +106,8 @@ describe("Module", async () => {
             entities: [
                {
                   name: "u",
-                  fields: ["id", "name"]
+                  fields: ["id", "name"],
+                  type: "regular"
                }
             ],
             indices: []
@@ -124,7 +126,8 @@ describe("Module", async () => {
             entities: [
                {
                   name: "u",
-                  fields: ["id", "name"]
+                  fields: ["id", "name"],
+                  type: "regular"
                }
             ],
             indices: []
@@ -139,9 +142,14 @@ describe("Module", async () => {
 
          // this should only add the field "important"
          m.prt.ensureEntity(
-            entity("u", {
-               important: text()
-            })
+            entity(
+               "u",
+               {
+                  important: text()
+               },
+               undefined,
+               "system"
+            )
          );
 
          expect(m.ctx.flags.sync_required).toBe(true);
@@ -149,11 +157,15 @@ describe("Module", async () => {
             entities: [
                {
                   name: "u",
-                  fields: ["id", "name", "important"]
+                  // ensured properties must come first
+                  fields: ["id", "important", "name"],
+                  // ensured type must be present
+                  type: "system"
                },
                {
                   name: "p",
-                  fields: ["id", "title"]
+                  fields: ["id", "title"],
+                  type: "regular"
                }
             ],
             indices: []
@@ -177,7 +189,8 @@ describe("Module", async () => {
             entities: [
                {
                   name: "u",
-                  fields: ["id", "name", "title"]
+                  fields: ["id", "name", "title"],
+                  type: "regular"
                }
             ],
             indices: [

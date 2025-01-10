@@ -33,11 +33,12 @@ describe("AppMedia", () => {
 
       await app.build();
 
-      const fields = app.modules.em.entity("media").fields.map((f) => f.name);
+      const e = app.modules.em.entity("media");
+      const fields = e.fields.map((f) => f.name);
+      expect(e.type).toBe("system");
       expect(fields).toContain("additional");
       expect(fields).toEqual([
          "id",
-         "additional",
          "path",
          "folder",
          "mime_type",
@@ -47,7 +48,8 @@ describe("AppMedia", () => {
          "modified_at",
          "reference",
          "entity_id",
-         "metadata"
+         "metadata",
+         "additional"
       ]);
    });
 });

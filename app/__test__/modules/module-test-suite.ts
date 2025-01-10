@@ -5,7 +5,7 @@ import { Guard } from "../../src/auth";
 import { EventManager } from "../../src/core/events";
 import { Default, stripMark } from "../../src/core/utils";
 import { EntityManager } from "../../src/data";
-import type { Module, ModuleBuildContext } from "../../src/modules/Module";
+import { Module, type ModuleBuildContext } from "../../src/modules/Module";
 import { getDummyConnection } from "../helper";
 
 export function makeCtx(overrides?: Partial<ModuleBuildContext>): ModuleBuildContext {
@@ -16,6 +16,7 @@ export function makeCtx(overrides?: Partial<ModuleBuildContext>): ModuleBuildCon
       em: new EntityManager([], dummyConnection),
       emgr: new EventManager(),
       guard: new Guard(),
+      flags: Module.ctx_flags,
       ...overrides
    };
 }

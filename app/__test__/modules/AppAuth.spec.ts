@@ -121,15 +121,10 @@ describe("AppAuth", () => {
 
       await app.build();
 
-      const userfields = app.modules.em.entity("users").fields.map((f) => f.name);
-      expect(userfields).toContain("additional");
-      expect(userfields).toEqual([
-         "id",
-         "additional",
-         "email",
-         "strategy",
-         "strategy_value",
-         "role"
-      ]);
+      const e = app.modules.em.entity("users");
+      const fields = e.fields.map((f) => f.name);
+      expect(e.type).toBe("system");
+      expect(fields).toContain("additional");
+      expect(fields).toEqual(["id", "email", "strategy", "strategy_value", "role", "additional"]);
    });
 });
