@@ -125,12 +125,18 @@ export function DataTable<Data extends Record<string, any> = Record<string, any>
                   </thead>
                ) : null}
                <tbody>
-                  {!data || data.length === 0 ? (
+                  {!data || !Array.isArray(data) || data.length === 0 ? (
                      <tr>
                         <td colSpan={select.length + (checkable ? 1 : 0)}>
                            <div className="flex flex-col gap-2 p-8 justify-center items-center border-t border-muted">
                               <i className="opacity-50">
-                                 {Array.isArray(data) ? "No data to show" : "Loading..."}
+                                 {Array.isArray(data) ? (
+                                    "No data to show"
+                                 ) : !data ? (
+                                    "Loading..."
+                                 ) : (
+                                    <pre>{JSON.stringify(data, null, 2)}</pre>
+                                 )}
                               </i>
                            </div>
                         </td>

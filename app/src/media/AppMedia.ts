@@ -26,7 +26,6 @@ export class AppMedia extends Module<typeof mediaConfigSchema> {
    private _storage?: Storage;
 
    override async build() {
-      console.log("building");
       if (!this.config.enabled) {
          this.setBuilt();
          return;

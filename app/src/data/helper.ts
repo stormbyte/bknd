@@ -1,4 +1,4 @@
-import type { EntityData, Field } from "data";
+import type { EntityData, EntityManager, Field } from "data";
 import { transform } from "lodash-es";
 
 export function getDefaultValues(fields: Field[], data: EntityData): EntityData {
@@ -47,4 +47,24 @@ export function getChangeSet(
       },
       {} as typeof formData
    );
+}
+
+export function readableEmJson(_em: EntityManager) {
+   return {
+      entities: _em.entities.map((e) => ({
+         name: e.name,
+         fields: e.fields.map((f) => f.name),
+         type: e.type
+      })),
+      indices: _em.indices.map((i) => ({
+         name: i.name,
+         entity: i.entity.name,
+         fields: i.fields.map((f) => f.name),
+         unique: i.unique
+      })),
+      relations: _em.relations.all.map((r) => ({
+         name: r.getName(),
+         ...r.toJSON()
+      }))
+   };
 }

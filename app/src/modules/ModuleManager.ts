@@ -400,8 +400,8 @@ export class ModuleManager {
       });
    }
 
-   private async buildModules(options?: { graceful?: boolean }) {
-      this.logger.log("buildModules() triggered", options?.graceful, this._built);
+   private async buildModules(options?: { graceful?: boolean; ignoreFlags?: boolean }) {
+      this.logger.log("buildModules() triggered", options, this._built);
       if (options?.graceful && this._built) {
          this.logger.log("skipping build (graceful)");
          return;
@@ -417,12 +417,25 @@ export class ModuleManager {
       this._built = true;
       this.logger.log("modules built", ctx.flags);
 
-      if (ctx.flags.sync_required) {
-         this.logger.log("db sync requested");
-         await ctx.em.schema().sync({ force: true });
-         await this.save();
-         ctx.flags.sync_required = false; // reset
+      if (options?.ignoreFlags !== true) {
+         if (ctx.flags.sync_required) {
+            ctx.flags.sync_required = false;
+            this.logger.log("db sync requested");
+
+            // sync db
+            await ctx.em.schema().sync({ force: true });
+            await this.save();
+         }
+
+         if (ctx.flags.ctx_reload_required) {
+            ctx.flags.ctx_reload_required = false;
+            this.logger.log("ctx reload requested");
+            this.ctx(true);
+         }
       }
+
+      // reset all falgs
+      ctx.flags = Module.ctx_flags;
    }
 
    async build() {

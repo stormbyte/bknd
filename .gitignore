@@ -18,6 +18,7 @@ packages/media/.env
 **/*/vite.config.ts.timestamp*
 .history
 **/*/.db/*
+**/*/.configs/*
 **/*/*.db
 **/*/*.db-shm
 **/*/*.db-wal

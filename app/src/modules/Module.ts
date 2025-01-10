@@ -46,10 +46,12 @@ export abstract class Module<Schema extends TSchema = TSchema, ConfigSchema = St
    }
 
    static ctx_flags = {
-      sync_required: false
+      sync_required: false,
+      ctx_reload_required: false
    } as {
       // signal that a sync is required at the end of build
       sync_required: boolean;
+      ctx_reload_required: boolean;
    };
 
    onBeforeUpdate(from: ConfigSchema, to: ConfigSchema): ConfigSchema | Promise<ConfigSchema> {

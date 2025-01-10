@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { createClient } from "@libsql/client/node";
 import { App, registries } from "./src";
@@ -6,20 +7,35 @@ import { StorageLocalAdapter } from "./src/media/storage/adapters/StorageLocalAd
 
 registries.media.register("local", StorageLocalAdapter);
 
-const credentials = {
-   url: import.meta.env.VITE_DB_URL!,
-   authToken: import.meta.env.VITE_DB_TOKEN!
-};
+const run_example: string | boolean = false;
+//run_example = "ex-admin-rich";
+
+const credentials = run_example
+   ? {
+        url: `file:.configs/${run_example}.db`
+        //url: ":memory:"
+     }
+   : {
+        url: import.meta.env.VITE_DB_URL!,
+        authToken: import.meta.env.VITE_DB_TOKEN!
+     };
 if (!credentials.url) {
    throw new Error("Missing VITE_DB_URL env variable. Add it to .env file");
 }
 
 const connection = new LibsqlConnection(createClient(credentials));
 
+let initialConfig: any = undefined;
+if (run_example) {
+   const { version, ...config } = JSON.parse(
+      await readFile(`.configs/${run_example}.json`, "utf-8")
+   );
+   initialConfig = config;
+}
+
 export default {
    async fetch(request: Request) {
-      const app = App.create({ connection });
-
+      const app = App.create({ connection, initialConfig });
       app.emgr.onEvent(
          App.Events.AppBuiltEvent,
          async () => {
