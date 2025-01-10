@@ -1,10 +1,11 @@
 import { serveStatic } from "@hono/node-server/serve-static";
+import { type DevServerOptions, default as honoViteDevServer } from "@hono/vite-dev-server";
 import { type RuntimeBkndConfig, createRuntimeApp } from "adapter";
 import type { App } from "bknd";
 
 export type ViteBkndConfig<Env = any> = RuntimeBkndConfig<Env> & {
    setAdminHtml?: boolean;
-   forceDev?: boolean;
+   forceDev?: boolean | { mainPath: string };
    html?: string;
 };
 
@@ -24,20 +25,26 @@ ${addBkndContext ? "<!-- BKND_CONTEXT -->" : ""}
    );
 }
 
-async function createApp(config: ViteBkndConfig, env?: any) {
+async function createApp(config: ViteBkndConfig = {}, env?: any) {
    return await createRuntimeApp(
       {
          ...config,
-         adminOptions: config.setAdminHtml
-            ? { html: config.html, forceDev: config.forceDev }
-            : undefined,
+         adminOptions:
+            config.setAdminHtml === false
+               ? undefined
+               : {
+                    html: config.html,
+                    forceDev: config.forceDev ?? {
+                       mainPath: "/src/main.tsx"
+                    }
+                 },
          serveStatic: ["/assets/*", serveStatic({ root: config.distPath ?? "./" })]
       },
       env
    );
 }
 
-export async function serveFresh(config: ViteBkndConfig) {
+export function serveFresh(config: ViteBkndConfig = {}) {
    return {
       async fetch(request: Request, env: any, ctx: ExecutionContext) {
          const app = await createApp(config, env);
@@ -47,7 +54,7 @@ export async function serveFresh(config: ViteBkndConfig) {
 }
 
 let app: App;
-export async function serveCached(config: ViteBkndConfig) {
+export function serveCached(config: ViteBkndConfig = {}) {
    return {
       async fetch(request: Request, env: any, ctx: ExecutionContext) {
          if (!app) {
@@ -57,4 +64,22 @@ export async function serveCached(config: ViteBkndConfig) {
          return app.fetch(request, env, ctx);
       }
    };
+}
+
+export function devServer(options: DevServerOptions) {
+   return honoViteDevServer({
+      entry: "./server.ts",
+      exclude: [
+         /.*\.tsx?($|\?)/,
+         /^(?!.*\/__admin).*\.(s?css|less)($|\?)/,
+         // exclude except /api
+         /^(?!.*\/api).*\.(ico|mp4|jpg|jpeg|svg|png|vtt|mp3|js)($|\?)/,
+         /^\/@.+$/,
+         /\/components.*?\.json.*/, // @todo: improve
+         /^\/(public|assets|static)\/.+/,
+         /^\/node_modules\/.*/
+      ],
+      injectClientScript: false,
+      ...options
+   });
 }
