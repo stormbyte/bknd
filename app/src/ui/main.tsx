@@ -10,7 +10,10 @@ function ClientApp() {
 
 // Render the app
 const rootElement = document.getElementById("app")!;
-if (!rootElement.innerHTML) {
+const shouldRender =
+   !rootElement.innerHTML ||
+   (rootElement.childElementCount === 1 && rootElement.firstElementChild?.id === "loading");
+if (shouldRender) {
    const root = ReactDOM.createRoot(rootElement);
    root.render(
       <React.StrictMode>

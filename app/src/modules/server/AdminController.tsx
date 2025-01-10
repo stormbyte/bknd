@@ -140,11 +140,13 @@ export class AdminController extends Controller {
          }
       }
 
+      const theme = configs.server.admin.color_scheme ?? "light";
+
       return (
          <Fragment>
             {/* dnd complains otherwise */}
             {html`<!DOCTYPE html>`}
-            <html lang="en" class={configs.server.admin.color_scheme ?? "light"}>
+            <html lang="en" class={theme}>
                <head>
                   <meta charset="UTF-8" />
                   <meta
@@ -173,9 +175,24 @@ export class AdminController extends Controller {
                      </Fragment>
                   )}
                </head>
-               <body>
+               <body style={{ backgroundColor: theme === "light" ? "#fff" : "#000" }}>
                   <div id="root" />
-                  <div id="app" />
+                  <div id="app">
+                     <div
+                        id="loading"
+                        style={{
+                           height: "100vh",
+                           width: "100vw",
+                           display: "flex",
+                           justifyContent: "center",
+                           alignItems: "center",
+                           fontFamily: "monospace",
+                           opacity: 0.3
+                        }}
+                     >
+                        Initializing...
+                     </div>
+                  </div>
                   <script
                      dangerouslySetInnerHTML={{
                         __html: bknd_context

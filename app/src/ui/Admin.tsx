@@ -84,7 +84,7 @@ const Skeleton = ({ theme = "light" }: { theme?: string }) => {
             </header>
             <AppShell.Content>
                <div className="flex flex-col w-full h-full justify-center items-center">
-                  <span className="font-mono opacity-30">Loading</span>
+                  {/*<span className="font-mono opacity-30">Loading</span>*/}
                </div>
             </AppShell.Content>
          </AppShell.Root>
