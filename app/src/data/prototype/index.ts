@@ -272,18 +272,22 @@ class EntityManagerPrototype<Entities extends Record<string, Entity>> extends En
    }
 }
 
-type Chained<Fn extends (...args: any[]) => any, Rt = ReturnType<Fn>> = <E extends Entity>(
-   e: E
-) => {
-   [K in keyof Rt]: Rt[K] extends (...args: any[]) => any
-      ? (...args: Parameters<Rt[K]>) => Rt
+type Chained<R extends Record<string, (...args: any[]) => any>> = {
+   [K in keyof R]: R[K] extends (...args: any[]) => any
+      ? (...args: Parameters<R[K]>) => Chained<R>
       : never;
+};
+type ChainedFn<
+   Fn extends (...args: any[]) => Record<string, (...args: any[]) => any>,
+   Return extends ReturnType<Fn> = ReturnType<Fn>
+> = (e: Entity) => {
+   [K in keyof Return]: (...args: Parameters<Return[K]>) => Chained<Return>;
 };
 
 export function em<Entities extends Record<string, Entity>>(
    entities: Entities,
    schema?: (
-      fns: { relation: Chained<typeof relation>; index: Chained<typeof index> },
+      fns: { relation: ChainedFn<typeof relation>; index: ChainedFn<typeof index> },
       entities: Entities
    ) => void
 ) {

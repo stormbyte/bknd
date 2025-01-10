@@ -4,7 +4,7 @@ import { auth } from "auth/middlewares";
 import { type DB, Exception, type PrimaryFieldType } from "core";
 import { type Static, secureRandomString, transformObject } from "core/utils";
 import { type Entity, EntityIndex, type EntityManager } from "data";
-import { type FieldSchema, entity, enumm, make, text } from "data/prototype";
+import { type FieldSchema, em, entity, enumm, make, text } from "data/prototype";
 import type { Hono } from "hono";
 import { pick } from "lodash-es";
 import { Module } from "modules/Module";
@@ -250,43 +250,30 @@ export class AppAuth extends Module<typeof authConfigSchema> {
    };
 
    registerEntities() {
-      const users = this.getUsersEntity();
-
-      if (!this.em.hasEntity(users.name)) {
-         this.em.addEntity(users);
-      } else {
-         // if exists, check all fields required are there
-         // @todo: add to context: "needs sync" flag
-         const _entity = this.getUsersEntity(true);
-         for (const field of _entity.fields) {
-            const _field = users.field(field.name);
-            if (!_field) {
-               users.addField(field);
+      const name = this.config.entity_name as "users";
+      const {
+         entities: { users }
+      } = this.ensureSchema(
+         em(
+            {
+               [name]: entity(name, AppAuth.usersFields)
+            },
+            ({ index }, { users }) => {
+               index(users).on(["email"], true).on(["strategy"]).on(["strategy_value"]);
             }
-         }
-      }
-
-      const indices = [
-         new EntityIndex(users, [users.field("email")!], true),
-         new EntityIndex(users, [users.field("strategy")!]),
-         new EntityIndex(users, [users.field("strategy_value")!])
-      ];
-      indices.forEach((index) => {
-         if (!this.em.hasIndex(index)) {
-            this.em.addIndex(index);
-         }
-      });
+         )
+      );
 
       try {
          const roles = Object.keys(this.config.roles ?? {});
          const field = make("role", enumm({ enum: roles }));
-         this.em.entity(users.name).__experimental_replaceField("role", field);
+         users.__experimental_replaceField("role", field);
       } catch (e) {}
 
       try {
          const strategies = Object.keys(this.config.strategies ?? {});
          const field = make("strategy", enumm({ enum: strategies }));
-         this.em.entity(users.name).__experimental_replaceField("strategy", field);
+         users.__experimental_replaceField("strategy", field);
       } catch (e) {}
    }
 

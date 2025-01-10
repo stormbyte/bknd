@@ -1,4 +1,3 @@
-import type { App } from "App";
 import { Guard } from "auth";
 import { BkndError, DebugLogger } from "core";
 import { EventManager } from "core/events";
@@ -34,7 +33,7 @@ import { AppAuth } from "../auth/AppAuth";
 import { AppData } from "../data/AppData";
 import { AppFlows } from "../flows/AppFlows";
 import { AppMedia } from "../media/AppMedia";
-import type { Module, ModuleBuildContext, ServerEnv } from "./Module";
+import { Module, type ModuleBuildContext, type ServerEnv } from "./Module";
 
 export type { ModuleBuildContext };
 
@@ -230,7 +229,8 @@ export class ModuleManager {
          server: this.server,
          em: this.em,
          emgr: this.emgr,
-         guard: this.guard
+         guard: this.guard,
+         flags: Module.ctx_flags
       };
    }
 
@@ -415,7 +415,14 @@ export class ModuleManager {
       }
 
       this._built = true;
-      this.logger.log("modules built");
+      this.logger.log("modules built", ctx.flags);
+
+      if (ctx.flags.sync_required) {
+         this.logger.log("db sync requested");
+         await ctx.em.schema().sync({ force: true });
+         await this.save();
+         ctx.flags.sync_required = false; // reset
+      }
    }
 
    async build() {
