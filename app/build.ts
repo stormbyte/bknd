@@ -11,6 +11,9 @@ const types = args.includes("--types");
 const sourcemap = args.includes("--sourcemap");
 const clean = args.includes("--clean");
 
+// keep console logs if not minified
+const debugging = minify;
+
 if (clean) {
    console.log("Cleaning dist");
    await $`rm -rf dist`;
@@ -38,7 +41,7 @@ function buildTypes() {
 
 let watcher_timeout: any;
 function delayTypes() {
-   if (!watch) return;
+   if (!watch || !types) return;
    if (watcher_timeout) {
       clearTimeout(watcher_timeout);
    }
@@ -63,7 +66,7 @@ const result = await esbuild.build({
    bundle: true,
    splitting: true,
    metafile: true,
-   drop: ["console", "debugger"],
+   drop: debugging ? undefined : ["console", "debugger"],
    inject: ["src/ui/inject.js"],
    target: "es2022",
    format: "esm",

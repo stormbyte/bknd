@@ -114,12 +114,12 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       identifier: string,
       profile: ProfileExchange
    ): Promise<any> {
-      console.log("***** AppAuth:resolveUser", {
+      /*console.log("***** AppAuth:resolveUser", {
          action,
          strategy: strategy.getName(),
          identifier,
          profile
-      });
+      });*/
       if (!this.config.allow_register && action === "register") {
          throw new Exception("Registration is not allowed", 403);
       }
@@ -140,12 +140,12 @@ export class AppAuth extends Module<typeof authConfigSchema> {
    }
 
    private filterUserData(user: any) {
-      console.log(
+      /*console.log(
          "--filterUserData",
          user,
          this.config.jwt.fields,
          pick(user, this.config.jwt.fields)
-      );
+      );*/
       return pick(user, this.config.jwt.fields);
    }
 
@@ -171,18 +171,18 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       if (!result.data) {
          throw new Exception("User not found", 404);
       }
-      console.log("---login data", result.data, result);
+      //console.log("---login data", result.data, result);
 
       // compare strategy and identifier
-      console.log("strategy comparison", result.data.strategy, strategy.getName());
+      //console.log("strategy comparison", result.data.strategy, strategy.getName());
       if (result.data.strategy !== strategy.getName()) {
-         console.log("!!! User registered with different strategy");
+         //console.log("!!! User registered with different strategy");
          throw new Exception("User registered with different strategy");
       }
 
-      console.log("identifier comparison", result.data.strategy_value, identifier);
+      //console.log("identifier comparison", result.data.strategy_value, identifier);
       if (result.data.strategy_value !== identifier) {
-         console.log("!!! Invalid credentials");
+         //console.log("!!! Invalid credentials");
          throw new Exception("Invalid credentials");
       }
 

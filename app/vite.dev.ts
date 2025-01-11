@@ -33,18 +33,22 @@ if (run_example) {
    initialConfig = config;
 }
 
+let app: App;
+const recreate = true;
 export default {
    async fetch(request: Request) {
-      const app = App.create({ connection, initialConfig });
-      app.emgr.onEvent(
-         App.Events.AppBuiltEvent,
-         async () => {
-            app.registerAdminController({ forceDev: true });
-            app.module.server.client.get("/assets/*", serveStatic({ root: "./" }));
-         },
-         "sync"
-      );
-      await app.build();
+      if (!app || recreate) {
+         app = App.create({ connection, initialConfig });
+         app.emgr.onEvent(
+            App.Events.AppBuiltEvent,
+            async () => {
+               app.registerAdminController({ forceDev: true });
+               app.module.server.client.get("/assets/*", serveStatic({ root: "./" }));
+            },
+            "sync"
+         );
+         await app.build();
+      }
 
       return app.fetch(request);
    }

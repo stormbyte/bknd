@@ -67,6 +67,9 @@ export const cookieConfig = Type.Partial(
    { default: {}, additionalProperties: false }
 );
 
+// @todo: maybe add a config to not allow cookie/api tokens to be used interchangably?
+// see auth.integration test for further details
+
 export const jwtConfig = Type.Object(
    {
       // @todo: autogenerate a secret if not present. But it must be persisted from AppAuth
@@ -139,7 +142,7 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
    }
 
    // @todo: determine what to do exactly
-   __setUserNull() {
+   resetUser() {
       this._user = undefined;
    }
 
@@ -203,8 +206,8 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
          this._user = omit(payload, ["iat", "exp", "iss"]) as SafeUser;
          return true;
       } catch (e) {
-         this._user = undefined;
-         console.error(e);
+         this.resetUser();
+         //console.error(e);
       }
 
       return false;
@@ -222,10 +225,8 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
    private async getAuthCookie(c: Context): Promise<string | undefined> {
       try {
          const secret = this.config.jwt.secret;
-
          const token = await getSignedCookie(c, secret, "auth");
          if (typeof token !== "string") {
-            await deleteCookie(c, "auth", this.cookieOptions);
             return undefined;
          }
 
@@ -253,12 +254,17 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
       await setSignedCookie(c, "auth", token, secret, this.cookieOptions);
    }
 
+   private async deleteAuthCookie(c: Context) {
+      await deleteCookie(c, "auth", this.cookieOptions);
+   }
+
    async logout(c: Context) {
       const cookie = await this.getAuthCookie(c);
       if (cookie) {
-         await deleteCookie(c, "auth", this.cookieOptions);
+         await this.deleteAuthCookie(c);
          await addFlashMessage(c, "Signed out", "info");
       }
+      this.resetUser();
    }
 
    // @todo: move this to a server helper

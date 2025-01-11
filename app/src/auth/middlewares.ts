@@ -3,24 +3,6 @@ import type { Context } from "hono";
 import { createMiddleware } from "hono/factory";
 import type { ServerEnv } from "modules/Module";
 
-async function resolveAuth(app: ServerEnv["Variables"]["app"], c: Context<ServerEnv>) {
-   const resolved = c.get("auth_resolved") ?? false;
-   if (resolved) {
-      return;
-   }
-   if (!app.module.auth.enabled) {
-      return;
-   }
-
-   const authenticator = app.module.auth.authenticator;
-   const guard = app.modules.ctx().guard;
-
-   guard.setUserContext(await authenticator.resolveAuthFromRequest(c));
-
-   // renew cookie if applicable
-   authenticator.requestCookieRefresh(c);
-}
-
 export function shouldSkipAuth(req: Request) {
    const skip = new URL(req.url).pathname.startsWith(config.server.assets_path);
    if (skip) {
@@ -30,22 +12,46 @@ export function shouldSkipAuth(req: Request) {
 }
 
 export const auth = createMiddleware<ServerEnv>(async (c, next) => {
-   if (!shouldSkipAuth(c.req.raw)) {
-      // make sure to only register once
-      if (c.get("auth_registered")) {
-         return;
-      }
+   // make sure to only register once
+   if (c.get("auth_registered")) {
+      throw new Error("auth middleware already registered");
+   }
+   c.set("auth_registered", true);
 
-      await resolveAuth(c.get("app"), c);
-      c.set("auth_registered", true);
+   const skipped = shouldSkipAuth(c.req.raw);
+   const app = c.get("app");
+   const guard = app.modules.ctx().guard;
+   const authenticator = app.module.auth.authenticator;
+
+   if (!skipped) {
+      const resolved = c.get("auth_resolved");
+      if (!resolved) {
+         if (!app.module.auth.enabled) {
+            guard.setUserContext(undefined);
+         } else {
+            guard.setUserContext(await authenticator.resolveAuthFromRequest(c));
+
+            // renew cookie if applicable
+            authenticator.requestCookieRefresh(c);
+         }
+      }
    }
 
    await next();
+
+   // release
+   guard.setUserContext(undefined);
+   authenticator.resetUser();
+   c.set("auth_resolved", false);
 });
 
 export const permission = (...permissions: Permission[]) =>
    createMiddleware<ServerEnv>(async (c, next) => {
-      if (!shouldSkipAuth) {
+      if (!c.get("auth_registered")) {
+         throw new Error("auth middleware not registered, cannot check permissions");
+      }
+
+      if (!shouldSkipAuth(c.req.raw)) {
          const app = c.get("app");
          if (app) {
             const p = Array.isArray(permissions) ? permissions : [permissions];
