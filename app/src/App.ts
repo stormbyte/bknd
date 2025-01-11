@@ -111,7 +111,6 @@ export class App {
          await Promise.all(this.plugins.map((plugin) => plugin(this)));
       }
 
-      //console.log("emitting built", options);
       await this.emgr.emit(new AppBuiltEvent({ app: this }));
 
       server.all("/api/*", async (c) => c.notFound());

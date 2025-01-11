@@ -79,7 +79,7 @@ describe("AppAuth", () => {
       }
    });
 
-   test("registers auth middleware automatically", async () => {
+   test("registers auth middleware for bknd routes only", async () => {
       const app = createApp({
          initialConfig: {
             auth: {
@@ -101,7 +101,7 @@ describe("AppAuth", () => {
       await app.server.request("/api/system/ping");
       await app.server.request("/test");
 
-      expect(spy.mock.calls.length).toBe(2);
+      expect(spy.mock.calls.length).toBe(1);
    });
 
    test("should allow additional user fields", async () => {

@@ -11,7 +11,7 @@ export {
    MODULE_NAMES,
    type ModuleKey
 } from "./ModuleManager";
-export { /*Module,*/ type ModuleBuildContext } from "./Module";
+export type { ModuleBuildContext } from "./Module";
 
 export {
    type PrimaryFieldType,

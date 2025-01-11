@@ -33,17 +33,17 @@ export const auth = (options?: {
       c.set("auth_registered", true);
 
       const app = c.get("app");
-      const skipped = shouldSkip(c, options?.skip) || !app.module.auth.enabled;
-      const guard = app.modules.ctx().guard;
-      const authenticator = app.module.auth.authenticator;
+      const skipped = shouldSkip(c, options?.skip) || !app?.module.auth.enabled;
+      const guard = app?.modules.ctx().guard;
+      const authenticator = app?.module.auth.authenticator;
 
       if (!skipped) {
          const resolved = c.get("auth_resolved");
          if (!resolved) {
             if (!app.module.auth.enabled) {
-               guard.setUserContext(undefined);
+               guard?.setUserContext(undefined);
             } else {
-               guard.setUserContext(await authenticator.resolveAuthFromRequest(c));
+               guard?.setUserContext(await authenticator?.resolveAuthFromRequest(c));
                c.set("auth_resolved", true);
             }
          }
@@ -53,11 +53,11 @@ export const auth = (options?: {
 
       if (!skipped) {
          // renew cookie if applicable
-         authenticator.requestCookieRefresh(c);
+         authenticator?.requestCookieRefresh(c);
       }
 
       // release
-      guard.setUserContext(undefined);
+      guard?.setUserContext(undefined);
       authenticator?.resetUser();
       c.set("auth_resolved", false);
    });
@@ -75,7 +75,7 @@ export const permission = (
       //console.log("skip?", c.get("auth_skip"));
 
       // in tests, app is not defined
-      if (!c.get("auth_registered")) {
+      if (!c.get("auth_registered") || !app) {
          const msg = `auth middleware not registered, cannot check permissions for ${getPath(c)}`;
          if (app?.module.auth.enabled) {
             throw new Error(msg);

@@ -292,7 +292,7 @@ export class SystemController extends Controller {
          return c.json({
             version: this.app.version(),
             test: 2,
-            app: c.get("app").version()
+            app: c.get("app")?.version()
          });
       });
 

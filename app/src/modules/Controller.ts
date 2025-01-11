@@ -1,11 +1,6 @@
-import { auth, permission } from "auth/middlewares";
 import { Hono } from "hono";
 import type { ServerEnv } from "modules/Module";
-
-const middlewares = {
-   auth,
-   permission
-} as const;
+import * as middlewares from "modules/middlewares";
 
 export class Controller {
    protected middlewares = middlewares;
