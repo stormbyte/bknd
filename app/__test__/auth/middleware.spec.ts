@@ -3,7 +3,7 @@ import { shouldSkipAuth } from "../../src/auth/middlewares";
 
 describe("auth middleware", () => {
    it("should skip auth on asset paths", () => {
-      expect(shouldSkipAuth({ req: new Request("http://localhost/assets/test.js") })).toBe(true);
-      expect(shouldSkipAuth({ req: new Request("http://localhost/") })).toBe(false);
+      expect(shouldSkipAuth(new Request("http://localhost/assets/test.js"))).toBe(true);
+      expect(shouldSkipAuth(new Request("http://localhost/"))).toBe(false);
    });
 });

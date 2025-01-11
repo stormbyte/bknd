@@ -21,12 +21,16 @@ async function resolveAuth(app: ServerEnv["Variables"]["app"], c: Context<Server
    authenticator.requestCookieRefresh(c);
 }
 
-export function shouldSkipAuth(c: { req: Request }) {
-   return new URL(c.req.url).pathname.startsWith(config.server.assets_path);
+export function shouldSkipAuth(req: Request) {
+   const skip = new URL(req.url).pathname.startsWith(config.server.assets_path);
+   if (skip) {
+      //console.log("skip auth for", req.url);
+   }
+   return skip;
 }
 
 export const auth = createMiddleware<ServerEnv>(async (c, next) => {
-   if (!shouldSkipAuth) {
+   if (!shouldSkipAuth(c.req.raw)) {
       // make sure to only register once
       if (c.get("auth_registered")) {
          return;

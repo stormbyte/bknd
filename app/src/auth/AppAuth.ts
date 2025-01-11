@@ -276,6 +276,10 @@ export class AppAuth extends Module<typeof authConfigSchema> {
    }
 
    async createUser({ email, password, ...additional }: CreateUserPayload): Promise<DB["users"]> {
+      if (!this.enabled) {
+         throw new Error("Cannot create user, auth not enabled");
+      }
+
       const strategy = "password";
       const pw = this.authenticator.strategy(strategy) as PasswordStrategy;
       const strategy_value = await pw.hash(password);
