@@ -19,9 +19,6 @@ export function serve({
    port = $config.server.default_port,
    hostname,
    listener,
-   onBuilt,
-   buildConfig = {},
-   beforeBuild,
    ...config
 }: NodeBkndConfig = {}) {
    const root = path.relative(

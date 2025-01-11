@@ -11,13 +11,7 @@ let app: App;
 
 export type BunBkndConfig = RuntimeBkndConfig & Omit<ServeOptions, "fetch">;
 
-export async function createApp({
-   distPath,
-   onBuilt,
-   buildConfig,
-   beforeBuild,
-   ...config
-}: RuntimeBkndConfig = {}) {
+export async function createApp({ distPath, ...config }: RuntimeBkndConfig = {}) {
    const root = path.resolve(distPath ?? "./node_modules/bknd/dist", "static");
 
    if (!app) {
