@@ -7,7 +7,7 @@ export const meta: MetaFunction = () => {
 
 export const loader = async (args: LoaderFunctionArgs) => {
    const api = args.context.api;
-   const user = (await api.getVerifiedAuthState()).user;
+   const user = (await api.getVerifiedAuthState(true)).user;
    const { data } = await api.data.readMany("todos");
    return { data, user };
 };

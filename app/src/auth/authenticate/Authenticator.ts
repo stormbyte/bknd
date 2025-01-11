@@ -1,14 +1,6 @@
 import { Exception } from "core";
 import { addFlashMessage } from "core/server/flash";
-import {
-   type Static,
-   StringEnum,
-   type TSchema,
-   Type,
-   parse,
-   randomString,
-   transformObject
-} from "core/utils";
+import { type Static, StringEnum, Type, parse, runtimeSupports, transformObject } from "core/utils";
 import type { Context, Hono } from "hono";
 import { deleteCookie, getSignedCookie, setSignedCookie } from "hono/cookie";
 import { sign, verify } from "hono/jwt";
@@ -282,20 +274,31 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
       return c.req.header("Content-Type") === "application/json";
    }
 
+   private getSuccessPath(c: Context) {
+      const p = (this.config.cookie.pathSuccess ?? "/").replace(/\/+$/, "/");
+
+      // nextjs doesn't support non-fq urls
+      // but env could be proxied (stackblitz), so we shouldn't fq every url
+      if (!runtimeSupports("redirects_non_fq")) {
+         return new URL(c.req.url).origin + p;
+      }
+
+      return p;
+   }
+
    async respond(c: Context, data: AuthResponse | Error | any, redirect?: string) {
       if (this.isJsonRequest(c)) {
          return c.json(data);
       }
 
-      const successPath = this.config.cookie.pathSuccess ?? "/";
-      const successUrl = new URL(c.req.url).origin + successPath.replace(/\/+$/, "/");
-      const referer = new URL(redirect ?? c.req.header("Referer") ?? successUrl);
-      console.log("auth respond", { redirect, successUrl, successPath });
+      const successUrl = this.getSuccessPath(c);
+      const referer = redirect ?? c.req.header("Referer") ?? successUrl;
+      //console.log("auth respond", { redirect, successUrl, successPath });
 
       if ("token" in data) {
          await this.setAuthCookie(c, data.token);
          // can't navigate to "/" – doesn't work on nextjs
-         console.log("auth success, redirecting to", successUrl);
+         //console.log("auth success, redirecting to", successUrl);
          return c.redirect(successUrl);
       }
 
@@ -305,7 +308,7 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
       }
 
       await addFlashMessage(c, message, "error");
-      console.log("auth failed, redirecting to", referer);
+      //console.log("auth failed, redirecting to", referer);
       return c.redirect(referer);
    }
 

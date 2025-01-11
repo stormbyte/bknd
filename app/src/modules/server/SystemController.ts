@@ -3,6 +3,7 @@
 import type { App } from "App";
 import { tbValidator as tb } from "core";
 import { StringEnum, Type, TypeInvalidError } from "core/utils";
+import { getRuntimeKey } from "core/utils";
 import type { Context, Hono } from "hono";
 import { Controller } from "modules/Controller";
 
@@ -292,7 +293,8 @@ export class SystemController extends Controller {
          return c.json({
             version: this.app.version(),
             test: 2,
-            app: c.get("app")?.version()
+            app: c.get("app")?.version(),
+            runtime: getRuntimeKey()
          });
       });
 
