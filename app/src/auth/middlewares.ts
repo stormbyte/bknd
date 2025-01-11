@@ -3,8 +3,13 @@ import type { Context } from "hono";
 import { createMiddleware } from "hono/factory";
 import type { ServerEnv } from "modules/Module";
 
+function getPath(reqOrCtx: Request | Context) {
+   const req = reqOrCtx instanceof Request ? reqOrCtx : reqOrCtx.req.raw;
+   return new URL(req.url).pathname;
+}
+
 export function shouldSkipAuth(req: Request) {
-   const skip = new URL(req.url).pathname.startsWith(config.server.assets_path);
+   const skip = getPath(req).startsWith(config.server.assets_path);
    if (skip) {
       //console.log("skip auth for", req.url);
    }
@@ -14,7 +19,7 @@ export function shouldSkipAuth(req: Request) {
 export const auth = createMiddleware<ServerEnv>(async (c, next) => {
    // make sure to only register once
    if (c.get("auth_registered")) {
-      throw new Error("auth middleware already registered");
+      throw new Error(`auth middleware already registered for ${getPath(c)}`);
    }
    c.set("auth_registered", true);
 
@@ -47,20 +52,20 @@ export const auth = createMiddleware<ServerEnv>(async (c, next) => {
 
 export const permission = (...permissions: Permission[]) =>
    createMiddleware<ServerEnv>(async (c, next) => {
+      const app = c.get("app");
+      // in tests, app is not defined
       if (!c.get("auth_registered")) {
-         throw new Error("auth middleware not registered, cannot check permissions");
-      }
-
-      if (!shouldSkipAuth(c.req.raw)) {
-         const app = c.get("app");
-         if (app) {
-            const p = Array.isArray(permissions) ? permissions : [permissions];
-            const guard = app.modules.ctx().guard;
-            for (const permission of p) {
-               guard.throwUnlessGranted(permission);
-            }
+         const msg = `auth middleware not registered, cannot check permissions for ${getPath(c)}`;
+         if (app?.module.auth.enabled) {
+            throw new Error(msg);
          } else {
-            console.warn("app not in context, skip permission check");
+            console.warn(msg);
+         }
+      } else if (!shouldSkipAuth(c.req.raw)) {
+         const p = Array.isArray(permissions) ? permissions : [permissions];
+         const guard = app.modules.ctx().guard;
+         for (const permission of p) {
+            guard.throwUnlessGranted(permission);
          }
       }
 

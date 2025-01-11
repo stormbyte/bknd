@@ -7,7 +7,7 @@ const _oldConsoles = {
 
 export async function withDisabledConsole<R>(
    fn: () => Promise<R>,
-   severities: ConsoleSeverity[] = ["log"]
+   severities: ConsoleSeverity[] = ["log", "warn", "error"]
 ): Promise<R> {
    const _oldConsoles = {
       log: console.log,
@@ -30,7 +30,7 @@ export async function withDisabledConsole<R>(
    }
 }
 
-export function disableConsoleLog(severities: ConsoleSeverity[] = ["log"]) {
+export function disableConsoleLog(severities: ConsoleSeverity[] = ["log", "warn"]) {
    severities.forEach((severity) => {
       console[severity] = () => null;
    });

@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { App, createApp } from "../../src";
 import type { AuthResponse } from "../../src/auth";
-import { randomString, secureRandomString } from "../../src/core/utils";
+import { randomString, secureRandomString, withDisabledConsole } from "../../src/core/utils";
 import { disableConsoleLog, enableConsoleLog } from "../helper";
 
 beforeAll(disableConsoleLog);
@@ -199,5 +199,15 @@ describe("integration auth", () => {
          expect(await $fns.me("invalid")).toEqual({ user: null as any });
          expect(await $fns.me()).toEqual({ user: null as any });
       }
+   });
+
+   it("should check for permissions", async () => {
+      const app = createAuthApp();
+      await app.build();
+
+      await withDisabledConsole(async () => {
+         const res = await app.server.request("/api/system/schema");
+         expect(res.status).toBe(403);
+      });
    });
 });
