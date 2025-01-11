@@ -1,4 +1,5 @@
-import { type Permission, config } from "core";
+import type { Permission } from "core";
+import { patternMatch } from "core/utils";
 import type { Context } from "hono";
 import { createMiddleware } from "hono/factory";
 import type { ServerEnv } from "modules/Module";
@@ -8,51 +9,71 @@ function getPath(reqOrCtx: Request | Context) {
    return new URL(req.url).pathname;
 }
 
-export function shouldSkipAuth(req: Request) {
-   const skip = getPath(req).startsWith(config.server.assets_path);
-   if (skip) {
-      //console.log("skip auth for", req.url);
-   }
-   return skip;
+export function shouldSkip(c: Context<ServerEnv>, skip?: (string | RegExp)[]) {
+   if (c.get("auth_skip")) return true;
+
+   const req = c.req.raw;
+   if (!skip) return false;
+
+   const path = getPath(req);
+   const result = skip.some((s) => patternMatch(path, s));
+
+   c.set("auth_skip", result);
+   return result;
 }
 
-export const auth = createMiddleware<ServerEnv>(async (c, next) => {
-   // make sure to only register once
-   if (c.get("auth_registered")) {
-      throw new Error(`auth middleware already registered for ${getPath(c)}`);
-   }
-   c.set("auth_registered", true);
+export const auth = (options?: {
+   skip?: (string | RegExp)[];
+}) =>
+   createMiddleware<ServerEnv>(async (c, next) => {
+      // make sure to only register once
+      if (c.get("auth_registered")) {
+         throw new Error(`auth middleware already registered for ${getPath(c)}`);
+      }
+      c.set("auth_registered", true);
 
-   const skipped = shouldSkipAuth(c.req.raw);
-   const app = c.get("app");
-   const guard = app.modules.ctx().guard;
-   const authenticator = app.module.auth.authenticator;
+      const app = c.get("app");
+      const skipped = shouldSkip(c, options?.skip) || !app.module.auth.enabled;
+      const guard = app.modules.ctx().guard;
+      const authenticator = app.module.auth.authenticator;
 
-   if (!skipped) {
-      const resolved = c.get("auth_resolved");
-      if (!resolved) {
-         if (!app.module.auth.enabled) {
-            guard.setUserContext(undefined);
-         } else {
-            guard.setUserContext(await authenticator.resolveAuthFromRequest(c));
-
-            // renew cookie if applicable
-            authenticator.requestCookieRefresh(c);
+      if (!skipped) {
+         const resolved = c.get("auth_resolved");
+         if (!resolved) {
+            if (!app.module.auth.enabled) {
+               guard.setUserContext(undefined);
+            } else {
+               guard.setUserContext(await authenticator.resolveAuthFromRequest(c));
+               c.set("auth_resolved", true);
+            }
          }
       }
+
+      await next();
+
+      if (!skipped) {
+         // renew cookie if applicable
+         authenticator.requestCookieRefresh(c);
+      }
+
+      // release
+      guard.setUserContext(undefined);
+      authenticator?.resetUser();
+      c.set("auth_resolved", false);
+   });
+
+export const permission = (
+   permission: Permission | Permission[],
+   options?: {
+      onGranted?: (c: Context<ServerEnv>) => Promise<Response | void | undefined>;
+      onDenied?: (c: Context<ServerEnv>) => Promise<Response | void | undefined>;
    }
-
-   await next();
-
-   // release
-   guard.setUserContext(undefined);
-   authenticator.resetUser();
-   c.set("auth_resolved", false);
-});
-
-export const permission = (...permissions: Permission[]) =>
+) =>
+   // @ts-ignore
    createMiddleware<ServerEnv>(async (c, next) => {
       const app = c.get("app");
+      //console.log("skip?", c.get("auth_skip"));
+
       // in tests, app is not defined
       if (!c.get("auth_registered")) {
          const msg = `auth middleware not registered, cannot check permissions for ${getPath(c)}`;
@@ -61,11 +82,22 @@ export const permission = (...permissions: Permission[]) =>
          } else {
             console.warn(msg);
          }
-      } else if (!shouldSkipAuth(c.req.raw)) {
-         const p = Array.isArray(permissions) ? permissions : [permissions];
+      } else if (!c.get("auth_skip")) {
          const guard = app.modules.ctx().guard;
-         for (const permission of p) {
-            guard.throwUnlessGranted(permission);
+         const permissions = Array.isArray(permission) ? permission : [permission];
+
+         if (options?.onGranted || options?.onDenied) {
+            let returned: undefined | void | Response;
+            if (permissions.every((p) => guard.granted(p))) {
+               returned = await options?.onGranted?.(c);
+            } else {
+               returned = await options?.onDenied?.(c);
+            }
+            if (returned instanceof Response) {
+               return returned;
+            }
+         } else {
+            permissions.some((p) => guard.throwUnlessGranted(p));
          }
       }
 

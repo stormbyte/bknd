@@ -111,6 +111,9 @@ const result = await esbuild.build({
    const manifest_file = "dist/static/manifest.json";
    await Bun.write(manifest_file, JSON.stringify(manifest, null, 2));
    console.log(`Manifest written to ${manifest_file}`, manifest);
+
+   // copy assets to static
+   await $`cp -r src/ui/assets/* dist/static/assets`;
 }
 
 /**

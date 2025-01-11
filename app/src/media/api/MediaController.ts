@@ -27,8 +27,8 @@ export class MediaController extends Controller {
    override getController() {
       // @todo: multiple providers?
       // @todo: implement range requests
-
-      const hono = this.create();
+      const { auth } = this.middlewares;
+      const hono = this.create().use(auth());
 
       // get files list (temporary)
       hono.get("/files", async (c) => {

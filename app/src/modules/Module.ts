@@ -14,6 +14,8 @@ export type ServerEnv = {
       auth_resolved: boolean;
       // to only register once
       auth_registered: boolean;
+      // whether or not to bypass auth
+      auth_skip: boolean;
       html?: string;
    };
 };

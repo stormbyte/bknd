@@ -13,7 +13,7 @@ import type { Context, Hono } from "hono";
 import { deleteCookie, getSignedCookie, setSignedCookie } from "hono/cookie";
 import { sign, verify } from "hono/jwt";
 import type { CookieOptions } from "hono/utils/cookie";
-import { omit } from "lodash-es";
+import type { ServerEnv } from "modules/Module";
 
 type Input = any; // workaround
 export type JWTPayload = Parameters<typeof sign>[0];
@@ -101,7 +101,13 @@ export type AuthUserResolver = (
 export class Authenticator<Strategies extends Record<string, Strategy> = Record<string, Strategy>> {
    private readonly strategies: Strategies;
    private readonly config: AuthConfig;
-   private _user: SafeUser | undefined;
+   private _claims:
+      | undefined
+      | (SafeUser & {
+           iat: number;
+           iss?: string;
+           exp?: number;
+        });
    private readonly userResolver: AuthUserResolver;
 
    constructor(strategies: Strategies, userResolver?: AuthUserResolver, config?: AuthConfig) {
@@ -134,16 +140,18 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
    }
 
    isUserLoggedIn(): boolean {
-      return this._user !== undefined;
+      return this._claims !== undefined;
    }
 
-   getUser() {
-      return this._user;
+   getUser(): SafeUser | undefined {
+      if (!this._claims) return;
+
+      const { iat, exp, iss, ...user } = this._claims;
+      return user;
    }
 
-   // @todo: determine what to do exactly
    resetUser() {
-      this._user = undefined;
+      this._claims = undefined;
    }
 
    strategy<
@@ -157,6 +165,7 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
       }
    }
 
+   // @todo: add jwt tests
    async jwt(user: Omit<User, "password">): Promise<string> {
       const prohibited = ["password"];
       for (const prop of prohibited) {
@@ -203,7 +212,7 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
             }
          }
 
-         this._user = omit(payload, ["iat", "exp", "iss"]) as SafeUser;
+         this._claims = payload as any;
          return true;
       } catch (e) {
          this.resetUser();
@@ -249,7 +258,7 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
       }
    }
 
-   private async setAuthCookie(c: Context, token: string) {
+   private async setAuthCookie(c: Context<ServerEnv>, token: string) {
       const secret = this.config.jwt.secret;
       await setSignedCookie(c, "auth", token, secret, this.cookieOptions);
    }
@@ -281,10 +290,12 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
       const successPath = this.config.cookie.pathSuccess ?? "/";
       const successUrl = new URL(c.req.url).origin + successPath.replace(/\/+$/, "/");
       const referer = new URL(redirect ?? c.req.header("Referer") ?? successUrl);
+      console.log("auth respond", { redirect, successUrl, successPath });
 
       if ("token" in data) {
          await this.setAuthCookie(c, data.token);
          // can't navigate to "/" – doesn't work on nextjs
+         console.log("auth success, redirecting to", successUrl);
          return c.redirect(successUrl);
       }
 
@@ -294,6 +305,7 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
       }
 
       await addFlashMessage(c, message, "error");
+      console.log("auth failed, redirecting to", referer);
       return c.redirect(referer);
    }
 
@@ -309,7 +321,7 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
 
       if (token) {
          await this.verify(token);
-         return this._user;
+         return this.getUser();
       }
 
       return undefined;

@@ -4,14 +4,12 @@ import { setCookie } from "hono/cookie";
 const flash_key = "__bknd_flash";
 export type FlashMessageType = "error" | "warning" | "success" | "info";
 
-export async function addFlashMessage(
-   c: Context,
-   message: string,
-   type: FlashMessageType = "info"
-) {
-   setCookie(c, flash_key, JSON.stringify({ type, message }), {
-      path: "/"
-   });
+export function addFlashMessage(c: Context, message: string, type: FlashMessageType = "info") {
+   if (c.req.header("Accept")?.includes("text/html")) {
+      setCookie(c, flash_key, JSON.stringify({ type, message }), {
+         path: "/"
+      });
+   }
 }
 
 function getCookieValue(name) {

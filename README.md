@@ -1,4 +1,4 @@
-![bknd](https://raw.githubusercontent.com/bknd-io/bknd/refs/heads/main/app/src/ui/assets/poster.png)
+![bknd](docs/_assets/poster.png)
 
 bknd simplifies app development by providing fully functional backend for data management, 
 authentication, workflows and media. Since it's lightweight and built on Web Standards, it can 

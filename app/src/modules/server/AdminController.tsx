@@ -47,7 +47,13 @@ export class AdminController extends Controller {
    }
 
    override getController() {
-      const hono = this.create().basePath(this.withBasePath());
+      const { auth: authMiddleware, permission } = this.middlewares;
+      const hono = this.create().use(
+         authMiddleware({
+            skip: [/favicon\.ico$/]
+         })
+      );
+
       const auth = this.app.module.auth;
       const configs = this.app.modules.configs();
       // if auth is not enabled, authenticator is undefined
@@ -78,16 +84,17 @@ export class AdminController extends Controller {
       });
 
       if (auth_enabled) {
-         hono.get(authRoutes.login, async (c) => {
-            if (
-               this.app.module.auth.authenticator?.isUserLoggedIn() &&
-               this.ctx.guard.granted(SystemPermissions.accessAdmin)
-            ) {
-               return c.redirect(authRoutes.success);
+         hono.get(
+            authRoutes.login,
+            permission([SystemPermissions.accessAdmin, SystemPermissions.schemaRead], {
+               onGranted: async (c) => {
+                  return c.redirect(authRoutes.success);
+               }
+            }),
+            async (c) => {
+               return c.html(c.get("html")!);
             }
-
-            return c.html(c.get("html")!);
-         });
+         );
 
          hono.get(authRoutes.logout, async (c) => {
             await auth.authenticator?.logout(c);
@@ -95,14 +102,25 @@ export class AdminController extends Controller {
          });
       }
 
-      hono.get("*", async (c) => {
-         if (!this.ctx.guard.granted(SystemPermissions.accessAdmin)) {
-            await addFlashMessage(c, "You are not authorized to access the Admin UI", "error");
-            return c.redirect(authRoutes.login);
-         }
+      hono.get(
+         "/*",
+         permission(SystemPermissions.accessAdmin, {
+            onDenied: async (c) => {
+               addFlashMessage(c, "You are not authorized to access the Admin UI", "error");
 
-         return c.html(c.get("html")!);
-      });
+               console.log("redirecting");
+               return c.redirect(authRoutes.login);
+            }
+         }),
+         permission(SystemPermissions.schemaRead, {
+            onDenied: async (c) => {
+               addFlashMessage(c, "You not allowed to read the schema", "warning");
+            }
+         }),
+         async (c) => {
+            return c.html(c.get("html")!);
+         }
+      );
 
       return hono;
    }
@@ -150,6 +168,7 @@ export class AdminController extends Controller {
       }
 
       const theme = configs.server.admin.color_scheme ?? "light";
+      const favicon = isProd ? this.options.assets_path + "favicon.ico" : "/favicon.ico";
 
       return (
          <Fragment>
@@ -162,6 +181,7 @@ export class AdminController extends Controller {
                      name="viewport"
                      content="width=device-width, initial-scale=1, maximum-scale=1"
                   />
+                  <link rel="icon" href={favicon} type="image/x-icon" />
                   <title>BKND</title>
                   {isProd ? (
                      <Fragment>

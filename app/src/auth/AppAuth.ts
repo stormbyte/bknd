@@ -91,10 +91,6 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       return this._controller;
    }
 
-   override onServerInit(hono: Hono<any>) {
-      hono.use(auth);
-   }
-
    getSchema() {
       return authConfigSchema;
    }

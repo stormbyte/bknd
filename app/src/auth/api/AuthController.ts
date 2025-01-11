@@ -11,6 +11,7 @@ export class AuthController extends Controller {
    }
 
    override getController() {
+      const { auth } = this.middlewares;
       const hono = this.create();
       const strategies = this.auth.authenticator.getStrategies();
 
@@ -19,7 +20,7 @@ export class AuthController extends Controller {
          hono.route(`/${name}`, strategy.getController(this.auth.authenticator));
       }
 
-      hono.get("/me", async (c) => {
+      hono.get("/me", auth(), async (c) => {
          if (this.auth.authenticator.isUserLoggedIn()) {
             return c.json({ user: await this.auth.authenticator.getUser() });
          }
@@ -27,7 +28,7 @@ export class AuthController extends Controller {
          return c.json({ user: null }, 403);
       });
 
-      hono.get("/logout", async (c) => {
+      hono.get("/logout", auth(), async (c) => {
          await this.auth.authenticator.logout(c);
          if (this.auth.authenticator.isJsonRequest(c)) {
             return c.json({ ok: true });

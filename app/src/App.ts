@@ -1,5 +1,8 @@
 import type { CreateUserPayload } from "auth/AppAuth";
+import { auth } from "auth/middlewares";
+import { config } from "core";
 import { Event } from "core/events";
+import { patternMatch } from "core/utils";
 import { Connection, type LibSqlCredentials, LibsqlConnection } from "data";
 import {
    type InitialModuleConfigs,
@@ -71,6 +74,9 @@ export class App {
             this.trigger_first_boot = true;
          },
          onServerInit: async (server) => {
+            server.get("/favicon.ico", (c) =>
+               c.redirect(config.server.assets_path + "/favicon.ico")
+            );
             server.use(async (c, next) => {
                c.set("app", this);
                await next();
@@ -159,7 +165,7 @@ export class App {
    registerAdminController(config?: AdminControllerOptions) {
       // register admin
       this.adminController = new AdminController(this, config);
-      this.modules.server.route("/", this.adminController.getController());
+      this.modules.server.route(config?.basepath ?? "/", this.adminController.getController());
       return this;
    }
 

@@ -104,3 +104,14 @@ export function replaceSimplePlaceholders(str: string, vars: Record<string, any>
       return key in vars ? vars[key] : match;
    });
 }
+
+export function patternMatch(target: string, pattern: RegExp | string): boolean {
+   if (pattern instanceof RegExp) {
+      return pattern.test(target);
+   } else if (typeof pattern === "string" && pattern.startsWith("/")) {
+      return new RegExp(pattern).test(target);
+   } else if (typeof pattern === "string") {
+      return target.startsWith(pattern);
+   }
+   return false;
+}

@@ -38,8 +38,8 @@ export class SystemController extends Controller {
    }
 
    private registerConfigController(client: Hono<any>): void {
-      const hono = this.create();
       const { permission } = this.middlewares;
+      const hono = this.create();
 
       hono.use(permission(SystemPermissions.configRead));
 
@@ -202,8 +202,8 @@ export class SystemController extends Controller {
    }
 
    override getController() {
-      const hono = this.create();
-      const { permission } = this.middlewares;
+      const { permission, auth } = this.middlewares;
+      const hono = this.create().use(auth());
 
       this.registerConfigController(hono);
 

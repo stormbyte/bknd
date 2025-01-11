@@ -10,7 +10,7 @@ export default defineConfig({
       __isDev: "1"
    },
    clearScreen: false,
-   publicDir: "./src/admin/assets",
+   publicDir: "./src/ui/assets",
    server: {
       host: true,
       port: 28623,

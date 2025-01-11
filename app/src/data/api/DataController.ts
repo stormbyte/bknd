@@ -69,8 +69,9 @@ export class DataController extends Controller {
    }
 
    override getController() {
-      const hono = this.create();
-      const { permission } = this.middlewares;
+      const { permission, auth } = this.middlewares;
+      const hono = this.create().use(auth());
+
       const definedEntities = this.em.entities.map((e) => e.name);
       const tbNumber = Type.Transform(Type.String({ pattern: "^[1-9][0-9]{0,}$" }))
          .Decode(Number.parseInt)
