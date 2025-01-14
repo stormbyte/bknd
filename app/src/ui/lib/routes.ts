@@ -1,9 +1,6 @@
 import type { PrimaryFieldType } from "core";
 import { encodeSearch } from "core/utils";
-import { atom, useSetAtom } from "jotai";
-import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { useBaseUrl } from "../client";
 import { useBknd } from "../client/BkndProvider";
 
 export const routes = {

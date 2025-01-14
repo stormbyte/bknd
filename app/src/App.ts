@@ -74,9 +74,6 @@ export class App {
             this.trigger_first_boot = true;
          },
          onServerInit: async (server) => {
-            server.get("/favicon.ico", (c) =>
-               c.redirect(config.server.assets_path + "/favicon.ico")
-            );
             server.use(async (c, next) => {
                c.set("app", this);
                await next();

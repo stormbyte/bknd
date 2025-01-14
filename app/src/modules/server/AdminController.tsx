@@ -50,7 +50,7 @@ export class AdminController extends Controller {
       const { auth: authMiddleware, permission } = this.middlewares;
       const hono = this.create().use(
          authMiddleware({
-            skip: [/favicon\.ico$/]
+            //skip: [/favicon\.ico$/]
          })
       );
 
@@ -102,6 +102,7 @@ export class AdminController extends Controller {
          });
       }
 
+      // @todo: only load known paths
       hono.get(
          "/*",
          permission(SystemPermissions.accessAdmin, {
@@ -160,8 +161,9 @@ export class AdminController extends Controller {
             const manifest = await import("bknd/dist/manifest.json", {
                assert: { type: "json" }
             }).then((m) => m.default);
-            assets.js = manifest["src/ui/main.tsx"].name;
-            assets.css = manifest["src/ui/main.css"].name;
+            // @todo: load all marked as entry (incl. css)
+            assets.js = manifest["src/ui/main.tsx"].file;
+            assets.css = manifest["src/ui/main.tsx"].css[0] as any;
          } catch (e) {
             console.error("Error loading manifest", e);
          }

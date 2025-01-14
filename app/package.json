@@ -3,20 +3,19 @@
   "type": "module",
   "sideEffects": false,
   "bin": "./dist/cli/index.js",
-  "version": "0.5.0-rc15",
+  "version": "0.5.0-rc16",
   "scripts": {
-    "build:all": "NODE_ENV=production bun run build.ts --minify --types --clean && bun run build:cli",
     "dev": "vite",
     "test": "ALL_TESTS=1 bun test --bail",
     "build": "NODE_ENV=production bun run build.ts --minify --types",
+    "build:all": "rm -rf dist && bun run build:static && NODE_ENV=production bun run build.ts --minify --types --clean && bun run build:cli",
+    "build:cli": "bun build src/cli/index.ts --target node --outdir dist/cli --minify",
+    "build:static": "vite build",
     "watch": "bun run build.ts --types --watch",
     "types": "bun tsc --noEmit",
     "clean:types": "find ./dist -name '*.d.ts' -delete && rm -f ./dist/tsconfig.tsbuildinfo",
     "build:types": "tsc --emitDeclarationOnly && tsc-alias",
-    "build:css": "bun tailwindcss -i src/ui/main.css -o ./dist/static/styles.css",
-    "watch:css": "bun tailwindcss --watch -i src/ui/main.css -o ./dist/styles.css",
     "updater": "bun x npm-check-updates -ui",
-    "build:cli": "bun build src/cli/index.ts --target node --outdir dist/cli --minify",
     "cli": "LOCAL=1 bun src/cli/index.ts",
     "prepublishOnly": "bun run test && bun run build:all"
   },
@@ -170,7 +169,7 @@
       "require": "./dist/adapter/astro/index.cjs"
     },
     "./dist/styles.css": "./dist/ui/main.css",
-    "./dist/manifest.json": "./dist/static/manifest.json"
+    "./dist/manifest.json": "./dist/static/.vite/manifest.json"
   },
   "publishConfig": {
     "access": "public"

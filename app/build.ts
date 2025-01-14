@@ -1,8 +1,5 @@
 import { $ } from "bun";
-import * as esbuild from "esbuild";
-import postcss from "esbuild-postcss";
 import * as tsup from "tsup";
-import { guessMimeType } from "./src/media/storage/mime-types";
 
 const args = process.argv.slice(2);
 const watch = args.includes("--watch");
@@ -11,12 +8,9 @@ const types = args.includes("--types");
 const sourcemap = args.includes("--sourcemap");
 const clean = args.includes("--clean");
 
-// keep console logs if not minified
-const debugging = minify;
-
 if (clean) {
-   console.log("Cleaning dist");
-   await $`rm -rf dist`;
+   console.log("Cleaning dist (w/o static)");
+   await $`find dist -mindepth 1 ! -path "dist/static/*" ! -path "dist/static" -exec rm -rf {} +`;
 }
 
 let types_running = false;
@@ -50,70 +44,6 @@ function delayTypes() {
 
 if (types && !watch) {
    buildTypes();
-}
-
-/**
- * Build static assets
- * Using esbuild because tsup doesn't include "react"
- */
-const result = await esbuild.build({
-   minify,
-   sourcemap,
-   entryPoints: ["src/ui/main.tsx"],
-   entryNames: "[dir]/[name]-[hash]",
-   outdir: "dist/static/assets",
-   platform: "browser",
-   bundle: true,
-   splitting: true,
-   metafile: true,
-   drop: debugging ? undefined : ["console", "debugger"],
-   inject: ["src/ui/inject.js"],
-   target: "es2022",
-   format: "esm",
-   plugins: [postcss()],
-   loader: {
-      ".svg": "dataurl",
-      ".js": "jsx"
-   },
-   define: {
-      __isDev: "0",
-      "process.env.NODE_ENV": '"production"'
-   },
-   chunkNames: "chunks/[name]-[hash]",
-   logLevel: "error"
-});
-
-// Write manifest
-{
-   const manifest: Record<string, object> = {};
-   const toAsset = (output: string) => {
-      const name = output.split("/").pop()!;
-      return {
-         name,
-         path: output,
-         mime: guessMimeType(name)
-      };
-   };
-
-   const info = Object.entries(result.metafile.outputs)
-      .filter(([, meta]) => {
-         return meta.entryPoint && meta.entryPoint === "src/ui/main.tsx";
-      })
-      .map(([output, meta]) => ({ output, meta }));
-
-   for (const { output, meta } of info) {
-      manifest[meta.entryPoint as string] = toAsset(output);
-      if (meta.cssBundle) {
-         manifest["src/ui/main.css"] = toAsset(meta.cssBundle);
-      }
-   }
-
-   const manifest_file = "dist/static/manifest.json";
-   await Bun.write(manifest_file, JSON.stringify(manifest, null, 2));
-   console.log(`Manifest written to ${manifest_file}`, manifest);
-
-   // copy assets to static
-   await $`cp -r src/ui/assets/* dist/static/assets`;
 }
 
 /**
@@ -201,13 +131,14 @@ function baseConfig(adapter: string): tsup.Options {
    };
 }
 
+await tsup.build(baseConfig("remix"));
+await tsup.build(baseConfig("bun"));
+await tsup.build(baseConfig("astro"));
+await tsup.build(baseConfig("cloudflare"));
+
 await tsup.build({
    ...baseConfig("vite"),
    platform: "node"
-});
-
-await tsup.build({
-   ...baseConfig("cloudflare")
 });
 
 await tsup.build({
@@ -216,18 +147,6 @@ await tsup.build({
 });
 
 await tsup.build({
-   ...baseConfig("remix")
-});
-
-await tsup.build({
-   ...baseConfig("bun")
-});
-
-await tsup.build({
    ...baseConfig("node"),
    platform: "node"
-});
-
-await tsup.build({
-   ...baseConfig("astro")
 });

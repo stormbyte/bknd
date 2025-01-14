@@ -1,12 +1,12 @@
 import type { ValueError } from "@sinclair/typebox/value";
 import type { AppAuthOAuthStrategy, AppAuthSchema } from "auth/auth-schema";
 import { type TSchema, Type, Value } from "core/utils";
+import { Form, type Validator } from "json-schema-form-react";
 import { transform } from "lodash-es";
 import type { ComponentPropsWithoutRef } from "react";
 import { twMerge } from "tailwind-merge";
 import { Button } from "ui/components/buttons/Button";
 import { Group, Input, Label } from "ui/components/form/Formy";
-import { Form, type Validator } from "ui/lib/json-schema-form";
 import { SocialLink } from "ui/modules/auth/SocialLink";
 
 export type LoginFormProps = Omit<ComponentPropsWithoutRef<"form">, "onSubmit" | "action"> & {

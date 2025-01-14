@@ -25,5 +25,12 @@ export default defineConfig({
          ...devServerConfig,
          entry: "./vite.dev.ts"
       })
-   ]
+   ],
+   build: {
+      manifest: true,
+      outDir: "./dist/static",
+      rollupOptions: {
+         input: "./src/ui/main.tsx"
+      }
+   }
 });
