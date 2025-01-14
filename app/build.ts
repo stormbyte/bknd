@@ -1,7 +1,4 @@
-import fs from "node:fs";
-
 import { $ } from "bun";
-import { replace } from "esbuild-plugin-replace";
 import * as tsup from "tsup";
 
 const args = process.argv.slice(2);
