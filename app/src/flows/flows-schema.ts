@@ -62,7 +62,7 @@ export const flowSchema = Type.Object(
    {
       trigger: Type.Union(Object.values(triggerSchemaObject)),
       tasks: Type.Optional(StringRecord(Type.Union(Object.values(taskSchemaObject)))),
-      connections: Type.Optional(StringRecord(connectionSchema, { default: {} })),
+      connections: Type.Optional(StringRecord(connectionSchema)),
       start_task: Type.Optional(Type.String()),
       responding_task: Type.Optional(Type.String())
    },

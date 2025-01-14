@@ -12,6 +12,18 @@ export type { TAppFlowTaskSchema } from "./flows-schema";
 export class AppFlows extends Module<typeof flowsConfigSchema> {
    private flows: Record<string, Flow> = {};
 
+   getSchema() {
+      return flowsConfigSchema;
+   }
+
+   private getFlowInfo(flow: Flow) {
+      return {
+         ...flow.toJSON(),
+         tasks: flow.tasks.length,
+         connections: flow.connections
+      };
+   }
+
    override async build() {
       //console.log("building flows", this.config);
       const flows = transformObject(this.config.flows, (flowConfig, name) => {
@@ -67,15 +79,10 @@ export class AppFlows extends Module<typeof flowsConfigSchema> {
       this.setBuilt();
    }
 
-   getSchema() {
-      return flowsConfigSchema;
-   }
-
-   private getFlowInfo(flow: Flow) {
+   override toJSON() {
       return {
-         ...flow.toJSON(),
-         tasks: flow.tasks.length,
-         connections: flow.connections
+         ...this.config,
+         flows: transformObject(this.flows, (flow) => flow.toJSON())
       };
    }
 }

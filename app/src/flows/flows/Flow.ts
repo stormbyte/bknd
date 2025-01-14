@@ -162,8 +162,8 @@ export class Flow {
          trigger: this.trigger.toJSON(),
          tasks: Object.fromEntries(this.tasks.map((t) => [t.name, t.toJSON()])),
          connections: Object.fromEntries(this.connections.map((c) => [c.id, c.toJSON()])),
-         start_task: this.startTask.name,
-         responding_task: this.respondingTask ? this.respondingTask.name : null
+         start_task: this.startTask?.name,
+         responding_task: this.respondingTask?.name
       };
    }
 
