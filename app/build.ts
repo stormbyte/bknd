@@ -83,7 +83,14 @@ await tsup.build({
       "src/ui/main.css"
    ],
    outDir: "dist/ui",
-   external: ["bun:test", "react", "react-dom", "use-sync-external-store"],
+   external: [
+      "bun:test",
+      "react",
+      "react-dom",
+      "react/jsx-runtime",
+      "react/jsx-dev-runtime",
+      "use-sync-external-store"
+   ],
    metafile: true,
    platform: "browser",
    format: ["esm"],
