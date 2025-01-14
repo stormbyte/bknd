@@ -87,8 +87,13 @@ export class AdminController extends Controller {
          hono.get(
             authRoutes.login,
             permission([SystemPermissions.accessAdmin, SystemPermissions.schemaRead], {
+               // @ts-ignore
                onGranted: async (c) => {
-                  return c.redirect(authRoutes.success);
+                  // @todo: add strict test to permissions middleware?
+                  if (auth.authenticator.isUserLoggedIn()) {
+                     console.log("redirecting to success");
+                     return c.redirect(authRoutes.success);
+                  }
                }
             }),
             async (c) => {
