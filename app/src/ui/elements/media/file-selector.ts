@@ -4,7 +4,7 @@
  * MIT License (2020 Roland Groza)
  */
 
-import { MIME_TYPES } from "media";
+import { guess } from "media/storage/mime-types-tiny";
 
 const FILES_TO_IGNORE = [
    // Thumbnail cache files for macOS and Windows
@@ -47,10 +47,8 @@ function withMimeType(file: FileWithPath) {
    console.log("withMimeType", name, hasExtension);
 
    if (hasExtension && !file.type) {
-      const ext = name.split(".").pop()!.toLowerCase();
-      const type = MIME_TYPES.get(ext);
-
-      console.log("withMimeType:in", ext, type);
+      const type = guess(name);
+      console.log("guessed", type);
 
       if (type) {
          Object.defineProperty(file, "type", {

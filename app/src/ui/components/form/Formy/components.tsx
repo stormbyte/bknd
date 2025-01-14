@@ -1,11 +1,10 @@
-import { Switch } from "@mantine/core";
 import { getBrowser } from "core/utils";
 import type { Field } from "data";
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { TbCalendar, TbChevronDown, TbInfoCircle } from "react-icons/tb";
 import { twMerge } from "tailwind-merge";
-import { useEvent } from "../../hooks/use-event";
-import { IconButton } from "../buttons/IconButton";
+import { IconButton } from "ui/components/buttons/IconButton";
+import { useEvent } from "ui/hooks/use-event";
 
 export const Group: React.FC<React.ComponentProps<"div"> & { error?: boolean }> = ({
    error,
@@ -131,17 +130,6 @@ export const BooleanInput = forwardRef<HTMLInputElement, React.ComponentProps<"i
       }
 
       return (
-         <div className="flex flex-row">
-            <Switch
-               ref={ref}
-               checked={checked}
-               onChange={handleCheck}
-               disabled={props.disabled}
-               id={props.id}
-            />
-         </div>
-      );
-      /*return (
          <div className="h-11 flex items-center">
             <input
                {...props}
@@ -153,7 +141,7 @@ export const BooleanInput = forwardRef<HTMLInputElement, React.ComponentProps<"i
                disabled={props.disabled}
             />
          </div>
-      );*/
+      );
    }
 );
 
