@@ -54,16 +54,19 @@ function AdminInternal() {
    );
 }
 
-const Skeleton = ({ theme = "light" }: { theme?: string }) => {
+const Skeleton = ({ theme }: { theme?: string }) => {
+   const actualTheme =
+      (theme ?? document.querySelector("html")?.classList.contains("light")) ? "light" : "dark";
+
    return (
-      <div id="bknd-admin" className={(theme ?? "light") + " antialiased"}>
+      <div id="bknd-admin" className={actualTheme + " antialiased"}>
          <AppShell.Root>
             <header
                data-shell="header"
                className="flex flex-row w-full h-16 gap-2.5 border-muted border-b justify-start bg-muted/10"
             >
                <div className="max-h-full flex hover:bg-primary/5 link p-2.5 w-[134px] outline-none">
-                  <Logo theme={theme} />
+                  <Logo theme={actualTheme} />
                </div>
                <nav className="hidden md:flex flex-row gap-2.5 pl-0 p-2.5 items-center">
                   {[...new Array(5)].map((item, key) => (
@@ -84,7 +87,7 @@ const Skeleton = ({ theme = "light" }: { theme?: string }) => {
             </header>
             <AppShell.Content>
                <div className="flex flex-col w-full h-full justify-center items-center">
-                  <span className="font-mono opacity-30">Loading</span>
+                  {/*<span className="font-mono opacity-30">Loading</span>*/}
                </div>
             </AppShell.Content>
          </AppShell.Root>

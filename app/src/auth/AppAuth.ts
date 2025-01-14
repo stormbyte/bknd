@@ -1,9 +1,11 @@
 import { type AuthAction, Authenticator, type ProfileExchange, Role, type Strategy } from "auth";
 import type { PasswordStrategy } from "auth/authenticate/strategies";
-import { Exception, type PrimaryFieldType } from "core";
+import { auth } from "auth/middlewares";
+import { type DB, Exception, type PrimaryFieldType } from "core";
 import { type Static, secureRandomString, transformObject } from "core/utils";
 import { type Entity, EntityIndex, type EntityManager } from "data";
-import { type FieldSchema, entity, enumm, make, text } from "data/prototype";
+import { type FieldSchema, em, entity, enumm, make, text } from "data/prototype";
+import type { Hono } from "hono";
 import { pick } from "lodash-es";
 import { Module } from "modules/Module";
 import { AuthController } from "./api/AuthController";
@@ -17,6 +19,7 @@ declare module "core" {
 }
 
 type AuthSchema = Static<typeof authConfigSchema>;
+export type CreateUserPayload = { email: string; password: string; [key: string]: any };
 
 export class AppAuth extends Module<typeof authConfigSchema> {
    private _authenticator?: Authenticator;
@@ -36,8 +39,12 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       return to;
    }
 
+   get enabled() {
+      return this.config.enabled;
+   }
+
    override async build() {
-      if (!this.config.enabled) {
+      if (!this.enabled) {
          this.setBuilt();
          return;
       }
@@ -84,14 +91,6 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       return this._controller;
    }
 
-   getMiddleware() {
-      if (!this.config.enabled) {
-         return;
-      }
-
-      return new AuthController(this).getMiddleware;
-   }
-
    getSchema() {
       return authConfigSchema;
    }
@@ -111,12 +110,12 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       identifier: string,
       profile: ProfileExchange
    ): Promise<any> {
-      console.log("***** AppAuth:resolveUser", {
+      /*console.log("***** AppAuth:resolveUser", {
          action,
          strategy: strategy.getName(),
          identifier,
          profile
-      });
+      });*/
       if (!this.config.allow_register && action === "register") {
          throw new Exception("Registration is not allowed", 403);
       }
@@ -137,12 +136,12 @@ export class AppAuth extends Module<typeof authConfigSchema> {
    }
 
    private filterUserData(user: any) {
-      console.log(
+      /*console.log(
          "--filterUserData",
          user,
          this.config.jwt.fields,
          pick(user, this.config.jwt.fields)
-      );
+      );*/
       return pick(user, this.config.jwt.fields);
    }
 
@@ -168,18 +167,18 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       if (!result.data) {
          throw new Exception("User not found", 404);
       }
-      console.log("---login data", result.data, result);
+      //console.log("---login data", result.data, result);
 
       // compare strategy and identifier
-      console.log("strategy comparison", result.data.strategy, strategy.getName());
+      //console.log("strategy comparison", result.data.strategy, strategy.getName());
       if (result.data.strategy !== strategy.getName()) {
-         console.log("!!! User registered with different strategy");
+         //console.log("!!! User registered with different strategy");
          throw new Exception("User registered with different strategy");
       }
 
-      console.log("identifier comparison", result.data.strategy_value, identifier);
+      //console.log("identifier comparison", result.data.strategy_value, identifier);
       if (result.data.strategy_value !== identifier) {
-         console.log("!!! Invalid credentials");
+         //console.log("!!! Invalid credentials");
          throw new Exception("Invalid credentials");
       }
 
@@ -247,51 +246,36 @@ export class AppAuth extends Module<typeof authConfigSchema> {
    };
 
    registerEntities() {
-      const users = this.getUsersEntity();
-
-      if (!this.em.hasEntity(users.name)) {
-         this.em.addEntity(users);
-      } else {
-         // if exists, check all fields required are there
-         // @todo: add to context: "needs sync" flag
-         const _entity = this.getUsersEntity(true);
-         for (const field of _entity.fields) {
-            const _field = users.field(field.name);
-            if (!_field) {
-               users.addField(field);
+      const users = this.getUsersEntity(true);
+      this.ensureSchema(
+         em(
+            {
+               [users.name as "users"]: users
+            },
+            ({ index }, { users }) => {
+               index(users).on(["email"], true).on(["strategy"]).on(["strategy_value"]);
             }
-         }
-      }
-
-      const indices = [
-         new EntityIndex(users, [users.field("email")!], true),
-         new EntityIndex(users, [users.field("strategy")!]),
-         new EntityIndex(users, [users.field("strategy_value")!])
-      ];
-      indices.forEach((index) => {
-         if (!this.em.hasIndex(index)) {
-            this.em.addIndex(index);
-         }
-      });
+         )
+      );
 
       try {
          const roles = Object.keys(this.config.roles ?? {});
          const field = make("role", enumm({ enum: roles }));
-         this.em.entity(users.name).__experimental_replaceField("role", field);
+         users.__replaceField("role", field);
       } catch (e) {}
 
       try {
          const strategies = Object.keys(this.config.strategies ?? {});
          const field = make("strategy", enumm({ enum: strategies }));
-         this.em.entity(users.name).__experimental_replaceField("strategy", field);
+         users.__replaceField("strategy", field);
       } catch (e) {}
    }
 
-   async createUser({
-      email,
-      password,
-      ...additional
-   }: { email: string; password: string; [key: string]: any }) {
+   async createUser({ email, password, ...additional }: CreateUserPayload): Promise<DB["users"]> {
+      if (!this.enabled) {
+         throw new Error("Cannot create user, auth not enabled");
+      }
+
       const strategy = "password";
       const pw = this.authenticator.strategy(strategy) as PasswordStrategy;
       const strategy_value = await pw.hash(password);

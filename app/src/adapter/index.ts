@@ -1,5 +1,6 @@
 import type { IncomingMessage } from "node:http";
 import { App, type CreateAppConfig, registries } from "bknd";
+import { config as $config } from "core";
 import type { MiddlewareHandler } from "hono";
 import { StorageLocalAdapter } from "media/storage/adapters/StorageLocalAdapter";
 import type { AdminControllerOptions } from "modules/server/AdminController";
@@ -106,12 +107,10 @@ export async function createRuntimeApp<Env = any>(
       App.Events.AppBuiltEvent,
       async () => {
          if (serveStatic) {
-            if (Array.isArray(serveStatic)) {
-               const [path, handler] = serveStatic;
-               app.modules.server.get(path, handler);
-            } else {
-               app.modules.server.get("/*", serveStatic);
-            }
+            const [path, handler] = Array.isArray(serveStatic)
+               ? serveStatic
+               : [$config.server.assets_path + "*", serveStatic];
+            app.modules.server.get(path, handler);
          }
 
          await config.onBuilt?.(app);

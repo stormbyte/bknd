@@ -45,8 +45,9 @@ const useLocationFromRouter = (router) => {
 export function Link({
    className,
    native,
+   onClick,
    ...props
-}: { className?: string; native?: boolean } & LinkProps) {
+}: { className?: string; native?: boolean; transition?: boolean } & LinkProps) {
    const router = useRouter();
    const [path, navigate] = useLocationFromRouter(router);
 
@@ -69,17 +70,28 @@ export function Link({
    const absPath = absolutePath(path, router.base).replace("//", "/");
    const active =
       href.replace(router.base, "").length <= 1 ? href === absPath : isActive(absPath, href);
-   const a = useRoute(_href);
 
-   /*if (active) {
-      console.log("link", { a, path, absPath, href, to, active, router });
-   }*/
    if (native) {
       return <a className={`${active ? "active " : ""}${className}`} {...props} />;
    }
 
+   const wouterOnClick = (e: any) => {
+      // prepared for view transition
+      /*if (props.transition !== false) {
+         e.preventDefault();
+         onClick?.(e);
+         document.startViewTransition(() => {
+            navigate(props.href ?? props.to, props);
+         });
+      }*/
+   };
+
    return (
-      // @ts-expect-error className is not typed on WouterLink
-      <WouterLink className={`${active ? "active " : ""}${className}`} {...props} />
+      <WouterLink
+         // @ts-expect-error className is not typed on WouterLink
+         className={`${active ? "active " : ""}${className}`}
+         {...props}
+         onClick={wouterOnClick}
+      />
    );
 }

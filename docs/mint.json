@@ -89,6 +89,7 @@
         "integration/astro",
         "integration/node",
         "integration/deno",
+        "integration/vite",
         "integration/docker"
       ]
     },

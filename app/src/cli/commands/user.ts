@@ -35,9 +35,11 @@ async function action(action: "create" | "update", options: any) {
 }
 
 async function create(app: App, options: any) {
-   const config = app.module.auth.toJSON(true);
    const strategy = app.module.auth.authenticator.strategy("password") as PasswordStrategy;
-   const users_entity = config.entity_name as "users";
+
+   if (!strategy) {
+      throw new Error("Password strategy not configured");
+   }
 
    const email = await $text({
       message: "Enter email",
@@ -65,16 +67,11 @@ async function create(app: App, options: any) {
    }
 
    try {
-      const mutator = app.modules.ctx().em.mutator(users_entity);
-      mutator.__unstable_toggleSystemEntityCreation(false);
-      const res = await mutator.insertOne({
+      const created = await app.createUser({
          email,
-         strategy: "password",
-         strategy_value: await strategy.hash(password as string)
-      });
-      mutator.__unstable_toggleSystemEntityCreation(true);
-
-      console.log("Created:", res.data);
+         password: await strategy.hash(password as string)
+      })
+      console.log("Created:", created);
    } catch (e) {
       console.error("Error", e);
    }

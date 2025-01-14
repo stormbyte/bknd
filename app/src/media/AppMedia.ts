@@ -1,8 +1,17 @@
 import type { PrimaryFieldType } from "core";
-import { EntityIndex, type EntityManager } from "data";
+import { type Entity, EntityIndex, type EntityManager } from "data";
 import { type FileUploadedEventData, Storage, type StorageAdapter } from "media";
 import { Module } from "modules/Module";
-import { type FieldSchema, boolean, datetime, entity, json, number, text } from "../data/prototype";
+import {
+   type FieldSchema,
+   boolean,
+   datetime,
+   em,
+   entity,
+   json,
+   number,
+   text
+} from "../data/prototype";
 import { MediaController } from "./api/MediaController";
 import { ADAPTERS, buildMediaSchema, type mediaConfigSchema, registry } from "./media-schema";
 
@@ -38,18 +47,12 @@ export class AppMedia extends Module<typeof mediaConfigSchema> {
          this.setupListeners();
          this.ctx.server.route(this.basepath, new MediaController(this).getController());
 
-         // @todo: add check for media entity
-         const mediaEntity = this.getMediaEntity();
-         if (!this.ctx.em.hasEntity(mediaEntity)) {
-            this.ctx.em.addEntity(mediaEntity);
-         }
-
-         const pathIndex = new EntityIndex(mediaEntity, [mediaEntity.field("path")!], true);
-         if (!this.ctx.em.hasIndex(pathIndex)) {
-            this.ctx.em.addIndex(pathIndex);
-         }
-
-         // @todo: check indices
+         const media = this.getMediaEntity(true);
+         this.ensureSchema(
+            em({ [media.name as "media"]: media }, ({ index }, { media }) => {
+               index(media).on(["path"], true).on(["reference"]);
+            })
+         );
       } catch (e) {
          console.error(e);
          throw new Error(
@@ -94,13 +97,13 @@ export class AppMedia extends Module<typeof mediaConfigSchema> {
       metadata: json()
    };
 
-   getMediaEntity() {
+   getMediaEntity(forceCreate?: boolean): Entity<"media", typeof AppMedia.mediaFields> {
       const entity_name = this.config.entity_name;
-      if (!this.em.hasEntity(entity_name)) {
-         return entity(entity_name, AppMedia.mediaFields, undefined, "system");
+      if (forceCreate || !this.em.hasEntity(entity_name)) {
+         return entity(entity_name as "media", AppMedia.mediaFields, undefined, "system");
       }
 
-      return this.em.entity(entity_name);
+      return this.em.entity(entity_name) as any;
    }
 
    get em(): EntityManager {

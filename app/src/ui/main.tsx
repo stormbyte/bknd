@@ -1,23 +1,13 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
+import Admin from "./Admin";
 import "./main.css";
 
-import Admin from "./Admin";
-
-function ClientApp() {
-   return <Admin withProvider />;
-}
-
-// Render the app
-const rootElement = document.getElementById("app")!;
-if (!rootElement.innerHTML) {
-   const root = ReactDOM.createRoot(rootElement);
-   root.render(
-      <React.StrictMode>
-         <ClientApp />
-      </React.StrictMode>
-   );
-}
+ReactDOM.createRoot(document.getElementById("root")!).render(
+   <React.StrictMode>
+      <Admin withProvider />
+   </React.StrictMode>
+);
 
 // REGISTER ERROR OVERLAY
 if (process.env.NODE_ENV !== "production") {

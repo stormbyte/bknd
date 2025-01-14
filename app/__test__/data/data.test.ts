@@ -18,7 +18,7 @@ describe("some tests", async () => {
 
    const users = new Entity("users", [
       new TextField("username", { required: true, default_value: "nobody" }),
-      new TextField("email", { max_length: 3 })
+      new TextField("email", { maxLength: 3 })
    ]);
 
    const posts = new Entity("posts", [

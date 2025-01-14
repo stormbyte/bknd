@@ -10,7 +10,9 @@ export interface DB {}
 
 export const config = {
    server: {
-      default_port: 1337
+      default_port: 1337,
+      // resetted to root for now, bc bundling with vite
+      assets_path: "/"
    },
    data: {
       default_primary_field: "id"

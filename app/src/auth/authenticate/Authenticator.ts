@@ -1,19 +1,11 @@
 import { Exception } from "core";
 import { addFlashMessage } from "core/server/flash";
-import {
-   type Static,
-   StringEnum,
-   type TSchema,
-   Type,
-   parse,
-   randomString,
-   transformObject
-} from "core/utils";
+import { type Static, StringEnum, Type, parse, runtimeSupports, transformObject } from "core/utils";
 import type { Context, Hono } from "hono";
 import { deleteCookie, getSignedCookie, setSignedCookie } from "hono/cookie";
 import { sign, verify } from "hono/jwt";
 import type { CookieOptions } from "hono/utils/cookie";
-import { omit } from "lodash-es";
+import type { ServerEnv } from "modules/Module";
 
 type Input = any; // workaround
 export type JWTPayload = Parameters<typeof sign>[0];
@@ -67,6 +59,9 @@ export const cookieConfig = Type.Partial(
    { default: {}, additionalProperties: false }
 );
 
+// @todo: maybe add a config to not allow cookie/api tokens to be used interchangably?
+// see auth.integration test for further details
+
 export const jwtConfig = Type.Object(
    {
       // @todo: autogenerate a secret if not present. But it must be persisted from AppAuth
@@ -98,7 +93,13 @@ export type AuthUserResolver = (
 export class Authenticator<Strategies extends Record<string, Strategy> = Record<string, Strategy>> {
    private readonly strategies: Strategies;
    private readonly config: AuthConfig;
-   private _user: SafeUser | undefined;
+   private _claims:
+      | undefined
+      | (SafeUser & {
+           iat: number;
+           iss?: string;
+           exp?: number;
+        });
    private readonly userResolver: AuthUserResolver;
 
    constructor(strategies: Strategies, userResolver?: AuthUserResolver, config?: AuthConfig) {
@@ -131,16 +132,18 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
    }
 
    isUserLoggedIn(): boolean {
-      return this._user !== undefined;
+      return this._claims !== undefined;
    }
 
-   getUser() {
-      return this._user;
+   getUser(): SafeUser | undefined {
+      if (!this._claims) return;
+
+      const { iat, exp, iss, ...user } = this._claims;
+      return user;
    }
 
-   // @todo: determine what to do exactly
-   __setUserNull() {
-      this._user = undefined;
+   resetUser() {
+      this._claims = undefined;
    }
 
    strategy<
@@ -154,6 +157,7 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
       }
    }
 
+   // @todo: add jwt tests
    async jwt(user: Omit<User, "password">): Promise<string> {
       const prohibited = ["password"];
       for (const prop of prohibited) {
@@ -200,11 +204,11 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
             }
          }
 
-         this._user = omit(payload, ["iat", "exp", "iss"]) as SafeUser;
+         this._claims = payload as any;
          return true;
       } catch (e) {
-         this._user = undefined;
-         console.error(e);
+         this.resetUser();
+         //console.error(e);
       }
 
       return false;
@@ -222,10 +226,8 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
    private async getAuthCookie(c: Context): Promise<string | undefined> {
       try {
          const secret = this.config.jwt.secret;
-
          const token = await getSignedCookie(c, secret, "auth");
          if (typeof token !== "string") {
-            await deleteCookie(c, "auth", this.cookieOptions);
             return undefined;
          }
 
@@ -243,23 +245,27 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
       if (this.config.cookie.renew) {
          const token = await this.getAuthCookie(c);
          if (token) {
-            console.log("renewing cookie", c.req.url);
             await this.setAuthCookie(c, token);
          }
       }
    }
 
-   private async setAuthCookie(c: Context, token: string) {
+   private async setAuthCookie(c: Context<ServerEnv>, token: string) {
       const secret = this.config.jwt.secret;
       await setSignedCookie(c, "auth", token, secret, this.cookieOptions);
+   }
+
+   private async deleteAuthCookie(c: Context) {
+      await deleteCookie(c, "auth", this.cookieOptions);
    }
 
    async logout(c: Context) {
       const cookie = await this.getAuthCookie(c);
       if (cookie) {
-         await deleteCookie(c, "auth", this.cookieOptions);
+         await this.deleteAuthCookie(c);
          await addFlashMessage(c, "Signed out", "info");
       }
+      this.resetUser();
    }
 
    // @todo: move this to a server helper
@@ -268,18 +274,31 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
       return c.req.header("Content-Type") === "application/json";
    }
 
+   private getSuccessPath(c: Context) {
+      const p = (this.config.cookie.pathSuccess ?? "/").replace(/\/+$/, "/");
+
+      // nextjs doesn't support non-fq urls
+      // but env could be proxied (stackblitz), so we shouldn't fq every url
+      if (!runtimeSupports("redirects_non_fq")) {
+         return new URL(c.req.url).origin + p;
+      }
+
+      return p;
+   }
+
    async respond(c: Context, data: AuthResponse | Error | any, redirect?: string) {
       if (this.isJsonRequest(c)) {
          return c.json(data);
       }
 
-      const successPath = this.config.cookie.pathSuccess ?? "/";
-      const successUrl = new URL(c.req.url).origin + successPath.replace(/\/+$/, "/");
-      const referer = new URL(redirect ?? c.req.header("Referer") ?? successUrl);
+      const successUrl = this.getSuccessPath(c);
+      const referer = redirect ?? c.req.header("Referer") ?? successUrl;
+      //console.log("auth respond", { redirect, successUrl, successPath });
 
       if ("token" in data) {
          await this.setAuthCookie(c, data.token);
          // can't navigate to "/" – doesn't work on nextjs
+         //console.log("auth success, redirecting to", successUrl);
          return c.redirect(successUrl);
       }
 
@@ -289,6 +308,7 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
       }
 
       await addFlashMessage(c, message, "error");
+      //console.log("auth failed, redirecting to", referer);
       return c.redirect(referer);
    }
 
@@ -304,7 +324,7 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
 
       if (token) {
          await this.verify(token);
-         return this._user;
+         return this.getUser();
       }
 
       return undefined;

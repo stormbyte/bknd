@@ -98,12 +98,16 @@ export class Guard {
       if (this.user && typeof this.user.role === "string") {
          const role = this.roles?.find((role) => role.name === this.user?.role);
          if (role) {
-            debug && console.log("guard: role found", this.user.role);
+            debug && console.log("guard: role found", [this.user.role]);
             return role;
          }
       }
 
-      debug && console.log("guard: role not found", this.user, this.user?.role);
+      debug &&
+         console.log("guard: role not found", {
+            user: this.user,
+            role: this.user?.role
+         });
       return this.getDefaultRole();
    }
 

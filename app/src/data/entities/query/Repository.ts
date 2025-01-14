@@ -58,7 +58,7 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
    }
 
    private cloneFor(entity: Entity) {
-      return new Repository(this.em, entity, this.emgr);
+      return new Repository(this.em, this.em.entity(entity), this.emgr);
    }
 
    private get conn() {
@@ -94,7 +94,10 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
          if (invalid.length > 0) {
             throw new InvalidSearchParamsException(
                `Invalid select field(s): ${invalid.join(", ")}`
-            );
+            ).context({
+               entity: entity.name,
+               valid: validated.select
+            });
          }
 
          validated.select = options.select;

@@ -1,8 +1,5 @@
 import { $ } from "bun";
-import * as esbuild from "esbuild";
-import postcss from "esbuild-postcss";
 import * as tsup from "tsup";
-import { guessMimeType } from "./src/media/storage/mime-types";
 
 const args = process.argv.slice(2);
 const watch = args.includes("--watch");
@@ -12,8 +9,8 @@ const sourcemap = args.includes("--sourcemap");
 const clean = args.includes("--clean");
 
 if (clean) {
-   console.log("Cleaning dist");
-   await $`rm -rf dist`;
+   console.log("Cleaning dist (w/o static)");
+   await $`find dist -mindepth 1 ! -path "dist/static/*" ! -path "dist/static" -exec rm -rf {} +`;
 }
 
 let types_running = false;
@@ -22,9 +19,11 @@ function buildTypes() {
    types_running = true;
 
    Bun.spawn(["bun", "build:types"], {
+      stdout: "inherit",
       onExit: () => {
          console.log("Types built");
          Bun.spawn(["bun", "tsc-alias"], {
+            stdout: "inherit",
             onExit: () => {
                console.log("Types aliased");
                types_running = false;
@@ -36,7 +35,7 @@ function buildTypes() {
 
 let watcher_timeout: any;
 function delayTypes() {
-   if (!watch) return;
+   if (!watch || !types) return;
    if (watcher_timeout) {
       clearTimeout(watcher_timeout);
    }
@@ -45,67 +44,6 @@ function delayTypes() {
 
 if (types && !watch) {
    buildTypes();
-}
-
-/**
- * Build static assets
- * Using esbuild because tsup doesn't include "react"
- */
-const result = await esbuild.build({
-   minify,
-   sourcemap,
-   entryPoints: ["src/ui/main.tsx"],
-   entryNames: "[dir]/[name]-[hash]",
-   outdir: "dist/static",
-   platform: "browser",
-   bundle: true,
-   splitting: true,
-   metafile: true,
-   drop: ["console", "debugger"],
-   inject: ["src/ui/inject.js"],
-   target: "es2022",
-   format: "esm",
-   plugins: [postcss()],
-   loader: {
-      ".svg": "dataurl",
-      ".js": "jsx"
-   },
-   define: {
-      __isDev: "0",
-      "process.env.NODE_ENV": '"production"'
-   },
-   chunkNames: "chunks/[name]-[hash]",
-   logLevel: "error"
-});
-
-// Write manifest
-{
-   const manifest: Record<string, object> = {};
-   const toAsset = (output: string) => {
-      const name = output.split("/").pop()!;
-      return {
-         name,
-         path: output,
-         mime: guessMimeType(name)
-      };
-   };
-
-   const info = Object.entries(result.metafile.outputs)
-      .filter(([, meta]) => {
-         return meta.entryPoint && meta.entryPoint === "src/ui/main.tsx";
-      })
-      .map(([output, meta]) => ({ output, meta }));
-
-   for (const { output, meta } of info) {
-      manifest[meta.entryPoint as string] = toAsset(output);
-      if (meta.cssBundle) {
-         manifest["src/ui/main.css"] = toAsset(meta.cssBundle);
-      }
-   }
-
-   const manifest_file = "dist/static/manifest.json";
-   await Bun.write(manifest_file, JSON.stringify(manifest, null, 2));
-   console.log(`Manifest written to ${manifest_file}`, manifest);
 }
 
 /**
@@ -120,7 +58,7 @@ await tsup.build({
    external: ["bun:test", "@libsql/client"],
    metafile: true,
    platform: "browser",
-   format: ["esm", "cjs"],
+   format: ["esm"],
    splitting: false,
    treeshake: true,
    loader: {
@@ -138,12 +76,24 @@ await tsup.build({
    minify,
    sourcemap,
    watch,
-   entry: ["src/ui/index.ts", "src/ui/client/index.ts", "src/ui/main.css"],
+   entry: [
+      "src/ui/index.ts",
+      "src/ui/client/index.ts",
+      "src/ui/elements/index.ts",
+      "src/ui/main.css"
+   ],
    outDir: "dist/ui",
-   external: ["bun:test", "react", "react-dom", "use-sync-external-store"],
+   external: [
+      "bun:test",
+      "react",
+      "react-dom",
+      "react/jsx-runtime",
+      "react/jsx-dev-runtime",
+      "use-sync-external-store"
+   ],
    metafile: true,
    platform: "browser",
-   format: ["esm", "cjs"],
+   format: ["esm"],
    splitting: true,
    treeshake: true,
    loader: {
@@ -166,7 +116,7 @@ function baseConfig(adapter: string): tsup.Options {
       minify,
       sourcemap,
       watch,
-      entry: [`src/adapter/${adapter}`],
+      entry: [`src/adapter/${adapter}/index.ts`],
       format: ["esm"],
       platform: "neutral",
       outDir: `dist/adapter/${adapter}`,
@@ -188,37 +138,22 @@ function baseConfig(adapter: string): tsup.Options {
    };
 }
 
+await tsup.build(baseConfig("remix"));
+await tsup.build(baseConfig("bun"));
+await tsup.build(baseConfig("astro"));
+await tsup.build(baseConfig("cloudflare"));
+
 await tsup.build({
    ...baseConfig("vite"),
    platform: "node"
 });
 
 await tsup.build({
-   ...baseConfig("cloudflare")
-});
-
-await tsup.build({
    ...baseConfig("nextjs"),
-   format: ["esm", "cjs"],
    platform: "node"
 });
 
 await tsup.build({
-   ...baseConfig("remix"),
-   format: ["esm", "cjs"]
-});
-
-await tsup.build({
-   ...baseConfig("bun")
-});
-
-await tsup.build({
    ...baseConfig("node"),
-   platform: "node",
-   format: ["esm", "cjs"]
-});
-
-await tsup.build({
-   ...baseConfig("astro"),
-   format: ["esm", "cjs"]
+   platform: "node"
 });

@@ -1,6 +1,7 @@
 export class Exception extends Error {
    code = 400;
    override name = "Exception";
+   protected _context = undefined;
 
    constructor(message: string, code?: number) {
       super(message);
@@ -9,11 +10,16 @@ export class Exception extends Error {
       }
    }
 
+   context(context: any) {
+      this._context = context;
+      return this;
+   }
+
    toJSON() {
       return {
          error: this.message,
-         type: this.name
-         //message: this.message
+         type: this.name,
+         context: this._context
       };
    }
 }

@@ -140,7 +140,7 @@ export class Entity<
       return this.fields.find((field) => field.name === name);
    }
 
-   __experimental_replaceField(name: string, field: Field) {
+   __replaceField(name: string, field: Field) {
       const index = this.fields.findIndex((f) => f.name === name);
       if (index === -1) {
          throw new Error(`Field "${name}" not found on entity "${this.name}"`);

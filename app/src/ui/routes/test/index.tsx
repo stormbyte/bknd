@@ -1,4 +1,5 @@
 import AppShellAccordionsTest from "ui/routes/test/tests/appshell-accordions-test";
+import JsonSchemaFormReactTest from "ui/routes/test/tests/json-schema-form-react-test";
 import SwaggerTest from "ui/routes/test/tests/swagger-test";
 import SWRAndAPI from "ui/routes/test/tests/swr-and-api";
 import SwrAndDataApi from "ui/routes/test/tests/swr-and-data-api";
@@ -11,6 +12,7 @@ import FlowFormTest from "../../routes/test/tests/flow-form-test";
 import ModalTest from "../../routes/test/tests/modal-test";
 import QueryJsonFormTest from "../../routes/test/tests/query-jsonform";
 import DropdownTest from "./tests/dropdown-test";
+import DropzoneElementTest from "./tests/dropzone-element-test";
 import EntityFieldsForm from "./tests/entity-fields-form";
 import FlowsTest from "./tests/flows-test";
 import JsonFormTest from "./tests/jsonform-test";
@@ -41,7 +43,9 @@ const tests = {
    AppShellAccordionsTest,
    SwaggerTest,
    SWRAndAPI,
-   SwrAndDataApi
+   SwrAndDataApi,
+   DropzoneElementTest,
+   JsonSchemaFormReactTest
 } as const;
 
 export default function TestRoutes() {

@@ -1,10 +1,12 @@
 /// <reference types="@cloudflare/workers-types" />
 
 import type { App } from "App";
-import type { ClassController } from "core";
 import { tbValidator as tb } from "core";
 import { StringEnum, Type, TypeInvalidError } from "core/utils";
-import { type Context, Hono } from "hono";
+import { getRuntimeKey } from "core/utils";
+import type { Context, Hono } from "hono";
+import { Controller } from "modules/Controller";
+
 import {
    MODULE_NAMES,
    type ModuleConfigs,
@@ -27,21 +29,20 @@ export type ConfigUpdateResponse<Key extends ModuleKey = ModuleKey> =
    | ConfigUpdate<Key>
    | { success: false; type: "type-invalid" | "error" | "unknown"; error?: any; errors?: any };
 
-export class SystemController implements ClassController {
-   constructor(private readonly app: App) {}
+export class SystemController extends Controller {
+   constructor(private readonly app: App) {
+      super();
+   }
 
    get ctx() {
       return this.app.modules.ctx();
    }
 
    private registerConfigController(client: Hono<any>): void {
-      const hono = new Hono();
+      const { permission } = this.middlewares;
+      const hono = this.create();
 
-      /*hono.use("*", async (c, next) => {
-         //this.ctx.guard.throwUnlessGranted(SystemPermissions.configRead);
-         console.log("perm?", this.ctx.guard.hasPermission(SystemPermissions.configRead));
-         return next();
-      });*/
+      hono.use(permission(SystemPermissions.configRead));
 
       hono.get(
          "/:module?",
@@ -57,7 +58,6 @@ export class SystemController implements ClassController {
             const { secrets } = c.req.valid("query");
             const { module } = c.req.valid("param");
 
-            this.ctx.guard.throwUnlessGranted(SystemPermissions.configRead);
             secrets && this.ctx.guard.throwUnlessGranted(SystemPermissions.configReadSecrets);
 
             const config = this.app.toJSON(secrets);
@@ -96,6 +96,7 @@ export class SystemController implements ClassController {
 
       hono.post(
          "/set/:module",
+         permission(SystemPermissions.configWrite),
          tb(
             "query",
             Type.Object({
@@ -106,8 +107,6 @@ export class SystemController implements ClassController {
             const module = c.req.param("module") as any;
             const { force } = c.req.valid("query");
             const value = await c.req.json();
-
-            this.ctx.guard.throwUnlessGranted(SystemPermissions.configWrite);
 
             return await handleConfigUpdateResponse(c, async () => {
                // you must explicitly set force to override existing values
@@ -131,13 +130,11 @@ export class SystemController implements ClassController {
          }
       );
 
-      hono.post("/add/:module/:path", async (c) => {
+      hono.post("/add/:module/:path", permission(SystemPermissions.configWrite), async (c) => {
          // @todo: require auth (admin)
          const module = c.req.param("module") as any;
          const value = await c.req.json();
          const path = c.req.param("path") as string;
-
-         this.ctx.guard.throwUnlessGranted(SystemPermissions.configWrite);
 
          const moduleConfig = this.app.mutateConfig(module);
          if (moduleConfig.has(path)) {
@@ -155,13 +152,11 @@ export class SystemController implements ClassController {
          });
       });
 
-      hono.patch("/patch/:module/:path", async (c) => {
+      hono.patch("/patch/:module/:path", permission(SystemPermissions.configWrite), async (c) => {
          // @todo: require auth (admin)
          const module = c.req.param("module") as any;
          const value = await c.req.json();
          const path = c.req.param("path");
-
-         this.ctx.guard.throwUnlessGranted(SystemPermissions.configWrite);
 
          return await handleConfigUpdateResponse(c, async () => {
             await this.app.mutateConfig(module).patch(path, value);
@@ -173,13 +168,11 @@ export class SystemController implements ClassController {
          });
       });
 
-      hono.put("/overwrite/:module/:path", async (c) => {
+      hono.put("/overwrite/:module/:path", permission(SystemPermissions.configWrite), async (c) => {
          // @todo: require auth (admin)
          const module = c.req.param("module") as any;
          const value = await c.req.json();
          const path = c.req.param("path");
-
-         this.ctx.guard.throwUnlessGranted(SystemPermissions.configWrite);
 
          return await handleConfigUpdateResponse(c, async () => {
             await this.app.mutateConfig(module).overwrite(path, value);
@@ -191,12 +184,10 @@ export class SystemController implements ClassController {
          });
       });
 
-      hono.delete("/remove/:module/:path", async (c) => {
+      hono.delete("/remove/:module/:path", permission(SystemPermissions.configWrite), async (c) => {
          // @todo: require auth (admin)
          const module = c.req.param("module") as any;
          const path = c.req.param("path")!;
-
-         this.ctx.guard.throwUnlessGranted(SystemPermissions.configWrite);
 
          return await handleConfigUpdateResponse(c, async () => {
             await this.app.mutateConfig(module).remove(path);
@@ -211,13 +202,15 @@ export class SystemController implements ClassController {
       client.route("/config", hono);
    }
 
-   getController(): Hono {
-      const hono = new Hono();
+   override getController() {
+      const { permission, auth } = this.middlewares;
+      const hono = this.create().use(auth());
 
       this.registerConfigController(hono);
 
       hono.get(
          "/schema/:module?",
+         permission(SystemPermissions.schemaRead),
          tb(
             "query",
             Type.Object({
@@ -228,7 +221,7 @@ export class SystemController implements ClassController {
          async (c) => {
             const module = c.req.param("module") as ModuleKey | undefined;
             const { config, secrets } = c.req.valid("query");
-            this.ctx.guard.throwUnlessGranted(SystemPermissions.schemaRead);
+
             config && this.ctx.guard.throwUnlessGranted(SystemPermissions.configRead);
             secrets && this.ctx.guard.throwUnlessGranted(SystemPermissions.configReadSecrets);
 
@@ -300,8 +293,8 @@ export class SystemController implements ClassController {
          return c.json({
             version: this.app.version(),
             test: 2,
-            // @ts-ignore
-            app: !!c.var.app
+            app: c.get("app")?.version(),
+            runtime: getRuntimeKey()
          });
       });
 

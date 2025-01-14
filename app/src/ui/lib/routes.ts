@@ -1,9 +1,6 @@
 import type { PrimaryFieldType } from "core";
 import { encodeSearch } from "core/utils";
-import { atom, useSetAtom } from "jotai";
-import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { useBaseUrl } from "../client";
 import { useBknd } from "../client/BkndProvider";
 
 export const routes = {
@@ -64,18 +61,36 @@ export function useNavigate() {
       (
          url: string,
          options?:
-            | { query?: object; absolute?: boolean; replace?: boolean; state?: any }
+            | {
+                 query?: object;
+                 absolute?: boolean;
+                 replace?: boolean;
+                 state?: any;
+                 transition?: boolean;
+              }
             | { reload: true }
       ) => {
-         if (options && "reload" in options) {
-            window.location.href = url;
-            return;
-         }
+         const wrap = (fn: () => void) => {
+            fn();
+            // prepared for view transition
+            /*if (options && "transition" in options && options.transition === false) {
+               fn();
+            } else {
+               document.startViewTransition(fn);
+            }*/
+         };
 
-         const _url = options?.absolute ? `~/${basepath}${url}`.replace(/\/+/g, "/") : url;
-         navigate(options?.query ? withQuery(_url, options?.query) : _url, {
-            replace: options?.replace,
-            state: options?.state
+         wrap(() => {
+            if (options && "reload" in options) {
+               window.location.href = url;
+               return;
+            }
+
+            const _url = options?.absolute ? `~/${basepath}${url}`.replace(/\/+/g, "/") : url;
+            navigate(options?.query ? withQuery(_url, options?.query) : _url, {
+               replace: options?.replace,
+               state: options?.state
+            });
          });
       },
       location

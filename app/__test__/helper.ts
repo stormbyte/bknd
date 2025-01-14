@@ -40,7 +40,7 @@ const _oldConsoles = {
    error: console.error
 };
 
-export function disableConsoleLog(severities: ConsoleSeverity[] = ["log"]) {
+export function disableConsoleLog(severities: ConsoleSeverity[] = ["log", "warn"]) {
    severities.forEach((severity) => {
       console[severity] = () => null;
    });

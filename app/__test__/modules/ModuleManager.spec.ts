@@ -1,9 +1,9 @@
 import { describe, expect, test } from "bun:test";
-import { mark, stripMark } from "../src/core/utils";
-import { entity, text } from "../src/data";
-import { ModuleManager, getDefaultConfig } from "../src/modules/ModuleManager";
-import { CURRENT_VERSION, TABLE_NAME } from "../src/modules/migrations";
-import { getDummyConnection } from "./helper";
+import { stripMark } from "../../src/core/utils";
+import { entity, text } from "../../src/data";
+import { ModuleManager, getDefaultConfig } from "../../src/modules/ModuleManager";
+import { CURRENT_VERSION, TABLE_NAME } from "../../src/modules/migrations";
+import { getDummyConnection } from "../helper";
 
 describe("ModuleManager", async () => {
    test("s1: no config, no build", async () => {

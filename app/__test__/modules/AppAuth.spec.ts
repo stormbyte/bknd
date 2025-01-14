@@ -1,5 +1,7 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, test } from "bun:test";
+import { afterAll, beforeAll, beforeEach, describe, expect, spyOn, test } from "bun:test";
+import { createApp } from "../../src";
 import { AuthController } from "../../src/auth/api/AuthController";
+import { em, entity, text } from "../../src/data";
 import { AppAuth, type ModuleBuildContext } from "../../src/modules";
 import { disableConsoleLog, enableConsoleLog } from "../helper";
 import { makeCtx, moduleTestSuite } from "./module-test-suite";
@@ -75,5 +77,54 @@ describe("AppAuth", () => {
          expect(users.length).toBe(1);
          expect(users[0].email).toBe("some@body.com");
       }
+   });
+
+   test("registers auth middleware for bknd routes only", async () => {
+      const app = createApp({
+         initialConfig: {
+            auth: {
+               enabled: true,
+               jwt: {
+                  secret: "123456"
+               }
+            }
+         }
+      });
+
+      await app.build();
+      const spy = spyOn(app.module.auth.authenticator, "requestCookieRefresh");
+
+      // register custom route
+      app.server.get("/test", async (c) => c.text("test"));
+
+      // call a system api and then the custom route
+      await app.server.request("/api/system/ping");
+      await app.server.request("/test");
+
+      expect(spy.mock.calls.length).toBe(1);
+   });
+
+   test("should allow additional user fields", async () => {
+      const app = createApp({
+         initialConfig: {
+            auth: {
+               entity_name: "users",
+               enabled: true
+            },
+            data: em({
+               users: entity("users", {
+                  additional: text()
+               })
+            }).toJSON()
+         }
+      });
+
+      await app.build();
+
+      const e = app.modules.em.entity("users");
+      const fields = e.fields.map((f) => f.name);
+      expect(e.type).toBe("system");
+      expect(fields).toContain("additional");
+      expect(fields).toEqual(["id", "email", "strategy", "strategy_value", "role", "additional"]);
    });
 });

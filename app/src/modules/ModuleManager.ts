@@ -33,7 +33,7 @@ import { AppAuth } from "../auth/AppAuth";
 import { AppData } from "../data/AppData";
 import { AppFlows } from "../flows/AppFlows";
 import { AppMedia } from "../media/AppMedia";
-import type { Module, ModuleBuildContext } from "./Module";
+import { Module, type ModuleBuildContext, type ServerEnv } from "./Module";
 
 export type { ModuleBuildContext };
 
@@ -79,6 +79,8 @@ export type ModuleManagerOptions = {
    onFirstBoot?: () => Promise<void>;
    // base path for the hono instance
    basePath?: string;
+   // callback after server was created
+   onServerInit?: (server: Hono<ServerEnv>) => void;
    // doesn't perform validity checks for given/fetched config
    trustFetched?: boolean;
    // runs when initial config provided on a fresh database
@@ -124,15 +126,12 @@ export class ModuleManager {
    __em!: EntityManager<T_INTERNAL_EM>;
    // ctx for modules
    em!: EntityManager;
-   server!: Hono;
+   server!: Hono<ServerEnv>;
    emgr!: EventManager;
    guard!: Guard;
 
    private _version: number = 0;
    private _built = false;
-   private _fetched = false;
-
-   // @todo: keep? not doing anything with it
    private readonly _booted_with?: "provided" | "partial";
 
    private logger = new DebugLogger(false);
@@ -204,19 +203,17 @@ export class ModuleManager {
    }
 
    private rebuildServer() {
-      this.server = new Hono();
+      this.server = new Hono<ServerEnv>();
       if (this.options?.basePath) {
          this.server = this.server.basePath(this.options.basePath);
       }
+      if (this.options?.onServerInit) {
+         this.options.onServerInit(this.server);
+      }
 
-      // @todo: this is a current workaround, controllers must be reworked
+      // optional method for each module to register global middlewares, etc.
       objectEach(this.modules, (module) => {
-         if ("getMiddleware" in module) {
-            const middleware = module.getMiddleware();
-            if (middleware) {
-               this.server.use(middleware);
-            }
-         }
+         module.onServerInit(this.server);
       });
    }
 
@@ -232,7 +229,8 @@ export class ModuleManager {
          server: this.server,
          em: this.em,
          emgr: this.emgr,
-         guard: this.guard
+         guard: this.guard,
+         flags: Module.ctx_flags
       };
    }
 
@@ -402,8 +400,8 @@ export class ModuleManager {
       });
    }
 
-   private async buildModules(options?: { graceful?: boolean }) {
-      this.logger.log("buildModules() triggered", options?.graceful, this._built);
+   private async buildModules(options?: { graceful?: boolean; ignoreFlags?: boolean }) {
+      this.logger.log("buildModules() triggered", options, this._built);
       if (options?.graceful && this._built) {
          this.logger.log("skipping build (graceful)");
          return;
@@ -417,7 +415,27 @@ export class ModuleManager {
       }
 
       this._built = true;
-      this.logger.log("modules built");
+      this.logger.log("modules built", ctx.flags);
+
+      if (options?.ignoreFlags !== true) {
+         if (ctx.flags.sync_required) {
+            ctx.flags.sync_required = false;
+            this.logger.log("db sync requested");
+
+            // sync db
+            await ctx.em.schema().sync({ force: true });
+            await this.save();
+         }
+
+         if (ctx.flags.ctx_reload_required) {
+            ctx.flags.ctx_reload_required = false;
+            this.logger.log("ctx reload requested");
+            this.ctx(true);
+         }
+      }
+
+      // reset all falgs
+      ctx.flags = Module.ctx_flags;
    }
 
    async build() {

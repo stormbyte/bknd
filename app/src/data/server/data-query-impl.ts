@@ -6,7 +6,6 @@ import {
    Type,
    Value
 } from "core/utils";
-import type { Simplify } from "type-fest";
 import { WhereBuilder } from "../entities";
 
 const NumberOrString = (options: SchemaOptions = {}) =>
@@ -19,17 +18,25 @@ const limit = NumberOrString({ default: 10 });
 const offset = NumberOrString({ default: 0 });
 
 // @todo: allow "id" and "-id"
+const sort_default = { by: "id", dir: "asc" };
 const sort = Type.Transform(
    Type.Union(
       [Type.String(), Type.Object({ by: Type.String(), dir: StringEnum(["asc", "desc"]) })],
       {
-         default: { by: "id", dir: "asc" }
+         default: sort_default
       }
    )
 )
    .Decode((value) => {
       if (typeof value === "string") {
-         return JSON.parse(value);
+         if (/^-?[a-zA-Z_][a-zA-Z0-9_.]*$/.test(value)) {
+            const dir = value[0] === "-" ? "desc" : "asc";
+            return { by: dir === "desc" ? value.slice(1) : value, dir };
+         } else if (/^{.*}$/.test(value)) {
+            return JSON.parse(value);
+         }
+
+         return sort_default;
       }
       return value;
    })

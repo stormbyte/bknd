@@ -99,13 +99,23 @@ export class EntityManager<TBD extends object = DefaultDB> {
       this.entities.push(entity);
    }
 
-   entity(e: Entity | keyof TBD | string): Entity {
-      let entity: Entity | undefined;
-      if (typeof e === "string") {
-         entity = this.entities.find((entity) => entity.name === e);
-      } else if (e instanceof Entity) {
-         entity = e;
+   __replaceEntity(entity: Entity, name: string | undefined = entity.name) {
+      const entityIndex = this._entities.findIndex((e) => e.name === name);
+
+      if (entityIndex === -1) {
+         throw new Error(`Entity "${name}" not found and cannot be replaced`);
       }
+
+      this._entities[entityIndex] = entity;
+
+      // caused issues because this.entity() was using a reference (for when initial config was given)
+   }
+
+   entity(e: Entity | keyof TBD | string): Entity {
+      // make sure to always retrieve by name
+      const entity = this.entities.find((entity) =>
+         e instanceof Entity ? entity.name === e.name : entity.name === e
+      );
 
       if (!entity) {
          // @ts-ignore
