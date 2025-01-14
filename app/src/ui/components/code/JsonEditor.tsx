@@ -1,10 +1,9 @@
-import { json } from "@codemirror/lang-json";
-import type { ReactCodeMirrorProps } from "@uiw/react-codemirror";
 import { Suspense, lazy } from "react";
 import { twMerge } from "tailwind-merge";
+import type { CodeEditorProps } from "./CodeEditor";
 const CodeEditor = lazy(() => import("./CodeEditor"));
 
-export function JsonEditor({ editable, className, ...props }: ReactCodeMirrorProps) {
+export function JsonEditor({ editable, className, ...props }: CodeEditorProps) {
    return (
       <Suspense fallback={null}>
          <CodeEditor
@@ -14,7 +13,7 @@ export function JsonEditor({ editable, className, ...props }: ReactCodeMirrorPro
                className
             )}
             editable={editable}
-            extensions={[json()]}
+            _extensions={{ json: true }}
             {...props}
          />
       </Suspense>

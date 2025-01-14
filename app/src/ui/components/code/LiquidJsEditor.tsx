@@ -1,7 +1,7 @@
-import { liquid } from "@codemirror/lang-liquid";
-import type { ReactCodeMirrorProps } from "@uiw/react-codemirror";
 import { Suspense, lazy } from "react";
 import { twMerge } from "tailwind-merge";
+
+import type { CodeEditorProps } from "./CodeEditor";
 const CodeEditor = lazy(() => import("./CodeEditor"));
 
 const filters = [
@@ -106,7 +106,7 @@ const tags = [
    { label: "when" }
 ];
 
-export function LiquidJsEditor({ editable, ...props }: ReactCodeMirrorProps) {
+export function LiquidJsEditor({ editable, ...props }: CodeEditorProps) {
    return (
       <Suspense fallback={null}>
          <CodeEditor
@@ -115,7 +115,9 @@ export function LiquidJsEditor({ editable, ...props }: ReactCodeMirrorProps) {
                !editable && "opacity-70"
             )}
             editable={editable}
-            extensions={[liquid({ filters, tags })]}
+            _extensions={{
+               liquid: { filters, tags }
+            }}
             {...props}
          />
       </Suspense>
