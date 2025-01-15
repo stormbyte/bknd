@@ -1,4 +1,4 @@
-import type { Event } from "./Event";
+import { type Event, InvalidEventReturn } from "./Event";
 import { EventListener, type ListenerHandler, type ListenerMode } from "./EventListener";
 
 export interface EmitsEvents {
@@ -6,7 +6,7 @@ export interface EmitsEvents {
 }
 
 export type EventClass = {
-   new (params: any): Event;
+   new (params: any): Event<any, any>;
    slug: string;
 };
 
@@ -17,16 +17,20 @@ export class EventManager<
    protected listeners: EventListener[] = [];
    enabled: boolean = true;
 
-   constructor(events?: RegisteredEvents, listeners?: EventListener[]) {
+   constructor(
+      events?: RegisteredEvents,
+      private options?: {
+         listeners?: EventListener[];
+         onError?: (event: Event, e: unknown) => void;
+         onInvalidReturn?: (event: Event, e: InvalidEventReturn) => void;
+         asyncExecutor?: typeof Promise.all;
+      }
+   ) {
       if (events) {
          this.registerEvents(events);
       }
 
-      if (listeners) {
-         for (const listener of listeners) {
-            this.addListener(listener);
-         }
-      }
+      options?.listeners?.forEach((l) => this.addListener(l));
    }
 
    enable() {
@@ -128,6 +132,18 @@ export class EventManager<
       this.addListener(listener as any);
    }
 
+   onEventOnce<ActualEvent extends EventClass, Instance extends InstanceType<ActualEvent>>(
+      event: ActualEvent,
+      handler: ListenerHandler<Instance>,
+      mode: ListenerMode = "async"
+   ) {
+      this.throwIfEventNotRegistered(event);
+
+      const listener = new EventListener(event, handler, mode);
+      listener.once = true;
+      this.addListener(listener as any);
+   }
+
    on<Params = any>(
       slug: string,
       handler: ListenerHandler<Event<Params>>,
@@ -145,27 +161,73 @@ export class EventManager<
       this.events.forEach((event) => this.onEvent(event, handler, mode));
    }
 
-   async emit(event: Event) {
+   protected executeAsyncs(promises: (() => Promise<void>)[]) {
+      const executor = this.options?.asyncExecutor ?? ((e) => Promise.all(e));
+      executor(promises.map((p) => p())).then(() => void 0);
+   }
+
+   async emit<Actual extends Event<any, any>>(event: Actual): Promise<Actual> {
       // @ts-expect-error slug is static
       const slug = event.constructor.slug;
       if (!this.enabled) {
          console.log("EventManager disabled, not emitting", slug);
-         return;
+         return event;
       }
 
       if (!this.eventExists(event)) {
          throw new Error(`Event "${slug}" not registered`);
       }
 
-      const listeners = this.listeners.filter((listener) => listener.event.slug === slug);
-      //console.log("---!-- emitting", slug, listeners.length);
+      const syncs: EventListener[] = [];
+      const asyncs: (() => Promise<void>)[] = [];
 
-      for (const listener of listeners) {
+      this.listeners = this.listeners.filter((listener) => {
+         // if no match, keep and ignore
+         if (listener.event.slug !== slug) return true;
+
          if (listener.mode === "sync") {
-            await listener.handler(event, listener.event.slug);
+            syncs.push(listener);
          } else {
-            listener.handler(event, listener.event.slug);
+            asyncs.push(async () => await listener.handler(event, listener.event.slug));
+         }
+         // Remove if `once` is true, otherwise keep
+         return !listener.once;
+      });
+
+      // execute asyncs
+      this.executeAsyncs(asyncs);
+
+      // execute syncs
+      let _event: Actual = event;
+      for (const listener of syncs) {
+         try {
+            const return_value = (await listener.handler(_event, listener.event.slug)) as any;
+
+            if (typeof return_value !== "undefined") {
+               const newEvent = _event.validate(return_value);
+               // @ts-expect-error slug is static
+               if (newEvent && newEvent.constructor.slug === slug) {
+                  if (!newEvent.returned) {
+                     throw new Error(
+                        // @ts-expect-error slug is static
+                        `Returned event ${newEvent.constructor.slug} must be marked as returned.`
+                     );
+                  }
+                  _event = newEvent as Actual;
+               }
+            }
+         } catch (e) {
+            if (e instanceof InvalidEventReturn) {
+               this.options?.onInvalidReturn?.(_event, e);
+               console.warn(`Invalid return of event listener for "${slug}": ${e.message}`);
+            } else if (this.options?.onError) {
+               this.options.onError(_event, e);
+            } else {
+               throw e;
+            }
          }
       }
+
+      return _event;
    }
 }
