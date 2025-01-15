@@ -1,7 +1,10 @@
-import { DataProvider, GlobalActionsProvider, usePlasmicCanvasContext } from "@plasmicapp/host";
-import registerGlobalContext, {
-   type GlobalContextMeta
-} from "@plasmicapp/host/registerGlobalContext";
+import {
+   DataProvider,
+   GlobalActionsProvider,
+   type GlobalContextMeta,
+   registerGlobalContext,
+   usePlasmicCanvasContext
+} from "@plasmicapp/host";
 import type { AppConfig } from "bknd";
 // @ts-ignore
 import { ClientProvider, useApi, useAuth, useBaseUrl } from "bknd/client";
@@ -24,7 +27,6 @@ type BkndContextProps = {
 
 const BkndContextContext = createContext<BkndGlobalContextProps>({} as any);
 
-// @todo: it's an issue that we need auth, so we cannot make baseurl adjustable (maybe add an option to useAuth with a specific base url?)
 export const BkndContext = ({
    children,
    baseUrl,
@@ -32,7 +34,7 @@ export const BkndContext = ({
 }: React.PropsWithChildren<BkndContextProps>) => {
    const auth = useAuth();
    const baseurl = baseUrl ?? useBaseUrl();
-   const api = useApi({ host: baseurl });
+   const api = useApi(baseurl);
 
    const [data, setData] = useState<BkndGlobalContextProps>({
       baseUrl: baseurl,
@@ -49,10 +51,6 @@ export const BkndContext = ({
       (async () => {
          if (inEditor) {
             const result = await api.system.readConfig();
-
-            /*const res = await fetch(`${baseurl}/api/system/config`);
-            const result = (await res.json()) as BkndGlobalContextProps["appConfig"];*/
-            console.log("appconfig", result);
             setData((prev) => ({ ...prev, appConfig: result }));
          }
       })();
@@ -60,41 +58,15 @@ export const BkndContext = ({
 
    const actions = useMemo(
       () => ({
-         login: async (data: any) => {
-            console.log("login", data);
-            const result = await auth.login(data);
-            console.log("login:result", result);
-            if (result.res.ok && "user" in result.data) {
-               //result.data.
-               return result.data;
-            } else {
-               console.log("login failed", result);
-            }
-
-            return false;
-         },
-         register: async (data: any) => {
-            console.log("register", data);
-            const result = await auth.register(data);
-            console.log("register:result", result);
-            if (result.res.ok && "user" in result.data) {
-               //result.data.
-               return result.data;
-            }
-
-            return false;
-         },
-         logout: async () => {
-            await auth.logout();
-            console.log("logged out");
-            return true;
-         },
+         login: auth.login,
+         register: auth.register,
+         logout: auth.logout,
          setToken: auth.setToken
       }),
       [baseUrl]
    );
 
-   console.log("plasmic.bknd.context", { baseUrl });
+   console.log("plasmic.bknd.context", { baseurl });
    return (
       <GlobalActionsProvider contextName="BkndContext" actions={actions}>
          <BkndContextContext.Provider value={data}>
