@@ -1,6 +1,13 @@
 import { type Event, InvalidEventReturn } from "./Event";
 import { EventListener, type ListenerHandler, type ListenerMode } from "./EventListener";
 
+export type RegisterListenerConfig =
+   | ListenerMode
+   | {
+        mode?: ListenerMode;
+        once?: boolean;
+     };
+
 export interface EmitsEvents {
    emgr: EventManager;
 }
@@ -86,9 +93,11 @@ export class EventManager<
       return !!this.events.find((e) => slug === e.slug);
    }
 
-   protected throwIfEventNotRegistered(event: EventClass) {
-      if (!this.eventExists(event)) {
-         throw new Error(`Event "${event.slug}" not registered`);
+   protected throwIfEventNotRegistered(event: EventClass | Event | string) {
+      if (!this.eventExists(event as any)) {
+         // @ts-expect-error
+         const name = event.constructor?.slug ?? event.slug ?? event;
+         throw new Error(`Event "${name}" not registered`);
       }
    }
 
@@ -121,44 +130,39 @@ export class EventManager<
       return this;
    }
 
-   onEvent<ActualEvent extends EventClass, Instance extends InstanceType<ActualEvent>>(
-      event: ActualEvent,
-      handler: ListenerHandler<Instance>,
-      mode: ListenerMode = "async"
+   protected createEventListener(
+      _event: EventClass | string,
+      handler: ListenerHandler<any>,
+      _config: RegisterListenerConfig = "async"
    ) {
-      this.throwIfEventNotRegistered(event);
-
-      const listener = new EventListener(event, handler, mode);
+      const event =
+         typeof _event === "string" ? this.events.find((e) => e.slug === _event)! : _event;
+      const config = typeof _config === "string" ? { mode: _config } : _config;
+      const listener = new EventListener(event, handler, config.mode);
+      if (config.once) {
+         listener.once = true;
+      }
       this.addListener(listener as any);
    }
 
-   onEventOnce<ActualEvent extends EventClass, Instance extends InstanceType<ActualEvent>>(
+   onEvent<ActualEvent extends EventClass, Instance extends InstanceType<ActualEvent>>(
       event: ActualEvent,
       handler: ListenerHandler<Instance>,
-      mode: ListenerMode = "async"
+      config?: RegisterListenerConfig
    ) {
-      this.throwIfEventNotRegistered(event);
-
-      const listener = new EventListener(event, handler, mode);
-      listener.once = true;
-      this.addListener(listener as any);
+      this.createEventListener(event, handler, config);
    }
 
    on<Params = any>(
       slug: string,
       handler: ListenerHandler<Event<Params>>,
-      mode: ListenerMode = "async"
+      config?: RegisterListenerConfig
    ) {
-      const event = this.events.find((e) => e.slug === slug);
-      if (!event) {
-         throw new Error(`Event "${slug}" not registered`);
-      }
-
-      this.onEvent(event, handler, mode);
+      this.createEventListener(slug, handler, config);
    }
 
-   onAny(handler: ListenerHandler<Event<unknown>>, mode: ListenerMode = "async") {
-      this.events.forEach((event) => this.onEvent(event, handler, mode));
+   onAny(handler: ListenerHandler<Event<unknown>>, config?: RegisterListenerConfig) {
+      this.events.forEach((event) => this.onEvent(event, handler, config));
    }
 
    protected executeAsyncs(promises: (() => Promise<void>)[]) {

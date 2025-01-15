@@ -61,6 +61,9 @@ describe("EventManager", async () => {
          "sync"
       );
 
+      // don't allow unknown
+      expect(() => emgr.on("unknown", () => void 0)).toThrow();
+
       emgr.onEvent(InformationalEvent, async (event, name) => {
          call();
          expect(name).toBe("informational-event");
@@ -135,14 +138,14 @@ describe("EventManager", async () => {
       const call = mock(() => null);
       const emgr = new EventManager({ InformationalEvent });
 
-      emgr.onEventOnce(
+      emgr.onEvent(
          InformationalEvent,
          async (event, slug) => {
             expect(event).toBeInstanceOf(InformationalEvent);
             expect(slug).toBe("informational-event");
             call();
          },
-         "sync"
+         { mode: "sync", once: true }
       );
 
       expect(emgr.getListeners().length).toBe(1);
