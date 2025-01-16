@@ -36,7 +36,7 @@ describe("[data] WithBuilder", async () => {
       const res = qb.compile();
 
       expect(res.sql).toBe(
-         'select (select coalesce(json_group_array(json_object(\'id\', "agg"."id", \'content\', "agg"."content", \'author_id\', "agg"."author_id")), \'[]\') from (select "posts"."id" as "id", "posts"."content" as "content", "posts"."author_id" as "author_id" from "posts" where "users"."id" = "posts"."author_id" limit ?) as agg) as "posts" from "users"'
+         'select (select coalesce(json_group_array(json_object(\'id\', "agg"."id", \'content\', "agg"."content", \'author_id\', "agg"."author_id")), \'[]\') from (select "posts"."id" as "id", "posts"."content" as "content", "posts"."author_id" as "author_id" from "posts" as "posts" where "posts"."author_id" = "users"."id" limit ?) as agg) as "posts" from "users"'
       );
       expect(res.parameters).toEqual([5]);
 
@@ -50,7 +50,7 @@ describe("[data] WithBuilder", async () => {
       const res2 = qb2.compile();
 
       expect(res2.sql).toBe(
-         'select (select json_object(\'id\', "obj"."id", \'username\', "obj"."username") from (select "users"."id" as "id", "users"."username" as "username" from "users" where "posts"."author_id" = "users"."id" limit ?) as obj) as "author" from "posts"'
+         'select (select json_object(\'id\', "obj"."id", \'username\', "obj"."username") from (select "author"."id" as "id", "author"."username" as "username" from "users" as "author" where "author"."id" = "posts"."author_id" limit ?) as obj) as "author" from "posts"'
       );
       expect(res2.parameters).toEqual([1]);
    });

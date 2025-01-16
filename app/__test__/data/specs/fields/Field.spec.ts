@@ -15,11 +15,9 @@ describe("[data] Field", async () => {
 
    runBaseFieldTests(FieldSpec, { defaultValue: "test", schemaType: "text" });
 
-   test.only("default config", async () => {
-      const field = new FieldSpec("test");
+   test("default config", async () => {
       const config = Default(baseFieldConfigSchema, {});
       expect(stripMark(new FieldSpec("test").config)).toEqual(config);
-      console.log("config", new TextField("test", { required: true }).toJSON());
    });
 
    test("transformPersist (specific)", async () => {

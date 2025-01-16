@@ -32,7 +32,7 @@ describe("[data] JsonField", async () => {
    });
 
    test("getValue", async () => {
-      expect(field.getValue({ test: 1 }, "form")).toBe('{"test":1}');
+      expect(field.getValue({ test: 1 }, "form")).toBe('{\n  "test": 1\n}');
       expect(field.getValue("string", "form")).toBe('"string"');
       expect(field.getValue(1, "form")).toBe("1");
 

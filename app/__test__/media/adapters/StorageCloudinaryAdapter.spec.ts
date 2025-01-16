@@ -3,7 +3,7 @@ import { randomString } from "../../../src/core/utils";
 import { StorageCloudinaryAdapter } from "../../../src/media";
 
 import { config } from "dotenv";
-const dotenvOutput = config({ path: `${import.meta.dir}/../../.env` });
+const dotenvOutput = config({ path: `${import.meta.dir}/../../../.env` });
 const {
    CLOUDINARY_CLOUD_NAME,
    CLOUDINARY_API_KEY,
