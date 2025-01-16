@@ -1,4 +1,4 @@
-import { type Event, InvalidEventReturn } from "./Event";
+import { type Event, type EventClass, InvalidEventReturn } from "./Event";
 import { EventListener, type ListenerHandler, type ListenerMode } from "./EventListener";
 
 export type RegisterListenerConfig =
@@ -12,10 +12,8 @@ export interface EmitsEvents {
    emgr: EventManager;
 }
 
-export type EventClass = {
-   new (params: any): Event<any, any>;
-   slug: string;
-};
+// for compatibility, moved it to Event.ts
+export type { EventClass };
 
 export class EventManager<
    RegisteredEvents extends Record<string, EventClass> = Record<string, EventClass>

@@ -1,20 +1,48 @@
 import type { PrimaryFieldType } from "core";
-import { Event } from "core/events";
+import { Event, InvalidEventReturn } from "core/events";
 import type { Entity, EntityData } from "../entities";
 import type { RepoQuery } from "../server/data-query-impl";
 
-export class MutatorInsertBefore extends Event<{ entity: Entity; data: EntityData }> {
+export class MutatorInsertBefore extends Event<{ entity: Entity; data: EntityData }, EntityData> {
    static override slug = "mutator-insert-before";
+
+   override validate(data: EntityData) {
+      const { entity } = this.params;
+      if (!entity.isValidData(data, "create")) {
+         throw new InvalidEventReturn("EntityData", "invalid");
+      }
+
+      return this.clone({
+         entity,
+         data
+      });
+   }
 }
 export class MutatorInsertAfter extends Event<{ entity: Entity; data: EntityData }> {
    static override slug = "mutator-insert-after";
 }
-export class MutatorUpdateBefore extends Event<{
-   entity: Entity;
-   entityId: PrimaryFieldType;
-   data: EntityData;
-}> {
+export class MutatorUpdateBefore extends Event<
+   {
+      entity: Entity;
+      entityId: PrimaryFieldType;
+      data: EntityData;
+   },
+   EntityData
+> {
    static override slug = "mutator-update-before";
+
+   override validate(data: EntityData) {
+      const { entity, ...rest } = this.params;
+      if (!entity.isValidData(data, "update")) {
+         throw new InvalidEventReturn("EntityData", "invalid");
+      }
+
+      return this.clone({
+         ...rest,
+         entity,
+         data
+      });
+   }
 }
 export class MutatorUpdateAfter extends Event<{
    entity: Entity;
