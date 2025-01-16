@@ -4,13 +4,8 @@ import type { TAppMediaConfig } from "media/media-schema";
 import { useId } from "react";
 import { useApi, useBaseUrl, useEntityQuery, useInvalidate } from "ui/client";
 import { useEvent } from "ui/hooks/use-event";
-import {
-   Dropzone,
-   type DropzoneProps,
-   type DropzoneRenderProps,
-   type FileState
-} from "ui/modules/media/components/dropzone/Dropzone";
-import { mediaItemsToFileStates } from "ui/modules/media/helper";
+import { Dropzone, type DropzoneProps, type DropzoneRenderProps, type FileState } from "./Dropzone";
+import { mediaItemsToFileStates } from "./helper";
 
 export type DropzoneContainerProps = {
    children?: (props: DropzoneRenderProps) => JSX.Element;

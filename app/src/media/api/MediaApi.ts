@@ -1,5 +1,5 @@
 import { type BaseModuleApiOptions, ModuleApi, type PrimaryFieldType } from "modules/ModuleApi";
-import type { FileWithPath } from "ui/modules/media/components/dropzone/file-selector";
+import type { FileWithPath } from "ui/elements/media/file-selector";
 
 export type MediaApiOptions = BaseModuleApiOptions & {};
 

@@ -18,7 +18,7 @@
     "build:types": "tsc --emitDeclarationOnly && tsc-alias",
     "updater": "bun x npm-check-updates -ui",
     "cli": "LOCAL=1 bun src/cli/index.ts",
-    "prepublishOnly": "bun run test && bun run build:all"
+    "prepublishOnly": "bun run types && bun run test && bun run build:all"
   },
   "license": "FSL-1.1-MIT",
   "dependencies": {
@@ -30,12 +30,12 @@
     "dayjs": "^1.11.13",
     "fast-xml-parser": "^4.4.0",
     "hono": "^4.6.12",
+    "json-schema-form-react": "^0.0.2",
     "kysely": "^0.27.4",
     "liquidjs": "^10.15.0",
     "lodash-es": "^4.17.21",
     "oauth4webapi": "^2.11.1",
-    "swr": "^2.2.5",
-    "json-schema-form-react": "^0.0.2"
+    "swr": "^2.2.5"
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.613.0",
@@ -63,6 +63,7 @@
     "@vitejs/plugin-react": "^4.3.3",
     "@xyflow/react": "^12.3.2",
     "autoprefixer": "^10.4.20",
+    "clsx": "^2.1.1",
     "esbuild-postcss": "^0.0.4",
     "jotai": "^2.10.1",
     "open": "^10.1.0",
@@ -169,7 +170,8 @@
       "import": "./dist/adapter/astro/index.js",
       "require": "./dist/adapter/astro/index.cjs"
     },
-    "./dist/styles.css": "./dist/ui/main.css",
+    "./dist/main.css": "./dist/ui/main.css",
+    "./dist/styles.css": "./dist/ui/styles.css",
     "./dist/manifest.json": "./dist/static/.vite/manifest.json"
   },
   "publishConfig": {
