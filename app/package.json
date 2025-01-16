@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "vite",
     "test": "ALL_TESTS=1 bun test --bail",
+    "test:coverage": "ALL_TESTS=1 bun test --bail --coverage",
     "build": "NODE_ENV=production bun run build.ts --minify --types",
     "build:all": "rm -rf dist && bun run build:static && NODE_ENV=production bun run build.ts --minify --types --clean && bun run build:cli",
     "build:cli": "bun build src/cli/index.ts --target node --outdir dist/cli --minify",

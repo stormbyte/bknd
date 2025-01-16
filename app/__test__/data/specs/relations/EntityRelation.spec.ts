@@ -70,9 +70,9 @@ describe("[data] EntityRelation", async () => {
 
    it("required", async () => {
       const relation1 = new TestEntityRelation();
-      expect(relation1.config.required).toBe(false);
+      expect(relation1.required).toBe(false);
 
       const relation2 = new TestEntityRelation({ required: true });
-      expect(relation2.config.required).toBe(true);
+      expect(relation2.required).toBe(true);
    });
 });

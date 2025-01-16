@@ -5,8 +5,13 @@ import type { Generated } from "kysely";
 
 export type PrimaryFieldType = number | Generated<number>;
 
-// biome-ignore lint/suspicious/noEmptyInterface: <explanation>
-export interface DB {}
+export interface DB {
+   // make sure to make unknown as "any"
+   [key: string]: {
+      id: PrimaryFieldType;
+      [key: string]: any;
+   };
+}
 
 export const config = {
    server: {

@@ -132,13 +132,16 @@ export class Mutator<
          throw new Error(`Creation of system entity "${entity.name}" is disabled`);
       }
 
-      // @todo: establish the original order from "data"
+      const result = await this.emgr.emit(
+         new Mutator.Events.MutatorInsertBefore({ entity, data: data as any })
+      );
+
+      // if listener returned, take what's returned
+      const _data = result.returned ? result.params.data : data;
       const validatedData = {
          ...entity.getDefaultObject(),
-         ...(await this.getValidatedData(data, "create"))
+         ...(await this.getValidatedData(_data, "create"))
       };
-
-      await this.emgr.emit(new Mutator.Events.MutatorInsertBefore({ entity, data: validatedData }));
 
       // check if required fields are present
       const required = entity.getRequiredFields();
@@ -169,15 +172,16 @@ export class Mutator<
          throw new Error("ID must be provided for update");
       }
 
-      const validatedData = await this.getValidatedData(data, "update");
-
-      await this.emgr.emit(
+      const result = await this.emgr.emit(
          new Mutator.Events.MutatorUpdateBefore({
             entity,
             entityId: id,
-            data: validatedData as any
+            data
          })
       );
+
+      const _data = result.returned ? result.params.data : data;
+      const validatedData = await this.getValidatedData(_data, "update");
 
       const query = this.conn
          .updateTable(entity.name)

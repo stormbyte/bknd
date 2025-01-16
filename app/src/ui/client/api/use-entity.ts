@@ -109,7 +109,7 @@ export const useEntityQuery = <
    options?: SWRConfiguration & { enabled?: boolean; revalidateOnMutate?: boolean }
 ) => {
    const api = useApi().data;
-   const key = makeKey(api, entity, id, query);
+   const key = makeKey(api, entity as string, id, query);
    const { read, ...actions } = useEntity<Entity, Id>(entity, id);
    const fetcher = () => read(query);
 
@@ -121,7 +121,7 @@ export const useEntityQuery = <
    });
 
    const mutateAll = async () => {
-      const entityKey = makeKey(api, entity);
+      const entityKey = makeKey(api, entity as string);
       return mutate((key) => typeof key === "string" && key.startsWith(entityKey), undefined, {
          revalidate: true
       });
@@ -167,7 +167,7 @@ export async function mutateEntityCache<
       return prev;
    }
 
-   const entityKey = makeKey(api, entity);
+   const entityKey = makeKey(api, entity as string);
 
    return mutate(
       (key) => typeof key === "string" && key.startsWith(entityKey),

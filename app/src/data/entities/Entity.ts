@@ -192,10 +192,26 @@ export class Entity<
       this.data = data;
    }
 
+   // @todo: add tests
    isValidData(data: EntityData, context: TActionContext, explain?: boolean): boolean {
+      if (typeof data !== "object") {
+         if (explain) {
+            throw new Error(`Entity "${this.name}" data must be an object`);
+         }
+      }
+
       const fields = this.getFillableFields(context, false);
-      //const fields = this.fields;
-      //console.log("data", data);
+      const field_names = fields.map((f) => f.name);
+      const given_keys = Object.keys(data);
+
+      if (given_keys.some((key) => !field_names.includes(key))) {
+         if (explain) {
+            throw new Error(
+               `Entity "${this.name}" data must only contain known keys, got: "${given_keys}"`
+            );
+         }
+      }
+
       for (const field of fields) {
          if (!field.isValid(data[field.name], context)) {
             console.log("Entity.isValidData:invalid", context, field.name, data[field.name]);
