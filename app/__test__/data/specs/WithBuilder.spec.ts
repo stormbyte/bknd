@@ -8,19 +8,60 @@ import {
    TextField,
    WithBuilder
 } from "../../../src/data";
+import * as proto from "../../../src/data/prototype";
 import { getDummyConnection } from "../helper";
 
 const { dummyConnection, afterAllCleanup } = getDummyConnection();
 afterAll(afterAllCleanup);
 
+function schemaToEm(s: ReturnType<(typeof proto)["em"]>): EntityManager<any> {
+   return new EntityManager(Object.values(s.entities), dummyConnection, s.relations, s.indices);
+}
+
 describe("[data] WithBuilder", async () => {
+   test("validate withs", async () => {
+      const schema = proto.em(
+         {
+            posts: proto.entity("posts", {}),
+            users: proto.entity("users", {}),
+            media: proto.entity("media", {})
+         },
+         ({ relation }, { posts, users, media }) => {
+            relation(posts).manyToOne(users);
+            relation(users).polyToOne(media, { mappedBy: "avatar" });
+         }
+      );
+      const em = schemaToEm(schema);
+
+      expect(WithBuilder.validateWiths(em, "posts", undefined)).toBe(0);
+      expect(WithBuilder.validateWiths(em, "posts", {})).toBe(0);
+      expect(WithBuilder.validateWiths(em, "posts", { users: {} })).toBe(1);
+      expect(
+         WithBuilder.validateWiths(em, "posts", {
+            users: {
+               with: { avatar: {} }
+            }
+         })
+      ).toBe(2);
+      expect(() => WithBuilder.validateWiths(em, "posts", { author: {} })).toThrow();
+      expect(() =>
+         WithBuilder.validateWiths(em, "posts", {
+            users: {
+               with: { glibberish: {} }
+            }
+         })
+      ).toThrow();
+   });
+
    test("missing relation", async () => {
       const users = new Entity("users", [new TextField("username")]);
       const em = new EntityManager([users], dummyConnection);
 
       expect(() =>
-         WithBuilder.addClause(em, em.connection.kysely.selectFrom("users"), users, ["posts"])
-      ).toThrow('Relation "posts" not found');
+         WithBuilder.addClause(em, em.connection.kysely.selectFrom("users"), users, {
+            posts: {}
+         })
+      ).toThrow('Relation "users<>posts" not found');
    });
 
    test("addClause: ManyToOne", async () => {
@@ -29,9 +70,9 @@ describe("[data] WithBuilder", async () => {
       const relations = [new ManyToOneRelation(posts, users, { mappedBy: "author" })];
       const em = new EntityManager([users, posts], dummyConnection, relations);
 
-      const qb = WithBuilder.addClause(em, em.connection.kysely.selectFrom("users"), users, [
-         "posts"
-      ]);
+      const qb = WithBuilder.addClause(em, em.connection.kysely.selectFrom("users"), users, {
+         posts: {}
+      });
 
       const res = qb.compile();
 
@@ -44,7 +85,9 @@ describe("[data] WithBuilder", async () => {
          em,
          em.connection.kysely.selectFrom("posts"),
          posts, // @todo: try with "users", it gives output!
-         ["author"]
+         {
+            author: {}
+         }
       );
 
       const res2 = qb2.compile();
@@ -56,9 +99,10 @@ describe("[data] WithBuilder", async () => {
    });
 
    test("test with empty join", async () => {
+      const em = new EntityManager([], dummyConnection);
       const qb = { qb: 1 } as any;
 
-      expect(WithBuilder.addClause(null as any, qb, null as any, [])).toBe(qb);
+      expect(WithBuilder.addClause(em, qb, null as any, {})).toBe(qb);
    });
 
    test("test manytomany", async () => {
@@ -89,7 +133,7 @@ describe("[data] WithBuilder", async () => {
 
       //console.log((await em.repository().findMany("posts_categories")).result);
 
-      const res = await em.repository(posts).findMany({ with: ["categories"] });
+      const res = await em.repository(posts).findMany({ with: { categories: {} } });
 
       expect(res.data).toEqual([
          {
@@ -107,7 +151,7 @@ describe("[data] WithBuilder", async () => {
          }
       ]);
 
-      const res2 = await em.repository(categories).findMany({ with: ["posts"] });
+      const res2 = await em.repository(categories).findMany({ with: { posts: {} } });
 
       //console.log(res2.sql, res2.data);
 
@@ -150,7 +194,7 @@ describe("[data] WithBuilder", async () => {
          em,
          em.connection.kysely.selectFrom("categories"),
          categories,
-         ["single"]
+         { single: {} }
       );
       const res = qb.compile();
       expect(res.sql).toBe(
@@ -162,7 +206,7 @@ describe("[data] WithBuilder", async () => {
          em,
          em.connection.kysely.selectFrom("categories"),
          categories,
-         ["multiple"]
+         { multiple: {} }
       );
       const res2 = qb2.compile();
       expect(res2.sql).toBe(

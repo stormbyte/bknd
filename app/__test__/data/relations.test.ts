@@ -119,12 +119,9 @@ describe("Relations", async () => {
        - select: users.*
        - cardinality: 1
        */
-      const selectPostsFromUsers = postAuthorRel.buildWith(
-         users,
-         kysely.selectFrom(users.name),
-         jsonFrom,
-         "posts"
-      );
+      const selectPostsFromUsers = kysely
+         .selectFrom(users.name)
+         .select((eb) => postAuthorRel.buildWith(users, "posts")(eb).as("posts"));
       expect(selectPostsFromUsers.compile().sql).toBe(
          'select (select "posts"."id" as "id", "posts"."title" as "title", "posts"."author_id" as "author_id" from "posts" as "posts" where "posts"."author_id" = "users"."id" limit ?) as "posts" from "users"'
       );
@@ -141,12 +138,9 @@ describe("Relations", async () => {
        - select: posts.*
        - cardinality:
        */
-      const selectUsersFromPosts = postAuthorRel.buildWith(
-         posts,
-         kysely.selectFrom(posts.name),
-         jsonFrom,
-         "author"
-      );
+      const selectUsersFromPosts = kysely
+         .selectFrom(posts.name)
+         .select((eb) => postAuthorRel.buildWith(posts, "author")(eb).as("author"));
 
       expect(selectUsersFromPosts.compile().sql).toBe(
          'select (select "author"."id" as "id", "author"."username" as "username" from "users" as "author" where "author"."id" = "posts"."author_id" limit ?) as "author" from "posts"'
@@ -315,20 +309,16 @@ describe("Relations", async () => {
        - select: users.*
        - cardinality: 1
        */
-      const selectCategoriesFromPosts = postCategoriesRel.buildWith(
-         posts,
-         kysely.selectFrom(posts.name),
-         jsonFrom
-      );
+      const selectCategoriesFromPosts = kysely
+         .selectFrom(posts.name)
+         .select((eb) => postCategoriesRel.buildWith(posts)(eb).as("categories"));
       expect(selectCategoriesFromPosts.compile().sql).toBe(
          'select (select "categories"."id" as "id", "categories"."label" as "label" from "categories" inner join "posts_categories" on "categories"."id" = "posts_categories"."categories_id" where "posts"."id" = "posts_categories"."posts_id" limit ?) as "categories" from "posts"'
       );
 
-      const selectPostsFromCategories = postCategoriesRel.buildWith(
-         categories,
-         kysely.selectFrom(categories.name),
-         jsonFrom
-      );
+      const selectPostsFromCategories = kysely
+         .selectFrom(categories.name)
+         .select((eb) => postCategoriesRel.buildWith(categories)(eb).as("posts"));
       expect(selectPostsFromCategories.compile().sql).toBe(
          'select (select "posts"."id" as "id", "posts"."title" as "title" from "posts" inner join "posts_categories" on "posts"."id" = "posts_categories"."posts_id" where "categories"."id" = "posts_categories"."categories_id" limit ?) as "posts" from "categories"'
       );

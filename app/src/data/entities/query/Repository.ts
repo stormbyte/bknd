@@ -103,17 +103,10 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
          validated.select = options.select;
       }
 
-      if (options.with && options.with.length > 0) {
-         for (const entry of options.with) {
-            const related = this.em.relationOf(entity.name, entry);
-            if (!related) {
-               throw new InvalidSearchParamsException(
-                  `WITH: "${entry}" is not a relation of "${entity.name}"`
-               );
-            }
-
-            validated.with.push(entry);
-         }
+      if (options.with) {
+         const depth = WithBuilder.validateWiths(this.em, entity.name, options.with);
+         // @todo: determine allowed depth
+         validated.with = options.with;
       }
 
       if (options.join && options.join.length > 0) {

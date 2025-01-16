@@ -1,3 +1,4 @@
+import type { TThis } from "@sinclair/typebox";
 import {
    type SchemaOptions,
    type Static,
@@ -64,19 +65,60 @@ export const whereSchema = Type.Transform(
    })
    .Encode(JSON.stringify);
 
-export const querySchema = Type.Object(
-   {
-      limit: Type.Optional(limit),
-      offset: Type.Optional(offset),
-      sort: Type.Optional(sort),
-      select: Type.Optional(stringArray),
-      with: Type.Optional(stringArray),
-      join: Type.Optional(stringArray),
-      where: Type.Optional(whereSchema)
-   },
-   {
-      additionalProperties: false
+export type ShallowRepoQuery = {
+   limit?: number;
+   offset?: number;
+   sort?: string | { by: string; dir: "asc" | "desc" };
+   select?: string[];
+   with?: string[] | Record<string, ShallowRepoQuery>;
+   join?: string[];
+   where?: any;
+};
+export type RepoWithSchema = Record<
+   string,
+   Omit<ShallowRepoQuery, "with"> & {
+      with?: unknown;
    }
+>;
+export const withSchema = <TSelf extends TThis>(Self: TSelf) =>
+   Type.Transform(Type.Union([stringArray, Type.Record(Type.String(), Self)]))
+      .Decode((value) => {
+         let _value = value;
+         if (Array.isArray(value)) {
+            if (!value.every((v) => typeof v === "string")) {
+               throw new Error("Invalid 'with' schema");
+            }
+
+            _value = value.reduce((acc, v) => {
+               acc[v] = {};
+               return acc;
+            }, {} as RepoWithSchema);
+         }
+
+         return _value as RepoWithSchema;
+      })
+      .Encode((value) => value);
+
+export const querySchema = Type.Recursive(
+   (Self) =>
+      Type.Partial(
+         Type.Object(
+            {
+               limit: limit,
+               offset: offset,
+               sort: sort,
+               select: stringArray,
+               with: withSchema(Self),
+               join: stringArray,
+               where: whereSchema
+            },
+            {
+               // @todo: determine if unknown is allowed, it's ignore anyway
+               additionalProperties: false
+            }
+         )
+      ),
+   { $id: "query-schema" }
 );
 
 export type RepoQueryIn = Static<typeof querySchema>;

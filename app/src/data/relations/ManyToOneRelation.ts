@@ -1,6 +1,7 @@
 import type { PrimaryFieldType } from "core";
 import { snakeToPascalWithSpaces } from "core/utils";
 import { type Static, Type } from "core/utils";
+import type { ExpressionBuilder } from "kysely";
 import type { Entity, EntityManager } from "../entities";
 import type { RepoQuery } from "../server/data-query-impl";
 import { EntityRelation, type KyselyJsonFrom, type KyselyQueryBuilder } from "./EntityRelation";
@@ -155,15 +156,22 @@ export class ManyToOneRelation extends EntityRelation<typeof ManyToOneRelation.s
       return qb.innerJoin(self.entity.name, entityRef, otherRef).groupBy(groupBy);
    }
 
-   buildWith(entity: Entity, qb: KyselyQueryBuilder, jsonFrom: KyselyJsonFrom, reference: string) {
+   buildWith(entity: Entity, reference: string) {
       const { self, entityRef, otherRef, relationRef } = this.queryInfo(entity, reference);
       const limit =
          self.cardinality === 1
             ? 1
-            : this.config.with_limit ?? ManyToOneRelation.DEFAULTS.with_limit;
+            : (this.config.with_limit ?? ManyToOneRelation.DEFAULTS.with_limit);
       //console.log("buildWith", entity.name, reference, { limit });
 
-      return qb.select((eb) =>
+      return (eb: ExpressionBuilder<any, any>) =>
+         eb
+            .selectFrom(`${self.entity.name} as ${relationRef}`)
+            .select(self.entity.getSelect(relationRef))
+            .whereRef(entityRef, "=", otherRef)
+            .limit(limit);
+
+      /*return qb.select((eb) =>
          jsonFrom(
             eb
                .selectFrom(`${self.entity.name} as ${relationRef}`)
@@ -171,7 +179,7 @@ export class ManyToOneRelation extends EntityRelation<typeof ManyToOneRelation.s
                .whereRef(entityRef, "=", otherRef)
                .limit(limit)
          ).as(relationRef)
-      );
+      );*/
    }
 
    /**

@@ -1,4 +1,5 @@
 import { type Static, Type } from "core/utils";
+import type { ExpressionBuilder } from "kysely";
 import { Entity, type EntityManager } from "../entities";
 import { type Field, PrimaryField, VirtualField } from "../fields";
 import type { RepoQuery } from "../server/data-query-impl";
@@ -123,7 +124,7 @@ export class ManyToManyRelation extends EntityRelation<typeof ManyToManyRelation
          .groupBy(groupBy);
    }
 
-   buildWith(entity: Entity, qb: KyselyQueryBuilder, jsonFrom: KyselyJsonFrom) {
+   buildWith(entity: Entity) {
       if (!this.em) {
          throw new Error("EntityManager not set, can't build");
       }
@@ -138,7 +139,29 @@ export class ManyToManyRelation extends EntityRelation<typeof ManyToManyRelation
          (f) => !(f instanceof RelationField || f instanceof PrimaryField)
       );
 
-      return qb.select((eb) => {
+      return (eb: ExpressionBuilder<any, any>) =>
+         eb
+            .selectFrom(other.entity.name)
+            .select((eb2) => {
+               const select: any[] = other.entity.getSelect(other.entity.name);
+               if (additionalFields.length > 0) {
+                  const conn = this.connectionEntity.name;
+                  select.push(
+                     jsonBuildObject(
+                        Object.fromEntries(
+                           additionalFields.map((f) => [f.name, eb2.ref(`${conn}.${f.name}`)])
+                        )
+                     ).as(this.connectionTableMappedName)
+                  );
+               }
+
+               return select;
+            })
+            .whereRef(entityRef, "=", otherRef)
+            .innerJoin(...join)
+            .limit(limit);
+
+      /*return qb.select((eb) => {
          const select: any[] = other.entity.getSelect(other.entity.name);
          // @todo: also add to find by references
          if (additionalFields.length > 0) {
@@ -160,7 +183,7 @@ export class ManyToManyRelation extends EntityRelation<typeof ManyToManyRelation
                .innerJoin(...join)
                .limit(limit)
          ).as(other.reference);
-      });
+      });*/
    }
 
    initialize(em: EntityManager<any>) {
