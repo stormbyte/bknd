@@ -1,4 +1,4 @@
-import { uuid } from "core/utils";
+import { objectCleanEmpty, uuid } from "core/utils";
 import { get } from "lodash-es";
 import type { Task, TaskResult } from "./Task";
 
@@ -34,14 +34,14 @@ export class TaskConnection {
    }
 
    toJSON() {
-      return {
+      return objectCleanEmpty({
          source: this.source.name,
          target: this.target.name,
          config: {
             ...this.config,
             condition: this.config.condition?.toJSON()
          }
-      };
+      });
    }
 }
 
