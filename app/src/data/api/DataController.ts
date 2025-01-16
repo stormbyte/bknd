@@ -70,7 +70,7 @@ export class DataController extends Controller {
 
    override getController() {
       const { permission, auth } = this.middlewares;
-      const hono = this.create().use(auth());
+      const hono = this.create().use(auth(), permission(SystemPermissions.accessApi));
 
       const definedEntities = this.em.entities.map((e) => e.name);
       const tbNumber = Type.Transform(Type.String({ pattern: "^[1-9][0-9]{0,}$" }))
@@ -84,8 +84,6 @@ export class DataController extends Controller {
          func.description = name;
          return func;
       }
-
-      hono.use("*", permission(SystemPermissions.accessApi));
 
       // info
       hono.get(
