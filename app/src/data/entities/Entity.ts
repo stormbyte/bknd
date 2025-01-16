@@ -98,8 +98,8 @@ export class Entity<
 
    getDefaultSort() {
       return {
-         by: this.config.sort_field,
-         dir: this.config.sort_dir
+         by: this.config.sort_field ?? "id",
+         dir: this.config.sort_dir ?? "asc"
       };
    }
 

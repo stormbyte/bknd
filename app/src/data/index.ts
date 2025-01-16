@@ -8,6 +8,7 @@ export * from "./prototype";
 
 export {
    type RepoQuery,
+   type RepoQueryIn,
    defaultQuerySchema,
    querySchema,
    whereSchema

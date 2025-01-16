@@ -1,4 +1,4 @@
-import type { RepoQuery } from "data";
+import type { RepoQuery, RepoQueryIn } from "data";
 import type { MediaFieldSchema } from "media/AppMedia";
 import type { TAppMediaConfig } from "media/media-schema";
 import { useId } from "react";
@@ -15,7 +15,7 @@ export type DropzoneContainerProps = {
       id: number;
       field: string;
    };
-   query?: Partial<RepoQuery>;
+   query?: RepoQueryIn;
 } & Partial<Pick<TAppMediaConfig, "basepath" | "entity_name" | "storage">> &
    Partial<DropzoneProps>;
 

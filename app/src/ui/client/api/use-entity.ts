@@ -1,6 +1,6 @@
 import type { DB, PrimaryFieldType } from "core";
 import { encodeSearch, objectTransform } from "core/utils";
-import type { EntityData, RepoQuery } from "data";
+import type { EntityData, RepoQuery, RepoQueryIn } from "data";
 import type { ModuleApi, ResponseObject } from "modules/ModuleApi";
 import useSWR, { type SWRConfiguration, mutate } from "swr";
 import { type Api, useApi } from "ui/client";
@@ -49,7 +49,7 @@ export const useEntity = <
          }
          return res;
       },
-      read: async (query: Partial<RepoQuery> = {}) => {
+      read: async (query: RepoQueryIn = {}) => {
          const res = id ? await api.readOne(entity, id!, query) : await api.readMany(entity, query);
          if (!res.ok) {
             throw new UseEntityApiError(res as any, `Failed to read entity "${entity}"`);
@@ -88,7 +88,7 @@ export function makeKey(
    api: ModuleApi,
    entity: string,
    id?: PrimaryFieldType,
-   query?: Partial<RepoQuery>
+   query?: RepoQueryIn
 ) {
    return (
       "/" +
@@ -105,7 +105,7 @@ export const useEntityQuery = <
 >(
    entity: Entity,
    id?: Id,
-   query?: Partial<RepoQuery>,
+   query?: RepoQueryIn,
    options?: SWRConfiguration & { enabled?: boolean; revalidateOnMutate?: boolean }
 ) => {
    const api = useApi().data;

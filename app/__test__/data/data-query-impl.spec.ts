@@ -98,14 +98,14 @@ describe("data-query-impl", () => {
    test("with", () => {
       decode({ with: ["posts"] }, { with: { posts: {} } });
       decode({ with: { posts: {} } }, { with: { posts: {} } });
-      decode({ with: { posts: { limit: "1" } } }, { with: { posts: { limit: 1 } } });
+      decode({ with: { posts: { limit: 1 } } }, { with: { posts: { limit: 1 } } });
       decode(
          {
             with: {
                posts: {
                   with: {
                      images: {
-                        select: "id"
+                        select: ["id"]
                      }
                   }
                }

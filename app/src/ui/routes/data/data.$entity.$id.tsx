@@ -234,7 +234,7 @@ function EntityDetailInner({
    const other = relation.other(entity);
    const [navigate] = useNavigate();
 
-   const search: Partial<RepoQuery> = {
+   const search = {
       select: other.entity.getSelect(undefined, "table"),
       limit: 10,
       offset: 0
