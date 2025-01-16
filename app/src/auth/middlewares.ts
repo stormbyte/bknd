@@ -26,25 +26,28 @@ export const auth = (options?: {
    skip?: (string | RegExp)[];
 }) =>
    createMiddleware<ServerEnv>(async (c, next) => {
-      // make sure to only register once
-      if (c.get("auth_registered")) {
-         throw new Error(`auth middleware already registered for ${getPath(c)}`);
-      }
-      c.set("auth_registered", true);
-
       const app = c.get("app");
-      const skipped = shouldSkip(c, options?.skip) || !app?.module.auth.enabled;
       const guard = app?.modules.ctx().guard;
       const authenticator = app?.module.auth.authenticator;
 
-      if (!skipped) {
-         const resolved = c.get("auth_resolved");
-         if (!resolved) {
-            if (!app.module.auth.enabled) {
-               guard?.setUserContext(undefined);
-            } else {
-               guard?.setUserContext(await authenticator?.resolveAuthFromRequest(c));
-               c.set("auth_resolved", true);
+      let skipped = shouldSkip(c, options?.skip) || !app?.module.auth.enabled;
+
+      // make sure to only register once
+      if (c.get("auth_registered")) {
+         skipped = true;
+         console.warn(`auth middleware already registered for ${getPath(c)}`);
+      } else {
+         c.set("auth_registered", true);
+
+         if (!skipped) {
+            const resolved = c.get("auth_resolved");
+            if (!resolved) {
+               if (!app?.module.auth.enabled) {
+                  guard?.setUserContext(undefined);
+               } else {
+                  guard?.setUserContext(await authenticator?.resolveAuthFromRequest(c));
+                  c.set("auth_resolved", true);
+               }
             }
          }
       }

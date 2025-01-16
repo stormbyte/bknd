@@ -1,4 +1,5 @@
 import { type Static, Type } from "core/utils";
+import type { ExpressionBuilder } from "kysely";
 import type { Entity, EntityManager } from "../entities";
 import { NumberField, TextField } from "../fields";
 import type { RepoQuery } from "../server/data-query-impl";
@@ -87,20 +88,15 @@ export class PolymorphicRelation extends EntityRelation<typeof PolymorphicRelati
       };
    }
 
-   buildWith(entity: Entity, qb: KyselyQueryBuilder, jsonFrom: KyselyJsonFrom) {
+   buildWith(entity: Entity) {
       const { other, whereLhs, reference, entityRef, otherRef } = this.queryInfo(entity);
-      const limit = other.cardinality === 1 ? 1 : 5;
 
-      return qb.select((eb) =>
-         jsonFrom(
-            eb
-               .selectFrom(other.entity.name)
-               .select(other.entity.getSelect(other.entity.name))
-               .where(whereLhs, "=", reference)
-               .whereRef(entityRef, "=", otherRef)
-               .limit(limit)
-         ).as(other.reference)
-      );
+      return (eb: ExpressionBuilder<any, any>) =>
+         eb
+            .selectFrom(other.entity.name)
+            .where(whereLhs, "=", reference)
+            .whereRef(entityRef, "=", otherRef)
+            .$if(other.cardinality === 1, (qb) => qb.limit(1));
    }
 
    override isListableFor(entity: Entity): boolean {
