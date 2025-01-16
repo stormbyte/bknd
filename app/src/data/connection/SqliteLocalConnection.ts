@@ -1,6 +1,5 @@
-import type { DatabaseIntrospector, SqliteDatabase } from "kysely";
+import { type DatabaseIntrospector, ParseJSONResultsPlugin, type SqliteDatabase } from "kysely";
 import { Kysely, SqliteDialect } from "kysely";
-import { DeserializeJsonValuesPlugin } from "../plugins/DeserializeJsonValuesPlugin";
 import { SqliteConnection } from "./SqliteConnection";
 import { SqliteIntrospector } from "./SqliteIntrospector";
 
@@ -14,7 +13,7 @@ class CustomSqliteDialect extends SqliteDialect {
 
 export class SqliteLocalConnection extends SqliteConnection {
    constructor(private database: SqliteDatabase) {
-      const plugins = [new DeserializeJsonValuesPlugin()];
+      const plugins = [new ParseJSONResultsPlugin()];
       const kysely = new Kysely({
          dialect: new CustomSqliteDialect({ database }),
          plugins

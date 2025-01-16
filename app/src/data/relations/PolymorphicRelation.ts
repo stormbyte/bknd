@@ -90,26 +90,13 @@ export class PolymorphicRelation extends EntityRelation<typeof PolymorphicRelati
 
    buildWith(entity: Entity) {
       const { other, whereLhs, reference, entityRef, otherRef } = this.queryInfo(entity);
-      const limit = other.cardinality === 1 ? 1 : 5;
 
       return (eb: ExpressionBuilder<any, any>) =>
          eb
             .selectFrom(other.entity.name)
-            .select(other.entity.getSelect(other.entity.name))
             .where(whereLhs, "=", reference)
             .whereRef(entityRef, "=", otherRef)
-            .limit(limit);
-
-      /*return qb.select((eb) =>
-         jsonFrom(
-            eb
-               .selectFrom(other.entity.name)
-               .select(other.entity.getSelect(other.entity.name))
-               .where(whereLhs, "=", reference)
-               .whereRef(entityRef, "=", otherRef)
-               .limit(limit)
-         ).as(other.reference)
-      );*/
+            .$if(other.cardinality === 1, (qb) => qb.limit(1));
    }
 
    override isListableFor(entity: Entity): boolean {

@@ -106,7 +106,6 @@ describe("Relations", async () => {
       expect(postAuthorRel?.other(posts).entity).toBe(users);
 
       const kysely = em.connection.kysely;
-      const jsonFrom = (e) => e;
       /**
        * Relation Helper
        */
@@ -123,7 +122,7 @@ describe("Relations", async () => {
          .selectFrom(users.name)
          .select((eb) => postAuthorRel.buildWith(users, "posts")(eb).as("posts"));
       expect(selectPostsFromUsers.compile().sql).toBe(
-         'select (select "posts"."id" as "id", "posts"."title" as "title", "posts"."author_id" as "author_id" from "posts" as "posts" where "posts"."author_id" = "users"."id" limit ?) as "posts" from "users"'
+         'select (select from "posts" as "posts" where "posts"."author_id" = "users"."id") as "posts" from "users"'
       );
       expect(postAuthorRel!.getField()).toBeInstanceOf(RelationField);
       const userObj = { id: 1, username: "test" };
@@ -143,7 +142,7 @@ describe("Relations", async () => {
          .select((eb) => postAuthorRel.buildWith(posts, "author")(eb).as("author"));
 
       expect(selectUsersFromPosts.compile().sql).toBe(
-         'select (select "author"."id" as "id", "author"."username" as "username" from "users" as "author" where "author"."id" = "posts"."author_id" limit ?) as "author" from "posts"'
+         'select (select from "users" as "author" where "author"."id" = "posts"."author_id" limit ?) as "author" from "posts"'
       );
       expect(postAuthorRel.getField()).toBeInstanceOf(RelationField);
       const postObj = { id: 1, title: "test" };

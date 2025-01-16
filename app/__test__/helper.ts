@@ -1,6 +1,7 @@
 import { unlink } from "node:fs/promises";
-import type { SqliteDatabase } from "kysely";
+import type { SelectQueryBuilder, SqliteDatabase } from "kysely";
 import Database from "libsql";
+import { format as sqlFormat } from "sql-formatter";
 import { SqliteLocalConnection } from "../src/data";
 
 export function getDummyDatabase(memory: boolean = true): {
@@ -50,4 +51,14 @@ export function enableConsoleLog() {
    Object.entries(_oldConsoles).forEach(([severity, fn]) => {
       console[severity as ConsoleSeverity] = fn;
    });
+}
+
+export function compileQb(qb: SelectQueryBuilder<any, any, any>) {
+   const { sql, parameters } = qb.compile();
+   return { sql, parameters };
+}
+
+export function prettyPrintQb(qb: SelectQueryBuilder<any, any, any>) {
+   const { sql, parameters } = qb.compile();
+   console.log("$", sqlFormat(sql), "\n[params]", parameters);
 }

@@ -158,28 +158,12 @@ export class ManyToOneRelation extends EntityRelation<typeof ManyToOneRelation.s
 
    buildWith(entity: Entity, reference: string) {
       const { self, entityRef, otherRef, relationRef } = this.queryInfo(entity, reference);
-      const limit =
-         self.cardinality === 1
-            ? 1
-            : (this.config.with_limit ?? ManyToOneRelation.DEFAULTS.with_limit);
-      //console.log("buildWith", entity.name, reference, { limit });
 
       return (eb: ExpressionBuilder<any, any>) =>
          eb
             .selectFrom(`${self.entity.name} as ${relationRef}`)
-            .select(self.entity.getSelect(relationRef))
             .whereRef(entityRef, "=", otherRef)
-            .limit(limit);
-
-      /*return qb.select((eb) =>
-         jsonFrom(
-            eb
-               .selectFrom(`${self.entity.name} as ${relationRef}`)
-               .select(self.entity.getSelect(relationRef))
-               .whereRef(entityRef, "=", otherRef)
-               .limit(limit)
-         ).as(relationRef)
-      );*/
+            .$if(self.cardinality === 1, (qb) => qb.limit(1));
    }
 
    /**

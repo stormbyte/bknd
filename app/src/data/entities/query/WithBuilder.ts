@@ -1,38 +1,9 @@
 import { isObject } from "core/utils";
 import type { KyselyJsonFrom, RepoQuery } from "data";
 import { InvalidSearchParamsException } from "data/errors";
-import type { RepoWithSchema } from "data/server/data-query-impl";
 import type { Entity, EntityManager, RepositoryQB } from "../../entities";
 
 export class WithBuilder {
-   /*private static buildClause(
-      em: EntityManager<any>,
-      qb: RepositoryQB,
-      entity: Entity,
-      ref: string,
-      config?: RepoQuery
-   ) {
-      const relation = em.relationOf(entity.name, withString);
-      if (!relation) {
-         throw new Error(`Relation "${withString}" not found`);
-      }
-
-      const cardinality = relation.ref(withString).cardinality;
-      //console.log("with--builder", { entity: entity.name, withString, cardinality });
-
-      const jsonFrom = cardinality === 1 ? fns.jsonObjectFrom : fns.jsonArrayFrom;
-
-      if (!jsonFrom) {
-         throw new Error("Connection does not support jsonObjectFrom/jsonArrayFrom");
-      }
-
-      try {
-         return relation.buildWith(entity, qb, jsonFrom, withString);
-      } catch (e) {
-         throw new Error(`Could not build "with" relation "${withString}": ${(e as any).message}`);
-      }
-   }*/
-
    static addClause(
       em: EntityManager<any>,
       qb: RepositoryQB,
@@ -59,11 +30,23 @@ export class WithBuilder {
             throw new Error("Connection does not support jsonObjectFrom/jsonArrayFrom");
          }
 
-         const alias = relation.other(entity).reference;
+         const other = relation.other(entity);
          newQb = newQb.select((eb) => {
-            return jsonFrom(relation.buildWith(entity, ref)(eb)).as(alias);
+            let subQuery = relation.buildWith(entity, ref)(eb);
+            if (query) {
+               subQuery = em.repo(other.entity).addOptionsToQueryBuilder(subQuery, query as any, {
+                  ignore: ["with", "join", cardinality === 1 ? "limit" : undefined].filter(
+                     Boolean
+                  ) as any
+               });
+            }
+
+            if (query.with) {
+               subQuery = WithBuilder.addClause(em, subQuery, other.entity, query.with as any);
+            }
+
+            return jsonFrom(subQuery).as(other.reference);
          });
-         //newQb = relation.buildWith(entity, qb, jsonFrom, ref);
       }
 
       return newQb;
@@ -72,7 +55,7 @@ export class WithBuilder {
    static validateWiths(em: EntityManager<any>, entity: string, withs: RepoQuery["with"]) {
       let depth = 0;
       if (!withs || !isObject(withs)) {
-         console.warn(`'withs' undefined or invalid, given: ${JSON.stringify(withs)}`);
+         withs && console.warn(`'withs' invalid, given: ${JSON.stringify(withs)}`);
          return depth;
       }
 
