@@ -1,6 +1,10 @@
-import { DataProvider, usePlasmicCanvasContext } from "@plasmicapp/host";
-import registerComponent, { type ComponentMeta } from "@plasmicapp/host/registerComponent";
-import { usePlasmicQueryData } from "@plasmicapp/query";
+import {
+   type ComponentMeta,
+   DataProvider,
+   registerComponent,
+   usePlasmicCanvasContext
+} from "@plasmicapp/host";
+import { usePlasmicQueryData } from "@plasmicapp/loader-react";
 import { useApi, useEntityQuery } from "bknd/client";
 import type { RepoQuery } from "bknd/data";
 // biome-ignore lint/style/useImportType: <explanation>
@@ -109,7 +113,7 @@ export function BkndData({
       limit: entityId ? undefined : limit,
       offset: entityId ? undefined : offset,
       where: _where,
-      sort: { by: sortBy, dir: sortDir },
+      sort: `${sortDir === "desc" ? "-" : ""}${sortBy}`,
       with: withRefs,
       join: joinRefs
    };
@@ -124,7 +128,7 @@ export function BkndData({
       let references: string[] = [];
 
       if (entity && entity in entities) {
-         fields = Object.keys(entities[entity].fields!);
+         fields = Object.keys(entities[entity]?.fields ?? {});
 
          if (relations) {
             const rels = Object.values(relations).filter(
@@ -198,11 +202,11 @@ const ModeFetch = ({
       return <LoadingComponent loading={loading} />;
    }
 
-   if (hasError) {
+   if (hasError || !data) {
       return <ErrorComponent error={error} />;
    }
 
-   if (data.length === 0) {
+   if (data?.length === 0) {
       return <EmptyComponent empty={empty} />;
    }
 
@@ -248,6 +252,7 @@ export function registerBkndData(
 
 export const BkndDataMeta: ComponentMeta<BkndDataProps> = {
    name: "BKND Data",
+   importName: "BkndData",
    section: "BKND",
    importPath: "@bknd/plasmic",
    providesData: true,
@@ -264,6 +269,7 @@ export const BkndDataMeta: ComponentMeta<BkndDataProps> = {
       },
       select: {
          type: "choice",
+         multiSelect: true,
          options: (props, ctx) => ctx?.fields ?? []
       },
       limit: {

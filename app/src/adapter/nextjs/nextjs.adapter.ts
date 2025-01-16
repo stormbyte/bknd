@@ -2,7 +2,9 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { Api, type App } from "bknd";
 import { type FrameworkBkndConfig, createFrameworkApp, nodeRequestToRequest } from "../index";
 
-export type NextjsBkndConfig = FrameworkBkndConfig;
+export type NextjsBkndConfig = FrameworkBkndConfig & {
+   cleanSearch?: string[];
+};
 
 type GetServerSidePropsContext = {
    req: IncomingMessage;
@@ -32,10 +34,13 @@ export function withApi<T>(handler: (ctx: GetServerSidePropsContext & { api: Api
    };
 }
 
-function getCleanRequest(req: Request) {
-   // clean search params from "route" attribute
+function getCleanRequest(
+   req: Request,
+   { cleanSearch = ["route"] }: Pick<NextjsBkndConfig, "cleanSearch">
+) {
    const url = new URL(req.url);
-   url.searchParams.delete("route");
+   cleanSearch?.forEach((k) => url.searchParams.delete(k));
+
    return new Request(url.toString(), {
       method: req.method,
       headers: req.headers,
@@ -44,12 +49,12 @@ function getCleanRequest(req: Request) {
 }
 
 let app: App;
-export function serve(config: NextjsBkndConfig = {}) {
+export function serve({ cleanSearch, ...config }: NextjsBkndConfig = {}) {
    return async (req: Request) => {
       if (!app) {
          app = await createFrameworkApp(config);
       }
-      const request = getCleanRequest(req);
+      const request = getCleanRequest(req, { cleanSearch });
       return app.fetch(request, process.env);
    };
 }
