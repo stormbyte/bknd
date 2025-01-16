@@ -33,13 +33,13 @@ export class DataApi extends ModuleApi<DataApiOptions> {
       type T = Pick<RepositoryResponse<Data[]>, "meta" | "data">;
 
       const input = query ?? this.options.defaultQuery;
-      const exceeds = JSON.stringify([entity, input]).length > this.options.queryLengthLimit;
+      const req = this.get<T>([entity as any], input);
 
-      if (exceeds) {
-         return this.post<T>([entity as any, "query"], input);
+      if (req.request.url.length <= this.options.queryLengthLimit) {
+         return req;
       }
 
-      return this.get<T>([entity as any], input);
+      return this.post<T>([entity as any, "query"], input);
    }
 
    readManyByReference<
