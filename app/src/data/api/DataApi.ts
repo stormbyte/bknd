@@ -3,13 +3,15 @@ import type { EntityData, RepoQuery, RepoQueryIn, RepositoryResponse } from "dat
 import { type BaseModuleApiOptions, ModuleApi, type PrimaryFieldType } from "modules";
 
 export type DataApiOptions = BaseModuleApiOptions & {
-   defaultQuery?: Partial<RepoQuery>;
+   queryLengthLimit: number;
+   defaultQuery: Partial<RepoQuery>;
 };
 
 export class DataApi extends ModuleApi<DataApiOptions> {
    protected override getDefaultOptions(): Partial<DataApiOptions> {
       return {
          basepath: "/api/data",
+         queryLengthLimit: 1000,
          defaultQuery: {
             limit: 10
          }
@@ -28,10 +30,16 @@ export class DataApi extends ModuleApi<DataApiOptions> {
       entity: E,
       query: RepoQueryIn = {}
    ) {
-      return this.get<Pick<RepositoryResponse<Data[]>, "meta" | "data">>(
-         [entity as any],
-         query ?? this.options.defaultQuery
-      );
+      type T = Pick<RepositoryResponse<Data[]>, "meta" | "data">;
+
+      const input = query ?? this.options.defaultQuery;
+      const exceeds = JSON.stringify([entity, input]).length > this.options.queryLengthLimit;
+
+      if (exceeds) {
+         return this.post<T>([entity as any, "query"], input);
+      }
+
+      return this.get<T>([entity as any], input);
    }
 
    readManyByReference<
