@@ -1,4 +1,5 @@
 import { afterAll, describe, expect, test } from "bun:test";
+import type { EventManager } from "../../../src/core/events";
 import {
    Entity,
    EntityManager,
@@ -299,7 +300,7 @@ describe("[data] Mutator (Events)", async () => {
       expect(events.has(MutatorEvents.MutatorDeleteAfter.slug)).toBeTrue();
    });
 
-   /*test("insertOne event return is respected", async () => {
+   test("insertOne event return is respected", async () => {
       const posts = proto.entity("posts", {
          title: proto.text(),
          views: proto.number()
@@ -364,5 +365,5 @@ describe("[data] Mutator (Events)", async () => {
          title: "test",
          views: 3
       });
-   });*/
+   });
 });
