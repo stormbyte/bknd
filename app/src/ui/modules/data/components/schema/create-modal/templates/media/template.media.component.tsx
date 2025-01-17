@@ -31,7 +31,7 @@ const schema = Type.Object({
 type TCreateModalMediaSchema = Static<typeof schema>;
 
 export function TemplateMediaComponent() {
-   const { stepBack, setState, state, nextStep } = useStepContext<TCreateModalSchema>();
+   const { stepBack, setState, state, path, nextStep } = useStepContext<TCreateModalSchema>();
    const {
       register,
       handleSubmit,
@@ -41,7 +41,7 @@ export function TemplateMediaComponent() {
       control
    } = useForm({
       resolver: typeboxResolver(schema),
-      defaultValues: Default(schema, {}) as TCreateModalMediaSchema
+      defaultValues: Default(schema, state.initial ?? {}) as TCreateModalMediaSchema
    });
 
    const { config } = useBknd();
@@ -134,7 +134,7 @@ export function TemplateMediaComponent() {
                prev={{
                   onClick: stepBack
                }}
-               debug={{ state, data }}
+               debug={{ state, path, data }}
             />
          </form>
       </>

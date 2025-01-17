@@ -94,6 +94,14 @@ export function DataEntityList({ params }) {
                      items={[
                         {
                            label: "Settings",
+                           onClick: () => navigate(routes.data.schema.entity(entity.name))
+                        },
+                        {
+                           label: "Data Schema",
+                           onClick: () => navigate(routes.data.schema.root())
+                        },
+                        {
+                           label: "Advanced Settings",
                            onClick: () =>
                               navigate(routes.settings.path(["data", "entities", entity.name]), {
                                  absolute: true

@@ -39,6 +39,7 @@ export type TFieldCreate = Static<typeof createFieldSchema>;
 const createModalSchema = Type.Object(
    {
       action: schemaAction,
+      initial: Type.Optional(Type.Any()),
       entities: Type.Optional(
          Type.Object({
             create: Type.Optional(Type.Array(entitySchema))

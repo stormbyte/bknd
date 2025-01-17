@@ -83,6 +83,26 @@ const modals = {
       bkndModals.open(bkndModals.ids.dataCreate, {
          initialPath: ["entities", "entity"],
          initialState: { action: "entity" }
+      }),
+   createRelation: (rel: { source?: string; target?: string; type?: string }) =>
+      bkndModals.open(bkndModals.ids.dataCreate, {
+         initialPath: ["entities", "relation"],
+         initialState: {
+            action: "relation",
+            relations: {
+               create: [rel as any]
+            }
+         }
+      }),
+   createMedia: (entity?: string) =>
+      bkndModals.open(bkndModals.ids.dataCreate, {
+         initialPath: ["entities", "template-media"],
+         initialState: {
+            action: "template-media",
+            initial: {
+               entity
+            }
+         }
       })
 };
 

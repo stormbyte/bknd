@@ -10,6 +10,7 @@ import { ucFirst } from "core/utils";
 import { useEffect, useState } from "react";
 import { TbCirclesRelation, TbSettings } from "react-icons/tb";
 import { twMerge } from "tailwind-merge";
+import { useBknd } from "ui/client/bknd";
 import { useBkndData } from "ui/client/schema/data/use-bknd-data";
 import { IconButton, type IconType } from "ui/components/buttons/IconButton";
 import { JsonViewer } from "ui/components/code/JsonViewer";
@@ -26,6 +27,7 @@ export function StepCreate() {
    const [states, setStates] = useState<(boolean | string)[]>([]);
    const [submitting, setSubmitting] = useState(false);
    const $data = useBkndData();
+   const b = useBknd();
 
    const items: ActionItem[] = [];
    if (state.entities?.create) {
@@ -90,7 +92,8 @@ export function StepCreate() {
          states.every((s) => s === true)
       );
       if (items.length === states.length && states.every((s) => s === true)) {
-         close();
+         b.actions.reload().then(close);
+         //close();
       } else {
          setSubmitting(false);
       }

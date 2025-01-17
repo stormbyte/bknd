@@ -33,6 +33,7 @@ export function BkndProvider({
       useState<Pick<BkndContext, "version" | "schema" | "config" | "permissions">>();
    const [fetched, setFetched] = useState(false);
    const errorShown = useRef<boolean>();
+   const [local_version, set_local_version] = useState(0);
    const api = useApi();
 
    async function reloadSchema() {
@@ -80,6 +81,7 @@ export function BkndProvider({
          setSchema(schema);
          setWithSecrets(_includeSecrets);
          setFetched(true);
+         set_local_version((v) => v + 1);
       });
    }
 
@@ -98,7 +100,10 @@ export function BkndProvider({
    const actions = getSchemaActions({ api, setSchema, reloadSchema });
 
    return (
-      <BkndContext.Provider value={{ ...schema, actions, requireSecrets, app, adminOverride }}>
+      <BkndContext.Provider
+         value={{ ...schema, actions, requireSecrets, app, adminOverride }}
+         key={local_version}
+      >
          {children}
       </BkndContext.Provider>
    );
