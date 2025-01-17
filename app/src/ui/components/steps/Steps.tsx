@@ -10,6 +10,7 @@ import {
 export type TStepsProps = {
    children: any;
    initialPath?: string[];
+   initialState?: any;
    lastBack?: () => void;
    [key: string]: any;
 };
@@ -19,13 +20,14 @@ type TStepContext<T = any> = {
    stepBack: () => void;
    close: () => void;
    state: T;
+   path: string[];
    setState: Dispatch<SetStateAction<T>>;
 };
 
 const StepContext = createContext<TStepContext>(undefined as any);
 
-export function Steps({ children, initialPath = [], lastBack }: TStepsProps) {
-   const [state, setState] = useState<any>({});
+export function Steps({ children, initialPath = [], initialState = {}, lastBack }: TStepsProps) {
+   const [state, setState] = useState<any>(initialState);
    const [path, setPath] = useState<string[]>(initialPath);
    const steps: any[] = Children.toArray(children).filter(
       (child: any) => child.props.disabled !== true
@@ -46,7 +48,7 @@ export function Steps({ children, initialPath = [], lastBack }: TStepsProps) {
    const current = steps.find((step) => step.props.id === path[path.length - 1]) || steps[0];
 
    return (
-      <StepContext.Provider value={{ nextStep, stepBack, state, setState, close: lastBack! }}>
+      <StepContext.Provider value={{ nextStep, stepBack, state, path, setState, close: lastBack! }}>
          {current}
       </StepContext.Provider>
    );

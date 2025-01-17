@@ -37,22 +37,20 @@ export function DataSchemaEntity({ params }) {
       <>
          <AppShell.SectionHeader
             right={
-               <>
-                  <Dropdown
-                     items={[
-                        {
-                           label: "Settings",
-                           onClick: () =>
-                              navigate(routes.settings.path(["data", "entities", entity.name]), {
-                                 absolute: true
-                              })
-                        }
-                     ]}
-                     position="bottom-end"
-                  >
-                     <IconButton Icon={TbDots} />
-                  </Dropdown>
-               </>
+               <Dropdown
+                  items={[
+                     {
+                        label: "Settings",
+                        onClick: () =>
+                           navigate(routes.settings.path(["data", "entities", entity.name]), {
+                              absolute: true
+                           })
+                     }
+                  ]}
+                  position="bottom-end"
+               >
+                  <IconButton Icon={TbDots} />
+               </Dropdown>
             }
             className="pl-3"
          >
@@ -74,12 +72,11 @@ export function DataSchemaEntity({ params }) {
                <Empty
                   title="Relations"
                   description="This will soon be available here. Meanwhile, check advanced settings."
-                  buttonText="Advanced Settings"
-                  buttonOnClick={() =>
-                     navigate(routes.settings.path(["data", "relations"]), {
-                        absolute: true
-                     })
-                  }
+                  primary={{
+                     children: "Advanced Settings",
+                     onClick: () =>
+                        navigate(routes.settings.path(["data", "relations"]), { absolute: true })
+                  }}
                />
             </AppShell.SectionHeaderAccordionItem>
             <AppShell.SectionHeaderAccordionItem
@@ -91,12 +88,13 @@ export function DataSchemaEntity({ params }) {
                <Empty
                   title="Indices"
                   description="This will soon be available here. Meanwhile, check advanced settings."
-                  buttonText="Advanced Settings"
-                  buttonOnClick={() =>
-                     navigate(routes.settings.path(["data", "indices"]), {
-                        absolute: true
-                     })
-                  }
+                  primary={{
+                     children: "Advanced Settings",
+                     onClick: () =>
+                        navigate(routes.settings.path(["data", "indices"]), {
+                           absolute: true
+                        })
+                  }}
                />
             </AppShell.SectionHeaderAccordionItem>
          </div>

@@ -1,8 +1,10 @@
-import { SegmentedControl } from "@mantine/core";
+import { SegmentedControl, Tooltip } from "@mantine/core";
 import { IconDatabase } from "@tabler/icons-react";
 import type { Entity, TEntityType } from "data";
+import { TbDatabasePlus } from "react-icons/tb";
 import { twMerge } from "tailwind-merge";
-import { useBknd } from "ui/client/bknd";
+import { useBkndData } from "ui/client/schema/data/use-bknd-data";
+import { IconButton } from "ui/components/buttons/IconButton";
 import { Empty } from "ui/components/display/Empty";
 import { Link } from "ui/components/wouter/Link";
 import { useBrowserTitle } from "ui/hooks/use-browser-title";
@@ -11,9 +13,7 @@ import { routes, useNavigate } from "ui/lib/routes";
 
 export function DataRoot({ children }) {
    // @todo: settings routes should be centralized
-   const {
-      app: { entities }
-   } = useBknd();
+   const { entities, $data } = useBkndData();
    const entityList: Record<TEntityType, Entity[]> = {
       regular: [],
       generated: [],
@@ -22,7 +22,7 @@ export function DataRoot({ children }) {
    const [navigate] = useNavigate();
    const context = window.location.href.match(/\/schema/) ? "schema" : "data";
 
-   for (const entity of entities) {
+   for (const entity of Object.values(entities)) {
       entityList[entity.getType()].push(entity);
    }
 
@@ -52,14 +52,19 @@ export function DataRoot({ children }) {
          <AppShell.Sidebar>
             <AppShell.SectionHeader
                right={
-                  <SegmentedControl
-                     data={[
-                        { value: "data", label: "Data" },
-                        { value: "schema", label: "Schema" }
-                     ]}
-                     value={context}
-                     onChange={handleSegmentChange}
-                  />
+                  <>
+                     <SegmentedControl
+                        data={[
+                           { value: "data", label: "Data" },
+                           { value: "schema", label: "Schema" }
+                        ]}
+                        value={context}
+                        onChange={handleSegmentChange}
+                     />
+                     <Tooltip label="New Entity">
+                        <IconButton Icon={TbDatabasePlus} onClick={$data.modals.createEntity} />
+                     </Tooltip>
+                  </>
                }
             >
                Entities
@@ -70,7 +75,7 @@ export function DataRoot({ children }) {
                      <SearchInput placeholder="Search entities" />
                   </div>*/}
 
-                  <EntityLinkList entities={entityList.regular} context={context} />
+                  <EntityLinkList entities={entityList.regular} context={context} suggestCreate />
                   <EntityLinkList entities={entityList.system} context={context} title="System" />
                   <EntityLinkList
                      entities={entityList.generated}
@@ -88,9 +93,22 @@ export function DataRoot({ children }) {
 const EntityLinkList = ({
    entities,
    title,
-   context
-}: { entities: Entity[]; title?: string; context: "data" | "schema" }) => {
-   if (entities.length === 0) return null;
+   context,
+   suggestCreate = false
+}: { entities: Entity[]; title?: string; context: "data" | "schema"; suggestCreate?: boolean }) => {
+   const { $data } = useBkndData();
+   if (entities.length === 0) {
+      return suggestCreate ? (
+         <Empty
+            className="py-10"
+            description="Create your first entity to get started."
+            secondary={{
+               children: "Create entity",
+               onClick: () => $data.modals.createEntity()
+            }}
+         />
+      ) : null;
+   }
 
    return (
       <nav
@@ -119,9 +137,9 @@ const EntityLinkList = ({
 export function DataEmpty() {
    useBrowserTitle(["Data"]);
    const [navigate] = useNavigate();
+   const { $data } = useBkndData();
 
    function handleButtonClick() {
-      //navigate(routes.settings.path(["data", "entities"]), { absolute: true });
       navigate(routes.data.schema.root());
    }
 
@@ -130,8 +148,14 @@ export function DataEmpty() {
          Icon={IconDatabase}
          title="No entity selected"
          description="Please select an entity from the left sidebar or create a new one to continue."
-         buttonText="Go to schema"
-         buttonOnClick={handleButtonClick}
+         secondary={{
+            children: "Go to schema",
+            onClick: handleButtonClick
+         }}
+         primary={{
+            children: "Create entity",
+            onClick: $data.modals.createEntity
+         }}
       />
    );
 }

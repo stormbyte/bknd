@@ -52,6 +52,7 @@
         "noSwitchDeclarations": "warn"
       },
       "complexity": {
+        "noUselessFragments": "warn",
         "noStaticOnlyClass": "off",
         "noForEach": "off",
         "useLiteralKeys": "warn",

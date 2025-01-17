@@ -1,8 +1,8 @@
 import type { ModalProps } from "@mantine/core";
 import { modals as $modals, ModalsProvider, closeModal, openContextModal } from "@mantine/modals";
-import { transformObject } from "core/utils";
 import type { ComponentProps } from "react";
 import { OverlayModal } from "ui/modals/debug/OverlayModal";
+import { CreateModal } from "ui/modules/data/components/schema/create-modal/CreateModal";
 import { DebugModal } from "./debug/DebugModal";
 import { SchemaFormModal } from "./debug/SchemaFormModal";
 import { TestModal } from "./debug/TestModal";
@@ -11,7 +11,8 @@ const modals = {
    test: TestModal,
    debug: DebugModal,
    form: SchemaFormModal,
-   overlay: OverlayModal
+   overlay: OverlayModal,
+   dataCreate: CreateModal
 };
 
 declare module "@mantine/modals" {
@@ -54,10 +55,9 @@ function close<Modal extends keyof typeof modals>(modal: Modal) {
 }
 
 export const bkndModals = {
-   ids: transformObject(modals, (key) => key) as unknown as Record<
-      keyof typeof modals,
-      keyof typeof modals
-   >,
+   ids: Object.fromEntries(Object.keys(modals).map((key) => [key, key])) as {
+      [K in keyof typeof modals]: K;
+   },
    open,
    close,
    closeAll: $modals.closeAll

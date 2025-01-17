@@ -12,6 +12,7 @@ import {
 } from "data/data-schema";
 import { useBknd } from "ui/client/bknd";
 import type { TSchemaActions } from "ui/client/schema/actions";
+import { bkndModals } from "ui/modals";
 
 export function useBkndData() {
    const { config, app, schema, actions: bkndActions } = useBknd();
@@ -62,7 +63,8 @@ export function useBkndData() {
       }
    };
    const $data = {
-      entity: (name: string) => entities[name]
+      entity: (name: string) => entities[name],
+      modals
    };
 
    return {
@@ -74,6 +76,15 @@ export function useBkndData() {
       actions
    };
 }
+
+const modals = {
+   createAny: () => bkndModals.open(bkndModals.ids.dataCreate, {}),
+   createEntity: () =>
+      bkndModals.open(bkndModals.ids.dataCreate, {
+         initialPath: ["entities", "entity"],
+         initialState: { action: "entity" }
+      })
+};
 
 function entityFieldActions(bkndActions: TSchemaActions, entityName: string) {
    return {
