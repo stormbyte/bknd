@@ -28,14 +28,9 @@ function AuthRolesEditInternal({ params }) {
       if (!formRef.current?.isValid()) return;
       const data = formRef.current?.getData();
       const success = await actions.roles.patch(roleName, data);
-
-      /*notifications.show({
-         id: `role-${roleName}-update`,
-         position: "top-right",
-         title: success ? "Update success" : "Update failed",
-         message: success ? "Role updated successfully" : "Failed to update role",
-         color: !success ? "red" : undefined
-      });*/
+      if (success) {
+         navigate(routes.auth.roles.list());
+      }
    }
 
    async function handleDelete() {

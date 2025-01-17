@@ -2,6 +2,7 @@ import type { Authenticator, Strategy } from "auth";
 import { type Static, StringEnum, Type, parse } from "core/utils";
 import { hash } from "core/utils";
 import { type Context, Hono } from "hono";
+import { type StrategyAction, type StrategyActions, createStrategyAction } from "../Authenticator";
 
 type LoginSchema = { username: string; password: string } | { email: string; password: string };
 type RegisterSchema = { email: string; password: string; [key: string]: any };
@@ -54,17 +55,9 @@ export class PasswordStrategy implements Strategy {
    getController(authenticator: Authenticator): Hono<any> {
       const hono = new Hono();
 
-      async function getBody(c: Context) {
-         if (authenticator.isJsonRequest(c)) {
-            return await c.req.json();
-         } else {
-            return Object.fromEntries((await c.req.formData()).entries());
-         }
-      }
-
       return hono
          .post("/login", async (c) => {
-            const body = await getBody(c);
+            const body = await authenticator.getBody(c);
 
             try {
                const payload = await this.login(body);
@@ -76,13 +69,34 @@ export class PasswordStrategy implements Strategy {
             }
          })
          .post("/register", async (c) => {
-            const body = await getBody(c);
+            const body = await authenticator.getBody(c);
 
             const payload = await this.register(body);
             const data = await authenticator.resolve("register", this, payload.password, payload);
 
             return await authenticator.respond(c, data);
          });
+   }
+
+   getActions(): StrategyActions {
+      return {
+         create: createStrategyAction(
+            Type.Object({
+               email: Type.String({
+                  pattern: "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$"
+               }),
+               password: Type.String({
+                  minLength: 8 // @todo: this should be configurable
+               })
+            }),
+            async ({ password, ...input }) => {
+               return {
+                  ...input,
+                  strategy_value: await this.hash(password)
+               };
+            }
+         )
+      };
    }
 
    getSchema() {

@@ -1,5 +1,5 @@
 import type { Api } from "Api";
-import type { FetchPromise, ResponseObject } from "modules/ModuleApi";
+import type { FetchPromise, ModuleApi, ResponseObject } from "modules/ModuleApi";
 import useSWR, { type SWRConfiguration, useSWRConfig } from "swr";
 import { useApi } from "ui/client";
 
@@ -27,12 +27,19 @@ export const useApiQuery = <
    };
 };
 
-export const useInvalidate = () => {
+export const useInvalidate = (options?: { exact?: boolean }) => {
    const mutate = useSWRConfig().mutate;
    const api = useApi();
 
-   return async (arg?: string | ((api: Api) => FetchPromise<any>)) => {
-      if (!arg) return async () => mutate("");
-      return mutate(typeof arg === "string" ? arg : arg(api).key());
+   return async (arg?: string | ((api: Api) => FetchPromise<any> | ModuleApi<any>)) => {
+      let key = "";
+      if (typeof arg === "string") {
+         key = arg;
+      } else if (typeof arg === "function") {
+         key = arg(api).key();
+      }
+
+      if (options?.exact) return mutate(key);
+      return mutate((k) => typeof k === "string" && k.startsWith(key));
    };
 };
