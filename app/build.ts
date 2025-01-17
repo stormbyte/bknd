@@ -15,7 +15,7 @@ if (clean) {
 
 let types_running = false;
 function buildTypes() {
-   if (types_running) return;
+   if (types_running || !types) return;
    types_running = true;
 
    Bun.spawn(["bun", "build:types"], {

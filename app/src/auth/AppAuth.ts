@@ -226,8 +226,16 @@ export class AppAuth extends Module<typeof authConfigSchema> {
    private toggleStrategyValueVisibility(visible: boolean) {
       const field = this.getUsersEntity().field("strategy_value")!;
 
-      field.config.hidden = !visible;
-      field.config.fillable = visible;
+      if (visible) {
+         field.config.hidden = false;
+         field.config.fillable = true;
+      } else {
+         // reset to normal
+         const template = AppAuth.usersFields.strategy_value.config;
+         field.config.hidden = template.hidden;
+         field.config.fillable = template.fillable;
+      }
+
       // @todo: think about a PasswordField that automatically hashes on save?
    }
 

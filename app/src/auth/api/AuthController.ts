@@ -33,7 +33,6 @@ export class AuthController extends Controller {
       const name = strategy.getName();
       const { create, change } = actions;
       const em = this.auth.em;
-      const mutator = em.mutator(this.auth.config.entity_name as "users");
 
       if (create) {
          hono.post(
@@ -46,10 +45,9 @@ export class AuthController extends Controller {
                      skipMark: true
                   });
                   const processed = (await create.preprocess?.(valid)) ?? valid;
-                  console.log("processed", processed);
 
                   // @todo: check processed for "role" and check permissions
-
+                  const mutator = em.mutator(this.auth.config.entity_name as "users");
                   mutator.__unstable_toggleSystemEntityCreation(false);
                   const { data: created } = await mutator.insertOne({
                      ...processed,
@@ -98,7 +96,7 @@ export class AuthController extends Controller {
 
       hono.get("/me", auth(), async (c) => {
          if (this.auth.authenticator.isUserLoggedIn()) {
-            return c.json({ user: await this.auth.authenticator.getUser() });
+            return c.json({ user: this.auth.authenticator.getUser() });
          }
 
          return c.json({ user: null }, 403);

@@ -1,3 +1,4 @@
+@import "./main.css";
 @import "./components/form/json-schema/styles.css";
 @import "@xyflow/react/dist/style.css";
 @import "@mantine/core/styles.css";
