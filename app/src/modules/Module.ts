@@ -3,7 +3,15 @@ import type { Guard } from "auth";
 import { SchemaObject } from "core";
 import type { EventManager } from "core/events";
 import type { Static, TSchema } from "core/utils";
-import type { Connection, EntityIndex, EntityManager, em as prototypeEm } from "data";
+import {
+   type Connection,
+   type EntityIndex,
+   type EntityManager,
+   type Field,
+   FieldPrototype,
+   make,
+   type em as prototypeEm
+} from "data";
 import { Entity } from "data";
 import type { Hono } from "hono";
 
@@ -183,5 +191,17 @@ export abstract class Module<Schema extends TSchema = TSchema, ConfigSchema = St
       schema.indices?.forEach(this.ensureIndex.bind(this));
 
       return schema;
+   }
+
+   protected replaceEntityField(
+      _entity: string | Entity,
+      field: Field | string,
+      _newField: Field | FieldPrototype
+   ) {
+      const entity = this.ctx.em.entity(_entity);
+      const name = typeof field === "string" ? field : field.name;
+      const newField =
+         _newField instanceof FieldPrototype ? make(name, _newField as any) : _newField;
+      entity.__replaceField(name, newField);
    }
 }

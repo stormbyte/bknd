@@ -1,11 +1,16 @@
-import { type AuthAction, Authenticator, type ProfileExchange, Role, type Strategy } from "auth";
+import {
+   type AuthAction,
+   AuthPermissions,
+   Authenticator,
+   type ProfileExchange,
+   Role,
+   type Strategy
+} from "auth";
 import type { PasswordStrategy } from "auth/authenticate/strategies";
-import { auth } from "auth/middlewares";
 import { type DB, Exception, type PrimaryFieldType } from "core";
 import { type Static, secureRandomString, transformObject } from "core/utils";
-import { type Entity, EntityIndex, type EntityManager } from "data";
+import type { Entity, EntityManager } from "data";
 import { type FieldSchema, em, entity, enumm, make, text } from "data/prototype";
-import type { Hono } from "hono";
 import { pick } from "lodash-es";
 import { Module } from "modules/Module";
 import { AuthController } from "./api/AuthController";
@@ -79,8 +84,8 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       super.setBuilt();
 
       this._controller = new AuthController(this);
-      //this.ctx.server.use(controller.getMiddleware);
       this.ctx.server.route(this.config.basepath, this._controller.getController());
+      this.ctx.guard.registerPermissions(Object.values(AuthPermissions));
    }
 
    get controller(): AuthController {
@@ -260,14 +265,12 @@ export class AppAuth extends Module<typeof authConfigSchema> {
 
       try {
          const roles = Object.keys(this.config.roles ?? {});
-         const field = make("role", enumm({ enum: roles }));
-         users.__replaceField("role", field);
+         this.replaceEntityField(users, "role", enumm({ enum: roles }));
       } catch (e) {}
 
       try {
          const strategies = Object.keys(this.config.strategies ?? {});
-         const field = make("strategy", enumm({ enum: strategies }));
-         users.__replaceField("strategy", field);
+         this.replaceEntityField(users, "strategy", enumm({ enum: strategies }));
       } catch (e) {}
    }
 

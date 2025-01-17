@@ -22,15 +22,6 @@ export class UseEntityApiError<Payload = any> extends Error {
    }
 }
 
-function Test() {
-   const { read } = useEntity("users");
-   async () => {
-      const data = await read();
-   };
-
-   return null;
-}
-
 export const useEntity = <
    Entity extends keyof DB | string,
    Id extends PrimaryFieldType | undefined = undefined,

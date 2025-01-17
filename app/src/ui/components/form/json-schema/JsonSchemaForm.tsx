@@ -15,12 +15,13 @@ export type JsonSchemaFormProps = any & {
    schema: RJSFSchema | Schema;
    uiSchema?: any;
    direction?: "horizontal" | "vertical";
-   onChange?: (value: any) => void;
+   onChange?: (value: any, isValid: () => boolean) => void;
 };
 
 export type JsonSchemaFormRef = {
    formData: () => any;
    validateForm: () => boolean;
+   silentValidate: () => boolean;
    cancel: () => void;
 };
 
@@ -52,15 +53,18 @@ export const JsonSchemaForm = forwardRef<JsonSchemaFormRef, JsonSchemaFormProps>
       const handleChange = ({ formData }: any, e) => {
          const clean = JSON.parse(JSON.stringify(formData));
          //console.log("Data changed: ", clean, JSON.stringify(formData, null, 2));
-         onChange?.(clean);
          setValue(clean);
+         onChange?.(clean, () => isValid(clean));
       };
+
+      const isValid = (data: any) => validator.validateFormData(data, schema).errors.length === 0;
 
       useImperativeHandle(
          ref,
          () => ({
             formData: () => value,
             validateForm: () => formRef.current!.validateForm(),
+            silentValidate: () => isValid(value),
             cancel: () => formRef.current!.reset()
          }),
          [value]

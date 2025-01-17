@@ -1,7 +1,9 @@
 import { Type } from "core/utils";
-import { querySchema } from "data";
+import { type Entity, querySchema } from "data";
+import { Fragment } from "react";
 import { TbDots } from "react-icons/tb";
-import { useApiQuery } from "ui/client";
+import { useApi, useApiQuery } from "ui/client";
+import { useBknd } from "ui/client/bknd";
 import { useBkndData } from "ui/client/schema/data/use-bknd-data";
 import { Button } from "ui/components/buttons/Button";
 import { IconButton } from "ui/components/buttons/IconButton";
@@ -11,6 +13,7 @@ import { useBrowserTitle } from "ui/hooks/use-browser-title";
 import { useSearch } from "ui/hooks/use-search";
 import * as AppShell from "ui/layouts/AppShell/AppShell";
 import { routes, useNavigate } from "ui/lib/routes";
+import { useCreateUserModal } from "ui/modules/auth/hooks/use-create-user-modal";
 import { EntityTable2 } from "ui/modules/data/components/EntityTable2";
 
 // @todo: migrate to Typebox
@@ -29,7 +32,11 @@ const PER_PAGE_OPTIONS = [5, 10, 25];
 
 export function DataEntityList({ params }) {
    const { $data } = useBkndData();
-   const entity = $data.entity(params.entity as string)!;
+   const entity = $data.entity(params.entity as string);
+   if (!entity) {
+      return <Message.NotFound description={`Entity "${params.entity}" doesn't exist.`} />;
+   }
+
    useBrowserTitle(["Data", entity?.label ?? params.entity]);
    const [navigate] = useNavigate();
    const search = useSearch(searchSchema, {
@@ -39,13 +46,14 @@ export function DataEntityList({ params }) {
 
    const $q = useApiQuery(
       (api) =>
-         api.data.readMany(entity.name, {
+         api.data.readMany(entity?.name as any, {
             select: search.value.select,
             limit: search.value.perPage,
             offset: (search.value.page - 1) * search.value.perPage,
             sort: search.value.sort
          }),
       {
+         enabled: !!entity,
          revalidateOnFocus: true,
          keepPreviousData: true
       }
@@ -75,14 +83,10 @@ export function DataEntityList({ params }) {
       search.set("perPage", perPage);
    }
 
-   if (!entity) {
-      return <Message.NotFound description={`Entity "${params.entity}" doesn't exist.`} />;
-   }
-
    const isUpdating = $q.isLoading && $q.isValidating;
 
    return (
-      <>
+      <Fragment key={entity.name}>
          <AppShell.SectionHeader
             right={
                <>
@@ -100,14 +104,7 @@ export function DataEntityList({ params }) {
                   >
                      <IconButton Icon={TbDots} />
                   </Dropdown>
-                  <Button
-                     onClick={() => {
-                        navigate(routes.data.entity.create(entity.name));
-                     }}
-                     variant="primary"
-                  >
-                     Create new
-                  </Button>
+                  <EntityCreateButton entity={entity} />
                </>
             }
          >
@@ -140,6 +137,40 @@ export function DataEntityList({ params }) {
                </div>
             </div>
          </AppShell.Scrollable>
-      </>
+      </Fragment>
+   );
+}
+
+function EntityCreateButton({ entity }: { entity: Entity }) {
+   const b = useBknd();
+   const createUserModal = useCreateUserModal();
+
+   const [navigate] = useNavigate();
+   if (!entity) return null;
+   if (entity.type !== "regular") {
+      const system = {
+         users: b.app.config.auth.entity_name,
+         media: b.app.config.media.entity_name
+      };
+      if (system.users === entity.name) {
+         return (
+            <Button onClick={createUserModal.open} variant="primary">
+               New User
+            </Button>
+         );
+      }
+
+      return null;
+   }
+
+   return (
+      <Button
+         onClick={() => {
+            navigate(routes.data.entity.create(entity.name));
+         }}
+         variant="primary"
+      >
+         Create new
+      </Button>
    );
 }

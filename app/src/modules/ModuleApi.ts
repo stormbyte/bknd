@@ -39,6 +39,13 @@ export abstract class ModuleApi<Options extends BaseModuleApiOptions = BaseModul
       } as Options;
    }
 
+   /**
+    * used for SWR invalidation of basepath
+    */
+   key(): string {
+      return this.options.basepath ?? "";
+   }
+
    protected getUrl(path: string) {
       const basepath = this.options.basepath ?? "";
       return this.options.host + (basepath + "/" + path).replace(/\/{2,}/g, "/").replace(/\/$/, "");

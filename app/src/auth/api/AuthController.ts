@@ -1,5 +1,16 @@
-import type { AppAuth } from "auth";
+import { type AppAuth, AuthPermissions, type SafeUser, type Strategy } from "auth";
+import { TypeInvalidError, parse } from "core/utils";
+import { DataPermissions } from "data";
+import type { Hono } from "hono";
 import { Controller } from "modules/Controller";
+import type { ServerEnv } from "modules/Module";
+
+export type AuthActionResponse = {
+   success: boolean;
+   action: string;
+   data?: SafeUser;
+   errors?: any;
+};
 
 export class AuthController extends Controller {
    constructor(private auth: AppAuth) {
@@ -10,6 +21,70 @@ export class AuthController extends Controller {
       return this.auth.ctx.guard;
    }
 
+   private registerStrategyActions(strategy: Strategy, mainHono: Hono<ServerEnv>) {
+      const actions = strategy.getActions?.();
+      if (!actions) {
+         return;
+      }
+
+      const { auth, permission } = this.middlewares;
+      const hono = this.create().use(auth());
+
+      const name = strategy.getName();
+      const { create, change } = actions;
+      const em = this.auth.em;
+      const mutator = em.mutator(this.auth.config.entity_name as "users");
+
+      if (create) {
+         hono.post(
+            "/create",
+            permission([AuthPermissions.createUser, DataPermissions.entityCreate]),
+            async (c) => {
+               try {
+                  const body = await this.auth.authenticator.getBody(c);
+                  const valid = parse(create.schema, body, {
+                     skipMark: true
+                  });
+                  const processed = (await create.preprocess?.(valid)) ?? valid;
+                  console.log("processed", processed);
+
+                  // @todo: check processed for "role" and check permissions
+
+                  mutator.__unstable_toggleSystemEntityCreation(false);
+                  const { data: created } = await mutator.insertOne({
+                     ...processed,
+                     strategy: name
+                  });
+                  mutator.__unstable_toggleSystemEntityCreation(true);
+
+                  return c.json({
+                     success: true,
+                     action: "create",
+                     strategy: name,
+                     data: created as unknown as SafeUser
+                  } as AuthActionResponse);
+               } catch (e) {
+                  if (e instanceof TypeInvalidError) {
+                     return c.json(
+                        {
+                           success: false,
+                           errors: e.errors
+                        },
+                        400
+                     );
+                  }
+                  throw e;
+               }
+            }
+         );
+         hono.get("create/schema.json", async (c) => {
+            return c.json(create.schema);
+         });
+      }
+
+      mainHono.route(`/${name}/actions`, hono);
+   }
+
    override getController() {
       const { auth } = this.middlewares;
       const hono = this.create();
@@ -18,6 +93,7 @@ export class AuthController extends Controller {
       for (const [name, strategy] of Object.entries(strategies)) {
          //console.log("registering", name, "at", `/${name}`);
          hono.route(`/${name}`, strategy.getController(this.auth.authenticator));
+         this.registerStrategyActions(strategy, hono);
       }
 
       hono.get("/me", auth(), async (c) => {
