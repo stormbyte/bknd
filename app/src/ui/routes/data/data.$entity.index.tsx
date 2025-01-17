@@ -40,8 +40,8 @@ export function DataEntityList({ params }) {
    useBrowserTitle(["Data", entity?.label ?? params.entity]);
    const [navigate] = useNavigate();
    const search = useSearch(searchSchema, {
-      select: entity?.getSelect(undefined, "table") ?? [],
-      sort: entity?.getDefaultSort()
+      select: undefined,
+      sort: undefined
    });
 
    const $q = useApiQuery(
@@ -50,7 +50,7 @@ export function DataEntityList({ params }) {
             select: search.value.select,
             limit: search.value.perPage,
             offset: (search.value.page - 1) * search.value.perPage,
-            sort: search.value.sort
+            sort: `${search.value.sort.dir === "asc" ? "" : "-"}${search.value.sort.by}`
          }),
       {
          enabled: !!entity,
@@ -94,6 +94,14 @@ export function DataEntityList({ params }) {
                      items={[
                         {
                            label: "Settings",
+                           onClick: () => navigate(routes.data.schema.entity(entity.name))
+                        },
+                        {
+                           label: "Data Schema",
+                           onClick: () => navigate(routes.data.schema.root())
+                        },
+                        {
+                           label: "Advanced Settings",
                            onClick: () =>
                               navigate(routes.settings.path(["data", "entities", entity.name]), {
                                  absolute: true
@@ -123,7 +131,7 @@ export function DataEntityList({ params }) {
                   <EntityTable2
                      data={data ?? null}
                      entity={entity}
-                     /*select={search.value.select}*/
+                     select={search.value.select}
                      onClickRow={handleClickRow}
                      page={search.value.page}
                      sort={search.value.sort}

@@ -8,11 +8,12 @@ import { isDebug } from "core";
 import type { Entity } from "data";
 import { cloneDeep } from "lodash-es";
 import { useRef, useState } from "react";
-import { TbDots } from "react-icons/tb";
+import { TbCirclesRelation, TbDots, TbPhoto, TbPlus } from "react-icons/tb";
 import { useBkndData } from "ui/client/schema/data/use-bknd-data";
 import { Button } from "ui/components/buttons/Button";
 import { IconButton } from "ui/components/buttons/IconButton";
 import { Empty } from "ui/components/display/Empty";
+import { Message } from "ui/components/display/Message";
 import { JsonSchemaForm, type JsonSchemaFormRef } from "ui/components/form/json-schema";
 import { Dropdown } from "ui/components/overlay/Dropdown";
 import * as AppShell from "ui/layouts/AppShell/AppShell";
@@ -24,7 +25,6 @@ import { EntityFieldsForm, type EntityFieldsFormRef } from "./forms/entity.field
 export function DataSchemaEntity({ params }) {
    const { $data } = useBkndData();
    const [value, setValue] = useState("fields");
-   const fieldsRef = useRef<EntityFieldsFormRef>(null);
 
    function toggle(value) {
       return () => setValue(value);
@@ -32,6 +32,9 @@ export function DataSchemaEntity({ params }) {
 
    const [navigate] = useNavigate();
    const entity = $data.entity(params.entity as string)!;
+   if (!entity) {
+      return <Message.NotFound description={`Entity "${params.entity}" doesn't exist.`} />;
+   }
 
    return (
       <>
@@ -41,7 +44,14 @@ export function DataSchemaEntity({ params }) {
                   <Dropdown
                      items={[
                         {
-                           label: "Settings",
+                           label: "Data",
+                           onClick: () =>
+                              navigate(routes.data.root() + routes.data.entity.list(entity.name), {
+                                 absolute: true
+                              })
+                        },
+                        {
+                           label: "Advanced Settings",
                            onClick: () =>
                               navigate(routes.settings.path(["data", "entities", entity.name]), {
                                  absolute: true
@@ -51,6 +61,27 @@ export function DataSchemaEntity({ params }) {
                      position="bottom-end"
                   >
                      <IconButton Icon={TbDots} />
+                  </Dropdown>
+                  <Dropdown
+                     items={[
+                        {
+                           icon: TbCirclesRelation,
+                           label: "Add relation",
+                           onClick: () =>
+                              $data.modals.createRelation({
+                                 target: entity.name,
+                                 type: "n:1"
+                              })
+                        },
+                        {
+                           icon: TbPhoto,
+                           label: "Add media",
+                           onClick: () => $data.modals.createMedia(entity.name)
+                        }
+                     ]}
+                     position="bottom-end"
+                  >
+                     <Button IconRight={TbPlus}>Add</Button>
                   </Dropdown>
                </>
             }
@@ -74,12 +105,11 @@ export function DataSchemaEntity({ params }) {
                <Empty
                   title="Relations"
                   description="This will soon be available here. Meanwhile, check advanced settings."
-                  buttonText="Advanced Settings"
-                  buttonOnClick={() =>
-                     navigate(routes.settings.path(["data", "relations"]), {
-                        absolute: true
-                     })
-                  }
+                  primary={{
+                     children: "Advanced Settings",
+                     onClick: () =>
+                        navigate(routes.settings.path(["data", "relations"]), { absolute: true })
+                  }}
                />
             </AppShell.SectionHeaderAccordionItem>
             <AppShell.SectionHeaderAccordionItem
@@ -91,12 +121,13 @@ export function DataSchemaEntity({ params }) {
                <Empty
                   title="Indices"
                   description="This will soon be available here. Meanwhile, check advanced settings."
-                  buttonText="Advanced Settings"
-                  buttonOnClick={() =>
-                     navigate(routes.settings.path(["data", "indices"]), {
-                        absolute: true
-                     })
-                  }
+                  primary={{
+                     children: "Advanced Settings",
+                     onClick: () =>
+                        navigate(routes.settings.path(["data", "indices"]), {
+                           absolute: true
+                        })
+                  }}
                />
             </AppShell.SectionHeaderAccordionItem>
          </div>

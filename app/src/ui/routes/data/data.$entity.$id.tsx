@@ -41,6 +41,7 @@ export function DataEntityUpdate({ params }) {
          with: local_relation_refs
       },
       {
+         keepPreviousData: false,
          revalidateOnFocus: false,
          shouldRetryOnError: false
       }
@@ -95,8 +96,7 @@ export function DataEntityUpdate({ params }) {
       );
    }
 
-   const makeKey = (key: string | number = "") =>
-      `${params.entity.name}_${entityId}_${String(key)}`;
+   const makeKey = (key: string | number = "") => `${entity.name}_${entityId}_${String(key)}`;
 
    const fieldsDisabled = $q.isLoading || $q.isValidating || Form.state.isSubmitting;
 

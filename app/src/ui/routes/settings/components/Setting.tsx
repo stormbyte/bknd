@@ -175,7 +175,10 @@ export function Setting<Schema extends TObject = any>({
          <Empty
             title="Not found"
             description={`Configuration at path ${path.join(".")} doesn't exist.`}
-            buttonText="Go back"
+            primary={{
+               children: "Go back",
+               onClick: () => goBack()
+            }}
          />
       );
    }

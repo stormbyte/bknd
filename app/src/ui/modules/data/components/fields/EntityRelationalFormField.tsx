@@ -9,6 +9,7 @@ import { useBknd } from "ui/client/bknd";
 import { Button } from "ui/components/buttons/Button";
 import * as Formy from "ui/components/form/Formy";
 import { Popover } from "ui/components/overlay/Popover";
+import { Link } from "ui/components/wouter/Link";
 import { routes } from "ui/lib/routes";
 import { useLocation } from "wouter";
 import { EntityTable } from "../EntityTable";
@@ -82,7 +83,9 @@ export function EntityRelationalFormField({
 
    return (
       <Formy.Group>
-         <Formy.Label htmlFor={fieldApi.name}>{field.getLabel()}</Formy.Label>
+         <Formy.Label htmlFor={fieldApi.name}>
+            {field.getLabel({ fallback: false }) ?? entity.label}
+         </Formy.Label>
          <div
             data-disabled={fetching || disabled ? 1 : undefined}
             className="data-[disabled]:opacity-70 data-[disabled]:pointer-events-none"
@@ -152,9 +155,11 @@ export function EntityRelationalFormField({
                                  );
                               })}
                         </div>
-                        <Button IconLeft={TbEye} onClick={handleViewItem} size="small">
-                           View
-                        </Button>
+                        <Link to={routes.data.entity.edit(entity.name, _value.id as any)}>
+                           <Button IconLeft={TbEye} size="small">
+                              View
+                           </Button>
+                        </Link>
                      </>
                   ) : (
                      <div className="pl-2">- Select -</div>
