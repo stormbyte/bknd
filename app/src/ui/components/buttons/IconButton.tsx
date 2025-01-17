@@ -10,9 +10,9 @@ export type IconType =
 
 const styles = {
    xs: { className: "p-0.5", size: 13 },
-   sm: { className: "p-0.5", size: 16 },
-   md: { className: "p-1", size: 20 },
-   lg: { className: "p-1.5", size: 24 }
+   sm: { className: "p-0.5", size: 15 },
+   md: { className: "p-1", size: 18 },
+   lg: { className: "p-1.5", size: 22 }
 } as const;
 
 interface IconButtonProps extends ComponentPropsWithoutRef<"button"> {

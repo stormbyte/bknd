@@ -7,12 +7,11 @@ import { StorageLocalAdapter } from "./src/media/storage/adapters/StorageLocalAd
 
 registries.media.register("local", StorageLocalAdapter);
 
-const run_example: string | boolean = false;
-//run_example = "ex-admin-rich";
+const example = import.meta.env.VITE_EXAMPLE;
 
-const credentials = run_example
+const credentials = example
    ? {
-        url: `file:.configs/${run_example}.db`
+        url: `file:.configs/${example}.db`
         //url: ":memory:"
      }
    : {
@@ -26,10 +25,8 @@ if (!credentials.url) {
 const connection = new LibsqlConnection(createClient(credentials));
 
 let initialConfig: any = undefined;
-if (run_example) {
-   const { version, ...config } = JSON.parse(
-      await readFile(`.configs/${run_example}.json`, "utf-8")
-   );
+if (example) {
+   const { version, ...config } = JSON.parse(await readFile(`.configs/${example}.json`, "utf-8"));
    initialConfig = config;
 }
 
