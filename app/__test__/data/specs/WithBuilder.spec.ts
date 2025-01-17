@@ -10,15 +10,10 @@ import {
    WithBuilder
 } from "../../../src/data";
 import * as proto from "../../../src/data/prototype";
-import { compileQb, prettyPrintQb } from "../../helper";
+import { compileQb, prettyPrintQb, schemaToEm } from "../../helper";
 import { getDummyConnection } from "../helper";
 
 const { dummyConnection } = getDummyConnection();
-
-function schemaToEm(s: ReturnType<(typeof proto)["em"]>): EntityManager<any> {
-   const { dummyConnection } = getDummyConnection();
-   return new EntityManager(Object.values(s.entities), dummyConnection, s.relations, s.indices);
-}
 
 describe("[data] WithBuilder", async () => {
    test("validate withs", async () => {
