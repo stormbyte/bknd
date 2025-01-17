@@ -281,7 +281,7 @@ export class DataController extends Controller {
                   return c.notFound();
                }
                const options = (await c.req.valid("json")) as RepoQuery;
-               console.log("options", options);
+               //console.log("options", options);
                const result = await this.em.repository(entity).findMany(options);
 
                return c.json(this.repoResult(result), { status: result.data ? 200 : 404 });
