@@ -3,7 +3,16 @@
   "type": "module",
   "sideEffects": false,
   "bin": "./dist/cli/index.js",
-  "version": "0.6.0-rc.0",
+  "version": "0.6.0-rc.3",
+  "description": "Lightweight Firebase/Supabase alternative built to run anywhere — incl. Next.js, Remix, Astro, Cloudflare, Bun, Node, AWS Lambda & more.",
+  "homepage": "https://bknd.io",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bknd-io/bknd.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bknd-io/bknd/issues"
+  },
   "scripts": {
     "dev": "vite",
     "test": "ALL_TESTS=1 bun test --bail",
@@ -18,7 +27,8 @@
     "build:types": "tsc --emitDeclarationOnly && tsc-alias",
     "updater": "bun x npm-check-updates -ui",
     "cli": "LOCAL=1 bun src/cli/index.ts",
-    "prepublishOnly": "bun run types && bun run test && bun run build:all"
+    "prepublishOnly": "bun run types && bun run test && bun run build:all && cp ../README.md ./",
+    "postpublish": "rm -f README.md"
   },
   "license": "FSL-1.1-MIT",
   "dependencies": {
@@ -186,5 +196,21 @@
     "!dist/**/*.map",
     "!dist/metafile*",
     "!dist/**/metafile*"
+  ],
+  "keywords": [
+    "api",
+    "backend",
+    "database",
+    "authentication",
+    "jwt",
+    "workflows",
+    "media",
+    "serverless",
+    "cloudflare",
+    "nextjs",
+    "remix",
+    "astro",
+    "bun",
+    "node"
   ]
 }

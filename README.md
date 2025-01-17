@@ -1,4 +1,8 @@
-![bknd](docs/_assets/poster.png)
+[![npm version](https://img.shields.io/npm/v/bknd.svg)](https://npmjs.org/package/bknd 
+"View this project on NPM")
+[![npm downloads](https://img.shields.io/npm/dm/bknd)](https://www.npmjs.com/package/bknd)
+
+![bknd](https://raw.githubusercontent.com/bknd-io/bknd/refs/heads/main/docs/_assets/poster.png)
 
 bknd simplifies app development by providing fully functional backend for data management, 
 authentication, workflows and media. Since it's lightweight and built on Web Standards, it can 
