@@ -329,6 +329,9 @@ export class ModuleManager {
          }
       }
 
+      // re-apply configs to all modules (important for system entities)
+      this.setConfigs(configs);
+
       // @todo: cleanup old versions?
 
       this.logger.clear();

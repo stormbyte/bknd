@@ -9,6 +9,7 @@ import {
    transformObject
 } from "core/utils";
 import type { MediaFieldConfig } from "media/MediaField";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useBknd } from "ui/client/bknd";
 import { MantineNumberInput } from "ui/components/form/hook-form-mantine/MantineNumberInput";
@@ -35,14 +36,15 @@ export function TemplateMediaComponent() {
    const {
       register,
       handleSubmit,
-      formState: { isValid },
-      setValue,
+      formState: { isValid, errors },
       watch,
       control
    } = useForm({
+      mode: "onChange",
       resolver: typeboxResolver(schema),
       defaultValues: Default(schema, state.initial ?? {}) as TCreateModalMediaSchema
    });
+   const [forbidden, setForbidden] = useState<boolean>(false);
 
    const { config } = useBknd();
    const media_enabled = config.media.enabled ?? false;
@@ -51,13 +53,16 @@ export function TemplateMediaComponent() {
       name !== media_entity ? entity : undefined
    );
    const data = watch();
+   const forbidden_field_names = Object.keys(config.data.entities?.[data.entity]?.fields ?? {});
+
+   useEffect(() => {
+      setForbidden(forbidden_field_names.includes(data.name));
+   }, [forbidden_field_names, data.name]);
 
    async function handleCreate() {
-      if (isValid) {
-         console.log("data", data);
+      if (isValid && !forbidden) {
          const { field, relation } = convert(media_entity, data);
 
-         console.log("state", { field, relation });
          setState((prev) => ({
             ...prev,
             fields: { create: [field] },
@@ -120,6 +125,13 @@ export function TemplateMediaComponent() {
                         data.entity ? data.entity : "the entity"
                      }.`}
                      {...register("name")}
+                     error={
+                        errors.name?.message
+                           ? errors.name?.message
+                           : forbidden
+                             ? `Property "${data.name}" already exists on entity ${data.entity}`
+                             : undefined
+                     }
                   />
                </div>
                {/*<p>step template media</p>
@@ -129,7 +141,7 @@ export function TemplateMediaComponent() {
             <ModalFooter
                next={{
                   type: "submit",
-                  disabled: !isValid || !media_enabled
+                  disabled: !isValid || !media_enabled || forbidden
                }}
                prev={{
                   onClick: stepBack
