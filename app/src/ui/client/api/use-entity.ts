@@ -1,6 +1,7 @@
 import type { DB, PrimaryFieldType } from "core";
-import { encodeSearch, objectTransform } from "core/utils";
-import type { EntityData, RepoQuery, RepoQueryIn } from "data";
+import { objectTransform } from "core/utils/objects";
+import { encodeSearch } from "core/utils/reqres";
+import type { EntityData, RepoQueryIn } from "data";
 import type { ModuleApi, ResponseObject } from "modules/ModuleApi";
 import useSWR, { type SWRConfiguration, mutate } from "swr";
 import { type Api, useApi } from "ui/client";
