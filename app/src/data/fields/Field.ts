@@ -12,6 +12,9 @@ import type { HTMLInputTypeAttribute, InputHTMLAttributes } from "react";
 import type { EntityManager } from "../entities";
 import { InvalidFieldConfigException, TransformPersistFailedException } from "../errors";
 
+// @todo: contexts need to be reworked
+// e.g. "table" is irrelevant, because if read is not given, it fails
+
 export const ActionContext = ["create", "read", "update", "delete"] as const;
 export type TActionContext = (typeof ActionContext)[number];
 

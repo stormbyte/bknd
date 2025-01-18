@@ -54,9 +54,6 @@ body,
    }
 }
 
-@layer utilities {
-}
-
 #bknd-admin,
 .bknd-admin {
    /* Chrome, Edge, and Safari */

@@ -111,13 +111,13 @@ export class EntityManager<TBD extends object = DefaultDB> {
       // caused issues because this.entity() was using a reference (for when initial config was given)
    }
 
-   entity(e: Entity | keyof TBD | string): Entity {
+   entity(e: Entity | keyof TBD | string, silent?: boolean): Entity {
       // make sure to always retrieve by name
       const entity = this.entities.find((entity) =>
          e instanceof Entity ? entity.name === e.name : entity.name === e
       );
 
-      if (!entity) {
+      if (!entity && !silent) {
          // @ts-ignore
          throw new EntityNotDefinedException(e instanceof Entity ? e.name : e);
       }

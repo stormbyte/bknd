@@ -118,6 +118,8 @@ export class App {
          this.trigger_first_boot = false;
          await this.emgr.emit(new AppFirstBoot({ app: this }));
       }
+
+      console.log("[APP] built");
    }
 
    mutateConfig<Module extends keyof Modules>(module: Module) {

@@ -10,7 +10,7 @@ import type { PasswordStrategy } from "auth/authenticate/strategies";
 import { type DB, Exception, type PrimaryFieldType } from "core";
 import { type Static, secureRandomString, transformObject } from "core/utils";
 import type { Entity, EntityManager } from "data";
-import { type FieldSchema, em, entity, enumm, make, text } from "data/prototype";
+import { type FieldSchema, em, entity, enumm, text } from "data/prototype";
 import { pick } from "lodash-es";
 import { Module } from "modules/Module";
 import { AuthController } from "./api/AuthController";
@@ -224,17 +224,22 @@ export class AppAuth extends Module<typeof authConfigSchema> {
    }
 
    private toggleStrategyValueVisibility(visible: boolean) {
-      const field = this.getUsersEntity().field("strategy_value")!;
+      const toggle = (name: string, visible: boolean) => {
+         const field = this.getUsersEntity().field(name)!;
 
-      if (visible) {
-         field.config.hidden = false;
-         field.config.fillable = true;
-      } else {
-         // reset to normal
-         const template = AppAuth.usersFields.strategy_value.config;
-         field.config.hidden = template.hidden;
-         field.config.fillable = template.fillable;
-      }
+         if (visible) {
+            field.config.hidden = false;
+            field.config.fillable = true;
+         } else {
+            // reset to normal
+            const template = AppAuth.usersFields.strategy_value.config;
+            field.config.hidden = template.hidden;
+            field.config.fillable = template.fillable;
+         }
+      };
+
+      toggle("strategy_value", visible);
+      toggle("strategy", visible);
 
       // @todo: think about a PasswordField that automatically hashes on save?
    }
@@ -250,7 +255,10 @@ export class AppAuth extends Module<typeof authConfigSchema> {
 
    static usersFields = {
       email: text().required(),
-      strategy: text({ fillable: ["create"], hidden: ["form"] }).required(),
+      strategy: text({
+         fillable: ["create"],
+         hidden: ["update", "form"]
+      }).required(),
       strategy_value: text({
          fillable: ["create"],
          hidden: ["read", "table", "update", "form"]

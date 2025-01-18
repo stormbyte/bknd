@@ -14,6 +14,7 @@ import {
 } from "data";
 import { Entity } from "data";
 import type { Hono } from "hono";
+import { isEqual } from "lodash-es";
 
 export type ServerEnv = {
    Variables: {
@@ -154,28 +155,33 @@ export abstract class Module<Schema extends TSchema = TSchema, ConfigSchema = St
    }
 
    protected ensureEntity(entity: Entity) {
+      const instance = this.ctx.em.entity(entity.name, true);
+
       // check fields
-      if (!this.ctx.em.hasEntity(entity.name)) {
+      if (!instance) {
          this.ctx.em.addEntity(entity);
          this.ctx.flags.sync_required = true;
          return;
       }
 
-      const instance = this.ctx.em.entity(entity.name);
-
       // if exists, check all fields required are there
       // @todo: check if the field also equal
-      for (const field of instance.fields) {
-         const _field = entity.field(field.name);
-         if (!_field) {
-            entity.addField(field);
+      for (const field of entity.fields) {
+         const instanceField = instance.field(field.name);
+         if (!instanceField) {
+            instance.addField(field);
             this.ctx.flags.sync_required = true;
+         } else {
+            const changes = this.setEntityFieldConfigs(field, instanceField);
+            if (changes > 0) {
+               this.ctx.flags.sync_required = true;
+            }
          }
       }
 
       // replace entity (mainly to keep the ensured type)
       this.ctx.em.__replaceEntity(
-         new Entity(entity.name, entity.fields, instance.config, entity.type)
+         new Entity(instance.name, instance.fields, instance.config, entity.type)
       );
    }
 
@@ -193,6 +199,21 @@ export abstract class Module<Schema extends TSchema = TSchema, ConfigSchema = St
       return schema;
    }
 
+   protected setEntityFieldConfigs(
+      parent: Field,
+      child: Field,
+      props: string[] = ["hidden", "fillable", "required"]
+   ) {
+      let changes = 0;
+      for (const prop of props) {
+         if (!isEqual(child.config[prop], parent.config[prop])) {
+            child.config[prop] = parent.config[prop];
+            changes++;
+         }
+      }
+      return changes;
+   }
+
    protected replaceEntityField(
       _entity: string | Entity,
       field: Field | string,
@@ -202,6 +223,10 @@ export abstract class Module<Schema extends TSchema = TSchema, ConfigSchema = St
       const name = typeof field === "string" ? field : field.name;
       const newField =
          _newField instanceof FieldPrototype ? make(name, _newField as any) : _newField;
+
+      // ensure keeping vital config
+      this.setEntityFieldConfigs(entity.field(name)!, newField);
+
       entity.__replaceField(name, newField);
    }
 }
