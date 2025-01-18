@@ -1,5 +1,4 @@
-import type { CodeComponentMeta } from "@plasmicapp/host";
-import registerComponent, { type ComponentMeta } from "@plasmicapp/host/registerComponent";
+import { type CodeComponentMeta, type ComponentMeta, registerComponent } from "@plasmicapp/host";
 // biome-ignore lint/style/useImportType: <explanation>
 import React from "react";
 import { useEffect, useRef, useState } from "react";

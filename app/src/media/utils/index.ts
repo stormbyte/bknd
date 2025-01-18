@@ -10,7 +10,7 @@ export function getExtension(filename: string): string | undefined {
 export function getRandomizedFilename(file: File, length?: number): string;
 export function getRandomizedFilename(file: string, length?: number): string;
 export function getRandomizedFilename(file: File | string, length = 16): string {
-   const filename = file instanceof File ? file.name : file;
+   const filename = typeof file === "string" ? file : file.name;
 
    if (typeof filename !== "string") {
       console.error("Couldn't extract filename from", file);

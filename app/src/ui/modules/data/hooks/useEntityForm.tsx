@@ -29,7 +29,11 @@ export function useEntityForm({
          onSubmitAsync: async ({ value }): Promise<any> => {
             try {
                //console.log("validating", value, entity.isValidData(value, action));
-               entity.isValidData(value, action, true);
+               entity.isValidData(value, action, {
+                  explain: true,
+                  // unknown will later be removed in getChangeSet
+                  ignoreUnknown: true
+               });
                return undefined;
             } catch (e) {
                //console.log("---validation error", e);

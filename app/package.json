@@ -3,10 +3,20 @@
   "type": "module",
   "sideEffects": false,
   "bin": "./dist/cli/index.js",
-  "version": "0.5.0",
+  "version": "0.6.0-rc.13",
+  "description": "Lightweight Firebase/Supabase alternative built to run anywhere — incl. Next.js, Remix, Astro, Cloudflare, Bun, Node, AWS Lambda & more.",
+  "homepage": "https://bknd.io",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bknd-io/bknd.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bknd-io/bknd/issues"
+  },
   "scripts": {
     "dev": "vite",
     "test": "ALL_TESTS=1 bun test --bail",
+    "test:coverage": "ALL_TESTS=1 bun test --bail --coverage",
     "build": "NODE_ENV=production bun run build.ts --minify --types",
     "build:all": "rm -rf dist && bun run build:static && NODE_ENV=production bun run build.ts --minify --types --clean && bun run build:cli",
     "build:cli": "bun build src/cli/index.ts --target node --outdir dist/cli --minify",
@@ -17,7 +27,8 @@
     "build:types": "tsc --emitDeclarationOnly && tsc-alias",
     "updater": "bun x npm-check-updates -ui",
     "cli": "LOCAL=1 bun src/cli/index.ts",
-    "prepublishOnly": "bun run test && bun run build:all"
+    "prepublishOnly": "bun run types && bun run test && bun run build:all && cp ../README.md ./",
+    "postpublish": "rm -f README.md"
   },
   "license": "FSL-1.1-MIT",
   "dependencies": {
@@ -62,6 +73,7 @@
     "@vitejs/plugin-react": "^4.3.3",
     "@xyflow/react": "^12.3.2",
     "autoprefixer": "^10.4.20",
+    "clsx": "^2.1.1",
     "esbuild-postcss": "^0.0.4",
     "jotai": "^2.10.1",
     "open": "^10.1.0",
@@ -72,6 +84,7 @@
     "react-hook-form": "^7.53.1",
     "react-icons": "5.2.1",
     "react-json-view-lite": "^2.0.1",
+    "sql-formatter": "^15.4.9",
     "tailwind-merge": "^2.5.4",
     "tailwindcss": "^3.4.14",
     "tailwindcss-animate": "^1.0.7",
@@ -168,7 +181,8 @@
       "import": "./dist/adapter/astro/index.js",
       "require": "./dist/adapter/astro/index.cjs"
     },
-    "./dist/styles.css": "./dist/ui/main.css",
+    "./dist/main.css": "./dist/ui/main.css",
+    "./dist/styles.css": "./dist/ui/styles.css",
     "./dist/manifest.json": "./dist/static/.vite/manifest.json"
   },
   "publishConfig": {
@@ -182,5 +196,21 @@
     "!dist/**/*.map",
     "!dist/metafile*",
     "!dist/**/metafile*"
+  ],
+  "keywords": [
+    "api",
+    "backend",
+    "database",
+    "authentication",
+    "jwt",
+    "workflows",
+    "media",
+    "serverless",
+    "cloudflare",
+    "nextjs",
+    "remix",
+    "astro",
+    "bun",
+    "node"
   ]
 }

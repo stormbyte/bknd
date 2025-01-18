@@ -6,6 +6,7 @@ import { useApiQuery, useEntityQuery } from "ui/client";
 import { useBkndData } from "ui/client/schema/data/use-bknd-data";
 import { Button } from "ui/components/buttons/Button";
 import { IconButton } from "ui/components/buttons/IconButton";
+import { Message } from "ui/components/display/Message";
 import { Dropdown } from "ui/components/overlay/Dropdown";
 import { useBrowserTitle } from "ui/hooks/use-browser-title";
 import * as AppShell from "ui/layouts/AppShell/AppShell";
@@ -18,7 +19,11 @@ import { useEntityForm } from "ui/modules/data/hooks/useEntityForm";
 
 export function DataEntityUpdate({ params }) {
    const { $data, relations } = useBkndData();
-   const entity = $data.entity(params.entity as string)!;
+   const entity = $data.entity(params.entity as string);
+   if (!entity) {
+      return <Message.NotFound description={`Entity "${params.entity}" doesn't exist.`} />;
+   }
+
    const entityId = Number.parseInt(params.id as string);
    const [error, setError] = useState<string | null>(null);
    const [navigate] = useNavigate();
@@ -36,7 +41,9 @@ export function DataEntityUpdate({ params }) {
          with: local_relation_refs
       },
       {
-         revalidateOnFocus: false
+         keepPreviousData: false,
+         revalidateOnFocus: false,
+         shouldRetryOnError: false
       }
    );
 
@@ -81,8 +88,15 @@ export function DataEntityUpdate({ params }) {
       onSubmitted
    });
 
-   const makeKey = (key: string | number = "") =>
-      `${params.entity.name}_${entityId}_${String(key)}`;
+   if (!data && !$q.isLoading) {
+      return (
+         <Message.NotFound
+            description={`Entity "${params.entity}" with ID "${entityId}" doesn't exist.`}
+         />
+      );
+   }
+
+   const makeKey = (key: string | number = "") => `${entity.name}_${entityId}_${String(key)}`;
 
    const fieldsDisabled = $q.isLoading || $q.isValidating || Form.state.isSubmitting;
 
@@ -234,7 +248,7 @@ function EntityDetailInner({
    const other = relation.other(entity);
    const [navigate] = useNavigate();
 
-   const search: Partial<RepoQuery> = {
+   const search = {
       select: other.entity.getSelect(undefined, "table"),
       limit: 10,
       offset: 0

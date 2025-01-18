@@ -12,7 +12,6 @@ export type ClientProviderProps = {
 };
 
 export const ClientProvider = ({ children, baseUrl, user }: ClientProviderProps) => {
-   //const [actualBaseUrl, setActualBaseUrl] = useState<string | null>(null);
    const winCtx = useBkndWindowContext();
    const _ctx_baseUrl = useBaseUrl();
    let actualBaseUrl = baseUrl ?? _ctx_baseUrl ?? "";
@@ -31,6 +30,7 @@ export const ClientProvider = ({ children, baseUrl, user }: ClientProviderProps)
       console.error("error .....", e);
    }
 
+   console.log("api init", { host: actualBaseUrl, user: user ?? winCtx.user });
    const api = new Api({ host: actualBaseUrl, user: user ?? winCtx.user });
 
    return (

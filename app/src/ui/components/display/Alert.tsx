@@ -6,16 +6,27 @@ export type AlertProps = ComponentPropsWithoutRef<"div"> & {
    visible?: boolean;
    title?: string;
    message?: ReactNode | string;
+   children?: ReactNode;
 };
 
-const Base: React.FC<AlertProps> = ({ visible = true, title, message, className, ...props }) =>
+const Base: React.FC<AlertProps> = ({
+   visible = true,
+   title,
+   message,
+   className,
+   children,
+   ...props
+}) =>
    visible ? (
       <div
          {...props}
-         className={twMerge("flex flex-row dark:bg-amber-300/20 bg-amber-200 p-4", className)}
+         className={twMerge(
+            "flex flex-row items-center dark:bg-amber-300/20 bg-amber-200 p-4",
+            className
+         )}
       >
          {title && <b className="mr-2">{title}:</b>}
-         {message}
+         {message || children}
       </div>
    ) : null;
 

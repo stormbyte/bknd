@@ -10,7 +10,7 @@ import {
    TbToggleLeft
 } from "react-icons/tb";
 
-type TFieldSpec = {
+export type TFieldSpec = {
    type: string;
    label: string;
    icon: any;

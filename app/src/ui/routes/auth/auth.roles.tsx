@@ -90,9 +90,16 @@ const renderValue = ({ value, property }) => {
    }
 
    if (property === "permissions") {
+      const max = 3;
+      let permissions = value || [];
+      const count = permissions.length;
+      if (count > max) {
+         permissions = [...permissions.slice(0, max), `+${count - max}`];
+      }
+
       return (
          <div className="flex flex-row gap-1">
-            {[...(value || [])].map((p, i) => (
+            {permissions.map((p, i) => (
                <span
                   key={i}
                   className="inline-block px-2 py-1.5 text-sm bg-primary/5 rounded font-mono leading-none"

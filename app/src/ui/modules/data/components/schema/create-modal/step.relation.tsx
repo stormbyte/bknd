@@ -9,12 +9,15 @@ import {
    registerCustomTypeboxKinds
 } from "core/utils";
 import { ManyToOneRelation, type RelationType, RelationTypes } from "data";
-import { type ReactNode, useEffect } from "react";
+import { type ReactNode, startTransition, useEffect } from "react";
 import { type Control, type FieldValues, type UseFormRegister, useForm } from "react-hook-form";
+import { TbRefresh } from "react-icons/tb";
 import { useBknd } from "ui/client/bknd";
+import { Button } from "ui/components/buttons/Button";
 import { MantineNumberInput } from "ui/components/form/hook-form-mantine/MantineNumberInput";
 import { MantineSelect } from "ui/components/form/hook-form-mantine/MantineSelect";
 import { useStepContext } from "ui/components/steps/Steps";
+import { useEvent } from "ui/hooks/use-event";
 import { ModalBody, ModalFooter, type TCreateModalSchema } from "./CreateModal";
 
 // @todo: check if this could become an issue
@@ -63,7 +66,7 @@ type ComponentCtx<T extends FieldValues = FieldValues> = {
 export function StepRelation() {
    const { config } = useBknd();
    const entities = config.data.entities;
-   const { nextStep, stepBack, state, setState } = useStepContext<TCreateModalSchema>();
+   const { nextStep, stepBack, state, path, setState } = useStepContext<TCreateModalSchema>();
    const {
       register,
       handleSubmit,
@@ -93,6 +96,22 @@ export function StepRelation() {
       }
    }
 
+   const flip = useEvent(() => {
+      const { source, target } = data;
+      if (source && target) {
+         setValue("source", target);
+         setValue("target", source);
+      } else {
+         if (source) {
+            setValue("target", source);
+            setValue("source", null as any);
+         } else {
+            setValue("source", target);
+            setValue("target", null as any);
+         }
+      }
+   });
+
    return (
       <>
          <form onSubmit={handleSubmit(handleNext)}>
@@ -109,14 +128,23 @@ export function StepRelation() {
                         disabled: data.target === name
                      }))}
                   />
-                  <MantineSelect
-                     control={control}
-                     name="type"
-                     onChange={() => setValue("config", {})}
-                     label="Relation Type"
-                     data={Relations.map((r) => ({ value: r.type, label: r.label }))}
-                     allowDeselect={false}
-                  />
+                  <div className="flex flex-col gap-1">
+                     <MantineSelect
+                        control={control}
+                        name="type"
+                        onChange={() => setValue("config", {})}
+                        label="Relation Type"
+                        data={Relations.map((r) => ({ value: r.type, label: r.label }))}
+                        allowDeselect={false}
+                     />
+                     {data.type && (
+                        <div className="flex justify-center mt-1">
+                           <Button size="small" IconLeft={TbRefresh} onClick={flip}>
+                              Flip entities
+                           </Button>
+                        </div>
+                     )}
+                  </div>
                   <MantineSelect
                      control={control}
                      allowDeselect={false}
@@ -146,7 +174,7 @@ export function StepRelation() {
                   onClick: handleNext
                }}
                prev={{ onClick: stepBack }}
-               debug={{ state, data }}
+               debug={{ state, path, data }}
             />
          </form>
       </>

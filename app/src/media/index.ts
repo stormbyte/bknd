@@ -1,7 +1,8 @@
 import type { TObject, TString } from "@sinclair/typebox";
 import { type Constructor, Registry } from "core";
 
-export { MIME_TYPES } from "./storage/mime-types";
+//export { MIME_TYPES } from "./storage/mime-types";
+export { guess as guessMimeType } from "./storage/mime-types-tiny";
 export {
    Storage,
    type StorageAdapter,
@@ -19,7 +20,7 @@ import { type S3AdapterConfig, StorageS3Adapter } from "./storage/adapters/Stora
 export { StorageS3Adapter, type S3AdapterConfig, StorageCloudinaryAdapter, type CloudinaryConfig };
 
 export * as StorageEvents from "./storage/events";
-export { type FileUploadedEventData } from "./storage/events";
+export type { FileUploadedEventData } from "./storage/events";
 export * from "./utils";
 
 type ClassThatImplements<T> = Constructor<T> & { prototype: T };

@@ -3,6 +3,8 @@ import { getApi } from "bknd/adapter/astro";
 import Card from "../components/Card.astro";
 import Layout from "../layouts/Layout.astro";
 const api = getApi(Astro, { mode: "dynamic" });
+await api.verifyAuth();
+
 const { data } = await api.data.readMany("todos");
 const user = api.getUser();
 

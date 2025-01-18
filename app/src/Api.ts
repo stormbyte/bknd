@@ -128,15 +128,17 @@ export class Api {
       };
    }
 
-   async getVerifiedAuthState(force?: boolean): Promise<AuthState> {
-      if (force === true || !this.verified) {
-         await this.verifyAuth();
-      }
-
+   async getVerifiedAuthState(): Promise<AuthState> {
+      await this.verifyAuth();
       return this.getAuthState();
    }
 
    async verifyAuth() {
+      if (!this.token) {
+         this.markAuthVerified(false);
+         return;
+      }
+
       try {
          const res = await this.auth.me();
          if (!res.ok || !res.body.user) {

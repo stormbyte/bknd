@@ -88,6 +88,7 @@ export type ModuleManagerOptions = {
 };
 
 type ConfigTable<Json = ModuleConfigs> = {
+   id?: number;
    version: number;
    type: "config" | "diff" | "backup";
    json: Json;
@@ -236,10 +237,10 @@ export class ModuleManager {
 
    private async fetch(): Promise<ConfigTable> {
       this.logger.context("fetch").log("fetching");
+      const startTime = performance.now();
 
       // disabling console log, because the table might not exist yet
-      return await withDisabledConsole(async () => {
-         const startTime = performance.now();
+      const result = await withDisabledConsole(async () => {
          const { data: result } = await this.repo().findOne(
             { type: "config" },
             {
@@ -251,9 +252,16 @@ export class ModuleManager {
             throw BkndError.with("no config");
          }
 
-         this.logger.log("took", performance.now() - startTime, "ms", result.version).clear();
-         return result as ConfigTable;
+         return result as unknown as ConfigTable;
       }, ["log", "error", "warn"]);
+
+      this.logger
+         .log("took", performance.now() - startTime, "ms", {
+            version: result.version,
+            id: result.id
+         })
+         .clear();
+      return result;
    }
 
    async save() {
@@ -329,6 +337,9 @@ export class ModuleManager {
          }
       }
 
+      // re-apply configs to all modules (important for system entities)
+      this.setConfigs(configs);
+
       // @todo: cleanup old versions?
 
       this.logger.clear();
@@ -387,6 +398,7 @@ export class ModuleManager {
    }
 
    private setConfigs(configs: ModuleConfigs): void {
+      this.logger.log("setting configs");
       objectEach(configs, (config, key) => {
          try {
             // setting "noEmit" to true, to not force listeners to update

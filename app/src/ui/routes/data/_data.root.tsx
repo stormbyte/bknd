@@ -1,9 +1,20 @@
-import { SegmentedControl } from "@mantine/core";
-import { IconDatabase } from "@tabler/icons-react";
+import { SegmentedControl, Tooltip } from "@mantine/core";
+import {
+   IconAlignJustified,
+   IconCirclesRelation,
+   IconDatabase,
+   IconExternalLink,
+   IconPhoto,
+   IconPlus,
+   IconSettings
+} from "@tabler/icons-react";
 import type { Entity, TEntityType } from "data";
+import { TbDatabasePlus } from "react-icons/tb";
 import { twMerge } from "tailwind-merge";
-import { useBknd } from "ui/client/bknd";
+import { useBkndData } from "ui/client/schema/data/use-bknd-data";
+import { IconButton } from "ui/components/buttons/IconButton";
 import { Empty } from "ui/components/display/Empty";
+import { Dropdown, type DropdownClickableChild } from "ui/components/overlay/Dropdown";
 import { Link } from "ui/components/wouter/Link";
 import { useBrowserTitle } from "ui/hooks/use-browser-title";
 import * as AppShell from "ui/layouts/AppShell/AppShell";
@@ -11,9 +22,7 @@ import { routes, useNavigate } from "ui/lib/routes";
 
 export function DataRoot({ children }) {
    // @todo: settings routes should be centralized
-   const {
-      app: { entities }
-   } = useBknd();
+   const { entities, $data } = useBkndData();
    const entityList: Record<TEntityType, Entity[]> = {
       regular: [],
       generated: [],
@@ -22,7 +31,7 @@ export function DataRoot({ children }) {
    const [navigate] = useNavigate();
    const context = window.location.href.match(/\/schema/) ? "schema" : "data";
 
-   for (const entity of entities) {
+   for (const entity of Object.values(entities)) {
       entityList[entity.getType()].push(entity);
    }
 
@@ -52,14 +61,19 @@ export function DataRoot({ children }) {
          <AppShell.Sidebar>
             <AppShell.SectionHeader
                right={
-                  <SegmentedControl
-                     data={[
-                        { value: "data", label: "Data" },
-                        { value: "schema", label: "Schema" }
-                     ]}
-                     value={context}
-                     onChange={handleSegmentChange}
-                  />
+                  <>
+                     <SegmentedControl
+                        data={[
+                           { value: "data", label: "Data" },
+                           { value: "schema", label: "Schema" }
+                        ]}
+                        value={context}
+                        onChange={handleSegmentChange}
+                     />
+                     <Tooltip label="New Entity">
+                        <IconButton Icon={TbDatabasePlus} onClick={$data.modals.createEntity} />
+                     </Tooltip>
+                  </>
                }
             >
                Entities
@@ -70,7 +84,7 @@ export function DataRoot({ children }) {
                      <SearchInput placeholder="Search entities" />
                   </div>*/}
 
-                  <EntityLinkList entities={entityList.regular} context={context} />
+                  <EntityLinkList entities={entityList.regular} context={context} suggestCreate />
                   <EntityLinkList entities={entityList.system} context={context} title="System" />
                   <EntityLinkList
                      entities={entityList.generated}
@@ -88,9 +102,22 @@ export function DataRoot({ children }) {
 const EntityLinkList = ({
    entities,
    title,
-   context
-}: { entities: Entity[]; title?: string; context: "data" | "schema" }) => {
-   if (entities.length === 0) return null;
+   context,
+   suggestCreate = false
+}: { entities: Entity[]; title?: string; context: "data" | "schema"; suggestCreate?: boolean }) => {
+   const { $data } = useBkndData();
+   if (entities.length === 0) {
+      return suggestCreate ? (
+         <Empty
+            className="py-10"
+            description="Create your first entity to get started."
+            secondary={{
+               children: "Create entity",
+               onClick: () => $data.modals.createEntity()
+            }}
+         />
+      ) : null;
+   }
 
    return (
       <nav
@@ -107,21 +134,98 @@ const EntityLinkList = ({
                   ? routes.data.entity.list(entity.name)
                   : routes.data.schema.entity(entity.name);
             return (
-               <AppShell.SidebarLink key={entity.name} as={Link} href={href}>
-                  {entity.label}
-               </AppShell.SidebarLink>
+               <EntityContextMenu key={entity.name} entity={entity}>
+                  <AppShell.SidebarLink as={Link} href={href}>
+                     {entity.label}
+                  </AppShell.SidebarLink>
+               </EntityContextMenu>
             );
          })}
       </nav>
    );
 };
 
+const EntityContextMenu = ({
+   entity,
+   children,
+   enabled = true
+}: { entity: Entity; children: DropdownClickableChild; enabled?: boolean }) => {
+   if (!enabled) return children;
+   const [navigate] = useNavigate();
+   const { $data } = useBkndData();
+
+   // get href from children (single item)
+   const href = (children as any).props.href;
+   const separator = () => <div className="h-px my-1 w-full bg-primary/5" />;
+
+   return (
+      <Dropdown
+         className="flex flex-col w-full"
+         dropdownWrapperProps={{
+            className: "min-w-fit"
+         }}
+         title={entity.label + " Actions"}
+         items={[
+            href && {
+               icon: IconExternalLink,
+               label: "Open in tab",
+               onClick: () => navigate(href, { target: "_blank" })
+            },
+            separator,
+            !$data.system(entity.name).any && {
+               icon: IconPlus,
+               label: "Create new",
+               onClick: () => navigate(routes.data.entity.create(entity.name))
+            },
+            {
+               icon: IconDatabase,
+               label: "List entries",
+               onClick: () => navigate(routes.data.entity.list(entity.name))
+            },
+            separator,
+            {
+               icon: IconAlignJustified,
+               label: "Manage fields",
+               onClick: () => navigate(routes.data.schema.entity(entity.name))
+            },
+            {
+               icon: IconCirclesRelation,
+               label: "Add relation",
+               onClick: () =>
+                  $data.modals.createRelation({
+                     target: entity.name,
+                     type: "n:1"
+                  })
+            },
+            !$data.system(entity.name).media && {
+               icon: IconPhoto,
+               label: "Add media",
+               onClick: () => $data.modals.createMedia(entity.name)
+            },
+            separator,
+            {
+               icon: IconSettings,
+               label: "Settings",
+               onClick: () =>
+                  navigate(routes.settings.path(["data", "entities", entity.name]), {
+                     absolute: true
+                  })
+            }
+         ]}
+         openEvent="onContextMenu"
+         position="bottom-start"
+      >
+         {children}
+      </Dropdown>
+   );
+};
+
 export function DataEmpty() {
    useBrowserTitle(["Data"]);
    const [navigate] = useNavigate();
+   const { $data } = useBkndData();
 
    function handleButtonClick() {
-      //navigate(routes.settings.path(["data", "entities"]), { absolute: true });
       navigate(routes.data.schema.root());
    }
 
@@ -130,8 +234,14 @@ export function DataEmpty() {
          Icon={IconDatabase}
          title="No entity selected"
          description="Please select an entity from the left sidebar or create a new one to continue."
-         buttonText="Go to schema"
-         buttonOnClick={handleButtonClick}
+         secondary={{
+            children: "Go to schema",
+            onClick: handleButtonClick
+         }}
+         primary={{
+            children: "Create entity",
+            onClick: $data.modals.createEntity
+         }}
       />
    );
 }

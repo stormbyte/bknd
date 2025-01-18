@@ -7,7 +7,7 @@ import { devServerConfig } from "./src/adapter/vite/dev-server-config";
 // https://vitejs.dev/config/
 export default defineConfig({
    define: {
-      __isDev: "1"
+      __isDev: process.env.NODE_ENV === "production" ? "0" : "1"
    },
    clearScreen: false,
    publicDir: "./src/ui/assets",

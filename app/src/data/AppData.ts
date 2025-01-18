@@ -69,17 +69,8 @@ export class AppData extends Module<typeof dataConfigSchema> {
    }
 
    override getOverwritePaths() {
-      return [
-         /^entities\..*\.config$/,
-         /^entities\..*\.fields\..*\.config$/
-         ///^entities\..*\.fields\..*\.config\.schema$/
-      ];
+      return [/^entities\..*\.config$/, /^entities\..*\.fields\..*\.config$/];
    }
-
-   /*registerController(server: AppServer) {
-      console.log("adding data controller to", this.basepath);
-      server.add(this.basepath, new DataController(this.em));
-   }*/
 
    override toJSON(secrets?: boolean): AppDataConfig {
       return {

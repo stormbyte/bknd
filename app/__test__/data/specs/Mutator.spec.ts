@@ -1,4 +1,5 @@
 import { afterAll, describe, expect, test } from "bun:test";
+import type { EventManager } from "../../../src/core/events";
 import {
    Entity,
    EntityManager,
@@ -10,6 +11,7 @@ import {
    RelationMutator,
    TextField
 } from "../../../src/data";
+import * as proto from "../../../src/data/prototype";
 import { getDummyConnection } from "../helper";
 
 const { dummyConnection, afterAllCleanup } = getDummyConnection();
@@ -83,13 +85,11 @@ describe("[data] Mutator (ManyToOne)", async () => {
 
       // persisting reference should ...
       expect(
-         postRelMutator.persistReference(relations[0], "users", {
+         postRelMutator.persistReference(relations[0]!, "users", {
             $set: { id: userData.data.id }
          })
       ).resolves.toEqual(["users_id", userData.data.id]);
       // @todo: add what methods are allowed to relation, like $create should not be allowed for post<>users
-
-      process.exit(0);
 
       const userRelMutator = new RelationMutator(users, em);
       expect(userRelMutator.getRelationalKeys()).toEqual(["posts"]);
@@ -99,7 +99,7 @@ describe("[data] Mutator (ManyToOne)", async () => {
       expect(
          em.mutator(posts).insertOne({
             title: "post1",
-            users_id: 1 // user does not exist yet
+            users_id: 100 // user does not exist yet
          })
       ).rejects.toThrow();
    });
@@ -298,5 +298,72 @@ describe("[data] Mutator (Events)", async () => {
       await mutator.deleteOne(data.id);
       expect(events.has(MutatorEvents.MutatorDeleteBefore.slug)).toBeTrue();
       expect(events.has(MutatorEvents.MutatorDeleteAfter.slug)).toBeTrue();
+   });
+
+   test("insertOne event return is respected", async () => {
+      const posts = proto.entity("posts", {
+         title: proto.text(),
+         views: proto.number()
+      });
+
+      const conn = getDummyConnection();
+      const em = new EntityManager([posts], conn.dummyConnection);
+      await em.schema().sync({ force: true });
+
+      const emgr = em.emgr as EventManager<any>;
+
+      emgr.onEvent(
+         // @ts-ignore
+         EntityManager.Events.MutatorInsertBefore,
+         async (event) => {
+            return {
+               ...event.params.data,
+               views: 2
+            };
+         },
+         "sync"
+      );
+
+      const mutator = em.mutator("posts");
+      const result = await mutator.insertOne({ title: "test", views: 1 });
+      expect(result.data).toEqual({
+         id: 1,
+         title: "test",
+         views: 2
+      });
+   });
+
+   test("updateOne event return is respected", async () => {
+      const posts = proto.entity("posts", {
+         title: proto.text(),
+         views: proto.number()
+      });
+
+      const conn = getDummyConnection();
+      const em = new EntityManager([posts], conn.dummyConnection);
+      await em.schema().sync({ force: true });
+
+      const emgr = em.emgr as EventManager<any>;
+
+      emgr.onEvent(
+         // @ts-ignore
+         EntityManager.Events.MutatorUpdateBefore,
+         async (event) => {
+            return {
+               ...event.params.data,
+               views: event.params.data.views + 1
+            };
+         },
+         "sync"
+      );
+
+      const mutator = em.mutator("posts");
+      const created = await mutator.insertOne({ title: "test", views: 1 });
+      const result = await mutator.updateOne(created.data.id, { views: 2 });
+      expect(result.data).toEqual({
+         id: 1,
+         title: "test",
+         views: 3
+      });
    });
 });

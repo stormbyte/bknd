@@ -19,6 +19,11 @@
       "trailingCommas": "none"
     }
   },
+  "css": {
+    "formatter": {
+      "indentWidth": 3
+    }
+  },
   "files": {
     "ignore": [
       "**/node_modules/**",
@@ -35,6 +40,7 @@
   },
   "linter": {
     "enabled": true,
+    "ignore": ["**/*.spec.ts"],
     "rules": {
       "recommended": true,
       "a11y": {
@@ -47,6 +53,7 @@
         "noSwitchDeclarations": "warn"
       },
       "complexity": {
+        "noUselessFragments": "warn",
         "noStaticOnlyClass": "off",
         "noForEach": "off",
         "useLiteralKeys": "warn",

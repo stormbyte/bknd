@@ -3,14 +3,14 @@ import { randomString } from "../../../src/core/utils";
 import { StorageS3Adapter } from "../../../src/media";
 
 import { config } from "dotenv";
-const dotenvOutput = config({ path: `${import.meta.dir}/../../.env` });
+const dotenvOutput = config({ path: `${import.meta.dir}/../../../.env` });
 const { R2_ACCESS_KEY, R2_SECRET_ACCESS_KEY, R2_URL, AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_S3_URL } =
    dotenvOutput.parsed!;
 
 // @todo: mock r2/s3 responses for faster tests
-const ALL_TESTS = process.env.ALL_TESTS;
+const ALL_TESTS = !!process.env.ALL_TESTS;
 
-describe("Storage", async () => {
+describe.skipIf(ALL_TESTS)("StorageS3Adapter", async () => {
    console.log("ALL_TESTS", process.env.ALL_TESTS);
    const versions = [
       [

@@ -15,7 +15,7 @@ if (clean) {
 
 let types_running = false;
 function buildTypes() {
-   if (types_running) return;
+   if (types_running || !types) return;
    types_running = true;
 
    Bun.spawn(["bun", "build:types"], {
@@ -72,12 +72,16 @@ await tsup.build({
 /**
  * Building UI for direct imports
  */
-const ui_splitting = false;
 await tsup.build({
    minify,
    sourcemap,
    watch,
-   entry: ["src/ui/index.ts", "src/ui/client/index.ts", "src/ui/main.css"],
+   entry: [
+      "src/ui/index.ts",
+      "src/ui/client/index.ts",
+      "src/ui/main.css",
+      "src/ui/styles.css"
+   ],
    outDir: "dist/ui",
    external: [
       "bun:test",
@@ -91,18 +95,60 @@ await tsup.build({
    metafile: true,
    platform: "browser",
    format: ["esm"],
-   splitting: ui_splitting,
+   splitting: true,
    treeshake: true,
    loader: {
       ".svg": "dataurl"
    },
    esbuildOptions: (options) => {
       options.logLevel = "silent";
-      if (ui_splitting) {
-         options.chunkNames = "chunks/[name]-[hash]";
-      }
+      options.chunkNames = "chunks/[name]-[hash]";
    },
    onSuccess: async () => {
+      delayTypes();
+   }
+});
+
+/**
+ * Building UI Elements
+ * - tailwind-merge is mocked, no exclude
+ * - ui/client is external, and after built replaced with "bknd/client"
+ */
+await tsup.build({
+   minify,
+   sourcemap,
+   watch,
+   entry: ["src/ui/elements/index.ts"],
+   outDir: "dist/ui/elements",
+   external: [
+      "ui/client",
+      "react",
+      "react-dom",
+      "react/jsx-runtime",
+      "react/jsx-dev-runtime",
+      "use-sync-external-store"
+   ],
+   metafile: true,
+   platform: "browser",
+   format: ["esm"],
+   splitting: false,
+   bundle: true,
+   treeshake: true,
+   loader: {
+      ".svg": "dataurl"
+   },
+   esbuildOptions: (options) => {
+      options.alias = {
+         // not important for elements, mock to reduce bundle
+         "tailwind-merge": "./src/ui/elements/mocks/tailwind-merge.ts"
+      };
+   },
+   onSuccess: async () => {
+      // manually replace ui/client with bknd/client
+      const path = "./dist/ui/elements/index.js";
+      const bundle = await Bun.file(path).text();
+      await Bun.write(path, bundle.replaceAll("ui/client", "bknd/client"));
+
       delayTypes();
    }
 });

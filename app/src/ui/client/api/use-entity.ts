@@ -1,6 +1,6 @@
 import type { DB, PrimaryFieldType } from "core";
 import { encodeSearch, objectTransform } from "core/utils";
-import type { EntityData, RepoQuery } from "data";
+import type { EntityData, RepoQuery, RepoQueryIn } from "data";
 import type { ModuleApi, ResponseObject } from "modules/ModuleApi";
 import useSWR, { type SWRConfiguration, mutate } from "swr";
 import { type Api, useApi } from "ui/client";
@@ -22,15 +22,6 @@ export class UseEntityApiError<Payload = any> extends Error {
    }
 }
 
-function Test() {
-   const { read } = useEntity("users");
-   async () => {
-      const data = await read();
-   };
-
-   return null;
-}
-
 export const useEntity = <
    Entity extends keyof DB | string,
    Id extends PrimaryFieldType | undefined = undefined,
@@ -49,7 +40,7 @@ export const useEntity = <
          }
          return res;
       },
-      read: async (query: Partial<RepoQuery> = {}) => {
+      read: async (query: RepoQueryIn = {}) => {
          const res = id ? await api.readOne(entity, id!, query) : await api.readMany(entity, query);
          if (!res.ok) {
             throw new UseEntityApiError(res as any, `Failed to read entity "${entity}"`);
@@ -88,7 +79,7 @@ export function makeKey(
    api: ModuleApi,
    entity: string,
    id?: PrimaryFieldType,
-   query?: Partial<RepoQuery>
+   query?: RepoQueryIn
 ) {
    return (
       "/" +
@@ -105,11 +96,11 @@ export const useEntityQuery = <
 >(
    entity: Entity,
    id?: Id,
-   query?: Partial<RepoQuery>,
+   query?: RepoQueryIn,
    options?: SWRConfiguration & { enabled?: boolean; revalidateOnMutate?: boolean }
 ) => {
    const api = useApi().data;
-   const key = makeKey(api, entity, id, query);
+   const key = makeKey(api, entity as string, id, query);
    const { read, ...actions } = useEntity<Entity, Id>(entity, id);
    const fetcher = () => read(query);
 
@@ -121,7 +112,7 @@ export const useEntityQuery = <
    });
 
    const mutateAll = async () => {
-      const entityKey = makeKey(api, entity);
+      const entityKey = makeKey(api, entity as string);
       return mutate((key) => typeof key === "string" && key.startsWith(entityKey), undefined, {
          revalidate: true
       });
@@ -167,7 +158,7 @@ export async function mutateEntityCache<
       return prev;
    }
 
-   const entityKey = makeKey(api, entity);
+   const entityKey = makeKey(api, entity as string);
 
    return mutate(
       (key) => typeof key === "string" && key.startsWith(entityKey),

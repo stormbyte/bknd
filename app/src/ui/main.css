@@ -1,211 +1,74 @@
-@import "./components/form/json-schema/styles.css";
-@import "@xyflow/react/dist/style.css";
-@import "@mantine/core/styles.css";
-@import "@mantine/notifications/styles.css";
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-html.fixed,
-html.fixed body {
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  position: fixed;
-  overflow: hidden;
-  overscroll-behavior-x: contain;
-  touch-action: none;
-}
-
-#bknd-admin,
-.bknd-admin {
-  --color-primary: 9 9 11; /* zinc-950 */
-  --color-background: 250 250 250; /* zinc-50 */
-  --color-muted: 228 228 231; /* ? */
-  --color-darkest: 0 0 0; /* black */
-  --color-lightest: 255 255 255; /* white */
-
-  &.dark {
-    --color-primary: 250 250 250; /* zinc-50 */
-    --color-background: 30 31 34;
-    --color-muted: 47 47 52;
-    --color-darkest: 255 255 255; /* white */
-    --color-lightest: 24 24 27; /* black */
-  }
-
-  @mixin light {
-    --mantine-color-body: rgb(250 250 250);
-  }
-  @mixin dark {
-    --mantine-color-body: rgb(9 9 11);
-  }
-
-  table {
-    font-size: inherit;
-  }
-}
-
-html,
-body {
-  font-size: 14px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  overscroll-behavior-y: none;
-}
-
 #bknd-admin {
-  @apply bg-background text-primary overflow-hidden h-dvh w-dvw;
+   @apply bg-background text-primary overflow-hidden h-dvh w-dvw;
 
-  ::selection {
-    @apply bg-muted;
-  }
+   ::selection {
+      @apply bg-muted;
+   }
 
-  input {
-    &::selection {
-      @apply bg-primary/15;
-    }
-  }
+   input {
+      &::selection {
+         @apply bg-primary/15;
+      }
+   }
 }
 
 body,
 #bknd-admin {
-  @apply flex flex-1 flex-col h-dvh w-dvw;
+   @apply flex flex-1 flex-col h-dvh w-dvw;
 }
 
 @layer components {
-  .link {
-    @apply transition-colors active:translate-y-px;
-  }
+   .link {
+      @apply transition-colors active:translate-y-px;
+   }
 
-  .img-responsive {
-    @apply max-h-full w-auto;
-  }
+   .img-responsive {
+      @apply max-h-full w-auto;
+   }
 
-  /**
-   * debug classes
-   */
-  .bordered-red {
-    @apply border-2 border-red-500;
-  }
+   /**
+    * debug classes
+    */
+   .bordered-red {
+      @apply border-2 border-red-500;
+   }
 
-  .bordered-green {
-    @apply border-2 border-green-500;
-  }
+   .bordered-green {
+      @apply border-2 border-green-500;
+   }
 
-  .bordered-blue {
-    @apply border-2 border-blue-500;
-  }
+   .bordered-blue {
+      @apply border-2 border-blue-500;
+   }
 
-  .bordered-violet {
-    @apply border-2 border-violet-500;
-  }
+   .bordered-violet {
+      @apply border-2 border-violet-500;
+   }
 
-  .bordered-yellow {
-    @apply border-2 border-yellow-500;
-  }
-}
-
-@layer utilities {
-}
-
-/* Hide scrollbar for Chrome, Safari and Opera */
-.app-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-/* Hide scrollbar for IE, Edge and Firefox */
-.app-scrollbar {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
-}
-
-div[data-radix-scroll-area-viewport] > div:first-child {
-  display: block !important;
-  min-width: 100% !important;
-  max-width: 100%;
-}
-
-/* hide calendar icon on inputs */
-input[type="datetime-local"]::-webkit-calendar-picker-indicator,
-input[type="date"]::-webkit-calendar-picker-indicator {
-  display: none;
-}
-
-/* cm */
-.cm-editor {
-  display: flex;
-  flex: 1;
-}
-
-.animate-fade-in {
-  animation: fadeInAnimation 200ms ease;
-}
-@keyframes fadeInAnimation {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-input[readonly]::placeholder,
-input[disabled]::placeholder {
-  opacity: 0.1;
-}
-
-.react-flow__pane,
-.react-flow__renderer,
-.react-flow__node,
-.react-flow__edge {
-  cursor: inherit !important;
-  .drag-handle {
-    cursor: grab;
-  }
-}
-.react-flow .react-flow__edge path,
-.react-flow__connectionline path {
-  stroke-width: 2;
-}
-
-.mantine-TextInput-wrapper input {
-  font-family: inherit;
-  line-height: 1;
-}
-
-.cm-editor {
-  background: transparent;
-}
-.cm-editor.cm-focused {
-  outline: none;
-}
-
-.flex-animate {
-  transition: flex-grow 0.2s ease, background-color 0.2s ease;
-}
-.flex-initial {
-  flex: 0 1 auto;
-}
-.flex-open {
-  flex: 1 1 0;
+   .bordered-yellow {
+      @apply border-2 border-yellow-500;
+   }
 }
 
 #bknd-admin,
 .bknd-admin {
-  /* Chrome, Edge, and Safari */
-  & *::-webkit-scrollbar {
-    @apply w-1;
-    &:horizontal {
-      @apply h-px;
-    }
-  }
+   /* Chrome, Edge, and Safari */
+   & *::-webkit-scrollbar {
+      @apply w-1;
+      &:horizontal {
+         @apply h-px;
+      }
+   }
 
-  & *::-webkit-scrollbar-track {
-    @apply bg-transparent w-1;
-  }
+   & *::-webkit-scrollbar-track {
+      @apply bg-transparent w-1;
+   }
 
-  & *::-webkit-scrollbar-thumb {
-    @apply bg-primary/25;
-  }
+   & *::-webkit-scrollbar-thumb {
+      @apply bg-primary/25;
+   }
 }

@@ -53,6 +53,8 @@ export class AppMedia extends Module<typeof mediaConfigSchema> {
                index(media).on(["path"], true).on(["reference"]);
             })
          );
+
+         this.setBuilt();
       } catch (e) {
          console.error(e);
          throw new Error(

@@ -2,8 +2,9 @@ import { Type } from "core/utils";
 import type { EntityData } from "data";
 import { useState } from "react";
 import { useEntityMutate } from "ui/client";
-import { useBknd } from "ui/client/BkndProvider";
+import { useBkndData } from "ui/client/schema/data/use-bknd-data";
 import { Button } from "ui/components/buttons/Button";
+import { Message } from "ui/components/display/Message";
 import { useBrowserTitle } from "ui/hooks/use-browser-title";
 import { useSearch } from "ui/hooks/use-search";
 import * as AppShell from "ui/layouts/AppShell/AppShell";
@@ -13,8 +14,14 @@ import { EntityForm } from "ui/modules/data/components/EntityForm";
 import { useEntityForm } from "ui/modules/data/hooks/useEntityForm";
 
 export function DataEntityCreate({ params }) {
-   const { app } = useBknd();
-   const entity = app.entity(params.entity as string)!;
+   const { $data } = useBkndData();
+   const entity = $data.entity(params.entity as string);
+   if (!entity) {
+      return <Message.NotFound description={`Entity "${params.entity}" doesn't exist.`} />;
+   } else if (entity.type !== "regular") {
+      return <Message.NotAllowed description={`Entity "${params.entity}" cannot be created.`} />;
+   }
+
    const [error, setError] = useState<string | null>(null);
    useBrowserTitle(["Data", entity.label, "Create"]);
 
@@ -43,7 +50,7 @@ export function DataEntityCreate({ params }) {
 
    const { Form, handleSubmit } = useEntityForm({
       action: "create",
-      entity,
+      entity: entity,
       initialData: search.value,
       onSubmitted
    });

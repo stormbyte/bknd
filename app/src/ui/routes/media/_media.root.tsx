@@ -20,8 +20,10 @@ export function MediaRoot({ children }) {
             Icon={IconPhoto}
             title="Media not enabled"
             description="Please enable media in the settings to continue."
-            buttonText="Manage Settings"
-            buttonOnClick={() => navigate(app.getSettingsPath(["media"]))}
+            primary={{
+               children: "Manage Settings",
+               onClick: () => navigate(app.getSettingsPath(["media"]))
+            }}
          />
       );
    }

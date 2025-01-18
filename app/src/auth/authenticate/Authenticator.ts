@@ -1,6 +1,14 @@
-import { Exception } from "core";
+import { type DB, Exception } from "core";
 import { addFlashMessage } from "core/server/flash";
-import { type Static, StringEnum, Type, parse, runtimeSupports, transformObject } from "core/utils";
+import {
+   type Static,
+   StringEnum,
+   type TObject,
+   Type,
+   parse,
+   runtimeSupports,
+   transformObject
+} from "core/utils";
 import type { Context, Hono } from "hono";
 import { deleteCookie, getSignedCookie, setSignedCookie } from "hono/cookie";
 import { sign, verify } from "hono/jwt";
@@ -10,6 +18,14 @@ import type { ServerEnv } from "modules/Module";
 type Input = any; // workaround
 export type JWTPayload = Parameters<typeof sign>[0];
 
+export const strategyActions = ["create", "change"] as const;
+export type StrategyActionName = (typeof strategyActions)[number];
+export type StrategyAction<S extends TObject = TObject> = {
+   schema: S;
+   preprocess: (input: unknown) => Promise<Omit<DB["users"], "id" | "strategy">>;
+};
+export type StrategyActions = Partial<Record<StrategyActionName, StrategyAction>>;
+
 // @todo: add schema to interface to ensure proper inference
 export interface Strategy {
    getController: (auth: Authenticator) => Hono<any>;
@@ -17,6 +33,7 @@ export interface Strategy {
    getMode: () => "form" | "external";
    getName: () => string;
    toJSON: (secrets?: boolean) => any;
+   getActions?: () => StrategyActions;
 }
 
 export type User = {
@@ -274,6 +291,14 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
       return c.req.header("Content-Type") === "application/json";
    }
 
+   async getBody(c: Context) {
+      if (this.isJsonRequest(c)) {
+         return await c.req.json();
+      } else {
+         return Object.fromEntries((await c.req.formData()).entries());
+      }
+   }
+
    private getSuccessPath(c: Context) {
       const p = (this.config.cookie.pathSuccess ?? "/").replace(/\/+$/, "/");
 
@@ -337,4 +362,14 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
          strategies: transformObject(this.getStrategies(), (s) => s.toJSON(secrets))
       };
    }
+}
+
+export function createStrategyAction<S extends TObject>(
+   schema: S,
+   preprocess: (input: Static<S>) => Promise<Partial<DB["users"]>>
+) {
+   return {
+      schema,
+      preprocess
+   } as StrategyAction<S>;
 }
