@@ -25,7 +25,7 @@ import { MantineSwitch } from "ui/components/form/hook-form-mantine/MantineSwitc
 import { JsonSchemaForm } from "ui/components/form/json-schema";
 import { type SortableItemProps, SortableList } from "ui/components/list/SortableList";
 import { Popover } from "ui/components/overlay/Popover";
-import { fieldSpecs } from "ui/modules/data/components/fields-specs";
+import { type TFieldSpec, fieldSpecs } from "ui/modules/data/components/fields-specs";
 import { dataFieldsUiSchema } from "../../settings/routes/data.settings";
 
 const fieldsSchemaObject = originalFieldsSchemaObject;
@@ -45,13 +45,19 @@ type TFieldsFormSchema = Static<typeof schema>;
 
 const fieldTypes = Object.keys(fieldsSchemaObject);
 const defaultType = fieldTypes[0];
-const blank_field = { name: "", field: { type: defaultType, config: {} } } as TFieldSchema;
 const commonProps = ["label", "description", "required", "fillable", "hidden", "virtual"];
 
 function specificFieldSchema(type: keyof typeof fieldsSchemaObject) {
    //console.log("specificFieldSchema", type);
    return Type.Omit(fieldsSchemaObject[type]?.properties.config, commonProps);
 }
+
+export type EntityFieldsFormProps = {
+   fields: TAppDataEntityFields;
+   onChange?: (formData: TAppDataEntityFields) => void;
+   sortable?: boolean;
+   additionalFieldTypes?: (TFieldSpec & { onClick: () => void })[];
+};
 
 export type EntityFieldsFormRef = {
    getValues: () => TFieldsFormSchema;
@@ -60,146 +66,156 @@ export type EntityFieldsFormRef = {
    reset: () => void;
 };
 
-export const EntityFieldsForm = forwardRef<
-   EntityFieldsFormRef,
-   {
-      fields: TAppDataEntityFields;
-      onChange?: (formData: TAppDataEntityFields) => void;
-      sortable?: boolean;
-   }
->(function EntityFieldsForm({ fields: _fields, sortable, ...props }, ref) {
-   const entityFields = Object.entries(_fields).map(([name, field]) => ({
-      name,
-      field
-   }));
+export const EntityFieldsForm = forwardRef<EntityFieldsFormRef, EntityFieldsFormProps>(
+   function EntityFieldsForm({ fields: _fields, sortable, additionalFieldTypes, ...props }, ref) {
+      const entityFields = Object.entries(_fields).map(([name, field]) => ({
+         name,
+         field
+      }));
 
-   const {
-      control,
-      formState: { isValid, errors },
-      getValues,
-      watch,
-      register,
-      setValue,
-      setError,
-      reset
-   } = useForm({
-      mode: "all",
-      resolver: typeboxResolver(schema),
-      defaultValues: {
-         fields: entityFields
-      } as TFieldsFormSchema
-   });
-   const { fields, append, remove, move } = useFieldArray({
-      control,
-      name: "fields"
-   });
+      const {
+         control,
+         formState: { isValid, errors },
+         getValues,
+         watch,
+         register,
+         setValue,
+         setError,
+         reset
+      } = useForm({
+         mode: "all",
+         resolver: typeboxResolver(schema),
+         defaultValues: {
+            fields: entityFields
+         } as TFieldsFormSchema
+      });
+      const { fields, append, remove, move } = useFieldArray({
+         control,
+         name: "fields"
+      });
 
-   function toCleanValues(formData: TFieldsFormSchema): TAppDataEntityFields {
-      return Object.fromEntries(
-         formData.fields.map((field) => [field.name, objectCleanEmpty(field.field)])
-      );
-   }
-
-   useEffect(() => {
-      if (props?.onChange) {
-         console.log("----set");
-         watch((data: any) => {
-            console.log("---calling");
-            props?.onChange?.(toCleanValues(data));
-         });
+      function toCleanValues(formData: TFieldsFormSchema): TAppDataEntityFields {
+         return Object.fromEntries(
+            formData.fields.map((field) => [field.name, objectCleanEmpty(field.field)])
+         );
       }
-   }, []);
 
-   useImperativeHandle(ref, () => ({
-      reset,
-      getValues: () => getValues(),
-      getData: () => {
-         return toCleanValues(getValues());
-      },
-      isValid: () => isValid
-   }));
-
-   function handleAppend(_type: keyof typeof fieldsSchemaObject) {
-      const newField = {
-         name: "",
-         new: true,
-         field: {
-            type: _type,
-            config: {}
+      useEffect(() => {
+         if (props?.onChange) {
+            console.log("----set");
+            watch((data: any) => {
+               console.log("---calling");
+               props?.onChange?.(toCleanValues(data));
+            });
          }
-      };
-      append(newField);
-   }
+      }, []);
 
-   const formProps = {
-      watch,
-      register,
-      setValue,
-      getValues,
-      control,
-      setError
-   };
-   return (
-      <>
-         <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-3">
-               <div className="flex flex-col gap-4">
-                  {sortable ? (
-                     <SortableList
-                        data={fields}
-                        key={fields.length}
-                        onReordered={move}
-                        extractId={(item) => item.id}
-                        disableIndices={[0]}
-                        renderItem={({ dnd, ...props }, index) => (
-                           <EntityFieldMemo
-                              key={props.id}
-                              field={props as any}
-                              index={index}
-                              form={formProps}
-                              errors={errors}
-                              remove={remove}
-                              dnd={dnd}
+      useImperativeHandle(ref, () => ({
+         reset,
+         getValues: () => getValues(),
+         getData: () => {
+            return toCleanValues(getValues());
+         },
+         isValid: () => isValid
+      }));
+
+      function handleAppend(_type: keyof typeof fieldsSchemaObject) {
+         const newField = {
+            name: "",
+            new: true,
+            field: {
+               type: _type,
+               config: {}
+            }
+         };
+         append(newField);
+      }
+
+      const formProps = {
+         watch,
+         register,
+         setValue,
+         getValues,
+         control,
+         setError
+      };
+      return (
+         <>
+            <div className="flex flex-col gap-6">
+               <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-4">
+                     {sortable ? (
+                        <SortableList
+                           data={fields}
+                           key={fields.length}
+                           onReordered={move}
+                           extractId={(item) => item.id}
+                           disableIndices={[0]}
+                           renderItem={({ dnd, ...props }, index) => (
+                              <EntityFieldMemo
+                                 key={props.id}
+                                 field={props as any}
+                                 index={index}
+                                 form={formProps}
+                                 errors={errors}
+                                 remove={remove}
+                                 dnd={dnd}
+                              />
+                           )}
+                        />
+                     ) : (
+                        <div>
+                           {fields.map((field, index) => (
+                              <EntityField
+                                 key={field.id}
+                                 field={field as any}
+                                 index={index}
+                                 form={formProps}
+                                 errors={errors}
+                                 remove={remove}
+                              />
+                           ))}
+                        </div>
+                     )}
+
+                     <Popover
+                        className="flex flex-col w-full"
+                        target={({ toggle }) => (
+                           <SelectType
+                              additionalFieldTypes={additionalFieldTypes}
+                              onSelected={toggle}
+                              onSelect={(type) => {
+                                 handleAppend(type as any);
+                              }}
                            />
                         )}
-                     />
-                  ) : (
-                     <div>
-                        {fields.map((field, index) => (
-                           <EntityField
-                              key={field.id}
-                              field={field as any}
-                              index={index}
-                              form={formProps}
-                              errors={errors}
-                              remove={remove}
-                           />
-                        ))}
-                     </div>
-                  )}
-
-                  <Popover
-                     className="flex flex-col w-full"
-                     target={({ toggle }) => (
-                        <SelectType
-                           onSelect={(type) => {
-                              handleAppend(type as any);
-                              toggle();
-                           }}
-                        />
-                     )}
-                  >
-                     <Button className="justify-center">Add Field</Button>
-                  </Popover>
+                     >
+                        <Button className="justify-center">Add Field</Button>
+                     </Popover>
+                  </div>
                </div>
             </div>
-         </div>
-      </>
-   );
-});
+         </>
+      );
+   }
+);
 
-const SelectType = ({ onSelect }: { onSelect: (type: string) => void }) => {
-   const types = fieldSpecs.filter((s) => s.addable !== false);
+const SelectType = ({
+   onSelect,
+   additionalFieldTypes = [],
+   onSelected
+}: {
+   onSelect: (type: string) => void;
+   additionalFieldTypes?: (TFieldSpec & { onClick?: () => void })[];
+   onSelected?: () => void;
+}) => {
+   const types: (TFieldSpec & { onClick?: () => void })[] = fieldSpecs.filter(
+      (s) => s.addable !== false
+   );
+
+   if (additionalFieldTypes) {
+      types.push(...additionalFieldTypes);
+   }
 
    return (
       <div className="flex flex-row gap-2 justify-center flex-wrap">
@@ -208,7 +224,14 @@ const SelectType = ({ onSelect }: { onSelect: (type: string) => void }) => {
                key={type.type}
                IconLeft={type.icon}
                variant="ghost"
-               onClick={() => onSelect(type.type)}
+               onClick={() => {
+                  if (type.addable) {
+                     onSelect(type.type);
+                  } else {
+                     type.onClick?.();
+                  }
+                  onSelected?.();
+               }}
             >
                {type.label}
             </Button>

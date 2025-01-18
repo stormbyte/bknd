@@ -1,5 +1,11 @@
 import { useClickOutside } from "@mantine/hooks";
-import { Fragment, type ReactElement, cloneElement, useState } from "react";
+import {
+   type ComponentPropsWithoutRef,
+   Fragment,
+   type ReactElement,
+   cloneElement,
+   useState
+} from "react";
 import { twMerge } from "tailwind-merge";
 import { useEvent } from "../../hooks/use-event";
 
@@ -14,26 +20,33 @@ export type DropdownItem =
         [key: string]: any;
      };
 
+export type DropdownClickableChild = ReactElement<{ onClick: () => void }>;
 export type DropdownProps = {
    className?: string;
+   openEvent?: "onClick" | "onContextMenu";
    defaultOpen?: boolean;
+   title?: string | ReactElement;
+   dropdownWrapperProps?: Omit<ComponentPropsWithoutRef<"div">, "style">;
    position?: "bottom-start" | "bottom-end" | "top-start" | "top-end";
    hideOnEmpty?: boolean;
    items: (DropdownItem | undefined | boolean)[];
    itemsClassName?: string;
-   children: ReactElement<{ onClick: () => void }>;
+   children: DropdownClickableChild;
    onClickItem?: (item: DropdownItem) => void;
    renderItem?: (
       item: DropdownItem,
       props: { key: number; onClick: () => void }
-   ) => ReactElement<{ onClick: () => void }>;
+   ) => DropdownClickableChild;
 };
 
 export function Dropdown({
    children,
    defaultOpen = false,
+   openEvent = "onClick",
    position = "bottom-start",
+   dropdownWrapperProps,
    items,
+   title,
    hideOnEmpty = true,
    onClickItem,
    renderItem,
@@ -47,6 +60,11 @@ export function Dropdown({
    const toggle = useEvent((delay: number = 50) =>
       setTimeout(() => setOpen((prev) => !prev), typeof delay === "number" ? delay : 0)
    );
+
+   const openEventHandler = useEvent((e) => {
+      e.preventDefault();
+      toggle();
+   });
 
    const offset = 4;
    const dropdownStyle = {
@@ -94,13 +112,26 @@ export function Dropdown({
          ));
 
    return (
-      <div role="dropdown" className={twMerge("relative flex", className)} ref={clickoutsideRef}>
-         {cloneElement(children as any, { onClick: toggle })}
+      <div
+         role="dropdown"
+         className={twMerge("relative flex", className)}
+         ref={clickoutsideRef}
+         onContextMenu={openEvent === "onContextMenu" ? openEventHandler : undefined}
+      >
+         {cloneElement(
+            children as any,
+            openEvent === "onClick" ? { onClick: openEventHandler } : {}
+         )}
          {open && (
             <div
-               className="absolute z-30 flex flex-col bg-background border border-muted px-1 py-1 rounded-lg shadow-lg min-w-full"
+               {...dropdownWrapperProps}
+               className={twMerge(
+                  "absolute z-30 flex flex-col bg-background border border-muted px-1 py-1 rounded-lg shadow-lg min-w-full",
+                  dropdownWrapperProps?.className
+               )}
                style={dropdownStyle}
             >
+               {title && <div className="text-sm font-bold px-3 mb-1 mt-1 opacity-50">{title}</div>}
                {menuItems.map((item, i) =>
                   itemRenderer(item, { key: i, onClick: () => internalOnClickItem(item) })
                )}

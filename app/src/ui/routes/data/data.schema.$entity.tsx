@@ -8,7 +8,7 @@ import { isDebug } from "core";
 import type { Entity } from "data";
 import { cloneDeep } from "lodash-es";
 import { useRef, useState } from "react";
-import { TbCirclesRelation, TbDots, TbPhoto, TbPlus } from "react-icons/tb";
+import { TbCirclesRelation, TbDots, TbPhoto, TbPlus, TbSitemap } from "react-icons/tb";
 import { useBkndData } from "ui/client/schema/data/use-bknd-data";
 import { Button } from "ui/components/buttons/Button";
 import { IconButton } from "ui/components/buttons/IconButton";
@@ -16,9 +16,11 @@ import { Empty } from "ui/components/display/Empty";
 import { Message } from "ui/components/display/Message";
 import { JsonSchemaForm, type JsonSchemaFormRef } from "ui/components/form/json-schema";
 import { Dropdown } from "ui/components/overlay/Dropdown";
+import { Link } from "ui/components/wouter/Link";
 import * as AppShell from "ui/layouts/AppShell/AppShell";
 import { Breadcrumbs2 } from "ui/layouts/AppShell/Breadcrumbs2";
 import { routes, useNavigate } from "ui/lib/routes";
+import { fieldSpecs } from "ui/modules/data/components/fields-specs";
 import { extractSchema } from "../settings/utils/schema";
 import { EntityFieldsForm, type EntityFieldsFormRef } from "./forms/entity.fields.form";
 
@@ -87,10 +89,15 @@ export function DataSchemaEntity({ params }) {
             }
             className="pl-3"
          >
-            <Breadcrumbs2
-               path={[{ label: "Schema", href: "/" }, { label: entity.label }]}
-               backTo="/"
-            />
+            <div className="flex flex-row gap-4">
+               <Breadcrumbs2
+                  path={[{ label: "Schema", href: "/" }, { label: entity.label }]}
+                  backTo="/"
+               />
+               <Link to="/" className="invisible md:visible">
+                  <Button IconLeft={TbSitemap}>Overview</Button>
+               </Link>
+            </div>
          </AppShell.SectionHeader>
          <div className="flex flex-col h-full" key={entity.name}>
             <Fields entity={entity} open={value === "fields"} toggle={toggle("fields")} />
@@ -142,7 +149,7 @@ const Fields = ({
 }: { entity: Entity; open: boolean; toggle: () => void }) => {
    const [submitting, setSubmitting] = useState(false);
    const [updates, setUpdates] = useState(0);
-   const { actions } = useBkndData();
+   const { actions, $data } = useBkndData();
    const [res, setRes] = useState<any>();
    const ref = useRef<EntityFieldsFormRef>(null);
    async function handleUpdate() {
@@ -175,7 +182,30 @@ const Fields = ({
             {submitting && (
                <div className="animate-fade-in absolute w-full h-full top-0 bottom-0 left-0 right-0 bg-background/65 z-50" />
             )}
-            <EntityFieldsForm fields={initialFields} ref={ref} key={String(updates)} sortable />
+            <EntityFieldsForm
+               fields={initialFields}
+               ref={ref}
+               key={String(updates)}
+               sortable
+               additionalFieldTypes={fieldSpecs
+                  .filter((f) => ["relation", "media"].includes(f.type))
+                  .map((i) => ({
+                     ...i,
+                     onClick: () => {
+                        switch (i.type) {
+                           case "relation":
+                              $data.modals.createRelation({
+                                 target: entity.name,
+                                 type: "n:1"
+                              });
+                              break;
+                           case "media":
+                              $data.modals.createMedia(entity.name);
+                              break;
+                        }
+                     }
+                  }))}
+            />
 
             {isDebug() && (
                <div>
