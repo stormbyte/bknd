@@ -1,11 +1,20 @@
 import { SegmentedControl, Tooltip } from "@mantine/core";
-import { IconDatabase } from "@tabler/icons-react";
+import {
+   IconAlignJustified,
+   IconCirclesRelation,
+   IconDatabase,
+   IconExternalLink,
+   IconPhoto,
+   IconPlus,
+   IconSettings
+} from "@tabler/icons-react";
 import type { Entity, TEntityType } from "data";
 import { TbDatabasePlus } from "react-icons/tb";
 import { twMerge } from "tailwind-merge";
 import { useBkndData } from "ui/client/schema/data/use-bknd-data";
 import { IconButton } from "ui/components/buttons/IconButton";
 import { Empty } from "ui/components/display/Empty";
+import { Dropdown, type DropdownClickableChild } from "ui/components/overlay/Dropdown";
 import { Link } from "ui/components/wouter/Link";
 import { useBrowserTitle } from "ui/hooks/use-browser-title";
 import * as AppShell from "ui/layouts/AppShell/AppShell";
@@ -125,12 +134,89 @@ const EntityLinkList = ({
                   ? routes.data.entity.list(entity.name)
                   : routes.data.schema.entity(entity.name);
             return (
-               <AppShell.SidebarLink key={entity.name} as={Link} href={href}>
-                  {entity.label}
-               </AppShell.SidebarLink>
+               <EntityContextMenu key={entity.name} entity={entity}>
+                  <AppShell.SidebarLink as={Link} href={href}>
+                     {entity.label}
+                  </AppShell.SidebarLink>
+               </EntityContextMenu>
             );
          })}
       </nav>
+   );
+};
+
+const EntityContextMenu = ({
+   entity,
+   children,
+   enabled = true
+}: { entity: Entity; children: DropdownClickableChild; enabled?: boolean }) => {
+   if (!enabled) return children;
+   const [navigate] = useNavigate();
+   const { $data } = useBkndData();
+
+   // get href from children (single item)
+   const href = (children as any).props.href;
+   const separator = () => <div className="h-px my-1 w-full bg-primary/5" />;
+
+   return (
+      <Dropdown
+         className="flex flex-col w-full"
+         dropdownWrapperProps={{
+            className: "min-w-fit"
+         }}
+         title={entity.label + " Actions"}
+         items={[
+            href && {
+               icon: IconExternalLink,
+               label: "Open in new tab",
+               onClick: () => navigate(href, { target: "_blank" })
+            },
+            separator,
+            !$data.system(entity.name).any && {
+               icon: IconPlus,
+               label: "Create new",
+               onClick: () => navigate(routes.data.entity.create(entity.name))
+            },
+            {
+               icon: IconDatabase,
+               label: "List entries",
+               onClick: () => navigate(routes.data.entity.list(entity.name))
+            },
+            separator,
+            {
+               icon: IconAlignJustified,
+               label: "Manage fields",
+               onClick: () => navigate(routes.data.schema.entity(entity.name))
+            },
+            {
+               icon: IconCirclesRelation,
+               label: "Add relation",
+               onClick: () =>
+                  $data.modals.createRelation({
+                     target: entity.name,
+                     type: "n:1"
+                  })
+            },
+            !$data.system(entity.name).media && {
+               icon: IconPhoto,
+               label: "Add media",
+               onClick: () => $data.modals.createMedia(entity.name)
+            },
+            separator,
+            {
+               icon: IconSettings,
+               label: "Advanced settings",
+               onClick: () =>
+                  navigate(routes.settings.path(["data", "entities", entity.name]), {
+                     absolute: true
+                  })
+            }
+         ]}
+         openEvent="onContextMenu"
+         position="bottom-start"
+      >
+         {children}
+      </Dropdown>
    );
 };
 

@@ -64,7 +64,12 @@ export function useBkndData() {
    };
    const $data = {
       entity: (name: string) => entities[name],
-      modals
+      modals,
+      system: (name: string) => ({
+         any: entities[name]?.type === "system",
+         users: name === config.auth.entity_name,
+         media: name === config.media.entity_name
+      })
    };
 
    return {

@@ -1,6 +1,6 @@
 import type { PrimaryFieldType } from "core";
 import { encodeSearch } from "core/utils";
-import { useLocation } from "wouter";
+import { useLocation, useRouter } from "wouter";
 import { useBknd } from "../client/BkndProvider";
 
 export const routes = {
@@ -55,6 +55,7 @@ export function withAbsolute(url: string) {
 
 export function useNavigate() {
    const [location, navigate] = useLocation();
+   const router = useRouter();
    const { app } = useBknd();
    const basepath = app.getAdminConfig().basepath;
    return [
@@ -69,6 +70,7 @@ export function useNavigate() {
                  transition?: boolean;
               }
             | { reload: true }
+            | { target: string }
       ) => {
          const wrap = (fn: () => void) => {
             fn();
@@ -81,9 +83,15 @@ export function useNavigate() {
          };
 
          wrap(() => {
-            if (options && "reload" in options) {
-               window.location.href = url;
-               return;
+            if (options) {
+               if ("reload" in options) {
+                  window.location.href = url;
+                  return;
+               } else if ("target" in options) {
+                  const _url = window.location.origin + basepath + router.base + url;
+                  window.open(_url, options.target);
+                  return;
+               }
             }
 
             const _url = options?.absolute ? `~/${basepath}${url}`.replace(/\/+/g, "/") : url;
