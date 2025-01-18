@@ -225,7 +225,7 @@ const SelectType = ({
                IconLeft={type.icon}
                variant="ghost"
                onClick={() => {
-                  if (type.addable) {
+                  if (type.addable !== false) {
                      onSelect(type.type);
                   } else {
                      type.onClick?.();

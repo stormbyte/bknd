@@ -8,7 +8,14 @@ import { isDebug } from "core";
 import type { Entity } from "data";
 import { cloneDeep } from "lodash-es";
 import { useRef, useState } from "react";
-import { TbCirclesRelation, TbDots, TbPhoto, TbPlus, TbSitemap } from "react-icons/tb";
+import {
+   TbCirclesRelation,
+   TbDatabasePlus,
+   TbDots,
+   TbPhoto,
+   TbPlus,
+   TbSitemap
+} from "react-icons/tb";
 import { useBkndData } from "ui/client/schema/data/use-bknd-data";
 import { Button } from "ui/components/buttons/Button";
 import { IconButton } from "ui/components/buttons/IconButton";
@@ -79,6 +86,12 @@ export function DataSchemaEntity({ params }) {
                            icon: TbPhoto,
                            label: "Add media",
                            onClick: () => $data.modals.createMedia(entity.name)
+                        },
+                        () => <div className="h-px my-1 w-full bg-primary/5" />,
+                        {
+                           icon: TbDatabasePlus,
+                           label: "Create Entity",
+                           onClick: () => $data.modals.createEntity()
                         }
                      ]}
                      position="bottom-end"
