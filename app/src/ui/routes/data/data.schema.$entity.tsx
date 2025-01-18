@@ -76,11 +76,7 @@ export function DataSchemaEntity({ params }) {
                         {
                            icon: TbCirclesRelation,
                            label: "Add relation",
-                           onClick: () =>
-                              $data.modals.createRelation({
-                                 target: entity.name,
-                                 type: "n:1"
-                              })
+                           onClick: () => $data.modals.createRelation(entity.name)
                         },
                         {
                            icon: TbPhoto,
@@ -207,10 +203,7 @@ const Fields = ({
                      onClick: () => {
                         switch (i.type) {
                            case "relation":
-                              $data.modals.createRelation({
-                                 target: entity.name,
-                                 type: "n:1"
-                              });
+                              $data.modals.createRelation(entity.name);
                               break;
                            case "media":
                               $data.modals.createMedia(entity.name);

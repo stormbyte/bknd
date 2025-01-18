@@ -111,10 +111,6 @@ export function StepCreate() {
                   <SummaryItem key={i} {...item} state={states[i]} />
                ))}
             </div>
-            {/*<div>{submitting ? "submitting" : "idle"}</div>
-            <div>
-               {states.length}/{items.length}
-            </div>*/}
          </ModalBody>
          <ModalFooter
             nextLabel="Create"

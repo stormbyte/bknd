@@ -89,13 +89,13 @@ const modals = {
          initialPath: ["entities", "entity"],
          initialState: { action: "entity" }
       }),
-   createRelation: (rel: { source?: string; target?: string; type?: string }) =>
+   createRelation: (entity?: string) =>
       bkndModals.open(bkndModals.ids.dataCreate, {
          initialPath: ["entities", "relation"],
          initialState: {
             action: "relation",
             relations: {
-               create: [rel as any]
+               create: [{ source: entity, type: "n:1" } as any]
             }
          }
       }),

@@ -191,11 +191,7 @@ const EntityContextMenu = ({
             {
                icon: IconCirclesRelation,
                label: "Add relation",
-               onClick: () =>
-                  $data.modals.createRelation({
-                     target: entity.name,
-                     type: "n:1"
-                  })
+               onClick: () => $data.modals.createRelation(entity.name)
             },
             !$data.system(entity.name).media && {
                icon: IconPhoto,
