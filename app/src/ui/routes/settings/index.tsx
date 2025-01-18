@@ -2,6 +2,7 @@ import { IconSettings } from "@tabler/icons-react";
 import { ucFirst } from "core/utils";
 import { useBknd } from "ui/client/bknd";
 import { Empty } from "ui/components/display/Empty";
+import { Message } from "ui/components/display/Message";
 import { Link } from "ui/components/wouter/Link";
 import { useBrowserTitle } from "ui/hooks/use-browser-title";
 import * as AppShell from "ui/layouts/AppShell/AppShell";
@@ -44,7 +45,9 @@ function SettingsSidebar() {
 }
 
 export default function SettingsRoutes() {
-   useBknd({ withSecrets: true });
+   const b = useBknd({ withSecrets: true });
+   if (!b.hasSecrets) return <Message.MissingPermission what="the settings" />;
+
    return (
       <>
          <SettingsSidebar />

@@ -168,7 +168,7 @@ const EntityContextMenu = ({
          items={[
             href && {
                icon: IconExternalLink,
-               label: "Open in new tab",
+               label: "Open in tab",
                onClick: () => navigate(href, { target: "_blank" })
             },
             separator,

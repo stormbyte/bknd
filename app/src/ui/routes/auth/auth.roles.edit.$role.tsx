@@ -1,10 +1,10 @@
-import { notifications } from "@mantine/notifications";
 import { useRef } from "react";
 import { TbDots } from "react-icons/tb";
 import { useBknd } from "ui/client/bknd";
 import { useBkndAuth } from "ui/client/schema/auth/use-bknd-auth";
 import { Button } from "ui/components/buttons/Button";
 import { IconButton } from "ui/components/buttons/IconButton";
+import { Message } from "ui/components/display/Message";
 import { Dropdown } from "ui/components/overlay/Dropdown";
 import * as AppShell from "ui/layouts/AppShell/AppShell";
 import { Breadcrumbs2 } from "ui/layouts/AppShell/Breadcrumbs2";
@@ -12,7 +12,11 @@ import { routes, useNavigate } from "ui/lib/routes";
 import { AuthRoleForm, type AuthRoleFormRef } from "ui/routes/auth/forms/role.form";
 
 export function AuthRolesEdit(props) {
-   useBknd({ withSecrets: true });
+   const { hasSecrets } = useBknd({ withSecrets: true });
+   if (!hasSecrets) {
+      return <Message.MissingPermission what="Roles & Permissions" />;
+   }
+
    return <AuthRolesEditInternal {...props} />;
 }
 
