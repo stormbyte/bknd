@@ -205,7 +205,7 @@ const EntityContextMenu = ({
             separator,
             {
                icon: IconSettings,
-               label: "Advanced settings",
+               label: "Settings",
                onClick: () =>
                   navigate(routes.settings.path(["data", "entities", entity.name]), {
                      absolute: true
