@@ -1,5 +1,5 @@
 import { Api, type ApiOptions, type TApiUser } from "Api";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext } from "react";
 
 const ClientContext = createContext<{ baseUrl: string; api: Api }>({
    baseUrl: undefined

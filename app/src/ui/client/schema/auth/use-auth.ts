@@ -1,7 +1,6 @@
-import { Api, type AuthState } from "Api";
+import type { AuthState } from "Api";
 import type { AuthResponse } from "auth";
-import type { AppAuthSchema } from "auth/auth-schema";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useApi, useInvalidate } from "ui/client";
 
 type LoginData = {

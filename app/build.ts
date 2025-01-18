@@ -76,12 +76,7 @@ await tsup.build({
    minify,
    sourcemap,
    watch,
-   entry: [
-      "src/ui/index.ts",
-      "src/ui/client/index.ts",
-      "src/ui/main.css",
-      "src/ui/styles.css"
-   ],
+   entry: ["src/ui/index.ts", "src/ui/client/index.ts", "src/ui/main.css", "src/ui/styles.css"],
    outDir: "dist/ui",
    external: [
       "bun:test",
@@ -90,19 +85,21 @@ await tsup.build({
       "react/jsx-runtime",
       "react/jsx-dev-runtime",
       "use-sync-external-store",
-      /codemirror/
+      /codemirror/,
+      "@xyflow/react",
+      "@mantine/core"
    ],
    metafile: true,
    platform: "browser",
    format: ["esm"],
-   splitting: true,
+   splitting: false,
+   bundle: true,
    treeshake: true,
    loader: {
       ".svg": "dataurl"
    },
    esbuildOptions: (options) => {
       options.logLevel = "silent";
-      options.chunkNames = "chunks/[name]-[hash]";
    },
    onSuccess: async () => {
       delayTypes();

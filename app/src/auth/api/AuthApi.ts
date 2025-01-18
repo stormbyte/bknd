@@ -1,5 +1,5 @@
 import type { AuthActionResponse } from "auth/api/AuthController";
-import type { AppAuthSchema, AppAuthStrategies } from "auth/auth-schema";
+import type { AppAuthSchema } from "auth/auth-schema";
 import type { AuthResponse, SafeUser, Strategy } from "auth/authenticate/Authenticator";
 import { type BaseModuleApiOptions, ModuleApi } from "modules/ModuleApi";
 
