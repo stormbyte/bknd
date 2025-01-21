@@ -29,10 +29,11 @@ export function DropzoneContainer({
    ...props
 }: DropzoneContainerProps) {
    const id = useId();
-   const baseUrl = useBaseUrl();
    const api = useApi();
+   const baseUrl = api.baseUrl;
    const invalidate = useInvalidate();
    const limit = query?.limit ? query?.limit : props.maxItems ? props.maxItems : 50;
+   console.log("dropzone:baseUrl", baseUrl);
 
    const $q = useEntityQuery(
       entity_name as "media",
