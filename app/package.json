@@ -3,7 +3,7 @@
   "type": "module",
   "sideEffects": false,
   "bin": "./dist/cli/index.js",
-  "version": "0.6.0-rc.13",
+  "version": "0.6.0",
   "description": "Lightweight Firebase/Supabase alternative built to run anywhere — incl. Next.js, Remix, Astro, Cloudflare, Bun, Node, AWS Lambda & more.",
   "homepage": "https://bknd.io",
   "repository": {
@@ -51,20 +51,17 @@
     "@codemirror/lang-json": "^6.0.1",
     "@codemirror/lang-liquid": "^6.2.1",
     "@xyflow/react": "^12.3.2",
-    "@mantine/core": "^7.13.4"
+    "@mantine/core": "^7.13.4",
+    "@hello-pangea/dnd": "^17.0.0"
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.613.0",
     "@dagrejs/dagre": "^1.1.4",
-    "@hello-pangea/dnd": "^17.0.0",
     "@hono/typebox-validator": "^0.2.6",
     "@hono/vite-dev-server": "^0.17.0",
     "@hono/zod-validator": "^0.4.1",
     "@hookform/resolvers": "^3.9.1",
     "@libsql/kysely-libsql": "^0.4.1",
-    "@mantine/hooks": "^7.13.4",
-    "@mantine/modals": "^7.13.4",
-    "@mantine/notifications": "^7.13.5",
     "@radix-ui/react-scroll-area": "^1.2.0",
     "@rjsf/core": "^5.22.2",
     "@tabler/icons-react": "3.18.0",
@@ -198,13 +195,13 @@
     "!dist/**/metafile*"
   ],
   "keywords": [
-    "api",
     "backend",
     "database",
     "authentication",
-    "jwt",
-    "workflows",
     "media",
+    "workflows",
+    "api",
+    "jwt",
     "serverless",
     "cloudflare",
     "nextjs",
