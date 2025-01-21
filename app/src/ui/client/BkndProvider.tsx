@@ -57,7 +57,7 @@ export function BkndProvider({
          errorShown.current = true;
 
          setError(true);
-         return;
+         //return;
       } else if (error) {
          setError(false);
       }
@@ -106,7 +106,7 @@ export function BkndProvider({
          value={{ ...schema, actions, requireSecrets, app, adminOverride, hasSecrets }}
          key={local_version}
       >
-         {error && (
+         {/*{error && (
             <Alert.Exception className="gap-2">
                <IconAlertHexagon />
                You attempted to load system configuration with secrets without having proper
@@ -115,7 +115,7 @@ export function BkndProvider({
                   <Button variant="red">Reload</Button>
                </a>
             </Alert.Exception>
-         )}
+         )}*/}
 
          {children}
       </BkndContext.Provider>

@@ -219,19 +219,20 @@ export function Dropzone({
             return;
          }
 
-         const { url, headers, method = "POST" } = getUploadInfo(file.body);
+         const uploadInfo = getUploadInfo(file.body);
+         console.log("dropzone:uploadInfo", uploadInfo);
+         const { url, headers, method = "POST" } = uploadInfo;
          const formData = new FormData();
          formData.append("file", file.body);
 
          const xhr = new XMLHttpRequest();
-         const urlWithParams = new URL(url);
+         console.log("xhr:url", url);
+         const searchParams = new URLSearchParams();
          if (overwrite) {
-            urlWithParams.searchParams.append("overwrite", "1");
+            searchParams.append("overwrite", "1");
          }
-         console.log("url", urlWithParams.toString());
-         //return;
 
-         xhr.open(method, urlWithParams.toString(), true);
+         xhr.open(method, String(url) + "?" + String(searchParams), true);
 
          if (headers) {
             headers.forEach((value, key) => {
