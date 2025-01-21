@@ -39,6 +39,7 @@ describe("AppMedia", () => {
       expect(fields).toContain("additional");
       expect(fields).toEqual([
          "id",
+         "additional",
          "path",
          "folder",
          "mime_type",
@@ -48,8 +49,7 @@ describe("AppMedia", () => {
          "modified_at",
          "reference",
          "entity_id",
-         "metadata",
-         "additional"
+         "metadata"
       ]);
    });
 });

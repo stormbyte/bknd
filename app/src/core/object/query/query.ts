@@ -49,7 +49,7 @@ type LiteralExpressionCondition<Exps extends Expressions> = {
    [key: string]: Primitive | ExpressionCondition<Exps>;
 };
 
-const OperandOr = "$or";
+const OperandOr = "$or" as const;
 type OperandCondition<Exps extends Expressions> = {
    [OperandOr]?: LiteralExpressionCondition<Exps> | ExpressionCondition<Exps>;
 };

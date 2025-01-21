@@ -12,7 +12,7 @@ import {
 import Templates from "./templates/register";
 
 export function StepSelect() {
-   const { nextStep, stepBack, state, setState } = useStepContext<TCreateModalSchema>();
+   const { nextStep, stepBack, state, path, setState } = useStepContext<TCreateModalSchema>();
    const selected = state.action ?? null;
 
    function handleSelect(action: TSchemaAction) {
@@ -74,6 +74,7 @@ export function StepSelect() {
             }}
             prev={{ onClick: stepBack }}
             prevLabel="Cancel"
+            debug={{ state, path }}
          />
       </>
    );

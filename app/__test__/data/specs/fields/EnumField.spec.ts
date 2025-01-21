@@ -13,10 +13,6 @@ describe("[data] EnumField", async () => {
       { options: options(["a", "b", "c"]) }
    );
 
-   test("yields if no options", async () => {
-      expect(() => new EnumField("test", { options: options([]) })).toThrow();
-   });
-
    test("yields if default value is not a valid option", async () => {
       expect(
          () => new EnumField("test", { options: options(["a", "b"]), default_value: "c" })

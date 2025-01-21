@@ -1,10 +1,7 @@
-import { Suspense, lazy, useRef } from "react";
-import {
-   CreateModal,
-   type CreateModalRef
-} from "ui/modules/data/components/schema/create-modal/CreateModal";
-import { Button } from "../../components/buttons/Button";
-import * as AppShell from "../../layouts/AppShell/AppShell";
+import { Suspense, lazy } from "react";
+import { useBkndData } from "ui/client/schema/data/use-bknd-data";
+import { Button } from "ui/components/buttons/Button";
+import * as AppShell from "ui/layouts/AppShell/AppShell";
 
 const DataSchemaCanvas = lazy(() =>
    import("ui/modules/data/components/canvas/DataSchemaCanvas").then((m) => ({
@@ -13,18 +10,12 @@ const DataSchemaCanvas = lazy(() =>
 );
 
 export function DataSchemaIndex() {
-   const createModalRef = useRef<CreateModalRef>(null);
-
+   const { $data } = useBkndData();
    return (
       <>
-         <CreateModal ref={createModalRef} />
          <AppShell.SectionHeader
             right={
-               <Button
-                  type="button"
-                  variant="primary"
-                  onClick={() => createModalRef.current?.open()}
-               >
+               <Button type="button" variant="primary" onClick={$data.modals.createAny}>
                   Create new
                </Button>
             }

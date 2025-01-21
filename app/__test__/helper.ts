@@ -1,7 +1,9 @@
 import { unlink } from "node:fs/promises";
-import type { SqliteDatabase } from "kysely";
+import type { SelectQueryBuilder, SqliteDatabase } from "kysely";
 import Database from "libsql";
-import { SqliteLocalConnection } from "../src/data";
+import { format as sqlFormat } from "sql-formatter";
+import { type Connection, EntityManager, SqliteLocalConnection } from "../src/data";
+import type { em as protoEm } from "../src/data/prototype";
 
 export function getDummyDatabase(memory: boolean = true): {
    dummyDb: SqliteDatabase;
@@ -50,4 +52,19 @@ export function enableConsoleLog() {
    Object.entries(_oldConsoles).forEach(([severity, fn]) => {
       console[severity as ConsoleSeverity] = fn;
    });
+}
+
+export function compileQb(qb: SelectQueryBuilder<any, any, any>) {
+   const { sql, parameters } = qb.compile();
+   return { sql, parameters };
+}
+
+export function prettyPrintQb(qb: SelectQueryBuilder<any, any, any>) {
+   const { sql, parameters } = qb.compile();
+   console.log("$", sqlFormat(sql), "\n[params]", parameters);
+}
+
+export function schemaToEm(s: ReturnType<typeof protoEm>, conn?: Connection): EntityManager<any> {
+   const connection = conn ? conn : getDummyConnection().dummyConnection;
+   return new EntityManager(Object.values(s.entities), connection, s.relations, s.indices);
 }

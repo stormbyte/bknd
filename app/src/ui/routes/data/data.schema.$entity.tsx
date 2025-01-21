@@ -8,23 +8,32 @@ import { isDebug } from "core";
 import type { Entity } from "data";
 import { cloneDeep } from "lodash-es";
 import { useRef, useState } from "react";
-import { TbDots } from "react-icons/tb";
+import {
+   TbCirclesRelation,
+   TbDatabasePlus,
+   TbDots,
+   TbPhoto,
+   TbPlus,
+   TbSitemap
+} from "react-icons/tb";
 import { useBkndData } from "ui/client/schema/data/use-bknd-data";
 import { Button } from "ui/components/buttons/Button";
 import { IconButton } from "ui/components/buttons/IconButton";
 import { Empty } from "ui/components/display/Empty";
+import { Message } from "ui/components/display/Message";
 import { JsonSchemaForm, type JsonSchemaFormRef } from "ui/components/form/json-schema";
 import { Dropdown } from "ui/components/overlay/Dropdown";
+import { Link } from "ui/components/wouter/Link";
 import * as AppShell from "ui/layouts/AppShell/AppShell";
 import { Breadcrumbs2 } from "ui/layouts/AppShell/Breadcrumbs2";
 import { routes, useNavigate } from "ui/lib/routes";
+import { fieldSpecs } from "ui/modules/data/components/fields-specs";
 import { extractSchema } from "../settings/utils/schema";
 import { EntityFieldsForm, type EntityFieldsFormRef } from "./forms/entity.fields.form";
 
 export function DataSchemaEntity({ params }) {
    const { $data } = useBkndData();
    const [value, setValue] = useState("fields");
-   const fieldsRef = useRef<EntityFieldsFormRef>(null);
 
    function toggle(value) {
       return () => setValue(value);
@@ -32,6 +41,9 @@ export function DataSchemaEntity({ params }) {
 
    const [navigate] = useNavigate();
    const entity = $data.entity(params.entity as string)!;
+   if (!entity) {
+      return <Message.NotFound description={`Entity "${params.entity}" doesn't exist.`} />;
+   }
 
    return (
       <>
@@ -41,7 +53,14 @@ export function DataSchemaEntity({ params }) {
                   <Dropdown
                      items={[
                         {
-                           label: "Settings",
+                           label: "Data",
+                           onClick: () =>
+                              navigate(routes.data.root() + routes.data.entity.list(entity.name), {
+                                 absolute: true
+                              })
+                        },
+                        {
+                           label: "Advanced Settings",
                            onClick: () =>
                               navigate(routes.settings.path(["data", "entities", entity.name]), {
                                  absolute: true
@@ -52,14 +71,42 @@ export function DataSchemaEntity({ params }) {
                   >
                      <IconButton Icon={TbDots} />
                   </Dropdown>
+                  <Dropdown
+                     items={[
+                        {
+                           icon: TbCirclesRelation,
+                           label: "Add relation",
+                           onClick: () => $data.modals.createRelation(entity.name)
+                        },
+                        {
+                           icon: TbPhoto,
+                           label: "Add media",
+                           onClick: () => $data.modals.createMedia(entity.name)
+                        },
+                        () => <div className="h-px my-1 w-full bg-primary/5" />,
+                        {
+                           icon: TbDatabasePlus,
+                           label: "Create Entity",
+                           onClick: () => $data.modals.createEntity()
+                        }
+                     ]}
+                     position="bottom-end"
+                  >
+                     <Button IconRight={TbPlus}>Add</Button>
+                  </Dropdown>
                </>
             }
             className="pl-3"
          >
-            <Breadcrumbs2
-               path={[{ label: "Schema", href: "/" }, { label: entity.label }]}
-               backTo="/"
-            />
+            <div className="flex flex-row gap-4">
+               <Breadcrumbs2
+                  path={[{ label: "Schema", href: "/" }, { label: entity.label }]}
+                  backTo="/"
+               />
+               <Link to="/" className="invisible md:visible">
+                  <Button IconLeft={TbSitemap}>Overview</Button>
+               </Link>
+            </div>
          </AppShell.SectionHeader>
          <div className="flex flex-col h-full" key={entity.name}>
             <Fields entity={entity} open={value === "fields"} toggle={toggle("fields")} />
@@ -74,12 +121,11 @@ export function DataSchemaEntity({ params }) {
                <Empty
                   title="Relations"
                   description="This will soon be available here. Meanwhile, check advanced settings."
-                  buttonText="Advanced Settings"
-                  buttonOnClick={() =>
-                     navigate(routes.settings.path(["data", "relations"]), {
-                        absolute: true
-                     })
-                  }
+                  primary={{
+                     children: "Advanced Settings",
+                     onClick: () =>
+                        navigate(routes.settings.path(["data", "relations"]), { absolute: true })
+                  }}
                />
             </AppShell.SectionHeaderAccordionItem>
             <AppShell.SectionHeaderAccordionItem
@@ -91,12 +137,13 @@ export function DataSchemaEntity({ params }) {
                <Empty
                   title="Indices"
                   description="This will soon be available here. Meanwhile, check advanced settings."
-                  buttonText="Advanced Settings"
-                  buttonOnClick={() =>
-                     navigate(routes.settings.path(["data", "indices"]), {
-                        absolute: true
-                     })
-                  }
+                  primary={{
+                     children: "Advanced Settings",
+                     onClick: () =>
+                        navigate(routes.settings.path(["data", "indices"]), {
+                           absolute: true
+                        })
+                  }}
                />
             </AppShell.SectionHeaderAccordionItem>
          </div>
@@ -111,7 +158,7 @@ const Fields = ({
 }: { entity: Entity; open: boolean; toggle: () => void }) => {
    const [submitting, setSubmitting] = useState(false);
    const [updates, setUpdates] = useState(0);
-   const { actions } = useBkndData();
+   const { actions, $data } = useBkndData();
    const [res, setRes] = useState<any>();
    const ref = useRef<EntityFieldsFormRef>(null);
    async function handleUpdate() {
@@ -144,7 +191,27 @@ const Fields = ({
             {submitting && (
                <div className="animate-fade-in absolute w-full h-full top-0 bottom-0 left-0 right-0 bg-background/65 z-50" />
             )}
-            <EntityFieldsForm fields={initialFields} ref={ref} key={String(updates)} sortable />
+            <EntityFieldsForm
+               fields={initialFields}
+               ref={ref}
+               key={String(updates)}
+               sortable
+               additionalFieldTypes={fieldSpecs
+                  .filter((f) => ["relation", "media"].includes(f.type))
+                  .map((i) => ({
+                     ...i,
+                     onClick: () => {
+                        switch (i.type) {
+                           case "relation":
+                              $data.modals.createRelation(entity.name);
+                              break;
+                           case "media":
+                              $data.modals.createMedia(entity.name);
+                              break;
+                        }
+                     }
+                  }))}
+            />
 
             {isDebug() && (
                <div>

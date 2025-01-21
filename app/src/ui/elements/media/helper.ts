@@ -1,5 +1,5 @@
 import type { MediaFieldSchema } from "media/AppMedia";
-import type { FileState } from "./components/dropzone/Dropzone";
+import type { FileState } from "./Dropzone";
 
 export function mediaItemToFileState(
    item: MediaFieldSchema,

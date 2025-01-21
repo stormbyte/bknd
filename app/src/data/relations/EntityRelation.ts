@@ -1,5 +1,5 @@
 import { type Static, Type, parse } from "core/utils";
-import type { SelectQueryBuilder } from "kysely";
+import type { ExpressionBuilder, SelectQueryBuilder } from "kysely";
 import type { Entity, EntityData, EntityManager } from "../entities";
 import {
    type EntityRelationAnchor,
@@ -67,10 +67,8 @@ export abstract class EntityRelation<
     */
    abstract buildWith(
       entity: Entity,
-      qb: KyselyQueryBuilder,
-      jsonFrom: KyselyJsonFrom,
       reference: string
-   ): KyselyQueryBuilder;
+   ): (eb: ExpressionBuilder<any, any>) => KyselyQueryBuilder;
 
    abstract buildJoin(
       entity: Entity,

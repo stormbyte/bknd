@@ -34,7 +34,11 @@ export function EntityTable2({ entity, select, ...props }: EntityTableProps) {
          const field = getField(property)!;
          _value = field.getValue(value, "table");
       } catch (e) {
-         console.warn("Couldn't render value", { value, property, entity, select, ...props }, e);
+         console.warn(
+            "Couldn't render value",
+            { value, property, entity, select, columns, ...props },
+            e
+         );
       }
 
       return <CellValue value={_value} property={property} />;

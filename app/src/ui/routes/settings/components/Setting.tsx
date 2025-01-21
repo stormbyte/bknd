@@ -149,8 +149,9 @@ export function Setting<Schema extends TObject = any>({
          console.log("save:success", success);
          if (success) {
             if (options?.reloadOnSave) {
-               window.location.reload();
-               //await actions.reload();
+               //window.location.reload();
+               await actions.reload();
+               setSubmitting(false);
             }
          } else {
             setSubmitting(false);
@@ -175,7 +176,10 @@ export function Setting<Schema extends TObject = any>({
          <Empty
             title="Not found"
             description={`Configuration at path ${path.join(".")} doesn't exist.`}
-            buttonText="Go back"
+            primary={{
+               children: "Go back",
+               onClick: () => goBack()
+            }}
          />
       );
    }

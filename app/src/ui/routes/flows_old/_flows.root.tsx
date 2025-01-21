@@ -55,8 +55,10 @@ export function FlowsEmpty() {
                title="No flow selected"
                description="Please select a flow from the left sidebar or create a new one
             to continue."
-               buttonText="Create Flow"
-               buttonOnClick={() => navigate(app.getSettingsPath(["flows"]))}
+               primary={{
+                  children: "Create Flow",
+                  onClick: () => navigate(app.getSettingsPath(["flows"]))
+               }}
             />
          </main>
       </>

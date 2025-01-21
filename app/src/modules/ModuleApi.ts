@@ -1,5 +1,6 @@
-import { type PrimaryFieldType, isDebug } from "core";
-import { encodeSearch } from "core/utils";
+import type { PrimaryFieldType } from "core";
+import { isDebug } from "core/env";
+import { encodeSearch } from "core/utils/reqres";
 
 export type { PrimaryFieldType };
 export type BaseModuleApiOptions = {
@@ -37,6 +38,13 @@ export abstract class ModuleApi<Options extends BaseModuleApiOptions = BaseModul
          ...this.getDefaultOptions(),
          ...this._options
       } as Options;
+   }
+
+   /**
+    * used for SWR invalidation of basepath
+    */
+   key(): string {
+      return this.options.basepath ?? "";
    }
 
    protected getUrl(path: string) {

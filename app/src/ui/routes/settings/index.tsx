@@ -2,11 +2,12 @@ import { IconSettings } from "@tabler/icons-react";
 import { ucFirst } from "core/utils";
 import { useBknd } from "ui/client/bknd";
 import { Empty } from "ui/components/display/Empty";
+import { Message } from "ui/components/display/Message";
 import { Link } from "ui/components/wouter/Link";
 import { useBrowserTitle } from "ui/hooks/use-browser-title";
 import * as AppShell from "ui/layouts/AppShell/AppShell";
 import { Route, Switch } from "wouter";
-import { Setting } from "./components/Setting";
+import { Setting, type SettingProps } from "./components/Setting";
 import { AuthSettings } from "./routes/auth.settings";
 import { DataSettings } from "./routes/data.settings";
 import { FlowsSettings } from "./routes/flows.settings";
@@ -44,7 +45,9 @@ function SettingsSidebar() {
 }
 
 export default function SettingsRoutes() {
-   useBknd({ withSecrets: true });
+   const b = useBknd({ withSecrets: true });
+   if (!b.hasSecrets) return <Message.MissingPermission what="the settings" />;
+
    return (
       <>
          <SettingsSidebar />
@@ -117,13 +120,24 @@ const SettingRoutesRoutes = () => {
          <ServerSettings schema={schema.server} config={config.server} />
          <DataSettings schema={schema.data} config={config.data} />
          <AuthSettings schema={schema.auth} config={config.auth} />
-         <FallbackRoutes module="media" schema={schema} config={config} uiSchema={uiSchema.media} />
+         <FallbackRoutes
+            module="media"
+            schema={schema}
+            config={config}
+            uiSchema={uiSchema.media}
+            options={{ reloadOnSave: true }}
+         />
          <FlowsSettings schema={schema.flows} config={config.flows} />
       </>
    );
 };
 
-const FallbackRoutes = ({ module, schema, config, ...settingProps }) => {
+const FallbackRoutes = ({
+   module,
+   schema,
+   config,
+   ...settingProps
+}: SettingProps<any> & { module: string }) => {
    const { app } = useBknd();
    const basepath = app.getAdminConfig();
    const prefix = `~/${basepath}/settings`.replace(/\/+/g, "/");

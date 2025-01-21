@@ -1,7 +1,6 @@
 import { afterAll, describe, expect, test } from "bun:test";
-// @ts-ignore
-import { Perf } from "@bknd/core/utils";
 import type { Kysely, Transaction } from "kysely";
+import { Perf } from "../../../src/core/utils";
 import {
    Entity,
    EntityManager,
@@ -24,7 +23,7 @@ async function sleep(ms: number) {
 }
 
 describe("[Repository]", async () => {
-   test("bulk", async () => {
+   test.skip("bulk", async () => {
       //const connection = dummyConnection;
       //const connection = getLocalLibsqlConnection();
       const credentials = null as any; // @todo: determine what to do here

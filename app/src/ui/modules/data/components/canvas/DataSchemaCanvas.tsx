@@ -2,7 +2,6 @@ import { MarkerType, type Node, Position, ReactFlowProvider } from "@xyflow/reac
 import type { AppDataConfig, TAppDataEntity } from "data/data-schema";
 import { useBknd } from "ui/client/BkndProvider";
 import { useBkndSystemTheme } from "ui/client/schema/system/use-bknd-system";
-import { useTheme } from "ui/client/use-theme";
 import { Canvas } from "ui/components/canvas/Canvas";
 import { layoutWithDagre } from "ui/components/canvas/layouts";
 import { Panels } from "ui/components/canvas/panels";

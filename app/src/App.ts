@@ -1,8 +1,5 @@
 import type { CreateUserPayload } from "auth/AppAuth";
-import { auth } from "auth/middlewares";
-import { config } from "core";
 import { Event } from "core/events";
-import { patternMatch } from "core/utils";
 import { Connection, type LibSqlCredentials, LibsqlConnection } from "data";
 import {
    type InitialModuleConfigs,

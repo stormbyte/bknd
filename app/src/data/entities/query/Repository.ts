@@ -65,7 +65,7 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
       return this.em.connection.kysely;
    }
 
-   private getValidOptions(options?: Partial<RepoQuery>): RepoQuery {
+   getValidOptions(options?: Partial<RepoQuery>): RepoQuery {
       const entity = this.entity;
       // @todo: if not cloned deep, it will keep references and error if multiple requests come in
       const validated = {
@@ -103,17 +103,10 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
          validated.select = options.select;
       }
 
-      if (options.with && options.with.length > 0) {
-         for (const entry of options.with) {
-            const related = this.em.relationOf(entity.name, entry);
-            if (!related) {
-               throw new InvalidSearchParamsException(
-                  `WITH: "${entry}" is not a relation of "${entity.name}"`
-               );
-            }
-
-            validated.with.push(entry);
-         }
+      if (options.with) {
+         const depth = WithBuilder.validateWiths(this.em, entity.name, options.with);
+         // @todo: determine allowed depth
+         validated.with = options.with;
       }
 
       if (options.join && options.join.length > 0) {
@@ -235,43 +228,79 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
       return { ...response, data: data[0]! };
    }
 
-   private buildQuery(
+   addOptionsToQueryBuilder(
+      _qb?: RepositoryQB,
       _options?: Partial<RepoQuery>,
-      exclude_options: (keyof RepoQuery)[] = []
-   ): { qb: RepositoryQB; options: RepoQuery } {
+      config?: {
+         validate?: boolean;
+         ignore?: (keyof RepoQuery)[];
+         alias?: string;
+         defaults?: Pick<RepoQuery, "limit" | "offset">;
+      }
+   ) {
       const entity = this.entity;
-      const options = this.getValidOptions(_options);
+      let qb = _qb ?? (this.conn.selectFrom(entity.name) as RepositoryQB);
 
-      const alias = entity.name;
+      const options = config?.validate !== false ? this.getValidOptions(_options) : _options;
+      if (!options) return qb;
+
+      const alias = config?.alias ?? entity.name;
       const aliased = (field: string) => `${alias}.${field}`;
-      let qb = this.conn
-         .selectFrom(entity.name)
-         .select(entity.getAliasedSelectFrom(options.select, alias));
+      const ignore = config?.ignore ?? [];
+      const defaults = {
+         limit: 10,
+         offset: 0,
+         ...config?.defaults
+      };
 
-      //console.log("build query options", options);
-      if (!exclude_options.includes("with") && options.with) {
+      /*console.log("build query options", {
+         entity: entity.name,
+         options,
+         config
+      });*/
+
+      if (!ignore.includes("select") && options.select) {
+         qb = qb.select(entity.getAliasedSelectFrom(options.select, alias));
+      }
+
+      if (!ignore.includes("with") && options.with) {
          qb = WithBuilder.addClause(this.em, qb, entity, options.with);
       }
 
-      if (!exclude_options.includes("join") && options.join) {
+      if (!ignore.includes("join") && options.join) {
          qb = JoinBuilder.addClause(this.em, qb, entity, options.join);
       }
 
       // add where if present
-      if (!exclude_options.includes("where") && options.where) {
+      if (!ignore.includes("where") && options.where) {
          qb = WhereBuilder.addClause(qb, options.where);
       }
 
-      if (!exclude_options.includes("limit")) qb = qb.limit(options.limit);
-      if (!exclude_options.includes("offset")) qb = qb.offset(options.offset);
+      if (!ignore.includes("limit")) qb = qb.limit(options.limit ?? defaults.limit);
+      if (!ignore.includes("offset")) qb = qb.offset(options.offset ?? defaults.offset);
 
       // sorting
-      if (!exclude_options.includes("sort")) {
-         qb = qb.orderBy(aliased(options.sort.by), options.sort.dir);
+      if (!ignore.includes("sort")) {
+         qb = qb.orderBy(aliased(options.sort?.by ?? "id"), options.sort?.dir ?? "asc");
       }
 
-      //console.log("options", { _options, options, exclude_options });
-      return { qb, options };
+      return qb as RepositoryQB;
+   }
+
+   private buildQuery(
+      _options?: Partial<RepoQuery>,
+      ignore: (keyof RepoQuery)[] = []
+   ): { qb: RepositoryQB; options: RepoQuery } {
+      const entity = this.entity;
+      const options = this.getValidOptions(_options);
+
+      return {
+         qb: this.addOptionsToQueryBuilder(undefined, options, {
+            ignore,
+            alias: entity.name
+         }),
+         options
+      };
    }
 
    async findId(

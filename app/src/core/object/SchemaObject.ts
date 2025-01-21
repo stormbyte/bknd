@@ -130,7 +130,10 @@ export class SchemaObject<Schema extends TObject> {
 
       //console.log("overwritePaths", this.options?.overwritePaths);
       if (this.options?.overwritePaths) {
-         const keys = getFullPathKeys(value).map((k) => path + "." + k);
+         const keys = getFullPathKeys(value).map((k) => {
+            // only prepend path if given
+            return path.length > 0 ? path + "." + k : k;
+         });
          const overwritePaths = keys.filter((k) => {
             return this.options?.overwritePaths?.some((p) => {
                if (typeof p === "string") {

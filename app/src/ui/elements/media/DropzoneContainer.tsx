@@ -1,16 +1,11 @@
-import type { RepoQuery } from "data";
+import type { RepoQuery, RepoQueryIn } from "data";
 import type { MediaFieldSchema } from "media/AppMedia";
 import type { TAppMediaConfig } from "media/media-schema";
 import { useId } from "react";
 import { useApi, useBaseUrl, useEntityQuery, useInvalidate } from "ui/client";
 import { useEvent } from "ui/hooks/use-event";
-import {
-   Dropzone,
-   type DropzoneProps,
-   type DropzoneRenderProps,
-   type FileState
-} from "ui/modules/media/components/dropzone/Dropzone";
-import { mediaItemsToFileStates } from "ui/modules/media/helper";
+import { Dropzone, type DropzoneProps, type DropzoneRenderProps, type FileState } from "./Dropzone";
+import { mediaItemsToFileStates } from "./helper";
 
 export type DropzoneContainerProps = {
    children?: (props: DropzoneRenderProps) => JSX.Element;
@@ -20,7 +15,7 @@ export type DropzoneContainerProps = {
       id: number;
       field: string;
    };
-   query?: Partial<RepoQuery>;
+   query?: RepoQueryIn;
 } & Partial<Pick<TAppMediaConfig, "basepath" | "entity_name" | "storage">> &
    Partial<DropzoneProps>;
 

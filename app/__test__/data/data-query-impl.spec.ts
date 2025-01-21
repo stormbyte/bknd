@@ -1,7 +1,13 @@
 import { describe, expect, test } from "bun:test";
-import { Value } from "../../src/core/utils";
-import { WhereBuilder, type WhereQuery, querySchema } from "../../src/data";
+import { Value, _jsonp } from "../../src/core/utils";
+import { type RepoQuery, WhereBuilder, type WhereQuery, querySchema } from "../../src/data";
+import type { RepoQueryIn } from "../../src/data/server/data-query-impl";
 import { getDummyConnection } from "./helper";
+
+const decode = (input: RepoQueryIn, expected: RepoQuery) => {
+   const result = Value.Decode(querySchema, input);
+   expect(result).toEqual(expected);
+};
 
 describe("data-query-impl", () => {
    function qb() {
@@ -88,21 +94,47 @@ describe("data-query-impl", () => {
          expect(keys).toEqual(expectedKeys);
       }
    });
+
+   test("with", () => {
+      decode({ with: ["posts"] }, { with: { posts: {} } });
+      decode({ with: { posts: {} } }, { with: { posts: {} } });
+      decode({ with: { posts: { limit: 1 } } }, { with: { posts: { limit: 1 } } });
+      decode(
+         {
+            with: {
+               posts: {
+                  with: {
+                     images: {
+                        select: ["id"]
+                     }
+                  }
+               }
+            }
+         },
+         {
+            with: {
+               posts: {
+                  with: {
+                     images: {
+                        select: ["id"]
+                     }
+                  }
+               }
+            }
+         }
+      );
+   });
 });
 
 describe("data-query-impl: Typebox", () => {
    test("sort", async () => {
-      const decode = (input: any, expected: any) => {
-         const result = Value.Decode(querySchema, input);
-         expect(result.sort).toEqual(expected);
-      };
-      const _dflt = { by: "id", dir: "asc" };
+      const _dflt = { sort: { by: "id", dir: "asc" } };
 
       decode({ sort: "" }, _dflt);
-      decode({ sort: "name" }, { by: "name", dir: "asc" });
-      decode({ sort: "-name" }, { by: "name", dir: "desc" });
-      decode({ sort: "-posts.name" }, { by: "posts.name", dir: "desc" });
+      decode({ sort: "name" }, { sort: { by: "name", dir: "asc" } });
+      decode({ sort: "-name" }, { sort: { by: "name", dir: "desc" } });
+      decode({ sort: "-posts.name" }, { sort: { by: "posts.name", dir: "desc" } });
       decode({ sort: "-1name" }, _dflt);
-      decode({ sort: { by: "name", dir: "desc" } }, { by: "name", dir: "desc" });
+      decode({ sort: { by: "name", dir: "desc" } }, { sort: { by: "name", dir: "desc" } });
    });
 });

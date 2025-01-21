@@ -8,8 +8,8 @@ import {
 } from "@tabler/icons-react";
 import { ucFirst } from "core/utils";
 import { useEffect, useState } from "react";
-import { TbCirclesRelation, TbSettings } from "react-icons/tb";
 import { twMerge } from "tailwind-merge";
+import { useBknd } from "ui/client/bknd";
 import { useBkndData } from "ui/client/schema/data/use-bknd-data";
 import { IconButton, type IconType } from "ui/components/buttons/IconButton";
 import { JsonViewer } from "ui/components/code/JsonViewer";
@@ -26,6 +26,7 @@ export function StepCreate() {
    const [states, setStates] = useState<(boolean | string)[]>([]);
    const [submitting, setSubmitting] = useState(false);
    const $data = useBkndData();
+   const b = useBknd();
 
    const items: ActionItem[] = [];
    if (state.entities?.create) {
@@ -74,6 +75,10 @@ export function StepCreate() {
          try {
             const res = await item.run();
             setStates((prev) => [...prev, res]);
+            if (res !== true) {
+               // make sure to break out
+               break;
+            }
          } catch (e) {
             setStates((prev) => [...prev, (e as any).message]);
          }
@@ -90,7 +95,8 @@ export function StepCreate() {
          states.every((s) => s === true)
       );
       if (items.length === states.length && states.every((s) => s === true)) {
-         close();
+         b.actions.reload().then(close);
+         //close();
       } else {
          setSubmitting(false);
       }
@@ -105,10 +111,6 @@ export function StepCreate() {
                   <SummaryItem key={i} {...item} state={states[i]} />
                ))}
             </div>
-            {/*<div>{submitting ? "submitting" : "idle"}</div>
-            <div>
-               {states.length}/{items.length}
-            </div>*/}
          </ModalBody>
          <ModalFooter
             nextLabel="Create"
@@ -144,12 +146,14 @@ const SummaryItem: React.FC<SummaryItemProps> = ({
 }) => {
    const [expanded, handlers] = useDisclosure(initialExpanded);
    const error = typeof state !== "undefined" && state !== true;
+   const done = state === true;
 
    return (
       <div
          className={twMerge(
             "flex flex-col border border-muted rounded bg-background mb-2",
-            error && "bg-red-500/20"
+            error && "bg-red-500/20",
+            done && "bg-green-500/20"
          )}
       >
          <div className="flex flex-row gap-4 px-2 py-2 items-center">

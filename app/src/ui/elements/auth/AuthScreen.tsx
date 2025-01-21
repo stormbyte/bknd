@@ -1,8 +1,6 @@
 import type { ReactNode } from "react";
-import { useAuthStrategies } from "ui/client/schema/auth/use-auth";
-import { Logo } from "ui/components/display/Logo";
-import { Link } from "ui/components/wouter/Link";
-import { AuthForm } from "ui/modules/auth/AuthForm";
+import { useAuthStrategies } from "../hooks/use-auth";
+import { AuthForm } from "./AuthForm";
 
 export type AuthScreenProps = {
    method?: "POST" | "GET";
@@ -18,13 +16,7 @@ export function AuthScreen({ method = "POST", action = "login", logo, intro }: A
       <div className="flex flex-1 flex-col select-none h-dvh w-dvw justify-center items-center bknd-admin">
          {!loading && (
             <div className="flex flex-col gap-4 items-center w-96 px-6 py-7">
-               {typeof logo !== "undefined" ? (
-                  logo
-               ) : (
-                  <Link href={"/"} className="link">
-                     <Logo scale={0.25} />
-                  </Link>
-               )}
+               {logo ? logo : null}
                {typeof intro !== "undefined" ? (
                   intro
                ) : (

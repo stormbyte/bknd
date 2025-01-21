@@ -1,17 +1,18 @@
 import { IconHome } from "@tabler/icons-react";
 import { useEffect } from "react";
 import { useAuth } from "ui/client";
+import { useEffectOnce } from "ui/hooks/use-effect";
 import { Empty } from "../components/display/Empty";
 import { useBrowserTitle } from "../hooks/use-browser-title";
 import * as AppShell from "../layouts/AppShell/AppShell";
 import { useNavigate } from "../lib/routes";
 
 export const Root = ({ children }) => {
-   const { verify } = useAuth();
+   const { verify, user } = useAuth();
 
-   useEffect(() => {
+   useEffectOnce(() => {
       verify();
-   }, []);
+   }, [user?.id]);
 
    return (
       <AppShell.Root>

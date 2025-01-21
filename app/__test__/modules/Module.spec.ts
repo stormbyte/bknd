@@ -157,8 +157,7 @@ describe("Module", async () => {
             entities: [
                {
                   name: "u",
-                  // ensured properties must come first
-                  fields: ["id", "important", "name"],
+                  fields: ["id", "name", "important"],
                   // ensured type must be present
                   type: "system"
                },

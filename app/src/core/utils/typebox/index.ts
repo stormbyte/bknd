@@ -115,6 +115,7 @@ export function parse<Schema extends TSchema = TSchema>(
    } else if (options?.onError) {
       options.onError(Errors(schema, data));
    } else {
+      //console.warn("errors", JSON.stringify([...Errors(schema, data)], null, 2));
       throw new TypeInvalidError(schema, data);
    }
 

@@ -4,15 +4,15 @@ import { twMerge } from "tailwind-merge";
 import { Link } from "ui/components/wouter/Link";
 
 const sizes = {
-   small: "px-2 py-1.5 rounded-md gap-1.5 text-sm",
-   default: "px-3 py-2.5 rounded-md gap-2.5",
-   large: "px-4 py-3 rounded-md gap-3 text-lg"
+   small: "px-2 py-1.5 rounded-md gap-1 text-sm",
+   default: "px-3 py-2.5 rounded-md gap-1.5",
+   large: "px-4 py-3 rounded-md gap-2.5 text-lg"
 };
 
 const iconSizes = {
-   small: 15,
-   default: 18,
-   large: 22
+   small: 12,
+   default: 16,
+   large: 20
 };
 
 const styles = {

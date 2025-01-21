@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, spyOn, test } from "bun:test";
 import { createApp } from "../../src";
 import { AuthController } from "../../src/auth/api/AuthController";
-import { em, entity, text } from "../../src/data";
+import { em, entity, make, text } from "../../src/data";
 import { AppAuth, type ModuleBuildContext } from "../../src/modules";
 import { disableConsoleLog, enableConsoleLog } from "../helper";
 import { makeCtx, moduleTestSuite } from "./module-test-suite";
@@ -125,6 +125,40 @@ describe("AppAuth", () => {
       const fields = e.fields.map((f) => f.name);
       expect(e.type).toBe("system");
       expect(fields).toContain("additional");
-      expect(fields).toEqual(["id", "email", "strategy", "strategy_value", "role", "additional"]);
+      expect(fields).toEqual(["id", "additional", "email", "strategy", "strategy_value", "role"]);
+   });
+
+   test("ensure user field configs is always correct", async () => {
+      const app = createApp({
+         initialConfig: {
+            auth: {
+               enabled: true
+            },
+            data: em({
+               users: entity("users", {
+                  strategy: text({
+                     fillable: true,
+                     hidden: false
+                  }),
+                  strategy_value: text({
+                     fillable: true,
+                     hidden: false
+                  })
+               })
+            }).toJSON()
+         }
+      });
+      await app.build();
+
+      const users = app.em.entity("users");
+      const props = ["hidden", "fillable", "required"];
+
+      for (const [name, _authFieldProto] of Object.entries(AppAuth.usersFields)) {
+         const authField = make(name, _authFieldProto as any);
+         const field = users.field(name)!;
+         for (const prop of props) {
+            expect(field.config[prop]).toBe(authField.config[prop]);
+         }
+      }
    });
 });

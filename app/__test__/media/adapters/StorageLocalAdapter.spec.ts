@@ -15,7 +15,7 @@ describe("StorageLocalAdapter", () => {
 
    test("puts an object", async () => {
       objects = (await adapter.listObjects()).length;
-      expect(await adapter.putObject(filename, await file.arrayBuffer())).toBeString();
+      expect(await adapter.putObject(filename, file)).toBeString();
    });
 
    test("lists objects", async () => {

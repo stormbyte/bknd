@@ -1,4 +1,5 @@
-import type { AppAuthSchema, AppAuthStrategies } from "auth/auth-schema";
+import type { AuthActionResponse } from "auth/api/AuthController";
+import type { AppAuthSchema } from "auth/auth-schema";
 import type { AuthResponse, SafeUser, Strategy } from "auth/authenticate/Authenticator";
 import { type BaseModuleApiOptions, ModuleApi } from "modules/ModuleApi";
 
@@ -13,20 +14,44 @@ export class AuthApi extends ModuleApi<AuthApiOptions> {
       };
    }
 
-   async loginWithPassword(input: any) {
-      const res = await this.post<AuthResponse>(["password", "login"], input);
+   async login(strategy: string, input: any) {
+      const res = await this.post<AuthResponse>([strategy, "login"], input);
       if (res.ok && res.body.token) {
          await this.options.onTokenUpdate?.(res.body.token);
       }
       return res;
    }
 
-   async registerWithPassword(input: any) {
-      const res = await this.post<AuthResponse>(["password", "register"], input);
+   async register(strategy: string, input: any) {
+      const res = await this.post<AuthResponse>([strategy, "register"], input);
       if (res.ok && res.body.token) {
          await this.options.onTokenUpdate?.(res.body.token);
       }
       return res;
+   }
+
+   async actionSchema(strategy: string, action: string) {
+      return this.get<Strategy>([strategy, "actions", action, "schema.json"]);
+   }
+
+   async action(strategy: string, action: string, input: any) {
+      return this.post<AuthActionResponse>([strategy, "actions", action], input);
+   }
+
+   /**
+    * @deprecated use login("password", ...) instead
+    * @param input
+    */
+   async loginWithPassword(input: any) {
+      return this.login("password", input);
+   }
+
+   /**
+    * @deprecated use register("password", ...) instead
+    * @param input
+    */
+   async registerWithPassword(input: any) {
+      return this.register("password", input);
    }
 
    me() {

@@ -44,6 +44,11 @@ export class SystemController extends Controller {
 
       hono.use(permission(SystemPermissions.configRead));
 
+      hono.get("/raw", permission([SystemPermissions.configReadSecrets]), async (c) => {
+         // @ts-expect-error "fetch" is private
+         return c.json(await this.app.modules.fetch());
+      });
+
       hono.get(
          "/:module?",
          tb("param", Type.Object({ module: Type.Optional(StringEnum(MODULE_NAMES)) })),

@@ -30,7 +30,7 @@ function key(e: unknown): string {
    return e as string;
 }
 
-const expressions: TExpression<any, any, any>[] = [
+const expressions = [
    exp(
       "$eq",
       (v: Primitive) => isPrimitive(v),
