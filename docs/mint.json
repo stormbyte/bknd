@@ -61,11 +61,43 @@
   "navigation": [
     {
       "group": "Getting Started",
-      "pages": ["introduction", "sdk", "react", "cli"]
+      "pages": ["introduction", "motivation"]
     },
     {
-      "group": "Setup",
-      "pages": ["setup/introduction", "setup/database"]
+      "group": "Usage",
+      "pages": [
+        "usage/introduction",
+        "usage/database",
+        "usage/cli",
+        "usage/sdk",
+        "usage/react",
+        "usage/elements"
+      ]
+    },
+    {
+      "group": "Integration",
+      "pages": [
+        "integration/introduction",
+        {
+          "group": "Frameworks",
+          "pages": [
+            "integration/nextjs",
+            "integration/remix",
+            "integration/astro",
+            "integration/vite"
+          ]
+        },
+        {
+          "group": "Runtimes",
+          "pages": [
+            "integration/node",
+            "integration/bun",
+            "integration/cloudflare",
+            "integration/deno",
+            "integration/docker"
+          ]
+        }
+      ]
     },
     {
       "group": "Modules",
@@ -76,21 +108,6 @@
         "modules/auth",
         "modules/media",
         "modules/flows"
-      ]
-    },
-    {
-      "group": "Integration",
-      "pages": [
-        "integration/extending",
-        "integration/nextjs",
-        "integration/remix",
-        "integration/cloudflare",
-        "integration/bun",
-        "integration/astro",
-        "integration/node",
-        "integration/deno",
-        "integration/vite",
-        "integration/docker"
       ]
     },
     {

@@ -4,7 +4,7 @@ description: 'Setting up bknd'
 ---
 
 There are several methods to get **bknd** up and running. You can choose between these options:
-1. [Run it using the CLI](/cli): That's the easiest and fastest way to get started.
+1. [Run it using the CLI](/usage/cli): That's the easiest and fastest way to get started.
 2. Use a runtime like [Node](/integration/node), [Bun](/integration/bun) or
 [Cloudflare](/integration/cloudflare) (workerd). This will run the API and UI in the runtime's
 native server and serves the UI assets statically from `node_modules`.
@@ -78,7 +78,7 @@ const connection = {
 ```
 
 Alternatively, you can pass an instance of a `Connection` class directly,
-see [Custom Connection](/setup/database#custom-connection) as a reference.
+see [Custom Connection](/usage/database#custom-connection) as a reference.
 
 If the connection object is omitted, the app will try to use an in-memory database.
 
@@ -160,7 +160,7 @@ To validate your configuration against a JSON schema, you can also dump the sche
 npx bknd schema
 ```
 
-To create an initial data structure, you can use helpers [described here](/setup/database#initial-structure).
+To create an initial data structure, you can use helpers [described here](/usage/database#initial-structure).
 
 ### `plugins`
 The `plugins` property is an array of functions that are called after the app has been built,

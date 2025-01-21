@@ -1,13 +1,9 @@
-[![npm version](https://img.shields.io/npm/v/bknd.svg)](https://npmjs.org/package/bknd 
-"View this project on NPM")
+[![npm version](https://img.shields.io/npm/v/bknd.svg)](https://npmjs.org/package/bknd)
 [![npm downloads](https://img.shields.io/npm/dm/bknd)](https://www.npmjs.com/package/bknd)
 
 ![bknd](https://raw.githubusercontent.com/bknd-io/bknd/refs/heads/main/docs/_assets/poster.png)
 
-bknd simplifies app development by providing fully functional backend for data management, 
-authentication, workflows and media. Since it's lightweight and built on Web Standards, it can 
-be deployed nearly anywhere, including running inside your framework of choice. No more 
-deploying multiple separate services!
+bknd simplifies app development by providing fully functional backend for database management, authentication, media and workflows. Being lightweight and built on Web Standards, it can be deployed nearly anywhere, including running inside your framework of choice. No more deploying multiple separate services!
 
 **For documentation and examples, please visit https://docs.bknd.io.**
 
@@ -15,33 +11,115 @@ deploying multiple separate services!
 > Please keep in mind that **bknd** is still under active development
 > and therefore full backward compatibility is not guaranteed before reaching v1.0.0.
 
-## ✨ Features
-**📊 Data**: Define, query, and control your data with ease. 
-  - Define entities with fields and relationships, synced directly to your database.  
-  - Supported field types: `primary`, `text`, `number`, `date`, `boolean`, `enum`, `json`, `jsonschema`.  
-  - Relationship types: `one-to-one`, `many-to-one`, `many-to-many`, and `polymorphic`.  
-  - Advanced querying with the **Repository**: filtering, sorting, pagination, and relational data handling.
-  - Seamlessly manage data with mutators and a robust event system.  
-  - Extend database functionality with batching, introspection, and support for multiple SQL dialects.
+## Size
+![gzipped size of bknd](https://img.badgesize.io/https://unpkg.com/bknd@0.6.1/dist/index.js?compression=gzip&label=bknd)
+![gzipped size of bknd/client](https://img.badgesize.io/https://unpkg.com/bknd@0.6.1/dist/ui/client/index.js?compression=gzip&label=bknd/client)
+![gzipped size of bknd/elements](https://img.badgesize.io/https://unpkg.com/bknd@0.6.1/dist/ui/elements/index.js?compression=gzip&label=bknd/elements)
+![gzipped size of bknd/ui](https://img.badgesize.io/https://unpkg.com/bknd@0.6.1/dist/ui/index.js?compression=gzip&label=bknd/ui)
 
-**🔐 Auth**: Easily implement reliable authentication strategies.
-  - Built-in `user` entity with customizable fields.  
-  - Supports multiple authentication strategies:  
-    - Email/password (with hashed storage).  
-    - OAuth/OIDC (Google, GitHub, and more).  
-  - Secure JWT generation and session management.
+The unpacked size on npm is misleading, as the `bknd` package includes the backend, the ui components as well as the whole backend bundled into the cli including static assets. 
 
-**🖼️ Media**: Effortlessly manage and serve all your media files.
-  - Upload files with ease.  
-  - Adapter-based support for S3, S3-compatible storage (e.g., R2, Tigris), and Cloudinary.
+## Motivation
+Creating digital products always requires developing both the backend (the logic) and the frontend (the appearance). Building a backend from scratch demands deep knowledge in areas such as authentication and database management. Using a backend framework can speed up initial development, but it still requires ongoing effort to work within its constraints (e.g., *"how to do X with Y?"*), which can quickly slow you down. Choosing a backend system is a tough decision, as you might not be aware of its limitations until you encounter them.
 
-**🔄 Flows** (UI integration coming soon!): Design and run workflows with seamless automation.
-  - Create and run workflows with trigger-based automation:  
-    - Manual triggers or events from data, auth, media, or server actions.  
-    - HTTP triggers for external integrations.  
-  - Define tasks in sequence, parallel, or loops, with conditional execution.  
-  - Use reusable sub-workflows to organize complex processes.  
-  - Leverage OpenAPI specifications for API-based tasks.
+**The solution:** A backend system that only assumes and implements primitive details, integrates into multiple environments, and adheres to industry standards.
+
+## Features
+* ⚡ Instant backend with full REST API:
+  * **Data**: Define, query, and control your data with ease.
+  * **Auth**: Easily implement reliable authentication strategies.
+  * **Media**: Effortlessly manage and serve all your media files.
+  * **Flows**: Design and run workflows with seamless automation. (UI integration coming soon!)
+* 🌐 Built on Web Standards for maximum compatibility
+* 🏃‍♂️ Multiple run modes
+  * standalone using the CLI
+  * using a JavaScript runtime (Node, Bun, workerd)
+  * using a React framework (Astro, Remix, Next.js)
+* 📦 Official API and React SDK with type-safety
+* ⚛️ React elements for auto-configured authentication and media components
+
+## Structure
+The package is mainly split into 4 parts, each serving a specific purpose:
+
+| Import                      | Purpose                                              |
+|-----------------------------|------------------------------------------------------|
+| `bknd`<br/>`bknd/adapter/*` | Backend including all APIs                           |
+| `bknd/ui`                   | Admin UI components for react frameworks at          |
+| `bknd/client`               | TypeScript SDK and React hooks for the API endpoints |
+| `bknd/elements`             | React components for authentication and media        |
+
+
+### The backend (`bknd`)
+Serve the backend as an API for any JS runtime or framework. The latter is especially handy, as it allows you to deploy your frontend and backend bundled together. Furthermore it allows adding additional logic in a way you're already familar with. Just add another route and you're good to go.
+
+Here is an example of serving the API using node:
+```js index.js
+import { serve } from "bknd/adapter/node"
+serve();
+```
+
+### Integrated admin UI (`bknd/ui`)
+The admin UI allows to manage your data including full configuration of your backend using a graphical user interface. Using `vite`, your admin route looks like this:
+```tsx
+import { Admin } from "bknd/ui"
+import "bknd/dist/styles.css";
+
+export default function AdminPage() {
+   return <Admin />
+}
+```
+
+### Using the REST API or TypeScript SDK (`bknd/client`)
+If you're not using a JavaScript environment, you can still access any endpoint using the REST API:
+```bash
+curl -XGET <your-endpoint>/api/data/<entity>
+{
+  "data": [
+    { "id": 1, ... },
+    { "id": 2, ... }
+  ],
+  "meta": { /* ... */ }
+}
+```
+
+In a JavaScript environment, you can use the TypeScript SDK with type-safety. The above example would look like this:
+```ts
+import { Api } from "bknd/client";
+
+const api = new Api({ host: "<endpoint>" });
+const { data } = await api.data.readMany("<entity>");
+```
+
+If you're using React, there are 2 hooks exposed (`useApi`, `useEntity`), as well as an `swr` wrapper around each (`useApiQuery`, `useEntityQuery`). The `swr` wrapped hooks automatically handled query invalidation:
+
+```tsx
+import { useState } from "react";
+import { useEntityQuery } from "bknd/client";
+
+export default function App() {
+   const { data } = useEntityQuery("todos");   
+   return <ul>
+      {data?.map(todo => (
+         <li key={todo.id}>{todo.name}</li>
+      ))}
+   </ul>
+}
+```
+
+### React elements (`bknd/elements`)
+You don't have to figure out API details to include media uploads to your app. For an user avatar upload, this is all you need:
+```tsx
+import { Media } from "bknd/elements"
+
+export function UserAvatar() {
+   return <Media.Dropzone
+     entity={{ name: "users", id: 1, field: "avatar" }}
+     maxItems={1}
+     overwrite
+   />
+}
+```
+The import path also exports components for login and registration forms which are automatically pointed to the `bknd` defaults.
 
 
 ## 🚀 Quick start

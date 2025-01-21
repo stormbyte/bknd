@@ -12,9 +12,21 @@ the dependencies.
 </Note>
 
 ## Database
+### SQLite in-memory
+The easiest to get started is using SQLite in-memory. When serving the API in the "Integrations",
+the function accepts an object with connection details. To use an in-memory database, you can either omit the object completely or explicitly use it as follows:
+```json
+{
+   "type": "libsql",
+   "config": {
+      "url": ":memory:"
+   }
+}
+```
+
 ### SQLite as file
-The easiest to get started is using SQLite as a file. When serving the API in the "Integrations",
-the function accepts an object with connection details. To use a file, use the following:
+Just like the in-memory option, using a file is just as easy:
+
 ```json
 {
    "type": "libsql",
@@ -156,11 +168,11 @@ const { data: posts } = await api.data.readMany("posts", {})
 // `posts` is now typed as Database["posts"]
 ```
 
-The type completion is available for the API as well as all provided [React hooks](/react).
+The type completion is available for the API as well as all provided [React hooks](/usage/react).
 
 ### Seeding the database
 To seed your database with initial data, you can pass a `seed` function to the configuration. It
-provides the `ModuleBuildContext` ([reference](/setup/introduction#modulebuildcontext)) as the first argument.
+provides the `ModuleBuildContext` ([reference](/usage/introduction#modulebuildcontext)) as the first argument.
 
 Note that the seed function will only be executed on app's first boot. If a configuration
 already exists in the database, it will not be executed.

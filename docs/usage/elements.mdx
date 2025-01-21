@@ -1,0 +1,25 @@
+---
+title: "React Elements"
+description: "Speed up your frontend development"
+---
+
+<Note>
+   The documentation is currently a work in progress and not complete.
+</Note>
+
+
+Not only creating and maintaing a backend is time-consuming, but also integrating it into your frontend can be a hassle. With `bknd/elements`, you can easily add media uploads and authentication forms to your app without having to figure out API details.
+
+## Media uploads
+
+```tsx
+import { Media } from "bknd/elements"
+
+export function UserAvatar() {
+   return <Media.Dropzone
+     entity={{ name: "users", id: 1, field: "avatar" }}
+     maxItems={1}
+     overwrite
+   />
+}
+```
