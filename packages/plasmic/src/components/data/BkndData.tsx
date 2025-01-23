@@ -6,7 +6,7 @@ import {
 } from "@plasmicapp/host";
 import { usePlasmicQueryData } from "@plasmicapp/loader-react";
 import { useApi, useEntityQuery } from "bknd/client";
-import type { RepoQuery } from "bknd/data";
+import type { RepoQueryIn } from "bknd/data";
 // biome-ignore lint/style/useImportType: <explanation>
 import React from "react";
 import { usePlasmicBkndContext } from "../../contexts/BkndContext";
@@ -171,7 +171,7 @@ type ModeProps = {
    error?: React.ReactNode;
    empty?: React.ReactNode;
    entityId?: number;
-   query?: Partial<RepoQuery>;
+   query?: RepoQueryIn;
 };
 
 const ModeFetch = ({

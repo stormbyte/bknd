@@ -1,6 +1,6 @@
 {
    "name": "@bknd/plasmic",
-   "version": "0.5.0",
+   "version": "0.5.1",
    "type": "module",
    "sideEffects": false,
    "scripts": {
@@ -30,9 +30,13 @@
       "@plasmicapp/host": ">=1.0.0",
       "@plasmicapp/loader-react": ">=1.0.0"
    },
+   "optionalDependencies": {
+      "@plasmicapp/loader-nextjs": "^1.0.0"
+   },
    "tsup": {
       "entry": [
-         "src/index.ts"
+         "src/index.ts",
+         "src/nextjs/index.tsx"
       ],
       "minify": true,
       "clean": true,
@@ -42,7 +46,11 @@
          "@plasmicapp/host",
          "@plasmicapp/query",
          "@plasmicapp/loader-react",
-         "swr"
+         "@plasmicapp/loader-nextjs",
+         "swr",
+         "next",
+         "next/error",
+         "next/router"
       ],
       "format": [
          "esm"
@@ -54,9 +62,19 @@
       "sourceMap": true,
       "outDir": "dist"
    },
-   "types": "dist/index.d.ts",
-   "module": "dist/index.js",
-   "main": "dist/index.js",
+   "types": "./dist/index.d.ts",
+   "module": "./dist/index.js",
+   "main": "./dist/index.js",
+   "exports": {
+      ".": {
+         "types": "./dist/index.d.ts",
+         "import": "./dist/index.js"
+      },
+      "./nextjs": {
+         "types": "./dist/nextjs/index.d.ts",
+         "import": "./dist/nextjs/index.js"
+      }
+   },
    "files": [
       "dist",
       "README.md",
