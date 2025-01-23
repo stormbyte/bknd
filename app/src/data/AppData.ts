@@ -13,7 +13,15 @@ import { type AppDataConfig, dataConfigSchema } from "./data-schema";
 
 export class AppData extends Module<typeof dataConfigSchema> {
    override async build() {
-      const entities = transformObject(this.config.entities ?? {}, (entityConfig, name) => {
+      const {
+         entities: _entities = {},
+         relations: _relations = {},
+         indices: _indices = {}
+      } = this.config;
+
+      this.ctx.logger.context("AppData").log("building with entities", Object.keys(_entities));
+
+      const entities = transformObject(_entities, (entityConfig, name) => {
          return constructEntity(name, entityConfig);
       });
 
@@ -21,14 +29,14 @@ export class AppData extends Module<typeof dataConfigSchema> {
          const name = typeof _e === "string" ? _e : _e.name;
          const entity = entities[name];
          if (entity) return entity;
-         throw new Error(`Entity "${name}" not found`);
+         throw new Error(`[AppData] Entity "${name}" not found`);
       };
 
-      const relations = transformObject(this.config.relations ?? {}, (relation) =>
+      const relations = transformObject(_relations, (relation) =>
          constructRelation(relation, _entity)
       );
 
-      const indices = transformObject(this.config.indices ?? {}, (index, name) => {
+      const indices = transformObject(_indices, (index, name) => {
          const entity = _entity(index.entity)!;
          const fields = index.fields.map((f) => entity.field(f)!);
          return new EntityIndex(entity, fields, index.unique, name);
@@ -52,6 +60,7 @@ export class AppData extends Module<typeof dataConfigSchema> {
       );
       this.ctx.guard.registerPermissions(Object.values(DataPermissions));
 
+      this.ctx.logger.clear();
       this.setBuilt();
    }
 

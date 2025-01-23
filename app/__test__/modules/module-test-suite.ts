@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "bun:test";
 
 import { Hono } from "hono";
 import { Guard } from "../../src/auth";
+import { DebugLogger } from "../../src/core";
 import { EventManager } from "../../src/core/events";
 import { Default, stripMark } from "../../src/core/utils";
 import { EntityManager } from "../../src/data";
@@ -17,6 +18,7 @@ export function makeCtx(overrides?: Partial<ModuleBuildContext>): ModuleBuildCon
       emgr: new EventManager(),
       guard: new Guard(),
       flags: Module.ctx_flags,
+      logger: new DebugLogger(false),
       ...overrides
    };
 }

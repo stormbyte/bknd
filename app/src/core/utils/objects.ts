@@ -4,6 +4,14 @@ export function _jsonp(obj: any, space = 2): string {
    return JSON.stringify(obj, null, space);
 }
 
+export function isPlainObject(value: unknown): value is Record<string, unknown> {
+   return Object.prototype.toString.call(value) === "[object Object]";
+}
+
+export function isObject(value: unknown): value is Record<string, unknown> {
+   return value !== null && typeof value === "object";
+}
+
 export function safelyParseObjectValues<T extends { [key: string]: any }>(obj: T): T {
    return Object.entries(obj).reduce((acc, [key, value]) => {
       try {
@@ -98,15 +106,6 @@ export function objectEach<T extends Record<string, any>, U>(
 }
 
 /**
- * Simple object check.
- * @param item
- * @returns {boolean}
- */
-export function isObject(item) {
-   return item && typeof item === "object" && !Array.isArray(item);
-}
-
-/**
  * Deep merge two objects.
  * @param target
  * @param ...sources
@@ -196,4 +195,74 @@ export function objectCleanEmpty<Obj extends { [key: string]: any }>(obj: Obj): 
       }
       return acc;
    }, {} as any);
+}
+
+/**
+ * Lodash's merge implementation caused issues in Next.js environments
+ * From: https://thescottyjam.github.io/snap.js/#!/nolodash/merge
+ * NOTE: This mutates `object`. It also may mutate anything that gets attached to `object` during the merge.
+ * @param object
+ * @param sources
+ */
+export function mergeObject(object, ...sources) {
+   for (const source of sources) {
+      for (const [key, value] of Object.entries(source)) {
+         if (value === undefined) {
+            continue;
+         }
+
+         // These checks are a week attempt at mimicking the various edge-case behaviors
+         // that Lodash's `_.merge()` exhibits. Feel free to simplify and
+         // remove checks that you don't need.
+         if (!isPlainObject(value) && !Array.isArray(value)) {
+            object[key] = value;
+         } else if (Array.isArray(value) && !Array.isArray(object[key])) {
+            object[key] = value;
+         } else if (!isObject(object[key])) {
+            object[key] = value;
+         } else {
+            mergeObject(object[key], value);
+         }
+      }
+   }
+
+   return object;
+}
+
+/**
+ * Lodash's mergeWith implementation caused issues in Next.js environments
+ * From: https://thescottyjam.github.io/snap.js/#!/nolodash/mergeWith
+ * NOTE: This mutates `object`. It also may mutate anything that gets attached to `object` during the merge.
+ * @param object
+ * @param sources
+ * @param customizer
+ */
+export function mergeObjectWith(object, source, customizer) {
+   for (const [key, value] of Object.entries(source)) {
+      const mergedValue = customizer(object[key], value, key, object, source);
+      if (mergedValue !== undefined) {
+         object[key] = mergedValue;
+         continue;
+      }
+      // Otherwise, fall back to default behavior
+
+      if (value === undefined) {
+         continue;
+      }
+
+      // These checks are a week attempt at mimicking the various edge-case behaviors
+      // that Lodash's `_.merge()` exhibits. Feel free to simplify and
+      // remove checks that you don't need.
+      if (!isPlainObject(value) && !Array.isArray(value)) {
+         object[key] = value;
+      } else if (Array.isArray(value) && !Array.isArray(object[key])) {
+         object[key] = value;
+      } else if (!isObject(object[key])) {
+         object[key] = value;
+      } else {
+         mergeObjectWith(object[key], value, customizer);
+      }
+   }
+
+   return object;
 }
