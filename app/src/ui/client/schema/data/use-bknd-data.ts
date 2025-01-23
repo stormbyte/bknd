@@ -43,7 +43,11 @@ export function useBkndData() {
             return {
                config: async (partial: Partial<TAppDataEntity["config"]>): Promise<boolean> => {
                   console.log("patch config", entityName, partial);
-                  return await bkndActions.patch("data", `entities.${entityName}.config`, partial);
+                  return await bkndActions.overwrite(
+                     "data",
+                     `entities.${entityName}.config`,
+                     partial
+                  );
                },
                fields: entityFieldActions(bkndActions, entityName)
             };

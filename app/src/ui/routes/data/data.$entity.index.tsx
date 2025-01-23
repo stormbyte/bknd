@@ -41,7 +41,7 @@ export function DataEntityList({ params }) {
    const [navigate] = useNavigate();
    const search = useSearch(searchSchema, {
       select: entity.getSelect(undefined, "form"),
-      sort: undefined
+      sort: entity.getDefaultSort()
    });
 
    const $q = useApiQuery(
