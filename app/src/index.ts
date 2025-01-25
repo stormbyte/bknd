@@ -12,7 +12,6 @@ export {
 export * as middlewares from "modules/middlewares";
 export { registries } from "modules/registries";
 
-export type * from "./adapter";
 export { Api, type ApiOptions } from "./Api";
 
 export type { MediaFieldSchema } from "media/AppMedia";
