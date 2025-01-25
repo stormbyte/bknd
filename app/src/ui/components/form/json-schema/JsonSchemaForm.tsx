@@ -16,6 +16,7 @@ export type JsonSchemaFormProps = any & {
    uiSchema?: any;
    direction?: "horizontal" | "vertical";
    onChange?: (value: any, isValid: () => boolean) => void;
+   cleanOnChange?: boolean;
 };
 
 export type JsonSchemaFormRef = {
@@ -36,6 +37,7 @@ export const JsonSchemaForm = forwardRef<JsonSchemaFormRef, JsonSchemaFormProps>
          templates,
          fields,
          widgets,
+         cleanOnChange,
          ...props
       },
       ref
@@ -51,8 +53,8 @@ export const JsonSchemaForm = forwardRef<JsonSchemaFormRef, JsonSchemaFormProps>
          return false;
       };
       const handleChange = ({ formData }: any, e) => {
-         const clean = JSON.parse(JSON.stringify(formData));
-         //console.log("Data changed: ", clean, JSON.stringify(formData, null, 2));
+         const clean = cleanOnChange !== false ? JSON.parse(JSON.stringify(formData)) : formData;
+         console.log("Data changed: ", clean, { cleanOnChange });
          setValue(clean);
          onChange?.(clean, () => isValid(clean));
       };

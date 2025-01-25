@@ -1,10 +1,10 @@
-import { cloneDeep, get, has, mergeWith, omit, set } from "lodash-es";
+import { get, has, omit, set } from "lodash-es";
 import {
    Default,
    type Static,
    type TObject,
    getFullPathKeys,
-   mark,
+   mergeObjectWith,
    parse,
    stripMark
 } from "../utils";
@@ -33,7 +33,7 @@ export class SchemaObject<Schema extends TObject> {
    ) {
       this._default = Default(_schema, {} as any) as any;
       this._value = initial
-         ? parse(_schema, cloneDeep(initial as any), {
+         ? parse(_schema, structuredClone(initial as any), {
               forceParse: this.isForceParse(),
               skipMark: this.isForceParse()
            })
@@ -64,8 +64,12 @@ export class SchemaObject<Schema extends TObject> {
       return this._config;
    }
 
+   clone() {
+      return structuredClone(this._config);
+   }
+
    async set(config: Static<Schema>, noEmit?: boolean): Promise<Static<Schema>> {
-      const valid = parse(this._schema, cloneDeep(config) as any, {
+      const valid = parse(this._schema, structuredClone(config) as any, {
          forceParse: true,
          skipMark: this.isForceParse()
       });
@@ -114,7 +118,7 @@ export class SchemaObject<Schema extends TObject> {
    }
 
    async patch(path: string, value: any): Promise<[Partial<Static<Schema>>, Static<Schema>]> {
-      const current = cloneDeep(this._config);
+      const current = this.clone();
       const partial = path.length > 0 ? (set({}, path, value) as Partial<Static<Schema>>) : value;
 
       this.throwIfRestricted(partial);
@@ -122,11 +126,13 @@ export class SchemaObject<Schema extends TObject> {
 
       // overwrite arrays and primitives, only deep merge objects
       // @ts-ignore
-      const config = mergeWith(current, partial, (objValue, srcValue) => {
+      //console.log("---alt:new", _jsonp(mergeObject(current, partial)));
+      const config = mergeObjectWith(current, partial, (objValue, srcValue) => {
          if (Array.isArray(objValue) && Array.isArray(srcValue)) {
             return srcValue;
          }
       });
+      //console.log("---new", _jsonp(config));
 
       //console.log("overwritePaths", this.options?.overwritePaths);
       if (this.options?.overwritePaths) {
@@ -164,14 +170,14 @@ export class SchemaObject<Schema extends TObject> {
          }
       }
 
-      //console.log("patch", { path, value, partial, config, current });
+      //console.log("patch", _jsonp({ path, value, partial, config, current }));
 
       const newConfig = await this.set(config);
       return [partial, newConfig];
    }
 
    async overwrite(path: string, value: any): Promise<[Partial<Static<Schema>>, Static<Schema>]> {
-      const current = cloneDeep(this._config);
+      const current = this.clone();
       const partial = path.length > 0 ? (set({}, path, value) as Partial<Static<Schema>>) : value;
 
       this.throwIfRestricted(partial);
@@ -192,7 +198,7 @@ export class SchemaObject<Schema extends TObject> {
       if (p.length > 1) {
          const parent = p.slice(0, -1).join(".");
          if (!has(this._config, parent)) {
-            console.log("parent", parent, JSON.stringify(this._config, null, 2));
+            //console.log("parent", parent, JSON.stringify(this._config, null, 2));
             throw new Error(`Parent path "${parent}" does not exist`);
          }
       }
@@ -207,7 +213,7 @@ export class SchemaObject<Schema extends TObject> {
          throw new Error(`Path "${path}" does not exist`);
       }
 
-      const current = cloneDeep(this._config);
+      const current = this.clone();
       const removed = get(current, path) as Partial<Static<Schema>>;
       const config = omit(current, path);
       const newConfig = await this.set(config);

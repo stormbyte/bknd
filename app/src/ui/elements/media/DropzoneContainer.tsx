@@ -1,31 +1,32 @@
-import type { RepoQuery, RepoQueryIn } from "data";
+import type { RepoQueryIn } from "data";
 import type { MediaFieldSchema } from "media/AppMedia";
 import type { TAppMediaConfig } from "media/media-schema";
-import { useId } from "react";
-import { useApi, useBaseUrl, useEntityQuery, useInvalidate } from "ui/client";
+import { type ReactNode, createContext, useContext, useId } from "react";
+import { useApi, useEntityQuery, useInvalidate } from "ui/client";
 import { useEvent } from "ui/hooks/use-event";
 import { Dropzone, type DropzoneProps, type DropzoneRenderProps, type FileState } from "./Dropzone";
 import { mediaItemsToFileStates } from "./helper";
 
 export type DropzoneContainerProps = {
-   children?: (props: DropzoneRenderProps) => JSX.Element;
+   children?: ReactNode;
    initialItems?: MediaFieldSchema[];
    entity?: {
       name: string;
       id: number;
       field: string;
    };
+   media?: Pick<TAppMediaConfig, "entity_name" | "storage">;
    query?: RepoQueryIn;
-} & Partial<Pick<TAppMediaConfig, "basepath" | "entity_name" | "storage">> &
-   Partial<DropzoneProps>;
+} & Omit<Partial<DropzoneProps>, "children" | "initialItems">;
+
+const DropzoneContainerContext = createContext<DropzoneRenderProps>(undefined!);
 
 export function DropzoneContainer({
    initialItems,
-   basepath = "/api/media",
-   storage = {},
-   entity_name = "media",
+   media,
    entity,
    query,
+   children,
    ...props
 }: DropzoneContainerProps) {
    const id = useId();
@@ -33,10 +34,11 @@ export function DropzoneContainer({
    const baseUrl = api.baseUrl;
    const invalidate = useInvalidate();
    const limit = query?.limit ? query?.limit : props.maxItems ? props.maxItems : 50;
-   console.log("dropzone:baseUrl", baseUrl);
+   const entity_name = (media?.entity_name ?? "media") as "media";
+   //console.log("dropzone:baseUrl", baseUrl);
 
    const $q = useEntityQuery(
-      entity_name as "media",
+      entity_name,
       undefined,
       {
          ...query,
@@ -89,6 +91,18 @@ export function DropzoneContainer({
          autoUpload
          initialItems={_initialItems}
          {...props}
-      />
+      >
+         {children
+            ? (props) => (
+                 <DropzoneContainerContext.Provider value={props}>
+                    {children}
+                 </DropzoneContainerContext.Provider>
+              )
+            : undefined}
+      </Dropzone>
    );
+}
+
+export function useDropzone() {
+   return useContext(DropzoneContainerContext);
 }

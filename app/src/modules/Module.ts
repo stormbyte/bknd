@@ -1,6 +1,6 @@
 import type { App } from "App";
 import type { Guard } from "auth";
-import { SchemaObject } from "core";
+import { type DebugLogger, SchemaObject } from "core";
 import type { EventManager } from "core/events";
 import type { Static, TSchema } from "core/utils";
 import {
@@ -35,6 +35,7 @@ export type ModuleBuildContext = {
    em: EntityManager;
    emgr: EventManager<any>;
    guard: Guard;
+   logger: DebugLogger;
    flags: (typeof Module)["ctx_flags"];
 };
 
