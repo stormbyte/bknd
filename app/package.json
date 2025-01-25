@@ -148,6 +148,10 @@
       "import": "./dist/adapter/cloudflare/index.js",
       "require": "./dist/adapter/cloudflare/index.cjs"
     },
+    "./adapter": {
+      "types": "./dist/types/adapter/index.d.ts",
+      "import": "./dist/adapter/index.js"
+    },
     "./adapter/vite": {
       "types": "./dist/types/adapter/vite/index.d.ts",
       "import": "./dist/adapter/vite/index.js",

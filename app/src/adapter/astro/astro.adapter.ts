@@ -1,7 +1,7 @@
 import { type FrameworkBkndConfig, createFrameworkApp } from "adapter";
 import { Api, type ApiOptions, type App } from "bknd";
 
-export type AstroBkndConfig = FrameworkBkndConfig;
+export type AstroBkndConfig<Args = TAstro> = FrameworkBkndConfig<Args>;
 
 type TAstro = {
    request: Request;
@@ -21,10 +21,11 @@ export function getApi(Astro: TAstro, options: Options = { mode: "static" }) {
 }
 
 let app: App;
-export function serve(config: AstroBkndConfig = {}) {
-   return async (args: TAstro) => {
+export function serve<Context extends TAstro = TAstro>(config: AstroBkndConfig<Context> = {}) {
+   return async (args: Context) => {
+      console.log("args", Object.keys(args));
       if (!app) {
-         app = await createFrameworkApp(config);
+         app = await createFrameworkApp(config, args);
       }
       return app.fetch(args.request);
    };
