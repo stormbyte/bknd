@@ -3,13 +3,29 @@ title: 'SDK (React)'
 description: 'Use the bknd SDK for React'
 ---
 
-bknd exports 4 useful hooks to work with your backend:
+There are 4 useful hooks to work with your backend:
 1. simple hooks which are solely based on the [API](/usage/sdk):
    - [`useApi`](#useapi)
    - [`useEntity`](#useentity)
 2. query hooks that wraps the API in [SWR](https://swr.vercel.app/):
    - [`useApiQuery`](#useapiquery)
    - [`useEntityQuery`](#useentityquery)
+
+
+## Setup
+In order to use them, make sure you wrap your `<App />` inside `<ClientProvider />`, so that these hooks point to your bknd instance:
+
+```tsx
+import { ClientProvider } from "bknd/client";
+
+export default function App() {
+   return <ClientProvider>
+      {/* your app */}
+   </ClientProvider>
+}
+```
+
+For all other examples below, we'll assume that your app is wrapped inside the `ClientProvider`.
 
 ## `useApi()`
 To use the simple hook that returns the Api, you can use:

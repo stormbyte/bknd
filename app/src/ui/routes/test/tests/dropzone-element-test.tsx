@@ -1,4 +1,4 @@
-import { type DropzoneRenderProps, Media } from "ui/elements";
+import { Media } from "ui/elements";
 import { Scrollable } from "ui/layouts/AppShell/AppShell";
 
 export default function DropzoneElementTest() {
@@ -12,7 +12,7 @@ export default function DropzoneElementTest() {
                   maxItems={1}
                   overwrite
                >
-                  {(props) => <CustomUserAvatarDropzone {...props} />}
+                  <CustomUserAvatarDropzone />
                </Media.Dropzone>
             </div>
 
@@ -49,12 +49,13 @@ export default function DropzoneElementTest() {
    );
 }
 
-function CustomUserAvatarDropzone({
-   wrapperRef,
-   inputProps,
-   state: { files, isOver, isOverAccepted, showPlaceholder },
-   actions: { openFileInput }
-}: DropzoneRenderProps) {
+function CustomUserAvatarDropzone() {
+   const {
+      wrapperRef,
+      inputProps,
+      state: { files, isOver, isOverAccepted, showPlaceholder },
+      actions: { openFileInput }
+   } = Media.useDropzone();
    const file = files[0];
 
    return (

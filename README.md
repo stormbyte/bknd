@@ -3,7 +3,13 @@
 
 ![bknd](https://raw.githubusercontent.com/bknd-io/bknd/refs/heads/main/docs/_assets/poster.png)
 
-bknd simplifies app development by providing fully functional backend for database management, authentication, media and workflows. Being lightweight and built on Web Standards, it can be deployed nearly anywhere, including running inside your framework of choice. No more deploying multiple separate services!
+<p align="center" width="100%">
+<a href="https://stackblitz.com/github/bknd-io/bknd-examples?hideExplorer=1&embed=1&view=preview&startScript=example-admin-rich&initialPath=%2Fdata%2Fschema">
+<strong>⭐ Live Demo</strong>
+</a>
+</p>
+
+bknd simplifies app development by providing a fully functional backend for database management, authentication, media and workflows. Being lightweight and built on Web Standards, it can be deployed nearly anywhere, including running inside your framework of choice. No more deploying multiple separate services!
 
 **For documentation and examples, please visit https://docs.bknd.io.**
 
@@ -17,7 +23,7 @@ bknd simplifies app development by providing fully functional backend for databa
 ![gzipped size of bknd/elements](https://img.badgesize.io/https://unpkg.com/bknd@0.6.1/dist/ui/elements/index.js?compression=gzip&label=bknd/elements)
 ![gzipped size of bknd/ui](https://img.badgesize.io/https://unpkg.com/bknd@0.6.1/dist/ui/index.js?compression=gzip&label=bknd/ui)
 
-The unpacked size on npm is misleading, as the `bknd` package includes the backend, the ui components as well as the whole backend bundled into the cli including static assets. 
+The size on npm is misleading, as the `bknd` package includes the backend, the ui components as well as the whole backend bundled into the cli including static assets. 
 
 ## Motivation
 Creating digital products always requires developing both the backend (the logic) and the frontend (the appearance). Building a backend from scratch demands deep knowledge in areas such as authentication and database management. Using a backend framework can speed up initial development, but it still requires ongoing effort to work within its constraints (e.g., *"how to do X with Y?"*), which can quickly slow you down. Choosing a backend system is a tough decision, as you might not be aware of its limitations until you encounter them.
@@ -43,8 +49,8 @@ The package is mainly split into 4 parts, each serving a specific purpose:
 
 | Import                      | Purpose                                              |
 |-----------------------------|------------------------------------------------------|
-| `bknd`<br/>`bknd/adapter/*` | Backend including all APIs                           |
-| `bknd/ui`                   | Admin UI components for react frameworks at          |
+| `bknd`<br/>`bknd/adapter/*` | Backend including APIs and adapters                  |
+| `bknd/ui`                   | Admin UI components for react frameworks             |
 | `bknd/client`               | TypeScript SDK and React hooks for the API endpoints |
 | `bknd/elements`             | React components for authentication and media        |
 
@@ -110,6 +116,7 @@ export default function App() {
 You don't have to figure out API details to include media uploads to your app. For an user avatar upload, this is all you need:
 ```tsx
 import { Media } from "bknd/elements"
+import "bknd/dist/main.css"
 
 export function UserAvatar() {
    return <Media.Dropzone
