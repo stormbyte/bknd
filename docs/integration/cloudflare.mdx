@@ -16,11 +16,11 @@ and then install bknd as a dependency:
 If you don't choose anything specific, the following code will use the `warm` mode. See the
 chapter [Using a different mode](#using-a-different-mode) for available modes.
 
-``` ts
+```ts
 import { serve } from "bknd/adapter/cloudflare";
 
-export default serve({
-   app: (env: Env) => ({
+export default serve<Env>({
+   app: ({ env }) => ({
       connection: {
          type: "libsql",
          config: {
@@ -50,12 +50,12 @@ bucket = "node_modules/bknd/dist/static"
 ```
 
 And then modify the worker entry as follows:
-``` ts {2, 14, 15}
+```ts {2, 14, 15}
 import { serve } from "bknd/adapter/cloudflare";
 import manifest from "__STATIC_CONTENT_MANIFEST";
 
-export default serve({
-   app: (env: Env) => ({
+export default serve<Env>({
+   app: ({ env }) => ({
       connection: {
          type: "libsql",
          config: {
@@ -75,8 +75,8 @@ You can also add custom routes by defining them after the app has been built, li
 import { serve } from "bknd/adapter/cloudflare";
 import manifest from "__STATIC_CONTENT_MANIFEST";
 
-export default serve({
-   app: (env: Env) => ({
+export default serve<Env>({
+   app: ({ env }) => ({
       connection: {
          type: "libsql",
          config: {
@@ -111,7 +111,7 @@ mode`, like so:
 import { serve } from "bknd/adapter/cloudflare";
 
 export default serve({
-   /* ... */,
+   // ...
    mode: "fresh" // mode: "fresh" | "warm" | "cache" | "durable"
 });
 ```
@@ -119,13 +119,14 @@ export default serve({
 ### Mode: `cache`
 For the cache mode to work, you also need to specify the KV to be used. For this, use the
 `bindings` property:
+
 ```ts
 import { serve } from "bknd/adapter/cloudflare";
 
-export default serve({
-   /* ... */,
+export default serve<Env>({
+   // ...
    mode: "cache",
-   bindings: (env: Env) => ({ kv: env.KV })
+   bindings: ({ env }) => ({ kv: env.KV })
 });
 ```
 
@@ -136,10 +137,10 @@ environment, and additionally export the `DurableBkndApp` class:
 import { serve, DurableBkndApp } from "bknd/adapter/cloudflare";
 
 export { DurableBkndApp };
-export default serve({
-   /* ... */,
+export default serve<Env>({
+   // ...
    mode: "durable",
-   bindings: (env: Env) => ({ dobj: env.DOBJ }),
+   bindings: ({ env }) => ({ dobj: env.DOBJ }),
    keepAliveSeconds: 60 // optional
 });
 ```
@@ -164,9 +165,9 @@ import type { App } from "bknd";
 import { serve, DurableBkndApp } from "bknd/adapter/cloudflare";
 
 export default serve({
-   /* ... */,
+   // ...
    mode: "durable",
-   bindings: (env: Env) => ({ dobj: env.DOBJ }),
+   bindings: ({ env }) => ({ dobj: env.DOBJ }),
    keepAliveSeconds: 60 // optional
 });
 

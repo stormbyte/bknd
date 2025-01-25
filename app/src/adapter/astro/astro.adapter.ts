@@ -25,7 +25,6 @@ export async function getApi(Astro: TAstro, options: Options = { mode: "static" 
 let app: App;
 export function serve<Context extends TAstro = TAstro>(config: AstroBkndConfig<Context> = {}) {
    return async (args: Context) => {
-      console.log("args", Object.keys(args));
       if (!app) {
          app = await createFrameworkApp(config, args);
       }
