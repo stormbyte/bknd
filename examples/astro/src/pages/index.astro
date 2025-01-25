@@ -2,7 +2,8 @@
 import { getApi } from "bknd/adapter/astro";
 import Card from "../components/Card.astro";
 import Layout from "../layouts/Layout.astro";
-const api = getApi(Astro);
+
+const api = await getApi(Astro);
 const { data } = await api.data.readMany("todos");
 ---
 

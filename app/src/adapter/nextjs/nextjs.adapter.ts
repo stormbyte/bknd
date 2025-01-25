@@ -29,8 +29,10 @@ export function createApi({ req }: GetServerSidePropsContext) {
 }
 
 export function withApi<T>(handler: (ctx: GetServerSidePropsContext & { api: Api }) => T) {
-   return (ctx: GetServerSidePropsContext & { api: Api }) => {
-      return handler({ ...ctx, api: createApi(ctx) });
+   return async (ctx: GetServerSidePropsContext & { api: Api }) => {
+      const api = createApi(ctx);
+      await api.verifyAuth();
+      return handler({ ...ctx, api });
    };
 }
 

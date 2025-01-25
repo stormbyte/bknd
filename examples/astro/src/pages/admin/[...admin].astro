@@ -4,8 +4,7 @@ import "bknd/dist/styles.css";
 
 import { getApi } from "bknd/adapter/astro";
 
-const api = getApi(Astro, { mode: "dynamic" });
-await api.verifyAuth();
+const api = await getApi(Astro, { mode: "dynamic" });
 const user = api.getUser();
 
 export const prerender = false;

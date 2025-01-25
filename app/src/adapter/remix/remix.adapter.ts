@@ -1,5 +1,6 @@
 import { type FrameworkBkndConfig, createFrameworkApp } from "adapter";
 import type { App } from "bknd";
+import { Api } from "bknd/client";
 
 export type RemixBkndConfig<Args = RemixContext> = FrameworkBkndConfig<Args>;
 
@@ -16,5 +17,21 @@ export function serve<Args extends RemixContext = RemixContext>(
          app = await createFrameworkApp(config, args);
       }
       return app.fetch(args.request);
+   };
+}
+
+export function withApi<Args extends { request: Request; context: { api: Api } }, R>(
+   handler: (args: Args, api: Api) => Promise<R>
+) {
+   return async (args: Args) => {
+      if (!args.context.api) {
+         args.context.api = new Api({
+            host: new URL(args.request.url).origin,
+            headers: args.request.headers
+         });
+         await args.context.api.verifyAuth();
+      }
+
+      return handler(args, args.context.api);
    };
 }
