@@ -2,10 +2,11 @@
 
 import path from "node:path";
 import type { App } from "bknd";
+import { type RuntimeBkndConfig, createRuntimeApp } from "bknd/adapter";
+import { registerLocalMediaAdapter } from "bknd/adapter/node";
+import { config } from "bknd/core";
 import type { ServeOptions } from "bun";
-import { config } from "core";
 import { serveStatic } from "hono/bun";
-import { type RuntimeBkndConfig, createRuntimeApp } from "../index";
 
 let app: App;
 
@@ -15,9 +16,9 @@ export async function createApp({ distPath, ...config }: RuntimeBkndConfig = {})
    const root = path.resolve(distPath ?? "./node_modules/bknd/dist", "static");
 
    if (!app) {
+      registerLocalMediaAdapter();
       app = await createRuntimeApp({
          ...config,
-         registerLocalMedia: true,
          serveStatic: serveStatic({ root })
       });
    }

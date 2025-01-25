@@ -1,5 +1,5 @@
-import { type FrameworkBkndConfig, createFrameworkApp } from "adapter";
 import type { App } from "bknd";
+import { type FrameworkBkndConfig, createFrameworkApp } from "bknd/adapter";
 import { Api } from "bknd/client";
 
 export type RemixBkndConfig<Args = RemixContext> = FrameworkBkndConfig<Args>;

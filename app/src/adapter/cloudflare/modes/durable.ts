@@ -1,7 +1,7 @@
 import { DurableObject } from "cloudflare:workers";
-import { createRuntimeApp, makeConfig } from "adapter";
-import type { CloudflareBkndConfig, Context } from "adapter/cloudflare";
 import type { App, CreateAppConfig } from "bknd";
+import { createRuntimeApp, makeConfig } from "bknd/adapter";
+import type { CloudflareBkndConfig, Context } from "../index";
 
 export async function getDurable(config: CloudflareBkndConfig, ctx: Context) {
    const { dobj } = config.bindings?.(ctx.env)!;

@@ -173,7 +173,6 @@ function baseConfig(adapter: string): tsup.Options {
       ],
       metafile: true,
       splitting: false,
-      treeshake: true,
       onSuccess: async () => {
          delayTypes();
       }
