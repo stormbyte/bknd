@@ -1,5 +1,5 @@
-import { createRuntimeApp } from "adapter";
 import { App } from "bknd";
+import { createRuntimeApp } from "bknd/adapter";
 import type { CloudflareBkndConfig, Context } from "../index";
 
 export async function getCached(config: CloudflareBkndConfig, { env, ctx, ...args }: Context) {

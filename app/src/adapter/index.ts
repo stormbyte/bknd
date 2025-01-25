@@ -1,8 +1,6 @@
-import type { IncomingMessage } from "node:http";
-import { App, type CreateAppConfig, registries } from "bknd";
-import { config as $config } from "core";
+import { App, type CreateAppConfig } from "bknd";
+import { config as $config } from "bknd/core";
 import type { MiddlewareHandler } from "hono";
-import { StorageLocalAdapter } from "media/storage/adapters/StorageLocalAdapter";
 import type { AdminControllerOptions } from "modules/server/AdminController";
 
 export type BkndConfig<Args = any> = CreateAppConfig & {
@@ -17,34 +15,6 @@ export type FrameworkBkndConfig<Args = any> = BkndConfig<Args>;
 export type RuntimeBkndConfig<Args = any> = BkndConfig<Args> & {
    distPath?: string;
 };
-
-export function nodeRequestToRequest(req: IncomingMessage): Request {
-   let protocol = "http";
-   try {
-      protocol = req.headers["x-forwarded-proto"] as string;
-   } catch (e) {}
-   const host = req.headers.host;
-   const url = `${protocol}://${host}${req.url}`;
-   const headers = new Headers();
-
-   for (const [key, value] of Object.entries(req.headers)) {
-      if (Array.isArray(value)) {
-         headers.append(key, value.join(", "));
-      } else if (value) {
-         headers.append(key, value);
-      }
-   }
-
-   const method = req.method || "GET";
-   return new Request(url, {
-      method,
-      headers
-   });
-}
-
-export function registerLocalMediaAdapter() {
-   registries.media.register("local", StorageLocalAdapter);
-}
 
 export function makeConfig<Args = any>(config: BkndConfig<Args>, args?: Args): CreateAppConfig {
    let additionalConfig: CreateAppConfig = {};
@@ -87,20 +57,14 @@ export async function createFrameworkApp<Args = any>(
 export async function createRuntimeApp<Env = any>(
    {
       serveStatic,
-      registerLocalMedia,
       adminOptions,
       ...config
    }: RuntimeBkndConfig & {
       serveStatic?: MiddlewareHandler | [string, MiddlewareHandler];
-      registerLocalMedia?: boolean;
       adminOptions?: AdminControllerOptions | false;
    },
    env?: Env
 ): Promise<App> {
-   if (registerLocalMedia) {
-      registerLocalMediaAdapter();
-   }
-
    const app = App.create(makeConfig(config, env));
 
    app.emgr.onEvent(

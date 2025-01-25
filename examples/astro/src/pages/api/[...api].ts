@@ -1,7 +1,6 @@
 import type { APIContext } from "astro";
 import { App } from "bknd";
-import { serve } from "bknd/adapter/astro";
-import { registerLocalMediaAdapter } from "bknd/adapter/node";
+import { registerLocalMediaAdapter, serve } from "bknd/adapter/astro";
 import { boolean, em, entity, text } from "bknd/data";
 import { secureRandomString } from "bknd/utils";
 

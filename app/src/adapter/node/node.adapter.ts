@@ -1,9 +1,10 @@
 import path from "node:path";
 import { serve as honoServe } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
+import { registerLocalMediaAdapter } from "adapter/node/index";
 import type { App } from "bknd";
-import { config as $config } from "core";
-import { type RuntimeBkndConfig, createRuntimeApp } from "../index";
+import { type RuntimeBkndConfig, createRuntimeApp } from "bknd/adapter";
+import { config as $config } from "bknd/core";
 
 export type NodeBkndConfig = RuntimeBkndConfig & {
    port?: number;
@@ -37,9 +38,9 @@ export function serve({
          hostname,
          fetch: async (req: Request) => {
             if (!app) {
+               registerLocalMediaAdapter();
                app = await createRuntimeApp({
                   ...config,
-                  registerLocalMedia: true,
                   serveStatic: serveStatic({ root })
                });
             }

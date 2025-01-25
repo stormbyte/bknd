@@ -1,6 +1,6 @@
+import type { FrameworkBkndConfig } from "bknd/adapter";
 import { Hono } from "hono";
 import { serveStatic } from "hono/cloudflare-workers";
-import type { FrameworkBkndConfig } from "../index";
 import { getCached } from "./modes/cached";
 import { getDurable } from "./modes/durable";
 import { getFresh, getWarm } from "./modes/fresh";

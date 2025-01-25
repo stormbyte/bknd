@@ -1,6 +1,5 @@
 import { App } from "bknd";
-import { registerLocalMediaAdapter } from "bknd/adapter/node";
-import { serve } from "bknd/adapter/remix";
+import { registerLocalMediaAdapter, serve } from "bknd/adapter/remix";
 import { boolean, em, entity, text } from "bknd/data";
 import { secureRandomString } from "bknd/utils";
 

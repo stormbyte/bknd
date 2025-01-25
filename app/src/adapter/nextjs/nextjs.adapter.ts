@@ -1,6 +1,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { Api, type App } from "bknd";
-import { type FrameworkBkndConfig, createFrameworkApp, nodeRequestToRequest } from "../index";
+import { type FrameworkBkndConfig, createFrameworkApp } from "bknd/adapter";
+import { nodeRequestToRequest } from "bknd/adapter/node";
 
 export type NextjsBkndConfig = FrameworkBkndConfig & {
    cleanSearch?: string[];
