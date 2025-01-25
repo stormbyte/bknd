@@ -23,6 +23,7 @@ export type ApiOptions = {
    headers?: Headers;
    key?: string;
    localStorage?: boolean;
+   fetcher?: typeof fetch;
 };
 
 export type AuthState = {
@@ -163,14 +164,18 @@ export class Api {
          headers: this.options.headers,
          token_transport: this.token_transport
       };
+      const fetcher = this.options.fetcher;
 
-      this.system = new SystemApi(baseParams);
-      this.data = new DataApi(baseParams);
-      this.auth = new AuthApi({
-         ...baseParams,
-         onTokenUpdate: (token) => this.updateToken(token, true)
-      });
-      this.media = new MediaApi(baseParams);
+      this.system = new SystemApi(baseParams, fetcher);
+      this.data = new DataApi(baseParams, fetcher);
+      this.auth = new AuthApi(
+         {
+            ...baseParams,
+            onTokenUpdate: (token) => this.updateToken(token, true)
+         },
+         fetcher
+      );
+      this.media = new MediaApi(baseParams, fetcher);
    }
 }
 

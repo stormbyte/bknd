@@ -27,10 +27,7 @@ describe("ModuleApi", () => {
 
    it("fetches endpoint", async () => {
       const app = new Hono().get("/endpoint", (c) => c.json({ foo: "bar" }));
-      const api = new Api({ host });
-
-      // @ts-expect-error it's protected
-      api.fetcher = app.request as typeof fetch;
+      const api = new Api({ host }, app.request as typeof fetch);
 
       const res = await api.get("/endpoint");
       expect(res.res.ok).toEqual(true);
@@ -41,10 +38,7 @@ describe("ModuleApi", () => {
 
    it("has accessible request", async () => {
       const app = new Hono().get("/endpoint", (c) => c.json({ foo: "bar" }));
-      const api = new Api({ host });
-
-      // @ts-expect-error it's protected
-      api.fetcher = app.request as typeof fetch;
+      const api = new Api({ host }, app.request as typeof fetch);
 
       const promise = api.get("/endpoint");
       expect(promise.request).toBeDefined();

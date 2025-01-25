@@ -23,9 +23,10 @@ export type ApiResponse<Data = any> = {
 export type TInput = string | (string | number | PrimaryFieldType)[];
 
 export abstract class ModuleApi<Options extends BaseModuleApiOptions = BaseModuleApiOptions> {
-   protected fetcher?: typeof fetch;
-
-   constructor(protected readonly _options: Partial<Options> = {}) {}
+   constructor(
+      protected readonly _options: Partial<Options> = {},
+      protected fetcher?: typeof fetch
+   ) {}
 
    protected getDefaultOptions(): Partial<Options> {
       return {};
