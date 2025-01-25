@@ -16,7 +16,7 @@ and then install bknd as a dependency:
 If you don't choose anything specific, the following code will use the `warm` mode. See the
 chapter [Using a different mode](#using-a-different-mode) for available modes.
 
-```ts
+```ts src/index.ts
 import { serve } from "bknd/adapter/cloudflare";
 
 export default serve<Env>({
@@ -42,32 +42,37 @@ And confirm it works by opening [http://localhost:8787](http://localhost:8787) i
 your browser.
 
 ## Serve the Admin UI
-Now in order to also server the static admin files, you have to modify the `wrangler.toml` to
-include the static assets:
-```toml
-[site]
-bucket = "node_modules/bknd/dist/static"
-```
+Now in order to also server the static admin files, you have to modify the `wrangler.toml` to include the static assets. You can do so by either serving the static using the new [Assets feature](https://developers.cloudflare.com/workers/static-assets/), or the deprecated [Workers Site](https://developers.cloudflare.com/workers/configuration/sites/configuration/).
 
-And then modify the worker entry as follows:
-```ts {2, 14, 15}
-import { serve } from "bknd/adapter/cloudflare";
-import manifest from "__STATIC_CONTENT_MANIFEST";
+<Tabs>
+   <Tab title="Assets">
+      Make sure your assets point to the static assets included in the bknd package:
 
-export default serve<Env>({
-   app: ({ env }) => ({
-      connection: {
-         type: "libsql",
-         config: {
-            url: env.DB_URL,
-            authToken: env.DB_TOKEN
-         }
-      }
-   }),
-   manifest,
-   setAdminHtml: true
-});
-```
+      ```toml wrangler.toml
+      assets = { directory = "node_modules/bknd/dist/static" }
+      ```
+
+   </Tab>
+   <Tab title="Workers Sites">
+      Make sure your site points to the static assets included in the bknd package:
+
+      ```toml wrangler.toml
+      [site]
+      bucket = "node_modules/bknd/dist/static"
+      ```
+
+      And then modify the worker entry as follows:
+      ```ts {2, 6} src/index.ts
+      import { serve } from "bknd/adapter/cloudflare";
+      import manifest from "__STATIC_CONTENT_MANIFEST";
+
+      export default serve<Env>({
+         app: () => ({/* ... */}),
+         manifest
+      });
+      ```
+   </Tab>
+</Tabs>
 
 ## Adding custom routes
 You can also add custom routes by defining them after the app has been built, like so:

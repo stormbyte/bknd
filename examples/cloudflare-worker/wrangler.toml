@@ -5,9 +5,10 @@ compatibility_date = "2024-11-06"
 compatibility_flags = ["nodejs_compat"]
 workers_dev = true
 minify = true
+assets = { directory = "../../app/dist/static" }
 
 [observability]
 enabled = true
 
-[site]
-bucket = "../../app/dist/static"
+#[site]
+#bucket = "../../app/dist/static"
