@@ -7,10 +7,23 @@ export type AuthScreenProps = {
    action?: "login" | "register";
    logo?: ReactNode;
    intro?: ReactNode;
+   formOnly?: boolean;
 };
 
-export function AuthScreen({ method = "POST", action = "login", logo, intro }: AuthScreenProps) {
+export function AuthScreen({
+   method = "POST",
+   action = "login",
+   logo,
+   intro,
+   formOnly
+}: AuthScreenProps) {
    const { strategies, basepath, loading } = useAuthStrategies();
+   const Form = <AuthForm auth={{ basepath, strategies }} method={method} action={action} />;
+
+   if (formOnly) {
+      if (loading) return null;
+      return Form;
+   }
 
    return (
       <div className="flex flex-1 flex-col select-none h-dvh w-dvw justify-center items-center bknd-admin">
@@ -25,7 +38,7 @@ export function AuthScreen({ method = "POST", action = "login", logo, intro }: A
                      <p className="text-primary/50">Enter your credentials below to get access.</p>
                   </div>
                )}
-               <AuthForm auth={{ basepath, strategies }} method={method} action={action} />
+               {Form}
             </div>
          )}
       </div>
