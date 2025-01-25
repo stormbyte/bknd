@@ -1,4 +1,3 @@
-import type { CreateAppConfig } from "bknd";
 import { Hono } from "hono";
 import { serveStatic } from "hono/cloudflare-workers";
 import type { FrameworkBkndConfig } from "../index";
@@ -6,10 +5,9 @@ import { getCached } from "./modes/cached";
 import { getDurable } from "./modes/durable";
 import { getFresh, getWarm } from "./modes/fresh";
 
-export type CloudflareBkndConfig<Env = any> = Omit<FrameworkBkndConfig, "app"> & {
-   app: CreateAppConfig | ((env: Env) => CreateAppConfig);
+export type CloudflareBkndConfig<Env = any> = FrameworkBkndConfig<Context<Env>> & {
    mode?: "warm" | "fresh" | "cache" | "durable";
-   bindings?: (env: Env) => {
+   bindings?: (args: Context<Env>) => {
       kv?: KVNamespace;
       dobj?: DurableObjectNamespace;
    };
@@ -21,15 +19,15 @@ export type CloudflareBkndConfig<Env = any> = Omit<FrameworkBkndConfig, "app"> &
    html?: string;
 };
 
-export type Context = {
+export type Context<Env = any> = {
    request: Request;
-   env: any;
+   env: Env;
    ctx: ExecutionContext;
 };
 
-export function serve(config: CloudflareBkndConfig) {
+export function serve<Env = any>(config: CloudflareBkndConfig<Env>) {
    return {
-      async fetch(request: Request, env: any, ctx: ExecutionContext) {
+      async fetch(request: Request, env: Env, ctx: ExecutionContext) {
          const url = new URL(request.url);
          const manifest = config.manifest;
 

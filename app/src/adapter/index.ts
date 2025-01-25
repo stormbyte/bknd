@@ -5,16 +5,16 @@ import type { MiddlewareHandler } from "hono";
 import { StorageLocalAdapter } from "media/storage/adapters/StorageLocalAdapter";
 import type { AdminControllerOptions } from "modules/server/AdminController";
 
-export type BkndConfig<Env = any> = CreateAppConfig & {
-   app?: CreateAppConfig | ((env: Env) => CreateAppConfig);
+export type BkndConfig<Args = any> = CreateAppConfig & {
+   app?: CreateAppConfig | ((args: Args) => CreateAppConfig);
    onBuilt?: (app: App) => Promise<void>;
    beforeBuild?: (app: App) => Promise<void>;
    buildConfig?: Parameters<App["build"]>[0];
 };
 
-export type FrameworkBkndConfig<Env = any> = BkndConfig<Env>;
+export type FrameworkBkndConfig<Args = any> = BkndConfig<Args>;
 
-export type RuntimeBkndConfig<Env = any> = BkndConfig<Env> & {
+export type RuntimeBkndConfig<Args = any> = BkndConfig<Args> & {
    distPath?: string;
 };
 
@@ -46,14 +46,14 @@ export function registerLocalMediaAdapter() {
    registries.media.register("local", StorageLocalAdapter);
 }
 
-export function makeConfig<Env = any>(config: BkndConfig<Env>, env?: Env): CreateAppConfig {
+export function makeConfig<Args = any>(config: BkndConfig<Args>, args?: Args): CreateAppConfig {
    let additionalConfig: CreateAppConfig = {};
    if ("app" in config && config.app) {
       if (typeof config.app === "function") {
-         if (!env) {
-            throw new Error("env is required when config.app is a function");
+         if (!args) {
+            throw new Error("args is required when config.app is a function");
          }
-         additionalConfig = config.app(env);
+         additionalConfig = config.app(args);
       } else {
          additionalConfig = config.app;
       }
@@ -62,11 +62,11 @@ export function makeConfig<Env = any>(config: BkndConfig<Env>, env?: Env): Creat
    return { ...config, ...additionalConfig };
 }
 
-export async function createFrameworkApp<Env = any>(
+export async function createFrameworkApp<Args = any>(
    config: FrameworkBkndConfig,
-   env?: Env
+   args?: Args
 ): Promise<App> {
-   const app = App.create(makeConfig(config, env));
+   const app = App.create(makeConfig(config, args));
 
    if (config.onBuilt) {
       app.emgr.onEvent(

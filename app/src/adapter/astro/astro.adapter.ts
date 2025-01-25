@@ -1,7 +1,7 @@
 import { type FrameworkBkndConfig, createFrameworkApp } from "adapter";
 import { Api, type ApiOptions, type App } from "bknd";
 
-export type AstroBkndConfig = FrameworkBkndConfig;
+export type AstroBkndConfig<Args = TAstro> = FrameworkBkndConfig<Args>;
 
 type TAstro = {
    request: Request;
@@ -13,18 +13,20 @@ export type Options = {
       host?: string;
    };
 
-export function getApi(Astro: TAstro, options: Options = { mode: "static" }) {
-   return new Api({
+export async function getApi(Astro: TAstro, options: Options = { mode: "static" }) {
+   const api = new Api({
       host: new URL(Astro.request.url).origin,
       headers: options.mode === "dynamic" ? Astro.request.headers : undefined
    });
+   await api.verifyAuth();
+   return api;
 }
 
 let app: App;
-export function serve(config: AstroBkndConfig = {}) {
-   return async (args: TAstro) => {
+export function serve<Context extends TAstro = TAstro>(config: AstroBkndConfig<Context> = {}) {
+   return async (args: Context) => {
       if (!app) {
-         app = await createFrameworkApp(config);
+         app = await createFrameworkApp(config, args);
       }
       return app.fetch(args.request);
    };

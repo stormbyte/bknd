@@ -180,6 +180,14 @@ function baseConfig(adapter: string): tsup.Options {
    };
 }
 
+// base adapter handles
+await tsup.build({
+   ...baseConfig(""),
+   entry: ["src/adapter/index.ts"],
+   outDir: "dist/adapter"
+});
+
+// specific adatpers
 await tsup.build(baseConfig("remix"));
 await tsup.build(baseConfig("bun"));
 await tsup.build(baseConfig("astro"));
