@@ -1,12 +1,7 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { Links, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData } from "@remix-run/react";
-import { Api, ClientProvider } from "bknd/client";
-
-declare module "@remix-run/server-runtime" {
-   export interface AppLoadContext {
-      api: Api;
-   }
-}
+import { withApi } from "bknd/adapter/remix";
+import { type Api, ClientProvider } from "bknd/client";
 
 export function Layout({ children }: { children: React.ReactNode }) {
    return (
@@ -26,20 +21,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
    );
 }
 
-export const loader = async (args: LoaderFunctionArgs) => {
-   const api = new Api({
-      host: new URL(args.request.url).origin,
-      headers: args.request.headers
-   });
+declare module "@remix-run/server-runtime" {
+   export interface AppLoadContext {
+      api: Api;
+   }
+}
 
-   // add api to the context
-   args.context.api = api;
-
-   await api.verifyAuth();
+export const loader = withApi(async (args: LoaderFunctionArgs, api: Api) => {
    return {
-      user: api.getAuthState()?.user
+      user: api.getUser()
    };
-};
+});
 
 export default function App() {
    const data = useLoaderData<typeof loader>();

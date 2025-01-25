@@ -13,11 +13,13 @@ export type Options = {
       host?: string;
    };
 
-export function getApi(Astro: TAstro, options: Options = { mode: "static" }) {
-   return new Api({
+export async function getApi(Astro: TAstro, options: Options = { mode: "static" }) {
+   const api = new Api({
       host: new URL(Astro.request.url).origin,
       headers: options.mode === "dynamic" ? Astro.request.headers : undefined
    });
+   await api.verifyAuth();
+   return api;
 }
 
 let app: App;
