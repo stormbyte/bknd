@@ -231,7 +231,8 @@ export class ModuleManager {
          em: this.em,
          emgr: this.emgr,
          guard: this.guard,
-         flags: Module.ctx_flags
+         flags: Module.ctx_flags,
+         logger: this.logger
       };
    }
 
