@@ -171,6 +171,10 @@ export class ModuleManager {
       }
    }
 
+   isBuilt(): boolean {
+      return this._built;
+   }
+
    /**
     * This is set through module's setListener
     * It's called everytime a module's config is updated in SchemaObject
