@@ -21,6 +21,15 @@ export class AuthController extends Controller {
       return this.auth.ctx.guard;
    }
 
+   get em() {
+      return this.auth.ctx.em;
+   }
+
+   get userRepo() {
+      const entity_name = this.auth.config.entity_name;
+      return this.em.repo(entity_name as "users");
+   }
+
    private registerStrategyActions(strategy: Strategy, mainHono: Hono<ServerEnv>) {
       const actions = strategy.getActions?.();
       if (!actions) {
@@ -96,7 +105,10 @@ export class AuthController extends Controller {
 
       hono.get("/me", auth(), async (c) => {
          if (this.auth.authenticator.isUserLoggedIn()) {
-            return c.json({ user: this.auth.authenticator.getUser() });
+            const claims = this.auth.authenticator.getUser()!;
+            const { data: user } = await this.userRepo.findId(claims.id);
+
+            return c.json({ user });
          }
 
          return c.json({ user: null }, 403);

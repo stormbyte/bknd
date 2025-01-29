@@ -1,5 +1,6 @@
-import { Api, type ApiOptions, type App } from "bknd";
+import type { App } from "bknd";
 import { type FrameworkBkndConfig, createFrameworkApp } from "bknd/adapter";
+import { Api, type ApiOptions } from "bknd/client";
 
 export type AstroBkndConfig<Args = TAstro> = FrameworkBkndConfig<Args>;
 
