@@ -316,10 +316,7 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
          return c.json(data);
       }
 
-      const successUrl = this.getSafeUrl(
-         c,
-         redirect ? redirect : (this.config.cookie.pathSuccess ?? "/")
-      );
+      const successUrl = this.getSafeUrl(c, redirect ?? this.config.cookie.pathSuccess ?? "/");
       const referer = redirect ?? c.req.header("Referer") ?? successUrl;
       //console.log("auth respond", { redirect, successUrl, successPath });
 
