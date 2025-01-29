@@ -1,4 +1,5 @@
 import type { Authenticator, Strategy } from "auth";
+import { isDebug, tbValidator as tb } from "core";
 import { type Static, StringEnum, Type, parse } from "core/utils";
 import { hash } from "core/utils";
 import { type Context, Hono } from "hono";
@@ -56,26 +57,56 @@ export class PasswordStrategy implements Strategy {
       const hono = new Hono();
 
       return hono
-         .post("/login", async (c) => {
-            const body = await authenticator.getBody(c);
+         .post(
+            "/login",
+            tb(
+               "query",
+               Type.Object({
+                  redirect: Type.Optional(Type.String())
+               })
+            ),
+            async (c) => {
+               const body = await authenticator.getBody(c);
+               const { redirect } = c.req.valid("query");
 
-            try {
-               const payload = await this.login(body);
-               const data = await authenticator.resolve("login", this, payload.password, payload);
+               try {
+                  const payload = await this.login(body);
+                  const data = await authenticator.resolve(
+                     "login",
+                     this,
+                     payload.password,
+                     payload
+                  );
 
-               return await authenticator.respond(c, data);
-            } catch (e) {
-               return await authenticator.respond(c, e);
+                  return await authenticator.respond(c, data, redirect);
+               } catch (e) {
+                  return await authenticator.respond(c, e);
+               }
             }
-         })
-         .post("/register", async (c) => {
-            const body = await authenticator.getBody(c);
+         )
+         .post(
+            "/register",
+            tb(
+               "query",
+               Type.Object({
+                  redirect: Type.Optional(Type.String())
+               })
+            ),
+            async (c) => {
+               const body = await authenticator.getBody(c);
+               const { redirect } = c.req.valid("query");
 
-            const payload = await this.register(body);
-            const data = await authenticator.resolve("register", this, payload.password, payload);
+               const payload = await this.register(body);
+               const data = await authenticator.resolve(
+                  "register",
+                  this,
+                  payload.password,
+                  payload
+               );
 
-            return await authenticator.respond(c, data);
-         });
+               return await authenticator.respond(c, data, redirect);
+            }
+         );
    }
 
    getActions(): StrategyActions {
