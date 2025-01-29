@@ -17,14 +17,21 @@ declare global {
 }
 
 export type ApiOptions = {
-   host: string;
-   user?: TApiUser;
-   token?: string;
+   host?: string;
    headers?: Headers;
    key?: string;
    localStorage?: boolean;
    fetcher?: typeof fetch;
-};
+   verified?: boolean;
+} & (
+   | {
+        token?: string;
+        user?: TApiUser;
+     }
+   | {
+        request: Request;
+     }
+);
 
 export type AuthState = {
    token?: string;
@@ -43,14 +50,26 @@ export class Api {
    public auth!: AuthApi;
    public media!: MediaApi;
 
-   constructor(private readonly options: ApiOptions) {
-      if (options.user) {
-         this.user = options.user;
-         this.token_transport = "none";
-         this.verified = true;
-      } else if (options.token) {
+   constructor(private options: ApiOptions = {}) {
+      // only mark verified if forced
+      this.verified = options.verified === true;
+
+      // prefer request if given
+      if ("request" in options) {
+         this.options.host = options.host ?? new URL(options.request.url).origin;
+         this.options.headers = options.headers ?? options.request.headers;
+         this.extractToken();
+
+         // then check for a token
+      } else if ("token" in options) {
          this.token_transport = "header";
          this.updateToken(options.token);
+
+         // then check for an user object
+      } else if ("user" in options) {
+         this.token_transport = "none";
+         this.user = options.user;
+         this.verified = options.verified !== false;
       } else {
          this.extractToken();
       }
@@ -59,7 +78,7 @@ export class Api {
    }
 
    get baseUrl() {
-      return this.options.host;
+      return this.options.host ?? "http://localhost";
    }
 
    get tokenKey() {
@@ -67,13 +86,15 @@ export class Api {
    }
 
    private extractToken() {
+      // if token has to be extracted, it's never verified
+      this.verified = false;
+
       if (this.options.headers) {
          // try cookies
          const cookieToken = getCookieValue(this.options.headers.get("cookie"), "auth");
          if (cookieToken) {
-            this.updateToken(cookieToken);
             this.token_transport = "cookie";
-            this.verified = true;
+            this.updateToken(cookieToken);
             return;
          }
 
@@ -97,6 +118,8 @@ export class Api {
 
    updateToken(token?: string, rebuild?: boolean) {
       this.token = token;
+      this.verified = false;
+
       if (token) {
          this.user = omit(decode(token).payload as any, ["iat", "iss", "exp"]) as any;
       } else {
@@ -116,9 +139,13 @@ export class Api {
       if (rebuild) this.buildApis();
    }
 
-   markAuthVerified(verfied: boolean) {
+   private markAuthVerified(verfied: boolean) {
       this.verified = verfied;
       return this;
+   }
+
+   isAuthVerified(): boolean {
+      return this.verified;
    }
 
    getAuthState(): AuthState {
@@ -127,6 +154,11 @@ export class Api {
          user: this.user,
          verified: this.verified
       };
+   }
+
+   isAuthenticated(): boolean {
+      const { token, user } = this.getAuthState();
+      return !!token && !!user;
    }
 
    async getVerifiedAuthState(): Promise<AuthState> {
@@ -141,11 +173,13 @@ export class Api {
       }
 
       try {
-         const res = await this.auth.me();
-         if (!res.ok || !res.body.user) {
+         const { ok, data } = await this.auth.me();
+         const user = data?.user;
+         if (!ok || !user) {
             throw new Error();
          }
 
+         this.user = user;
          this.markAuthVerified(true);
       } catch (e) {
          this.markAuthVerified(false);
@@ -157,13 +191,17 @@ export class Api {
       return this.user || null;
    }
 
-   private buildApis() {
-      const baseParams = {
-         host: this.options.host,
+   getParams() {
+      return Object.freeze({
+         host: this.baseUrl,
          token: this.token,
          headers: this.options.headers,
          token_transport: this.token_transport
-      };
+      });
+   }
+
+   private buildApis() {
+      const baseParams = this.getParams();
       const fetcher = this.options.fetcher;
 
       this.system = new SystemApi(baseParams, fetcher);

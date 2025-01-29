@@ -30,7 +30,7 @@ export const ClientProvider = ({ children, baseUrl, user }: ClientProviderProps)
       console.error("error .....", e);
    }
 
-   console.log("api init", { host: actualBaseUrl, user: user ?? winCtx.user });
+   //console.log("api init", { host: actualBaseUrl, user: user ?? winCtx.user });
    const api = new Api({ host: actualBaseUrl, user: user ?? winCtx.user });
 
    return (
