@@ -76,7 +76,6 @@ export const withSchema = <TSelf extends TThis>(Self: TSelf) =>
       Type.Union([Type.String(), Type.Array(Type.String()), Type.Record(Type.String(), Self)])
    )
       .Decode((value) => {
-         console.log("value:in", value);
          // images
          // images,comments
          // ["images","comments"]
