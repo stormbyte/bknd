@@ -123,6 +123,23 @@ describe("data-query-impl", () => {
             }
          }
       );
+
+      // over http
+      {
+         const output = { with: { images: {} } };
+         decode({ with: "images" }, output);
+         decode({ with: '["images"]' }, output);
+         decode({ with: ["images"] }, output);
+         decode({ with: { images: {} } }, output);
+      }
+
+      {
+         const output = { with: { images: {}, comments: {} } };
+         decode({ with: "images,comments" }, output);
+         decode({ with: ["images", "comments"] }, output);
+         decode({ with: '["images", "comments"]' }, output);
+         decode({ with: { images: {}, comments: {} } }, output);
+      }
    });
 });
 

@@ -5,7 +5,8 @@ import {
    type StaticDecode,
    StringEnum,
    Type,
-   Value
+   Value,
+   isObject
 } from "core/utils";
 import { WhereBuilder, type WhereQuery } from "../entities";
 
@@ -71,22 +72,52 @@ export type RepoWithSchema = Record<
 >;
 
 export const withSchema = <TSelf extends TThis>(Self: TSelf) =>
-   Type.Transform(Type.Union([stringArray, Type.Record(Type.String(), Self)]))
+   Type.Transform(
+      Type.Union([Type.String(), Type.Array(Type.String()), Type.Record(Type.String(), Self)])
+   )
       .Decode((value) => {
-         let _value = typeof value === "string" ? [value] : value;
+         console.log("value:in", value);
+         // images
+         // images,comments
+         // ["images","comments"]
+         // { "images": {} }
 
-         if (Array.isArray(value)) {
-            if (!value.every((v) => typeof v === "string")) {
-               throw new Error("Invalid 'with' schema");
-            }
-
-            _value = value.reduce((acc, v) => {
-               acc[v] = {};
-               return acc;
-            }, {} as RepoWithSchema);
+         if (!Array.isArray(value) && isObject(value)) {
+            console.log("is object");
+            return value as RepoWithSchema;
          }
 
-         return _value as RepoWithSchema;
+         let _value: any = null;
+         if (typeof value === "string") {
+            // if stringified object
+            if (value.match(/^\{/)) {
+               return JSON.parse(value) as RepoWithSchema;
+            }
+
+            // if stringified array
+            if (value.match(/^\[/)) {
+               _value = JSON.parse(value) as string[];
+
+               // if comma-separated string
+            } else if (value.includes(",")) {
+               _value = value.split(",");
+
+               // if single string
+            } else {
+               _value = [value];
+            }
+         } else if (Array.isArray(value)) {
+            _value = value;
+         }
+
+         if (!_value || !Array.isArray(_value) || !_value.every((v) => typeof v === "string")) {
+            throw new Error("Invalid 'with' schema");
+         }
+
+         return _value.reduce((acc, v) => {
+            acc[v] = {};
+            return acc;
+         }, {} as RepoWithSchema);
       })
       .Encode((value) => value);
 
@@ -117,7 +148,7 @@ export type RepoQueryIn = {
    offset?: number;
    sort?: string | { by: string; dir: "asc" | "desc" };
    select?: string[];
-   with?: string[] | Record<string, RepoQueryIn>;
+   with?: string | string[] | Record<string, RepoQueryIn>;
    join?: string[];
    where?: WhereQuery;
 };
