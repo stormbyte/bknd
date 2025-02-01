@@ -15,7 +15,10 @@ export class AuthApi extends ModuleApi<AuthApiOptions> {
    }
 
    async login(strategy: string, input: any) {
-      const res = await this.post<AuthResponse>([strategy, "login"], input);
+      const res = await this.post<AuthResponse>([strategy, "login"], input, {
+         credentials: "include"
+      });
+
       if (res.ok && res.body.token) {
          await this.options.onTokenUpdate?.(res.body.token);
       }
@@ -23,7 +26,10 @@ export class AuthApi extends ModuleApi<AuthApiOptions> {
    }
 
    async register(strategy: string, input: any) {
-      const res = await this.post<AuthResponse>([strategy, "register"], input);
+      const res = await this.post<AuthResponse>([strategy, "register"], input, {
+         credentials: "include"
+      });
+
       if (res.ok && res.body.token) {
          await this.options.onTokenUpdate?.(res.body.token);
       }

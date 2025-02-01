@@ -312,19 +312,24 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
    }
 
    async respond(c: Context, data: AuthResponse | Error | any, redirect?: string) {
-      if (this.isJsonRequest(c)) {
-         return c.json(data);
-      }
-
       const successUrl = this.getSuccessPath(c);
       const referer = redirect ?? c.req.header("Referer") ?? successUrl;
       //console.log("auth respond", { redirect, successUrl, successPath });
 
       if ("token" in data) {
          await this.setAuthCookie(c, data.token);
+
+         if (this.isJsonRequest(c)) {
+            return c.json(data);
+         }
+
          // can't navigate to "/" – doesn't work on nextjs
          //console.log("auth success, redirecting to", successUrl);
          return c.redirect(successUrl);
+      }
+
+      if (this.isJsonRequest(c)) {
+         return c.json(data, 400);
       }
 
       let message = "An error occured";
