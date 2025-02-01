@@ -299,8 +299,8 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
       }
    }
 
-   private getSuccessPath(c: Context) {
-      const p = (this.config.cookie.pathSuccess ?? "/").replace(/\/+$/, "/");
+   private getSafeUrl(c: Context, path: string) {
+      const p = path.replace(/\/+$/, "/");
 
       // nextjs doesn't support non-fq urls
       // but env could be proxied (stackblitz), so we shouldn't fq every url
@@ -312,7 +312,7 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
    }
 
    async respond(c: Context, data: AuthResponse | Error | any, redirect?: string) {
-      const successUrl = this.getSuccessPath(c);
+      const successUrl = this.getSafeUrl(c, redirect ?? this.config.cookie.pathSuccess ?? "/");
       const referer = redirect ?? c.req.header("Referer") ?? successUrl;
       //console.log("auth respond", { redirect, successUrl, successPath });
 
