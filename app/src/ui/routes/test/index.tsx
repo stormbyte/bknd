@@ -1,6 +1,7 @@
 import AppShellAccordionsTest from "ui/routes/test/tests/appshell-accordions-test";
 import JsonSchemaFormReactTest from "ui/routes/test/tests/json-schema-form-react-test";
 
+import FormyTest from "ui/routes/test/tests/formy-test";
 import SwaggerTest from "ui/routes/test/tests/swagger-test";
 import SWRAndAPI from "ui/routes/test/tests/swr-and-api";
 import SwrAndDataApi from "ui/routes/test/tests/swr-and-data-api";
@@ -48,7 +49,8 @@ const tests = {
    SwrAndDataApi,
    DropzoneElementTest,
    JsonSchemaFormReactTest,
-   JsonSchemaForm3
+   JsonSchemaForm3,
+   FormyTest
 } as const;
 
 export default function TestRoutes() {

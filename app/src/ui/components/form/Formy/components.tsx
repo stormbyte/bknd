@@ -1,6 +1,9 @@
 import { getBrowser } from "core/utils";
 import type { Field } from "data";
+import { Switch as RadixSwitch } from "radix-ui";
 import {
+   type ChangeEventHandler,
+   type ComponentPropsWithoutRef,
    type ElementType,
    forwardRef,
    useEffect,
@@ -26,6 +29,7 @@ export const Group = <E extends ElementType = "div">({
          className={twMerge(
             "flex flex-col gap-1.5",
             as === "fieldset" && "border border-primary/10 p-3 rounded-md",
+            as === "fieldset" && error && "border-red-500",
             error && "text-red-500",
             props.className
          )}
@@ -170,6 +174,39 @@ export const BooleanInput = forwardRef<HTMLInputElement, React.ComponentProps<"i
       );
    }
 );
+
+export type SwitchValue = boolean | 1 | 0 | "true" | "false" | "on" | "off";
+export const Switch = forwardRef<
+   HTMLButtonElement,
+   Pick<
+      ComponentPropsWithoutRef<"input">,
+      "name" | "required" | "disabled" | "checked" | "defaultChecked" | "id" | "type"
+   > & {
+      value?: SwitchValue;
+      onChange?: (e: { target: { value: boolean } }) => void;
+      onCheckedChange?: (checked: boolean) => void;
+   }
+>(({ type, ...props }, ref) => {
+   return (
+      <RadixSwitch.Root
+         className="relative h-7 w-12 p-[2px] cursor-pointer rounded-full bg-muted/50 border border-muted outline-none data-[state=checked]:bg-primary appearance-none transition-colors hover:bg-muted/80"
+         onCheckedChange={(bool) => {
+            props.onChange?.({ target: { value: bool } });
+         }}
+         {...(props as any)}
+         checked={
+            typeof props.checked !== "undefined"
+               ? props.checked
+               : typeof props.value !== "undefined"
+                 ? Boolean(props.value)
+                 : undefined
+         }
+         ref={ref}
+      >
+         <RadixSwitch.Thumb className="block h-full aspect-square translate-x-0 rounded-full bg-background transition-transform duration-100 will-change-transform border border-muted data-[state=checked]:translate-x-[17px]" />
+      </RadixSwitch.Root>
+   );
+});
 
 export const Select = forwardRef<
    HTMLSelectElement,

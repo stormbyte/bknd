@@ -2,7 +2,7 @@ import { autoFormatString } from "core/utils";
 import { Draft2019, type JsonSchema } from "json-schema-library";
 import type { JSONSchema } from "json-schema-to-ts";
 import type { JSONSchemaType } from "json-schema-to-ts/lib/types/definitions/jsonSchema";
-import { set } from "lodash-es";
+import { omit, set } from "lodash-es";
 import type { FormEvent } from "react";
 
 export function getFormTarget(e: FormEvent<HTMLFormElement>) {
@@ -94,7 +94,7 @@ export function coerce(
       case "number":
          return Number(value);
       case "boolean":
-         return ["true", "1", 1, "on"].includes(value);
+         return ["true", "1", 1, "on", true].includes(value);
       case "null":
          return null;
    }
@@ -154,7 +154,7 @@ export function isRequired(pointer: string, schema: JSONSchema, data?: any) {
    return !!required;
 }
 
-type TType = JSONSchemaType | JSONSchemaType[] | readonly JSONSchemaType[] | undefined;
+type TType = JSONSchemaType | JSONSchemaType[] | readonly JSONSchemaType[] | string | undefined;
 export function isType(_type: TType, _compare: TType) {
    if (!_type || !_compare) return false;
    const type = Array.isArray(_type) ? _type : [_type];
@@ -199,4 +199,27 @@ export function removeKeyRecursively<Given extends object>(obj: Given, keyToRemo
       ) as any;
    }
    return obj;
+}
+
+export function omitSchema<Given extends JSONSchema>(_schema: Given, keys: string[], _data?: any) {
+   if (typeof _schema !== "object" || !("properties" in _schema) || keys.length === 0)
+      return [_schema, _data];
+   const schema = JSON.parse(JSON.stringify(_schema));
+   const data = _data ? JSON.parse(JSON.stringify(_data)) : undefined;
+
+   const updated = {
+      ...schema,
+      properties: omit(schema.properties, keys)
+   };
+   if (updated.required) {
+      updated.required = updated.required.filter((key) => !keys.includes(key as any));
+   }
+
+   const reducedConfig = omit(data, keys) as any;
+
+   return [updated, reducedConfig];
+}
+
+export function isTypeSchema(schema?: JSONSchema): schema is Exclude<JSONSchema, boolean> {
+   return typeof schema === "object" && "type" in schema && !isType(schema.type, "error");
 }

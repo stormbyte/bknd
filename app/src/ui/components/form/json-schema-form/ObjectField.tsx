@@ -1,3 +1,4 @@
+import type { JsonError } from "json-schema-library";
 import type { JSONSchema } from "json-schema-to-ts";
 import { AnyOfField } from "./AnyOfField";
 import { Field } from "./Field";
@@ -17,7 +18,7 @@ export const ObjectField = ({
    label: _label,
    wrapperProps = {}
 }: ObjectFieldProps) => {
-   const { errors, ...ctx } = useFieldContext(path);
+   const ctx = useFieldContext(path);
    const schema = _schema ?? ctx.schema;
    if (!schema) return "ObjectField: no schema";
    const properties = schema.properties ?? {};
@@ -25,8 +26,8 @@ export const ObjectField = ({
    return (
       <FieldWrapper
          pointer={path}
-         errors={errors}
-         schema={schema}
+         errors={ctx.errors}
+         schema={{ ...schema, description: undefined }}
          wrapper="fieldset"
          {...wrapperProps}
       >

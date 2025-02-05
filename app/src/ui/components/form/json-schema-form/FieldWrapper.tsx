@@ -43,7 +43,7 @@ export function FieldWrapper({
          as={wrapper === "fieldset" ? "fieldset" : "div"}
          className={hidden ? "hidden" : "relative"}
       >
-         <div className="absolute right-0 top-0">
+         {/*<div className="absolute right-0 top-0">
             <Popover>
                <Popover.Target>
                   <IconButton Icon={IconBug} size="xs" className="opacity-30" />
@@ -56,11 +56,11 @@ export function FieldWrapper({
                   />
                </Popover.Dropdown>
             </Popover>
-         </div>
+         </div>*/}
 
          {label && (
-            <Formy.Label as={wrapper === "fieldset" ? "legend" : "label"}>
-               {label} {required ? "*" : ""}
+            <Formy.Label as={wrapper === "fieldset" ? "legend" : "label"} htmlFor={pointer}>
+               {label} {required && <span className="font-medium opacity-30">*</span>}
             </Formy.Label>
          )}
          <div className="flex flex-row gap-2">

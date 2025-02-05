@@ -54,6 +54,7 @@
     "lodash-es": "^4.17.21",
     "oauth4webapi": "^2.11.1",
     "object-path-immutable": "^4.1.2",
+    "radix-ui": "^1.1.2",
     "swr": "^2.2.5"
   },
   "devDependencies": {
@@ -64,7 +65,6 @@
     "@hono/zod-validator": "^0.4.1",
     "@hookform/resolvers": "^3.9.1",
     "@libsql/kysely-libsql": "^0.4.1",
-    "@radix-ui/react-scroll-area": "^1.2.0",
     "@rjsf/core": "^5.22.2",
     "@tabler/icons-react": "3.18.0",
     "@types/node": "^22.10.0",

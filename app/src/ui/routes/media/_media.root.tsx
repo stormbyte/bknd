@@ -56,7 +56,7 @@ export function MediaRoot({ children }) {
                </div>
             </AppShell.Scrollable>
          </AppShell.Sidebar>
-         <main className="flex flex-col flex-grow">{children}</main>
+         <AppShell.Main>{children}</AppShell.Main>
       </>
    );
 }

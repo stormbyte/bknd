@@ -16,7 +16,8 @@ export function buildMediaSchema() {
             config: adapter.schema
          },
          {
-            title: name,
+            title: adapter.schema.title ?? name,
+            description: adapter.schema.description,
             additionalProperties: false
          }
       );
@@ -32,6 +33,7 @@ export function buildMediaSchema() {
             {
                body_max_size: Type.Optional(
                   Type.Number({
+                     minimum: 0,
                      description: "Max size of the body in bytes. Leave blank for unlimited."
                   })
                )

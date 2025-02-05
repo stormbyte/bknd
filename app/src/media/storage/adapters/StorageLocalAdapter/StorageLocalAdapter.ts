@@ -7,7 +7,7 @@ export const localAdapterConfig = Type.Object(
    {
       path: Type.String({ default: "./" })
    },
-   { title: "Local" }
+   { title: "Local", description: "Local file system storage" }
 );
 export type LocalAdapterConfig = Static<typeof localAdapterConfig>;
 

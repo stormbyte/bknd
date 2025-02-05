@@ -81,7 +81,7 @@ export function identifierToHumanReadable(str: string) {
       case "SCREAMING_SNAKE_CASE":
          return snakeToPascalWithSpaces(str.toLowerCase());
       case "unknown":
-         return str;
+         return ucFirst(str);
    }
 }
 export function autoFormatString(str: string) {

@@ -1,7 +1,7 @@
 import { Modal, type ModalProps, Popover } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import * as ScrollArea from "@radix-ui/react-scroll-area";
 import { IconBug } from "@tabler/icons-react";
+import { ScrollArea } from "radix-ui";
 import { Fragment, forwardRef, useImperativeHandle } from "react";
 import { TbX } from "react-icons/tb";
 import { twMerge } from "tailwind-merge";

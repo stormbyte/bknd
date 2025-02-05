@@ -15,7 +15,7 @@ import {
    useState
 } from "react";
 import { Field } from "./Field";
-import { isRequired, normalizePath, prefixPointer } from "./utils";
+import { isRequired, normalizePath, omitSchema, prefixPointer } from "./utils";
 
 type JSONSchema = Exclude<$JSONSchema, boolean>;
 
@@ -27,7 +27,10 @@ export type FormProps<
    validateOn?: "change" | "submit";
    initialValues?: Partial<Data>;
    initialOpts?: LibTemplateOptions;
+   ignoreKeys?: string[];
    onChange?: (data: Partial<Data>, name: string, value: any) => void;
+   onSubmit?: (data: Partial<Data>) => void | Promise<void>;
+   onInvalidSubmit?: (errors: JsonError[], data: Partial<Data>) => void;
    hiddenSubmit?: boolean;
 };
 
@@ -38,6 +41,7 @@ export type FormContext<Data> = {
    deleteValue: (pointer: string) => void;
    errors: JsonError[];
    dirty: boolean;
+   submitting: boolean;
    schema: JSONSchema;
    lib: Draft2019;
 };
@@ -48,27 +52,48 @@ export function Form<
    Schema extends JSONSchema = JSONSchema,
    Data = Schema extends JSONSchema ? FromSchema<JSONSchema> : any
 >({
-   schema,
+   schema: _schema,
    initialValues: _initialValues,
    initialOpts,
    children,
    onChange,
+   onSubmit,
+   onInvalidSubmit,
    validateOn = "submit",
    hiddenSubmit = true,
+   ignoreKeys = [],
    ...props
 }: FormProps<Schema, Data>) {
+   const [schema, initial] = omitSchema(_schema, ignoreKeys, _initialValues);
    const lib = new Draft2019(schema);
-   const initialValues = _initialValues ?? lib.getTemplate(undefined, schema, initialOpts);
+   const initialValues = initial ?? lib.getTemplate(undefined, schema, initialOpts);
    const [data, setData] = useState<Partial<Data>>(initialValues);
    const [dirty, setDirty] = useState<boolean>(false);
-   const formRef = useRef<HTMLFormElement | null>(null);
    const [errors, setErrors] = useState<JsonError[]>([]);
+   const [submitting, setSubmitting] = useState<boolean>(false);
+   const formRef = useRef<HTMLFormElement | null>(null);
 
-   async function handleChange(e: FormEvent<HTMLFormElement>) {}
-
+   // @ts-ignore
    async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-      e.preventDefault();
-      return false;
+      if (onSubmit) {
+         e.preventDefault();
+         setSubmitting(true);
+
+         try {
+            const { data, errors } = validate();
+            if (errors.length === 0) {
+               await onSubmit(data);
+            } else {
+               console.log("invalid", errors);
+               onInvalidSubmit?.(errors, data);
+            }
+         } catch (e) {
+            console.warn(e);
+         }
+
+         setSubmitting(false);
+         return false;
+      }
    }
 
    function setValue(pointer: string, value: any) {
@@ -99,6 +124,8 @@ export function Form<
 
       if (validateOn === "change") {
          validate();
+      } else if (errors.length > 0) {
+         validate();
       }
    }, [data]);
 
@@ -113,6 +140,7 @@ export function Form<
    const context = {
       data: data ?? {},
       dirty,
+      submitting,
       setData,
       setValue,
       deleteValue,
@@ -123,20 +151,16 @@ export function Form<
    //console.log("context", context);
 
    return (
-      <>
-         <form {...props} ref={formRef} onChange={handleChange} onSubmit={handleSubmit}>
-            <FormContext.Provider value={context}>
-               {children ? children : <Field name="" />}
-            </FormContext.Provider>
-            {hiddenSubmit && (
-               <button style={{ visibility: "hidden" }} type="submit">
-                  Submit
-               </button>
-            )}
-         </form>
-         <pre>{JSON.stringify(data, null, 2)}</pre>
-         <pre>{JSON.stringify(errors, null, 2)}</pre>
-      </>
+      <form {...props} ref={formRef} onSubmit={handleSubmit}>
+         <FormContext.Provider value={context}>
+            {children ? children : <Field name="" />}
+         </FormContext.Provider>
+         {hiddenSubmit && (
+            <button style={{ visibility: "hidden" }} type="submit">
+               Submit
+            </button>
+         )}
+      </form>
    );
 }
 

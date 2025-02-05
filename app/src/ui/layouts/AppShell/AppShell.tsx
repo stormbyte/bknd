@@ -1,8 +1,14 @@
 import { useClickOutside, useHotkeys } from "@mantine/hooks";
-import * as ScrollArea from "@radix-ui/react-scroll-area";
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
 import { throttle } from "lodash-es";
-import { type ComponentProps, useEffect, useRef, useState } from "react";
+import { ScrollArea } from "radix-ui";
+import {
+   type ComponentProps,
+   type ComponentPropsWithoutRef,
+   useEffect,
+   useRef,
+   useState
+} from "react";
 import type { IconType } from "react-icons";
 import { twMerge } from "tailwind-merge";
 import { IconButton } from "ui/components/buttons/IconButton";
@@ -69,7 +75,7 @@ export function Content({ children, center }: { children: React.ReactNode; cente
 
 export function Main({ children }) {
    return (
-      <div data-shell="main" className="flex flex-col flex-grow w-1">
+      <div data-shell="main" className="flex flex-col flex-grow w-1 flex-shrink-0">
          {children}
       </div>
    );
@@ -355,6 +361,10 @@ export const SectionHeaderAccordionItem = ({
          {children}
       </div>
    </div>
+);
+
+export const Separator = ({ className, ...props }: ComponentPropsWithoutRef<"hr">) => (
+   <hr {...props} className={twMerge("bg-primary/50 my-3", className)} />
 );
 
 export { Header } from "./Header";

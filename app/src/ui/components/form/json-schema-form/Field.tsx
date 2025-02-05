@@ -5,7 +5,7 @@ import { ArrayField } from "./ArrayField";
 import { FieldWrapper } from "./FieldWrapper";
 import { useFieldContext } from "./Form";
 import { ObjectField } from "./ObjectField";
-import { coerce, isType } from "./utils";
+import { coerce, isType, isTypeSchema } from "./utils";
 
 export type FieldProps = {
    name: string;
@@ -18,7 +18,8 @@ export type FieldProps = {
 export const Field = ({ name, schema: _schema, onChange, label: _label, hidden }: FieldProps) => {
    const { pointer, value, errors, setValue, required, ...ctx } = useFieldContext(name);
    const schema = _schema ?? ctx.schema;
-   if (!schema) return `"${name}" (${pointer}) has no schema`;
+   if (!isTypeSchema(schema)) return <Pre>{pointer} has no schema</Pre>;
+   //console.log("field", name, schema);
 
    if (isType(schema.type, "object")) {
       return <ObjectField path={name} schema={schema} />;
@@ -38,7 +39,7 @@ export const Field = ({ name, schema: _schema, onChange, label: _label, hidden }
 
       const value = coerce(e.target.value, schema as any, { required });
       //console.log("handleChange", pointer, e.target.value, { value });
-      if (!value && !required) {
+      if (typeof value === "undefined" && !required) {
          ctx.deleteValue(pointer);
       } else {
          setValue(pointer, value);
@@ -58,7 +59,6 @@ export const Field = ({ name, schema: _schema, onChange, label: _label, hidden }
          <FieldComponent
             schema={schema}
             name={pointer}
-            placeholder={pointer}
             required={required}
             disabled={disabled}
             value={value}
@@ -67,6 +67,10 @@ export const Field = ({ name, schema: _schema, onChange, label: _label, hidden }
       </FieldWrapper>
    );
 };
+
+export const Pre = ({ children }) => (
+   <pre className="dark:bg-red-950 bg-red-100 rounded-md px-3 py-1.5">{children}</pre>
+);
 
 export const FieldComponent = ({
    schema,
@@ -82,12 +86,16 @@ export const FieldComponent = ({
          options = schema.enum.map((v, i) => ({ value: i, label: v }));
       }
 
-      return <Formy.Select {...(props as any)} options={options} />;
+      return <Formy.Select id={props.name} {...(props as any)} options={options} />;
    }
 
    if (isType(schema.type, ["number", "integer"])) {
-      return <Formy.Input type="number" {...props} value={props.value ?? ""} />;
+      return <Formy.Input type="number" id={props.name} {...props} value={props.value ?? ""} />;
    }
 
-   return <Formy.Input {...props} value={props.value ?? ""} />;
+   if (isType(schema.type, "boolean")) {
+      return <Formy.Switch id={props.name} {...(props as any)} checked={props.value as any} />;
+   }
+
+   return <Formy.Input id={props.name} {...props} value={props.value ?? ""} />;
 };

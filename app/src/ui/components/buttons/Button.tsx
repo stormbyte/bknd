@@ -1,4 +1,5 @@
 import type React from "react";
+import { Children } from "react";
 import { forwardRef } from "react";
 import { twMerge } from "tailwind-merge";
 import { Link } from "ui/components/wouter/Link";
@@ -19,7 +20,7 @@ const styles = {
    default: "bg-primary/5 hover:bg-primary/10 link text-primary/70",
    primary: "bg-primary hover:bg-primary/80 link text-background",
    ghost: "bg-transparent hover:bg-primary/5 link text-primary/70",
-   outline: "border border-primary/70 bg-transparent hover:bg-primary/5 link text-primary/70",
+   outline: "border border-primary/50 bg-transparent hover:bg-primary/5 link text-primary/80",
    red: "dark:bg-red-950 dark:hover:bg-red-900 bg-red-100 hover:bg-red-200 link text-primary/70",
    subtlered:
       "dark:text-red-950 text-red-700 dark:hover:bg-red-900 bg-transparent hover:bg-red-50 link"
@@ -58,7 +59,11 @@ const Base = ({
    children: (
       <>
          {IconLeft && <IconLeft size={iconSize} {...iconProps} />}
-         {children && <span className={twMerge("leading-none", labelClassName)}>{children}</span>}
+         {children && Children.count(children) === 1 ? (
+            <span className={twMerge("leading-none", labelClassName)}>{children}</span>
+         ) : (
+            children
+         )}
          {IconRight && <IconRight size={iconSize} {...iconProps} />}
       </>
    )

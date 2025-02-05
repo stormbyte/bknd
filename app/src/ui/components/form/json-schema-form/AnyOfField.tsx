@@ -1,5 +1,7 @@
+import type { JsonError } from "json-schema-library";
 import type { JSONSchema } from "json-schema-to-ts";
 import { type ChangeEvent, type ReactNode, createContext, useContext, useState } from "react";
+import { twMerge } from "tailwind-merge";
 import * as Formy from "ui/components/form/Formy";
 import { FieldComponent, Field as FormField, type FieldProps as FormFieldProps } from "./Field";
 import { FormContextOverride, useFieldContext } from "./Form";
@@ -19,19 +21,18 @@ export type AnyOfFieldContext = {
    selected: number | null;
    select: (index: number | null) => void;
    options: string[];
+   errors: JsonError[];
    selectSchema: any;
 };
 
 const AnyOfContext = createContext<AnyOfFieldContext>(undefined!);
 
 export const useAnyOfContext = () => {
-   const ctx = useContext(AnyOfContext);
-   if (!ctx) throw new Error("useAnyOfContext: no context");
-   return ctx;
+   return useContext(AnyOfContext);
 };
 
 const Root = ({ path = "", schema: _schema, children }: AnyOfFieldRootProps) => {
-   const { setValue, pointer, lib, value, ...ctx } = useFieldContext(path);
+   const { setValue, pointer, lib, value, errors, ...ctx } = useFieldContext(path);
    const schema = _schema ?? ctx.schema;
    if (!schema) return `AnyOfField(${path}): no schema ${pointer}`;
    const [matchedIndex, schemas = []] = getMultiSchemaMatched(schema, value);
@@ -40,6 +41,7 @@ const Root = ({ path = "", schema: _schema, children }: AnyOfFieldRootProps) => 
    const selectSchema = {
       enum: options
    };
+   //console.log("AnyOf:root", { value, matchedIndex, selected, schema });
 
    const selectedSchema =
       selected !== null ? (schemas[selected] as Exclude<JSONSchema, boolean>) : undefined;
@@ -51,8 +53,19 @@ const Root = ({ path = "", schema: _schema, children }: AnyOfFieldRootProps) => 
 
    return (
       <AnyOfContext.Provider
-         value={{ selected, select, options, selectSchema, path, schema, schemas, selectedSchema }}
+         value={{
+            selected,
+            select,
+            options,
+            selectSchema,
+            path,
+            schema,
+            schemas,
+            selectedSchema,
+            errors
+         }}
       >
+         {/*<pre>{JSON.stringify({ value, selected, errors: errors.length }, null, 2)}</pre>*/}
          {children}
       </AnyOfContext.Provider>
    );
@@ -62,7 +75,7 @@ const Select = () => {
    const { selected, select, path, schema, selectSchema } = useAnyOfContext();
 
    function handleSelect(e: ChangeEvent<HTMLInputElement>) {
-      console.log("selected", e.target.value);
+      //console.log("selected", e.target.value);
       const i = e.target.value ? Number(e.target.value) : null;
       select(i);
    }
@@ -81,11 +94,13 @@ const Select = () => {
 };
 
 const Field = ({ name, label, ...props }: Partial<FormFieldProps>) => {
-   const { selected, selectedSchema, path } = useAnyOfContext();
+   const { selected, selectedSchema, path, errors } = useAnyOfContext();
    if (selected === null) return null;
    return (
       <FormContextOverride path={path} schema={selectedSchema} overrideData>
-         <FormField key={`${path}_${selected}`} name={""} label={false} {...props} />
+         <div className={twMerge(errors.length > 0 && "bg-red-500/10")}>
+            <FormField key={`${path}_${selected}`} name={""} label={false} {...props} />
+         </div>
       </FormContextOverride>
    );
 };

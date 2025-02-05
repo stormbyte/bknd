@@ -138,7 +138,7 @@ export default function JsonSchemaForm3() {
                initialValues={{ tags: [0, 1] }}
             />*/}
 
-            <CustomMediaForm />
+            {/*<CustomMediaForm />*/}
             <Form schema={schema.media} initialValues={config.media} />
 
             {/*<Form
