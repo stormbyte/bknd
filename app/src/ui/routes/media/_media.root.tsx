@@ -46,8 +46,11 @@ export function MediaRoot({ children }) {
                      <SearchInput placeholder="Search buckets" />
                   </div>*/}
                   <nav className="flex flex-col flex-1 gap-1">
-                     <AppShell.SidebarLink as={Link} href="/media" className="active">
+                     <AppShell.SidebarLink as={Link} href={"/"}>
                         Main Bucket
+                     </AppShell.SidebarLink>
+                     <AppShell.SidebarLink as={Link} href={"/settings"}>
+                        Settings
                      </AppShell.SidebarLink>
                   </nav>
                </div>
@@ -55,18 +58,5 @@ export function MediaRoot({ children }) {
          </AppShell.Sidebar>
          <main className="flex flex-col flex-grow">{children}</main>
       </>
-   );
-}
-
-// @todo: add infinite load
-export function MediaEmpty() {
-   useBrowserTitle(["Media"]);
-
-   return (
-      <AppShell.Scrollable>
-         <div className="flex flex-1 p-3">
-            <Media.Dropzone />
-         </div>
-      </AppShell.Scrollable>
    );
 }

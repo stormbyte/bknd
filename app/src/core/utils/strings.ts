@@ -84,6 +84,9 @@ export function identifierToHumanReadable(str: string) {
          return str;
    }
 }
+export function autoFormatString(str: string) {
+   return identifierToHumanReadable(str);
+}
 
 export function kebabToPascalWithSpaces(str: string): string {
    return str.split("-").map(ucFirst).join(" ");

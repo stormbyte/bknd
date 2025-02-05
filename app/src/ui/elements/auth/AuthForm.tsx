@@ -1,12 +1,12 @@
-import type { ValueError } from "@sinclair/typebox/value";
 import type { AppAuthOAuthStrategy, AppAuthSchema } from "auth/auth-schema";
 import clsx from "clsx";
-import { type TSchema, Type, Value } from "core/utils";
-import { Form, type Validator } from "json-schema-form-react";
+import { Type } from "core/utils";
+import { Form } from "json-schema-form-react";
 import { transform } from "lodash-es";
 import type { ComponentPropsWithoutRef } from "react";
 import { Button } from "ui/components/buttons/Button";
 import { Group, Input, Label } from "ui/components/form/Formy/components";
+import { TypeboxValidator } from "ui/components/form/json-schema-form";
 import { SocialLink } from "./SocialLink";
 
 export type LoginFormProps = Omit<ComponentPropsWithoutRef<"form">, "onSubmit" | "action"> & {
@@ -18,14 +18,7 @@ export type LoginFormProps = Omit<ComponentPropsWithoutRef<"form">, "onSubmit" |
    buttonLabel?: string;
 };
 
-class TypeboxValidator implements Validator<ValueError> {
-   async validate(schema: TSchema, data: any) {
-      return Value.Check(schema, data) ? [] : [...Value.Errors(schema, data)];
-   }
-}
-
 const validator = new TypeboxValidator();
-
 const schema = Type.Object({
    email: Type.String({
       pattern: "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$"
