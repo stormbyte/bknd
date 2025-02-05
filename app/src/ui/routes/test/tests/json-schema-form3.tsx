@@ -1,139 +1,13 @@
 import { useBknd } from "ui/client/bknd";
 import { Button } from "ui/components/buttons/Button";
-import { AnyOf, useAnyOfContext } from "ui/components/form/json-schema-form3/AnyOfField";
-import { Field } from "ui/components/form/json-schema-form3/Field";
-import { Form, FormContextOverride } from "ui/components/form/json-schema-form3/Form";
-import { ObjectField } from "ui/components/form/json-schema-form3/ObjectField";
-import { removeKeyRecursively } from "ui/components/form/json-schema-form3/utils";
+import {
+   AnyOf,
+   Field,
+   Form,
+   FormContextOverride,
+   ObjectField
+} from "ui/components/form/json-schema-form";
 import { Scrollable } from "ui/layouts/AppShell/AppShell";
-
-const mediaSchema = {
-   additionalProperties: false,
-   type: "object",
-   properties: {
-      enabled: {
-         default: false,
-         type: "boolean"
-      },
-      basepath: {
-         default: "/api/media",
-         type: "string"
-      },
-      entity_name: {
-         default: "media",
-         type: "string"
-      },
-      storage: {
-         default: {},
-         type: "object",
-         properties: {
-            body_max_size: {
-               description: "Max size of the body in bytes. Leave blank for unlimited.",
-               type: "number"
-            }
-         }
-      },
-      adapter: {
-         anyOf: [
-            {
-               title: "s3",
-               additionalProperties: false,
-               type: "object",
-               properties: {
-                  type: {
-                     default: "s3",
-                     const: "s3",
-                     readOnly: true,
-                     type: "string"
-                  },
-                  config: {
-                     title: "S3",
-                     type: "object",
-                     properties: {
-                        access_key: {
-                           type: "string"
-                        },
-                        secret_access_key: {
-                           type: "string"
-                        },
-                        url: {
-                           pattern: "^https?://[^/]+",
-                           description: "URL to S3 compatible endpoint without trailing slash",
-                           examples: [
-                              "https://{account_id}.r2.cloudflarestorage.com/{bucket}",
-                              "https://{bucket}.s3.{region}.amazonaws.com"
-                           ],
-                           type: "string"
-                        }
-                     },
-                     required: ["access_key", "secret_access_key", "url"]
-                  }
-               },
-               required: ["type", "config"]
-            },
-            {
-               title: "cloudinary",
-               additionalProperties: false,
-               type: "object",
-               properties: {
-                  type: {
-                     default: "cloudinary",
-                     const: "cloudinary",
-                     readOnly: true,
-                     type: "string"
-                  },
-                  config: {
-                     title: "Cloudinary",
-                     type: "object",
-                     properties: {
-                        cloud_name: {
-                           type: "string"
-                        },
-                        api_key: {
-                           type: "string"
-                        },
-                        api_secret: {
-                           type: "string"
-                        },
-                        upload_preset: {
-                           type: "string"
-                        }
-                     },
-                     required: ["cloud_name", "api_key", "api_secret"]
-                  }
-               },
-               required: ["type", "config"]
-            },
-            {
-               title: "local",
-               additionalProperties: false,
-               type: "object",
-               properties: {
-                  type: {
-                     default: "local",
-                     const: "local",
-                     readOnly: true,
-                     type: "string"
-                  },
-                  config: {
-                     title: "Local",
-                     type: "object",
-                     properties: {
-                        path: {
-                           default: "./",
-                           type: "string"
-                        }
-                     },
-                     required: ["path"]
-                  }
-               },
-               required: ["type", "config"]
-            }
-         ]
-      }
-   },
-   required: ["enabled", "basepath", "entity_name", "storage"]
-};
 
 export default function JsonSchemaForm3() {
    const { schema, config } = useBknd();
@@ -287,6 +161,7 @@ export default function JsonSchemaForm3() {
 
 function CustomMediaForm() {
    const { schema, config } = useBknd();
+
    return (
       <Form schema={schema.media} initialValues={config.media} className="flex flex-col gap-3">
          <Field name="enabled" />
@@ -301,7 +176,7 @@ function CustomMediaForm() {
 }
 
 function CustomMediaFormAdapter() {
-   const ctx = useAnyOfContext();
+   const ctx = AnyOf.useContext();
 
    return (
       <>

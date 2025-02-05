@@ -2,7 +2,7 @@ import { Draft2019, type JsonError } from "json-schema-library";
 import type { TemplateOptions as LibTemplateOptions } from "json-schema-library/dist/lib/getTemplate";
 import type { JsonSchema as LibJsonSchema } from "json-schema-library/dist/lib/types";
 import type { JSONSchema as $JSONSchema, FromSchema } from "json-schema-to-ts";
-import { get } from "lodash-es";
+import { get, isEqual } from "lodash-es";
 import * as immutable from "object-path-immutable";
 import {
    type ComponentPropsWithoutRef,
@@ -37,6 +37,7 @@ export type FormContext<Data> = {
    setValue: (pointer: string, value: any) => void;
    deleteValue: (pointer: string) => void;
    errors: JsonError[];
+   dirty: boolean;
    schema: JSONSchema;
    lib: Draft2019;
 };
@@ -48,7 +49,7 @@ export function Form<
    Data = Schema extends JSONSchema ? FromSchema<JSONSchema> : any
 >({
    schema,
-   initialValues,
+   initialValues: _initialValues,
    initialOpts,
    children,
    onChange,
@@ -57,9 +58,9 @@ export function Form<
    ...props
 }: FormProps<Schema, Data>) {
    const lib = new Draft2019(schema);
-   const [data, setData] = useState<Partial<Data>>(
-      initialValues ?? lib.getTemplate(undefined, schema, initialOpts)
-   );
+   const initialValues = _initialValues ?? lib.getTemplate(undefined, schema, initialOpts);
+   const [data, setData] = useState<Partial<Data>>(initialValues);
+   const [dirty, setDirty] = useState<boolean>(false);
    const formRef = useRef<HTMLFormElement | null>(null);
    const [errors, setErrors] = useState<JsonError[]>([]);
 
@@ -72,10 +73,11 @@ export function Form<
 
    function setValue(pointer: string, value: any) {
       const normalized = normalizePath(pointer);
-      console.log("setValue", { pointer, normalized, value });
+      //console.log("setValue", { pointer, normalized, value });
       const key = normalized.substring(2).replace(/\//g, ".");
       setData((prev) => {
          const changed = immutable.set(prev, key, value);
+         onChange?.(changed, key, value);
          //console.log("changed", prev, changed, { key, value });
          return changed;
       });
@@ -86,12 +88,15 @@ export function Form<
       const key = normalized.substring(2).replace(/\//g, ".");
       setData((prev) => {
          const changed = immutable.del(prev, key);
+         onChange?.(changed, key, undefined);
          //console.log("changed", prev, changed, { key });
          return changed;
       });
    }
 
    useEffect(() => {
+      setDirty(!isEqual(initialValues, data));
+
       if (validateOn === "change") {
          validate();
       }
@@ -107,6 +112,7 @@ export function Form<
 
    const context = {
       data: data ?? {},
+      dirty,
       setData,
       setValue,
       deleteValue,
@@ -193,4 +199,9 @@ export function useFieldContext(name: string) {
       pointer,
       required
    };
+}
+
+export function Subscribe({ children }: { children: (ctx: FormContext<any>) => ReactNode }) {
+   const ctx = useFormContext();
+   return children(ctx);
 }

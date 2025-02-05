@@ -6,8 +6,17 @@ import { transform } from "lodash-es";
 import type { ComponentPropsWithoutRef } from "react";
 import { Button } from "ui/components/buttons/Button";
 import { Group, Input, Label } from "ui/components/form/Formy/components";
-import { TypeboxValidator } from "ui/components/form/json-schema-form";
 import { SocialLink } from "./SocialLink";
+
+import type { ValueError } from "@sinclair/typebox/value";
+import { type TSchema, Value } from "core/utils";
+import type { Validator } from "json-schema-form-react";
+
+class TypeboxValidator implements Validator<ValueError> {
+   async validate(schema: TSchema, data: any) {
+      return Value.Check(schema, data) ? [] : [...Value.Errors(schema, data)];
+   }
+}
 
 export type LoginFormProps = Omit<ComponentPropsWithoutRef<"form">, "onSubmit" | "action"> & {
    className?: string;
@@ -75,7 +84,7 @@ export function AuthForm({
          <Form
             method={method}
             action={password.action}
-            {...props}
+            {...(props as any)}
             schema={schema}
             validator={validator}
             validationMode="change"

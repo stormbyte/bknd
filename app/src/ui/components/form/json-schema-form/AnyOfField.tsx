@@ -2,7 +2,7 @@ import type { JSONSchema } from "json-schema-to-ts";
 import { type ChangeEvent, type ReactNode, createContext, useContext, useState } from "react";
 import * as Formy from "ui/components/form/Formy";
 import { FieldComponent, Field as FormField, type FieldProps as FormFieldProps } from "./Field";
-import { useFieldContext } from "./Form";
+import { FormContextOverride, useFieldContext } from "./Form";
 import { getLabel, getMultiSchemaMatched } from "./utils";
 
 export type AnyOfFieldRootProps = {
@@ -30,7 +30,7 @@ export const useAnyOfContext = () => {
    return ctx;
 };
 
-export const Root = ({ path = "", schema: _schema, children }: AnyOfFieldRootProps) => {
+const Root = ({ path = "", schema: _schema, children }: AnyOfFieldRootProps) => {
    const { setValue, pointer, lib, value, ...ctx } = useFieldContext(path);
    const schema = _schema ?? ctx.schema;
    if (!schema) return `AnyOfField(${path}): no schema ${pointer}`;
@@ -58,7 +58,7 @@ export const Root = ({ path = "", schema: _schema, children }: AnyOfFieldRootPro
    );
 };
 
-export const Select = () => {
+const Select = () => {
    const { selected, select, path, schema, selectSchema } = useAnyOfContext();
 
    function handleSelect(e: ChangeEvent<HTMLInputElement>) {
@@ -80,17 +80,13 @@ export const Select = () => {
    );
 };
 
-export const Field = ({ name, label, ...props }: Partial<FormFieldProps>) => {
+const Field = ({ name, label, ...props }: Partial<FormFieldProps>) => {
    const { selected, selectedSchema, path } = useAnyOfContext();
    if (selected === null) return null;
    return (
-      <FormField
-         key={`${path}_${selected}`}
-         schema={selectedSchema}
-         name={path}
-         label={false}
-         {...props}
-      />
+      <FormContextOverride path={path} schema={selectedSchema} overrideData>
+         <FormField key={`${path}_${selected}`} name={""} label={false} {...props} />
+      </FormContextOverride>
    );
 };
 

@@ -1,5 +1,12 @@
-import { Form, useFormContext } from "json-schema-form-react";
-import { omit } from "lodash-es";
+import {
+   AnyOf,
+   Field,
+   Form,
+   FormContextOverride,
+   ObjectField,
+   Subscribe
+} from "ui/components/form/json-schema-form";
+
 import { useState } from "react";
 import { useBknd } from "ui/client/BkndProvider";
 import { useBkndMedia } from "ui/client/schema/media/use-bknd-media";
@@ -7,15 +14,12 @@ import { Button } from "ui/components/buttons/Button";
 import { JsonViewer } from "ui/components/code/JsonViewer";
 import { Message } from "ui/components/display/Message";
 import * as Formy from "ui/components/form/Formy";
-import { BooleanInputMantine } from "ui/components/form/Formy/BooleanInputMantine";
-import { JsonSchemaForm } from "ui/components/form/json-schema";
-import { TypeboxValidator } from "ui/components/form/json-schema-form";
-import { AutoForm, Field } from "ui/components/form/json-schema-form/components/Field";
+
+import type { ValueError } from "@sinclair/typebox/value";
+import { type TSchema, Value } from "core/utils";
 import { Media } from "ui/elements";
 import { useBrowserTitle } from "ui/hooks/use-browser-title";
 import * as AppShell from "ui/layouts/AppShell/AppShell";
-
-const validator = new TypeboxValidator();
 
 export function MediaSettings(props) {
    useBrowserTitle(["Media", "Settings"]);
@@ -31,92 +35,70 @@ export function MediaSettings(props) {
 function MediaSettingsInternal() {
    const { config, schema } = useBkndMedia();
    const [data, setData] = useState<any>(config);
-   //console.log("schema", schema);
+   console.log("data", data);
 
    return (
       <>
-         <Form
-            schema={schema}
-            validator={validator}
-            onChange={setData}
-            defaultValues={config as any}
-         >
-            {({ errors, submitting, dirty }) => (
-               <>
+         <Form schema={schema} onChange={setData} initialValues={config as any}>
+            <Subscribe>
+               {({ dirty }) => (
                   <AppShell.SectionHeader
                      right={
-                        <Button variant="primary" disabled={!dirty || submitting}>
+                        <Button variant="primary" disabled={!dirty /* || submitting*/}>
                            Update
                         </Button>
                      }
                   >
                      Settings
                   </AppShell.SectionHeader>
-                  <AppShell.Scrollable>
-                     <div className="flex flex-col gap-3 p-3">
-                        <Field name="enabled" />
-                        <div className="flex flex-col gap-3 relative">
-                           <Overlay visible={!data.enabled} />
-                           <Field name="entity_name" />
-                           <Field name="storage.body_max_size" title="Storage Body Max Size" />
-                        </div>
-                     </div>
-                     <div className="flex flex-col gap-3 p-3 mt-3 border-t border-muted">
-                        <Overlay visible={!data.enabled} />
-                        <Adapters />
-                     </div>
-                     <JsonViewer json={data} expand={999} />
-                  </AppShell.Scrollable>
-               </>
-            )}
+               )}
+            </Subscribe>
+            <AppShell.Scrollable>
+               <div className="flex flex-col gap-3 p-3">
+                  <Field name="enabled" />
+                  <div className="flex flex-col gap-3 relative">
+                     <Overlay visible={!data.enabled} />
+                     <Field name="entity_name" />
+                     <Field name="storage.body_max_size" label="Storage Body Max Size" />
+                  </div>
+               </div>
+               <div className="flex flex-col gap-3 p-3 mt-3 border-t border-muted">
+                  <Overlay visible={!data.enabled} />
+                  <AnyOf.Root path="adapter">
+                     <Adapters />
+                  </AnyOf.Root>
+               </div>
+               <JsonViewer json={JSON.parse(JSON.stringify(data))} expand={999} />
+            </AppShell.Scrollable>
          </Form>
       </>
    );
 }
 
 function Adapters() {
-   const { config, schema } = useBkndMedia();
-   const ctx = useFormContext();
-   const current = config.adapter;
-   const schemas = schema.properties.adapter.anyOf;
-   const types = schemas.map((s) => s.properties.type.const) as string[];
-   const currentType = current?.type ?? (types[0] as string);
-   const [selected, setSelected] = useState<string>(currentType);
-   const $schema = schemas.find((s) => s.properties.type.const === selected);
-   console.log("$schema", $schema);
-
-   function onChangeSelect(e) {
-      setSelected(e.target.value);
-
-      // wait quickly for the form to update before triggering a change
-      setTimeout(() => {
-         ctx.setValue("adapter.type", e.target.value);
-      }, 10);
-   }
+   const ctx = AnyOf.useContext();
 
    return (
-      <div>
-         <Formy.Select value={selected} onChange={onChangeSelect}>
-            {types.map((type) => (
-               <option key={type} value={type}>
-                  {type}
-               </option>
+      <>
+         <div className="flex flex-row gap-1">
+            {ctx.schemas?.map((schema: any, i) => (
+               <Button
+                  key={i}
+                  onClick={() => ctx.select(i)}
+                  variant={ctx.selected === i ? "primary" : "default"}
+               >
+                  {schema.title ?? `Option ${i + 1}`}
+               </Button>
             ))}
-         </Formy.Select>
-         <div>current: {selected}</div>
-         <div>options: {schemas.map((s) => s.title).join(", ")}</div>
-         <Field name="adapter.type" defaultValue={selected} hidden />
-         {$schema && <AutoForm schema={$schema?.properties.config} prefix="adapter.config" />}
-         <hr />
-         {/*{$schema && (
-            <div data-ignore>
-               <JsonSchemaForm
-                  schema={omit($schema?.properties.config, "title")}
-                  className="legacy hide-required-mark fieldset-alternative mute-root"
-               />
-            </div>
-         )}*/}
-      </div>
+         </div>
+
+         {ctx.selected !== null && (
+            <FormContextOverride schema={ctx.selectedSchema} path={ctx.path} overrideData>
+               <Field name="type" hidden />
+               <ObjectField path="config" wrapperProps={{ label: false, wrapper: "group" }} />
+            </FormContextOverride>
+         )}
+      </>
    );
 }
 

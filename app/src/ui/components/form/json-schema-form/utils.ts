@@ -122,7 +122,7 @@ export function normalizePath(path: string) {
 }
 
 export function prefixPointer(pointer: string, prefix: string) {
-   return pointer.replace("#/", `#/${prefix}/`);
+   return pointer.replace("#/", `#/${prefix}/`).replace(/\/\//g, "/");
 }
 
 export function getParentPointer(pointer: string) {

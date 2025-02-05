@@ -36,10 +36,10 @@ export const ObjectField = ({
             if (!schema) return;
 
             if (schema.anyOf || schema.oneOf) {
-               return <AnyOfField key={pointer} path={pointer} schema={schema} />;
+               return <AnyOfField key={pointer} path={pointer} />;
             }
 
-            return <Field key={pointer} name={pointer} schema={schema} />;
+            return <Field key={pointer} name={pointer} />;
          })}
       </FieldWrapper>
    );
