@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { Draft2019 } from "json-schema-library";
 import type { JSONSchema } from "json-schema-to-ts";
-import * as utils from "../../src/ui/components/form/json-schema-form2/utils";
+import * as utils from "../../src/ui/components/form/json-schema-form/utils";
 
 describe("json form", () => {
    test("normalize path", () => {
@@ -122,7 +122,7 @@ describe("json form", () => {
       }
    });
 
-   test.only("...", () => {
+   test("...", () => {
       const schema = {
          type: "object",
          properties: {

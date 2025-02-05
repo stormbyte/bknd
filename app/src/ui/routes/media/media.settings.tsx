@@ -1,4 +1,5 @@
 import { IconBrandAws, IconCloud, IconServer } from "@tabler/icons-react";
+import { isDebug } from "core";
 import { autoFormatString } from "core/utils";
 import { twMerge } from "tailwind-merge";
 import { useBknd } from "ui/client/BkndProvider";
@@ -11,6 +12,7 @@ import {
    Field,
    Form,
    FormContextOverride,
+   FormDebug,
    ObjectField,
    Subscribe
 } from "ui/components/form/json-schema-form";
@@ -29,24 +31,23 @@ export function MediaSettings(props) {
    return <MediaSettingsInternal {...props} />;
 }
 
-const ignore = ["entity_name", "basepath"];
+const formConfig = {
+   ignoreKeys: ["entity_name", "basepath"],
+   options: { debug: isDebug(), keepEmpty: true }
+};
+
 function MediaSettingsInternal() {
-   const { config, schema } = useBkndMedia();
+   const { config, schema, actions } = useBkndMedia();
 
    async function onSubmit(data: any) {
       console.log("submit", data);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await actions.config.patch(data);
+      //await new Promise((resolve) => setTimeout(resolve, 1000));
    }
 
    return (
       <>
-         <Form
-            schema={schema}
-            initialValues={config as any}
-            ignoreKeys={ignore}
-            onSubmit={onSubmit}
-            noValidate
-         >
+         <Form schema={schema} initialValues={config as any} onSubmit={onSubmit} {...formConfig}>
             <Subscribe>
                {({ dirty, errors, submitting }) => (
                   <AppShell.SectionHeader
@@ -79,11 +80,7 @@ function MediaSettingsInternal() {
                      <Adapters />
                   </AnyOf.Root>
                </div>
-               {/*<Subscribe>
-                  {({ data, errors }) => (
-                     <JsonViewer json={JSON.parse(JSON.stringify({ data, errors }))} expand={999} />
-                  )}
-               </Subscribe>*/}
+               <FormDebug />
             </AppShell.Scrollable>
          </Form>
       </>
@@ -105,7 +102,7 @@ function Adapters() {
       <Formy.Group>
          <Formy.Label className="flex flex-row items-center gap-1">
             <span className="font-bold">Media Adapter:</span>
-            {!ctx.selected && <span className="opacity-70"> (Choose one)</span>}
+            {ctx.selected === null && <span className="opacity-70"> (Choose one)</span>}
          </Formy.Label>
          <div className="flex flex-row gap-1 mb-2">
             {ctx.schemas?.map((schema: any, i) => (

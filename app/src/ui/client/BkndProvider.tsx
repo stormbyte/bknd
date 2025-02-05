@@ -14,6 +14,7 @@ type BkndContext = {
    config: ModuleConfigs;
    permissions: string[];
    hasSecrets: boolean;
+   fetched: boolean;
    requireSecrets: () => Promise<void>;
    actions: ReturnType<typeof getSchemaActions>;
    app: AppReduced;
@@ -103,7 +104,7 @@ export function BkndProvider({
 
    return (
       <BkndContext.Provider
-         value={{ ...schema, actions, requireSecrets, app, adminOverride, hasSecrets }}
+         value={{ ...schema, fetched, actions, requireSecrets, app, adminOverride, hasSecrets }}
          key={local_version}
       >
          {/*{error && (

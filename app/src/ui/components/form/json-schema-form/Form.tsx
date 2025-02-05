@@ -14,6 +14,7 @@ import {
    useRef,
    useState
 } from "react";
+import { JsonViewer } from "ui/components/code/JsonViewer";
 import { Field } from "./Field";
 import { isRequired, normalizePath, omitSchema, prefixPointer } from "./utils";
 
@@ -32,6 +33,10 @@ export type FormProps<
    onSubmit?: (data: Partial<Data>) => void | Promise<void>;
    onInvalidSubmit?: (errors: JsonError[], data: Partial<Data>) => void;
    hiddenSubmit?: boolean;
+   options?: {
+      debug?: boolean;
+      keepEmpty?: boolean;
+   };
 };
 
 export type FormContext<Data> = {
@@ -44,6 +49,7 @@ export type FormContext<Data> = {
    submitting: boolean;
    schema: JSONSchema;
    lib: Draft2019;
+   options: FormProps["options"];
 };
 
 const FormContext = createContext<FormContext<any>>(undefined!);
@@ -62,6 +68,7 @@ export function Form<
    validateOn = "submit",
    hiddenSubmit = true,
    ignoreKeys = [],
+   options = {},
    ...props
 }: FormProps<Schema, Data>) {
    const [schema, initial] = omitSchema(_schema, ignoreKeys, _initialValues);
@@ -146,7 +153,8 @@ export function Form<
       deleteValue,
       errors,
       schema,
-      lib
+      lib,
+      options
    } as any;
    //console.log("context", context);
 
@@ -228,4 +236,11 @@ export function useFieldContext(name: string) {
 export function Subscribe({ children }: { children: (ctx: FormContext<any>) => ReactNode }) {
    const ctx = useFormContext();
    return children(ctx);
+}
+
+export function FormDebug() {
+   const { options, data, dirty, errors, submitting } = useFormContext();
+   if (options?.debug !== true) return null;
+
+   return <JsonViewer json={{ dirty, submitting, data, errors }} expand={99} />;
 }

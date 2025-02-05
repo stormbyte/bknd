@@ -2,7 +2,7 @@ import { Popover } from "@mantine/core";
 import { IconBug } from "@tabler/icons-react";
 import type { JsonError } from "json-schema-library";
 import type { JSONSchema } from "json-schema-to-ts";
-import { Children, type ReactElement, type ReactNode, cloneElement } from "react";
+import { Children, type ReactElement, type ReactNode, cloneElement, isValidElement } from "react";
 import { IconButton } from "ui/components/buttons/IconButton";
 import { JsonViewer } from "ui/components/code/JsonViewer";
 import * as Formy from "ui/components/form/Formy";
@@ -14,7 +14,7 @@ export type FieldwrapperProps = {
    required?: boolean;
    errors?: JsonError[];
    schema?: Exclude<JSONSchema, boolean>;
-   debug?: object;
+   debug?: object | boolean;
    wrapper?: "group" | "fieldset";
    hidden?: boolean;
    children: ReactElement | ReactNode;
@@ -26,7 +26,7 @@ export function FieldWrapper({
    required,
    errors = [],
    schema,
-   debug = {},
+   debug,
    wrapper,
    hidden,
    children
@@ -43,20 +43,28 @@ export function FieldWrapper({
          as={wrapper === "fieldset" ? "fieldset" : "div"}
          className={hidden ? "hidden" : "relative"}
       >
-         {/*<div className="absolute right-0 top-0">
-            <Popover>
-               <Popover.Target>
-                  <IconButton Icon={IconBug} size="xs" className="opacity-30" />
-               </Popover.Target>
-               <Popover.Dropdown>
-                  <JsonViewer
-                     json={{ ...debug, pointer, required, schema, errors }}
-                     expand={6}
-                     className="p-0"
-                  />
-               </Popover.Dropdown>
-            </Popover>
-         </div>*/}
+         {debug && (
+            <div className="absolute right-0 top-0">
+               <Popover>
+                  <Popover.Target>
+                     <IconButton Icon={IconBug} size="xs" className="opacity-30" />
+                  </Popover.Target>
+                  <Popover.Dropdown>
+                     <JsonViewer
+                        json={{
+                           ...(typeof debug === "object" ? debug : {}),
+                           pointer,
+                           required,
+                           schema,
+                           errors
+                        }}
+                        expand={6}
+                        className="p-0"
+                     />
+                  </Popover.Dropdown>
+               </Popover>
+            </div>
+         )}
 
          {label && (
             <Formy.Label as={wrapper === "fieldset" ? "legend" : "label"} htmlFor={pointer}>
@@ -65,9 +73,9 @@ export function FieldWrapper({
          )}
          <div className="flex flex-row gap-2">
             <div className="flex flex-1 flex-col gap-3">
-               {children}
-               {/*{Children.count(children) === 1
+               {Children.count(children) === 1 && isValidElement(children)
                   ? cloneElement(children, {
+                       // @ts-ignore
                        list: examples.length > 0 ? examplesId : undefined
                     })
                   : children}
@@ -77,7 +85,7 @@ export function FieldWrapper({
                         <option key={i} value={e as any} />
                      ))}
                   </datalist>
-               )}*/}
+               )}
             </div>
          </div>
          {description && <Formy.Help>{description}</Formy.Help>}

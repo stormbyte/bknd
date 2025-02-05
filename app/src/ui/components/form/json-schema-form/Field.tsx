@@ -38,10 +38,11 @@ export const Field = ({ name, schema: _schema, onChange, label: _label, hidden }
       setValue(pointer, value as any);*/
 
       const value = coerce(e.target.value, schema as any, { required });
-      //console.log("handleChange", pointer, e.target.value, { value });
-      if (typeof value === "undefined" && !required) {
+      //console.log("handleChange", pointer, e.target.value, { value }, ctx.options);
+      if (typeof value === "undefined" && !required && ctx.options?.keepEmpty !== true) {
          ctx.deleteValue(pointer);
       } else {
+         //console.log("setValue", pointer, value);
          setValue(pointer, value);
       }
    }
