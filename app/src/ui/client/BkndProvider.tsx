@@ -15,6 +15,7 @@ type BkndContext = {
    actions: ReturnType<typeof getSchemaActions>;
    app: AppReduced;
    adminOverride?: ModuleConfigs["server"]["admin"];
+   fallback: boolean;
 };
 
 const BkndContext = createContext<BkndContext>(undefined!);
@@ -37,7 +38,7 @@ export function BkndProvider({
 >) {
    const [withSecrets, setWithSecrets] = useState<boolean>(includeSecrets);
    const [schema, setSchema] =
-      useState<Pick<BkndContext, "version" | "schema" | "config" | "permissions">>();
+      useState<Pick<BkndContext, "version" | "schema" | "config" | "permissions" | "fallback">>();
    const [fetched, setFetched] = useState(false);
    const [error, setError] = useState<boolean>();
    const errorShown = useRef<boolean>();
@@ -78,7 +79,8 @@ export function BkndProvider({
               version: 0,
               schema: getDefaultSchema(),
               config: getDefaultConfig(),
-              permissions: []
+              permissions: [],
+              fallback: true
            } as any);
 
       if (adminOverride) {

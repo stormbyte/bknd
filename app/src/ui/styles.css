@@ -16,34 +16,6 @@ html.fixed body {
    touch-action: none;
 }
 
-#bknd-admin,
-.bknd-admin {
-   --color-primary: 9 9 11; /* zinc-950 */
-   --color-background: 250 250 250; /* zinc-50 */
-   --color-muted: 228 228 231; /* ? */
-   --color-darkest: 0 0 0; /* black */
-   --color-lightest: 255 255 255; /* white */
-
-   &.dark {
-      --color-primary: 250 250 250; /* zinc-50 */
-      --color-background: 30 31 34;
-      --color-muted: 47 47 52;
-      --color-darkest: 255 255 255; /* white */
-      --color-lightest: 24 24 27; /* black */
-   }
-
-   @mixin light {
-      --mantine-color-body: rgb(250 250 250);
-   }
-   @mixin dark {
-      --mantine-color-body: rgb(9 9 11);
-   }
-
-   table {
-      font-size: inherit;
-   }
-}
-
 html,
 body {
    font-size: 14px;

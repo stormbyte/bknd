@@ -1,8 +1,18 @@
+import { useBkndWindowContext } from "ui/client/ClientProvider";
 import { useBknd } from "ui/client/bknd";
 
-export function useTheme(): { theme: "light" | "dark" } {
-   const b = useBknd();
-   const theme = b.app.getAdminConfig().color_scheme as any;
+export type Theme = "light" | "dark";
 
-   return { theme };
+export function useTheme(fallback: Theme = "light"): { theme: Theme } {
+   const b = useBknd();
+   const winCtx = useBkndWindowContext();
+   if (b) {
+      if (b?.adminOverride?.color_scheme) {
+         return { theme: b.adminOverride.color_scheme };
+      } else if (!b.fallback) {
+         return { theme: b.config.server.admin.color_scheme ?? fallback };
+      }
+   }
+
+   return { theme: winCtx.color_scheme ?? fallback };
 }

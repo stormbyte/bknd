@@ -3,6 +3,7 @@ import { Notifications } from "@mantine/notifications";
 import type { ModuleConfigs } from "modules";
 import React from "react";
 import { BkndProvider, useBknd } from "ui/client/bknd";
+import { useTheme } from "ui/client/use-theme";
 import { Logo } from "ui/components/display/Logo";
 import * as AppShell from "ui/layouts/AppShell/AppShell";
 import { FlashMessage } from "ui/modules/server/FlashMessage";
@@ -40,8 +41,7 @@ export default function Admin({
 }
 
 function AdminInternal() {
-   const b = useBknd();
-   const theme = b.app.getAdminConfig().color_scheme;
+   const { theme } = useTheme();
 
    return (
       <MantineProvider {...createMantineTheme(theme ?? "light")}>

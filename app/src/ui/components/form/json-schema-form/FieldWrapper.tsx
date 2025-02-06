@@ -68,7 +68,11 @@ export function FieldWrapper({
          )}
 
          {label && (
-            <Formy.Label as={wrapper === "fieldset" ? "legend" : "label"} htmlFor={pointer}>
+            <Formy.Label
+               as={wrapper === "fieldset" ? "legend" : "label"}
+               htmlFor={pointer}
+               className="self-start"
+            >
                {label} {required && <span className="font-medium opacity-30">*</span>}
             </Formy.Label>
          )}

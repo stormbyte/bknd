@@ -364,7 +364,7 @@ export const SectionHeaderAccordionItem = ({
 );
 
 export const Separator = ({ className, ...props }: ComponentPropsWithoutRef<"hr">) => (
-   <hr {...props} className={twMerge("bg-primary/50 my-3", className)} />
+   <hr {...props} className={twMerge("border-muted my-3", className)} />
 );
 
 export { Header } from "./Header";

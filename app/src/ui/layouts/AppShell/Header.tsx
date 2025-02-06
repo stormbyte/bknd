@@ -13,6 +13,7 @@ import {
 import { useAuth, useBkndWindowContext } from "ui/client";
 import { useBknd } from "ui/client/bknd";
 import { useBkndSystemTheme } from "ui/client/schema/system/use-bknd-system";
+import { useTheme } from "ui/client/use-theme";
 import { Button } from "ui/components/buttons/Button";
 import { IconButton } from "ui/components/buttons/IconButton";
 import { Logo } from "ui/components/display/Logo";
@@ -114,9 +115,9 @@ function SidebarToggler() {
 }
 
 export function Header({ hasSidebar = true }) {
-   //const logoReturnPath = "";
    const { app } = useBknd();
-   const { logo_return_path = "/", color_scheme = "light" } = app.getAdminConfig();
+   const { theme } = useTheme();
+   const { logo_return_path = "/" } = app.getAdminConfig();
 
    return (
       <header
@@ -128,7 +129,7 @@ export function Header({ hasSidebar = true }) {
             native={logo_return_path !== "/"}
             className="max-h-full flex hover:bg-primary/5 link p-2.5 w-[134px] outline-none"
          >
-            <Logo theme={color_scheme} />
+            <Logo theme={theme} />
          </Link>
          <HeaderNavigation />
          <div className="flex flex-grow" />

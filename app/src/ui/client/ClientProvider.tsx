@@ -60,6 +60,7 @@ export const useBaseUrl = () => {
 type BkndWindowContext = {
    user?: TApiUser;
    logout_route: string;
+   color_scheme?: "light" | "dark";
 };
 export function useBkndWindowContext(): BkndWindowContext {
    if (typeof window !== "undefined" && window.__BKND__) {
