@@ -6,9 +6,29 @@ import {
    Form,
    FormContextOverride,
    FormDebug,
+   FormDebug2,
    ObjectField
 } from "ui/components/form/json-schema-form";
 import { Scrollable } from "ui/layouts/AppShell/AppShell";
+
+const schema2 = {
+   type: "object",
+   properties: {
+      name: { type: "string", default: "Peter" },
+      age: { type: "number" },
+      gender: {
+         type: "string",
+         enum: ["male", "female", "uni"]
+      },
+      deep: {
+         type: "object",
+         properties: {
+            nested: { type: "string" }
+         }
+      }
+   },
+   required: ["age"]
+};
 
 export default function JsonSchemaForm3() {
    const { schema, config } = useBknd();
@@ -16,32 +36,13 @@ export default function JsonSchemaForm3() {
    return (
       <Scrollable>
          <div className="flex flex-col p-3">
-            {/*<Form
-               schema={{
-                  type: "object",
-                  properties: {
-                     name: { type: "string", default: "Peter" },
-                     age: { type: "number" },
-                     gender: {
-                        type: "string",
-                        enum: ["male", "female", "uni"]
-                     },
-                     deep: {
-                        type: "object",
-                        properties: {
-                           nested: { type: "string" }
-                        }
-                     }
-                  },
-                  required: ["age"]
-               }}
-               className="flex flex-col gap-3"
-            >
+            <Form schema={schema2} className="flex flex-col gap-3">
+               <div>random thing</div>
                <Field name="name" />
                <Field name="age" />
-               <Field name="gender" />
-               <Field name="deep" />
-            </Form>*/}
+               <FormDebug />
+               <FormDebug2 name="name" />
+            </Form>
 
             {/*<Form
             schema={{
@@ -90,7 +91,7 @@ export default function JsonSchemaForm3() {
          >
             <AutoForm />
          </Form>*/}
-            <Form
+            {/*<Form
                schema={{
                   type: "object",
                   properties: {
@@ -118,7 +119,7 @@ export default function JsonSchemaForm3() {
             >
                <Field name="" />
                <FormDebug />
-            </Form>
+            </Form>*/}
 
             {/*<Form
                schema={{

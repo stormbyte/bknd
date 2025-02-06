@@ -1,6 +1,7 @@
 import type { JSONSchema } from "json-schema-to-ts";
 import type { ChangeEvent, ComponentPropsWithoutRef } from "react";
 import * as Formy from "ui/components/form/Formy";
+import { useEvent } from "ui/hooks/use-event";
 import { ArrayField } from "./ArrayField";
 import { FieldWrapper } from "./FieldWrapper";
 import { useFieldContext } from "./Form";
@@ -32,7 +33,7 @@ export const Field = ({ name, schema: _schema, onChange, label: _label, hidden }
    const disabled = schema.readOnly ?? "const" in schema ?? false;
    //console.log("field", name, disabled, schema, ctx.schema, _schema);
 
-   function handleChange(e: ChangeEvent<HTMLInputElement>) {
+   const handleChange = useEvent((e: ChangeEvent<HTMLInputElement>) => {
       // don't remove for now, causes issues in anyOf
       /*const value = coerce(e.target.value, schema as any);
       setValue(pointer, value as any);*/
@@ -45,7 +46,7 @@ export const Field = ({ name, schema: _schema, onChange, label: _label, hidden }
          //console.log("setValue", pointer, value);
          setValue(pointer, value);
       }
-   }
+   });
 
    return (
       <FieldWrapper
