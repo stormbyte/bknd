@@ -23,6 +23,12 @@ type BkndContext = {
 const BkndContext = createContext<BkndContext>(undefined!);
 export type { TSchemaActions };
 
+enum Fetching {
+   None = 0,
+   Schema = 1,
+   Secrets = 2
+}
+
 export function BkndProvider({
    includeSecrets = false,
    adminOverride,
@@ -38,6 +44,7 @@ export function BkndProvider({
    const [fetched, setFetched] = useState(false);
    const [error, setError] = useState<boolean>();
    const errorShown = useRef<boolean>();
+   const fetching = useRef<Fetching>(Fetching.None);
    const [local_version, set_local_version] = useState(0);
    const api = useApi();
 
@@ -46,7 +53,12 @@ export function BkndProvider({
    }
 
    async function fetchSchema(_includeSecrets: boolean = false, force?: boolean) {
+      const requesting = withSecrets ? Fetching.Secrets : Fetching.Schema;
+      if (fetching.current === requesting) return;
+
       if (withSecrets && !force) return;
+      fetching.current = requesting;
+
       const res = await api.system.readSchema({
          config: true,
          secrets: _includeSecrets
@@ -57,12 +69,13 @@ export function BkndProvider({
          errorShown.current = true;
 
          setError(true);
-         //return;
+         // if already has schema, don't overwrite
+         if (fetched && schema?.schema) return;
       } else if (error) {
          setError(false);
       }
 
-      const schema = res.ok
+      const newSchema = res.ok
          ? res.body
          : ({
               version: 0,
@@ -72,17 +85,18 @@ export function BkndProvider({
            } as any);
 
       if (adminOverride) {
-         schema.config.server.admin = {
-            ...schema.config.server.admin,
+         newSchema.config.server.admin = {
+            ...newSchema.config.server.admin,
             ...adminOverride
          };
       }
 
       startTransition(() => {
-         setSchema(schema);
+         setSchema(newSchema);
          setWithSecrets(_includeSecrets);
          setFetched(true);
          set_local_version((v) => v + 1);
+         fetching.current = Fetching.None;
       });
    }
 
