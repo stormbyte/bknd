@@ -1,5 +1,7 @@
 import AppShellAccordionsTest from "ui/routes/test/tests/appshell-accordions-test";
 import JsonSchemaFormReactTest from "ui/routes/test/tests/json-schema-form-react-test";
+
+import FormyTest from "ui/routes/test/tests/formy-test";
 import SwaggerTest from "ui/routes/test/tests/swagger-test";
 import SWRAndAPI from "ui/routes/test/tests/swr-and-api";
 import SwrAndDataApi from "ui/routes/test/tests/swr-and-data-api";
@@ -15,6 +17,7 @@ import DropdownTest from "./tests/dropdown-test";
 import DropzoneElementTest from "./tests/dropzone-element-test";
 import EntityFieldsForm from "./tests/entity-fields-form";
 import FlowsTest from "./tests/flows-test";
+import JsonSchemaForm3 from "./tests/json-schema-form3";
 import JsonFormTest from "./tests/jsonform-test";
 import { LiquidJsTest } from "./tests/liquid-js-test";
 import MantineTest from "./tests/mantine-test";
@@ -45,7 +48,9 @@ const tests = {
    SWRAndAPI,
    SwrAndDataApi,
    DropzoneElementTest,
-   JsonSchemaFormReactTest
+   JsonSchemaFormReactTest,
+   JsonSchemaForm3,
+   FormyTest
 } as const;
 
 export default function TestRoutes() {

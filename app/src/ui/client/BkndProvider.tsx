@@ -1,10 +1,7 @@
-import { IconAlertHexagon } from "@tabler/icons-react";
 import type { ModuleConfigs, ModuleSchemas } from "modules";
 import { getDefaultConfig, getDefaultSchema } from "modules/ModuleManager";
 import { createContext, startTransition, useContext, useEffect, useRef, useState } from "react";
 import { useApi } from "ui/client";
-import { Button } from "ui/components/buttons/Button";
-import { Alert } from "ui/components/display/Alert";
 import { type TSchemaActions, getSchemaActions } from "./schema/actions";
 import { AppReduced } from "./utils/AppReduced";
 

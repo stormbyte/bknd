@@ -3,9 +3,10 @@ import { forwardRef, useEffect, useState } from "react";
 
 export const BooleanInputMantine = forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
    (props, ref) => {
-      const [checked, setChecked] = useState(Boolean(props.value));
+      const [checked, setChecked] = useState(Boolean(props.value ?? props.defaultValue));
 
       useEffect(() => {
+         console.log("value change", props.value);
          setChecked(Boolean(props.value));
       }, [props.value]);
 

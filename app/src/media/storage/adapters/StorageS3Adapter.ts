@@ -25,7 +25,8 @@ export const s3AdapterConfig = Type.Object(
       })
    },
    {
-      title: "S3"
+      title: "AWS S3",
+      description: "AWS S3 or compatible storage"
    }
 );
 
