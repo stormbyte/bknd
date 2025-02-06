@@ -58,7 +58,7 @@ export function unflatten(
    for (const pointer in obj) {
       const required = isRequired(pointer, schema);
       let subschema = lib.getSchema({ pointer });
-      console.log("subschema", pointer, subschema, selections);
+      //console.log("subschema", pointer, subschema, selections);
       if (!subschema) {
          throw new Error(`"${pointer}" not found in schema`);
       }

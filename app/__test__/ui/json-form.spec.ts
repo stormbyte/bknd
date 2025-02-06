@@ -139,8 +139,7 @@ describe("json form", () => {
          required: ["description"]
       };
 
-      const lib = new Draft2019(schema);
-
-      lib.eachSchema(console.log);
+      //const lib = new Draft2019(schema);
+      //lib.eachSchema(console.log);
    });
 });
