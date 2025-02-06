@@ -45,6 +45,7 @@ export function FieldWrapper({
       >
          {debug && (
             <div className="absolute right-0 top-0">
+               {/* @todo: use radix */}
                <Popover>
                   <Popover.Target>
                      <IconButton Icon={IconBug} size="xs" className="opacity-30" />

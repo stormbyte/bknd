@@ -35,36 +35,36 @@ export const ArrayField = ({
       };
    }
 
-   const Wrapper = ({ children }) => (
-      <FieldWrapper pointer={path} schema={schema} wrapper="fieldset">
-         {children}
-      </FieldWrapper>
-   );
-
+   // if unique items with enum
    if (schema.uniqueItems && typeof schema.items === "object" && "enum" in schema.items) {
       return (
-         <Wrapper>
-            <Formy.Select
+         <FieldWrapper pointer={path} schema={schema} wrapper="fieldset">
+            <FieldComponent
                required
-               options={schema.items.enum}
+               schema={schema.items}
                multiple
                value={value}
                className="h-auto"
-               onChange={(e) => {
+               onChange={(e: any) => {
+                  // @ts-ignore
                   const selected = Array.from(e.target.selectedOptions).map((o) => o.value);
-                  console.log("selected", selected);
                   setValue(pointer, selected);
                }}
             />
-         </Wrapper>
+         </FieldWrapper>
       );
    }
 
    return (
-      <Wrapper>
+      <FieldWrapper pointer={path} schema={schema} wrapper="fieldset">
          {value?.map((v, index: number) => {
             const pointer = `${path}/${index}`.replace(/\/+/g, "/");
-            const [, , subschema] = getMultiSchemaMatched(schema.items, v);
+            let subschema = schema.items;
+            if (itemsMultiSchema) {
+               const [, , _subschema] = getMultiSchemaMatched(schema.items, v);
+               subschema = _subschema;
+            }
+
             return (
                <div key={pointer} className="flex flex-row gap-2">
                   <FieldComponent
@@ -80,22 +80,24 @@ export const ArrayField = ({
                </div>
             );
          })}
-         {itemsMultiSchema ? (
-            <Dropdown
-               dropdownWrapperProps={{
-                  className: "min-w-0"
-               }}
-               items={itemsMultiSchema.map((s, i) => ({
-                  label: s!.title ?? `Option ${i + 1}`,
-                  onClick: () => handleAdd(ctx.lib.getTemplate(undefined, s!))
-               }))}
-               onClickItem={console.log}
-            >
-               <Button IconLeft={IconLibraryPlus}>Add</Button>
-            </Dropdown>
-         ) : (
-            <Button onClick={() => handleAdd()}>Add</Button>
-         )}
-      </Wrapper>
+         <div className="flex flex-row">
+            {itemsMultiSchema ? (
+               <Dropdown
+                  dropdownWrapperProps={{
+                     className: "min-w-0"
+                  }}
+                  items={itemsMultiSchema.map((s, i) => ({
+                     label: s!.title ?? `Option ${i + 1}`,
+                     onClick: () => handleAdd(ctx.lib.getTemplate(undefined, s!))
+                  }))}
+                  onClickItem={console.log}
+               >
+                  <Button IconLeft={IconLibraryPlus}>Add</Button>
+               </Dropdown>
+            ) : (
+               <Button onClick={() => handleAdd()}>Add</Button>
+            )}
+         </div>
+      </FieldWrapper>
    );
 };

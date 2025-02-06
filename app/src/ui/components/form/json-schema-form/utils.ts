@@ -223,3 +223,10 @@ export function omitSchema<Given extends JSONSchema>(_schema: Given, keys: strin
 export function isTypeSchema(schema?: JSONSchema): schema is Exclude<JSONSchema, boolean> {
    return typeof schema === "object" && "type" in schema && !isType(schema.type, "error");
 }
+
+export function enumToOptions(_enum: any) {
+   if (!Array.isArray(_enum)) return [];
+   return _enum.map((v, i) =>
+      typeof v === "string" ? { value: v, label: v } : { value: i, label: v }
+   );
+}

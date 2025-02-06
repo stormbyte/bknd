@@ -5,7 +5,7 @@ import { ArrayField } from "./ArrayField";
 import { FieldWrapper } from "./FieldWrapper";
 import { useFieldContext } from "./Form";
 import { ObjectField } from "./ObjectField";
-import { coerce, isType, isTypeSchema } from "./utils";
+import { coerce, enumToOptions, isType, isTypeSchema } from "./utils";
 
 export type FieldProps = {
    name: string;
@@ -77,17 +77,12 @@ export const FieldComponent = ({
    schema,
    ...props
 }: { schema: JSONSchema } & ComponentPropsWithoutRef<"input">) => {
-   if (!schema || typeof schema === "boolean") return null;
-   //console.log("field", props.name, props.disabled);
+   if (!isTypeSchema(schema)) return null;
 
    if (schema.enum) {
-      if (!Array.isArray(schema.enum)) return null;
-      let options = schema.enum;
-      if (schema.enum.every((v) => typeof v === "string")) {
-         options = schema.enum.map((v, i) => ({ value: i, label: v }));
-      }
-
-      return <Formy.Select id={props.name} {...(props as any)} options={options} />;
+      return (
+         <Formy.Select id={props.name} {...(props as any)} options={enumToOptions(schema.enum)} />
+      );
    }
 
    if (isType(schema.type, ["number", "integer"])) {

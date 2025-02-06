@@ -22,7 +22,7 @@ export type AnyOfFieldContext = {
    select: (index: number | null) => void;
    options: string[];
    errors: JsonError[];
-   selectSchema: any;
+   selectSchema: JSONSchema;
 };
 
 const AnyOfContext = createContext<AnyOfFieldContext>(undefined!);
@@ -39,8 +39,9 @@ const Root = ({ path = "", schema: _schema, children }: AnyOfFieldRootProps) => 
    const [selected, setSelected] = useState<number | null>(matchedIndex > -1 ? matchedIndex : null);
    const options = schemas.map((s, i) => s.title ?? `Option ${i + 1}`);
    const selectSchema = {
+      type: "string",
       enum: options
-   };
+   } satisfies JSONSchema;
    //console.log("AnyOf:root", { value, matchedIndex, selected, schema });
 
    const selectedSchema =

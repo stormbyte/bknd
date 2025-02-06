@@ -5,6 +5,7 @@ import {
    Field,
    Form,
    FormContextOverride,
+   FormDebug,
    ObjectField
 } from "ui/components/form/json-schema-form";
 import { Scrollable } from "ui/layouts/AppShell/AppShell";
@@ -89,7 +90,7 @@ export default function JsonSchemaForm3() {
          >
             <AutoForm />
          </Form>*/}
-            {/*<Form
+            <Form
                schema={{
                   type: "object",
                   properties: {
@@ -113,9 +114,11 @@ export default function JsonSchemaForm3() {
                   }
                }}
                initialValues={{ tags: [0, 1] }}
+               options={{ debug: true }}
             >
-               <AutoForm />
-            </Form>*/}
+               <Field name="" />
+               <FormDebug />
+            </Form>
 
             {/*<Form
                schema={{
@@ -139,7 +142,7 @@ export default function JsonSchemaForm3() {
             />*/}
 
             {/*<CustomMediaForm />*/}
-            <Form schema={schema.media} initialValues={config.media} />
+            {/*<Form schema={schema.media} initialValues={config.media} />*/}
 
             {/*<Form
                schema={removeKeyRecursively(schema.media, "pattern") as any}

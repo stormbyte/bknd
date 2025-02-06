@@ -1,10 +1,7 @@
-import { IconAlertHexagon } from "@tabler/icons-react";
 import type { ModuleConfigs, ModuleSchemas } from "modules";
 import { getDefaultConfig, getDefaultSchema } from "modules/ModuleManager";
 import { createContext, startTransition, useContext, useEffect, useRef, useState } from "react";
 import { useApi } from "ui/client";
-import { Button } from "ui/components/buttons/Button";
-import { Alert } from "ui/components/display/Alert";
 import { type TSchemaActions, getSchemaActions } from "./schema/actions";
 import { AppReduced } from "./utils/AppReduced";
 
@@ -14,7 +11,6 @@ type BkndContext = {
    config: ModuleConfigs;
    permissions: string[];
    hasSecrets: boolean;
-   fetched: boolean;
    requireSecrets: () => Promise<void>;
    actions: ReturnType<typeof getSchemaActions>;
    app: AppReduced;
@@ -104,7 +100,7 @@ export function BkndProvider({
 
    return (
       <BkndContext.Provider
-         value={{ ...schema, fetched, actions, requireSecrets, app, adminOverride, hasSecrets }}
+         value={{ ...schema, actions, requireSecrets, app, adminOverride, hasSecrets }}
          key={local_version}
       >
          {/*{error && (

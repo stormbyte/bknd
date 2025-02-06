@@ -166,29 +166,6 @@ export function flattenObject(obj: any, parentKey = "", result: any = {}): any {
    return result;
 }
 
-export function flattenObject2(obj: any, parentKey = "", result: any = {}): any {
-   for (const key in obj) {
-      if (key in obj) {
-         const newKey = parentKey ? `${parentKey}.${key}` : key;
-         if (typeof obj[key] === "object" && obj[key] !== null && !Array.isArray(obj[key])) {
-            flattenObject2(obj[key], newKey, result);
-         } else if (Array.isArray(obj[key])) {
-            obj[key].forEach((item, index) => {
-               const arrayKey = `${newKey}[${index}]`;
-               if (typeof item === "object" && item !== null) {
-                  flattenObject2(item, arrayKey, result);
-               } else {
-                  result[arrayKey] = item;
-               }
-            });
-         } else {
-            result[newKey] = obj[key];
-         }
-      }
-   }
-   return result;
-}
-
 export function objectDepth(object: object): number {
    let level = 1;
    for (const key in object) {
