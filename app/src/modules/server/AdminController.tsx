@@ -191,10 +191,10 @@ export class AdminController extends Controller {
                   />
                   <link rel="icon" href={favicon} type="image/x-icon" />
                   <title>BKND</title>
-                  <script
+                  {/*<script
                      crossOrigin="anonymous"
                      src="//unpkg.com/react-scan/dist/auto.global.js"
-                  />
+                  />*/}
                   {isProd ? (
                      <Fragment>
                         <script
