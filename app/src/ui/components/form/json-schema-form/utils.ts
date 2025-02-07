@@ -141,7 +141,7 @@ export function isRequired(pointer: string, schema: JsonSchema, data?: any) {
    const lib = new Draft2019(schema as any);
 
    const childSchema = lib.getSchema({ pointer, data });
-   if (typeof childSchema === "object" && ("const" in childSchema || "enum" in childSchema)) {
+   if (typeof childSchema === "object" && "const" in childSchema) {
       return true;
    }
 

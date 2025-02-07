@@ -1,3 +1,4 @@
+import type { JSONSchema } from "json-schema-to-ts";
 import { useBknd } from "ui/client/bknd";
 import { Button } from "ui/components/buttons/Button";
 import {
@@ -237,7 +238,7 @@ export default function JsonSchemaForm3() {
                <FormDebug force />
             </Form>*/}
 
-            <CustomMediaForm />
+            {/*<CustomMediaForm />*/}
             {/*<Form schema={schema.media} initialValues={config.media} validateOn="change">
                <Field name="" />
             </Form>*/}
@@ -255,10 +256,56 @@ export default function JsonSchemaForm3() {
             >
                <AutoForm />
             </Form>*/}
+
+            <Form
+               schema={ss}
+               initialValues={{
+                  name: "Peter",
+                  age: 20,
+                  interested: true,
+                  dinnerTime: "2023-12-31T23:59:59+02:00"
+               }}
+               ignoreKeys={["what"]}
+               onChange={(state) => console.log(state)}
+               onSubmit={(state) => console.log(state)}
+               validateOn="change"
+               options={{ debug: true }}
+            />
          </div>
       </Scrollable>
    );
 }
+
+const ss = {
+   type: "object",
+   properties: {
+      name: { type: "string" },
+      email: { type: "string", format: "email" },
+      interested: { type: "boolean" },
+      bla: {
+         type: "string",
+         enum: ["small", "medium", "large"]
+      },
+      password: { type: "string", format: "password" },
+      birthdate: { type: "string", format: "date" },
+      dinnerTime: { type: "string", format: "date-time" },
+      age: { type: "number", minimum: 0, multipleOf: 5 },
+      tags: {
+         type: "array",
+         items: {
+            type: "string"
+         }
+      },
+      config: {
+         type: "object",
+         properties: {
+            min: { type: "number" }
+         }
+      }
+   },
+   required: ["name"],
+   additionalProperties: false
+} as const satisfies JSONSchema;
 
 function CustomMediaForm() {
    const { schema, config } = useBknd();
@@ -269,7 +316,7 @@ function CustomMediaForm() {
    return (
       <Form
          schema={schema.media}
-         initialValues={config.media}
+         initialValues={config.media as any}
          className="flex flex-col gap-3"
          validateOn="change"
       >

@@ -100,7 +100,7 @@ const ArrayIterator = memo(
    ({ name, children }: any) => {
       return children(useFormValue(name));
    },
-   (prev, next) => prev.value.length === next.value.length
+   (prev, next) => prev.value?.length === next.value?.length
 );
 
 const ArrayAdd = ({ schema, path }: { schema: JsonSchema; path: string }) => {
@@ -114,7 +114,6 @@ const ArrayAdd = ({ schema, path }: { schema: JsonSchema; path: string }) => {
    const itemsMultiSchema = getMultiSchema(schema.items);
 
    function handleAdd(template?: any) {
-      //const currentIndex = value?.length ?? 0;
       const newPointer = `${path}/${currentIndex}`.replace(/\/+/g, "/");
       setValue(newPointer, template ?? ctx.lib.getTemplate(undefined, schema!.items));
    }

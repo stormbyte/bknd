@@ -81,12 +81,61 @@ export const FieldComponent = ({
    }
 
    if (isType(schema.type, ["number", "integer"])) {
-      return <Formy.Input type="number" id={props.name} {...props} value={props.value ?? ""} />;
+      const additional = {
+         min: schema.minimum,
+         max: schema.maximum,
+         step: schema.multipleOf
+      };
+
+      return (
+         <Formy.Input
+            type="number"
+            id={props.name}
+            {...props}
+            value={props.value ?? ""}
+            {...additional}
+         />
+      );
    }
 
    if (isType(schema.type, "boolean")) {
-      return <Formy.Switch id={props.name} {...(props as any)} checked={value as any} />;
+      return <Formy.Switch id={props.name} {...(props as any)} checked={value === true} />;
    }
 
-   return <Formy.Input id={props.name} {...props} value={props.value ?? ""} />;
+   if (isType(schema.type, "string") && schema.format === "date-time") {
+      const value = props.value ? new Date(props.value as string).toISOString().slice(0, 16) : "";
+      return (
+         <Formy.DateInput
+            id={props.name}
+            {...props}
+            value={value}
+            type="datetime-local"
+            onChange={(e) => {
+               const date = new Date(e.target.value);
+               props.onChange?.({
+                  // @ts-ignore
+                  target: { value: date.toISOString() }
+               });
+            }}
+         />
+      );
+   }
+
+   if (isType(schema.type, "string") && schema.format === "date") {
+      return <Formy.DateInput id={props.name} {...props} value={props.value ?? ""} />;
+   }
+
+   const additional = {
+      maxLength: schema.maxLength,
+      minLength: schema.minLength,
+      pattern: schema.pattern
+   } as any;
+
+   if (schema.format) {
+      if (["password", "hidden", "url", "email", "tel"].includes(schema.format)) {
+         additional.type = schema.format;
+      }
+   }
+
+   return <Formy.Input id={props.name} {...props} value={props.value ?? ""} {...additional} />;
 };

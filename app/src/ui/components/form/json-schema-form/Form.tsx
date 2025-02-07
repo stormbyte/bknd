@@ -45,32 +45,32 @@ type FormState<Data = any> = {
 
 export type FormProps<
    Schema extends JSONSchema = JSONSchema,
-   Data = Schema extends JSONSchema ? FromSchema<JSONSchema> : any
-> = Omit<ComponentPropsWithoutRef<"form">, "onChange"> & {
+   Data = Schema extends JSONSchema ? FromSchema<Schema> : any,
+   InitialData = Schema extends JSONSchema ? FromSchema<Schema> : any
+> = Omit<ComponentPropsWithoutRef<"form">, "onChange" | "onSubmit"> & {
    schema: Schema;
    validateOn?: "change" | "submit";
-   initialValues?: Partial<Data>;
    initialOpts?: LibTemplateOptions;
    ignoreKeys?: string[];
    onChange?: (data: Partial<Data>, name: string, value: any) => void;
-   onSubmit?: (data: Partial<Data>) => void | Promise<void>;
+   onSubmit?: (data: Data) => void | Promise<void>;
    onInvalidSubmit?: (errors: JsonError[], data: Partial<Data>) => void;
    hiddenSubmit?: boolean;
    options?: {
       debug?: boolean;
       keepEmpty?: boolean;
    };
+   initialValues?: InitialData;
 };
 
 export type FormContext<Data> = {
-   data: Data;
    setData: (data: Data) => void;
    setValue: (pointer: string, value: any) => void;
    deleteValue: (pointer: string) => void;
    errors: JsonError[];
    dirty: boolean;
    submitting: boolean;
-   schema: JSONSchema;
+   schema: LibJsonSchema;
    lib: Draft2019;
    options: FormProps["options"];
    root: string;
@@ -82,7 +82,7 @@ FormContext.displayName = "FormContext";
 
 export function Form<
    Schema extends JSONSchema = JSONSchema,
-   Data = Schema extends JSONSchema ? FromSchema<JSONSchema> : any
+   Data = Schema extends JSONSchema ? FromSchema<Schema> : any
 >({
    schema: _schema,
    initialValues: _initialValues,
@@ -126,7 +126,7 @@ export function Form<
          try {
             const { data, errors } = validate();
             if (errors.length === 0) {
-               await onSubmit(data);
+               await onSubmit(data as Data);
             } else {
                console.log("invalid", errors);
                onInvalidSubmit?.(errors, data);
@@ -200,6 +200,7 @@ export function Form<
       <form {...props} ref={formRef} onSubmit={handleSubmit}>
          <FormContext.Provider value={context}>
             {children ? children : <Field name="" />}
+            {options?.debug && <FormDebug />}
          </FormContext.Provider>
          {hiddenSubmit && (
             <button style={{ visibility: "hidden" }} type="submit">

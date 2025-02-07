@@ -5,7 +5,11 @@ import { Children, type ReactElement, type ReactNode, cloneElement, isValidEleme
 import { IconButton } from "ui/components/buttons/IconButton";
 import { JsonViewer } from "ui/components/code/JsonViewer";
 import * as Formy from "ui/components/form/Formy";
-import { useFormError } from "ui/components/form/json-schema-form/Form";
+import {
+   useFormContext,
+   useFormError,
+   useFormValue
+} from "ui/components/form/json-schema-form/Form";
 import { getLabel } from "./utils";
 
 export type FieldwrapperProps = {
@@ -24,7 +28,6 @@ export function FieldWrapper({
    label: _label,
    required,
    schema,
-   debug,
    wrapper,
    hidden,
    children
@@ -41,29 +44,7 @@ export function FieldWrapper({
          as={wrapper === "fieldset" ? "fieldset" : "div"}
          className={hidden ? "hidden" : "relative"}
       >
-         {debug && (
-            <div className="absolute right-0 top-0">
-               {/* @todo: use radix */}
-               <Popover>
-                  <Popover.Target>
-                     <IconButton Icon={IconBug} size="xs" className="opacity-30" />
-                  </Popover.Target>
-                  <Popover.Dropdown>
-                     <JsonViewer
-                        json={{
-                           ...(typeof debug === "object" ? debug : {}),
-                           name,
-                           required,
-                           schema,
-                           errors
-                        }}
-                        expand={6}
-                        className="p-0"
-                     />
-                  </Popover.Dropdown>
-               </Popover>
-            </div>
-         )}
+         <FieldDebug name={name} schema={schema} required={required} />
 
          {label && (
             <Formy.Label
@@ -98,3 +79,38 @@ export function FieldWrapper({
       </Formy.Group>
    );
 }
+
+const FieldDebug = ({
+   name,
+   schema,
+   required
+}: Pick<FieldwrapperProps, "name" | "schema" | "required">) => {
+   const { options } = useFormContext();
+   if (!options?.debug) return null;
+   const { value } = useFormValue(name);
+   const errors = useFormError(name, { strict: true });
+
+   return (
+      <div className="absolute right-0 top-0">
+         {/* @todo: use radix */}
+         <Popover>
+            <Popover.Target>
+               <IconButton Icon={IconBug} size="xs" className="opacity-30" />
+            </Popover.Target>
+            <Popover.Dropdown>
+               <JsonViewer
+                  json={{
+                     name,
+                     value,
+                     required,
+                     schema,
+                     errors
+                  }}
+                  expand={6}
+                  className="p-0"
+               />
+            </Popover.Dropdown>
+         </Popover>
+      </div>
+   );
+};
