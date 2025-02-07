@@ -2,11 +2,11 @@ import { useBknd } from "ui/client/bknd";
 import { Button } from "ui/components/buttons/Button";
 import {
    AnyOf,
+   AnyOfField,
    Field,
    Form,
    FormContextOverride,
    FormDebug,
-   FormDebug2,
    ObjectField
 } from "ui/components/form/json-schema-form";
 import { Scrollable } from "ui/layouts/AppShell/AppShell";
@@ -33,16 +33,108 @@ const schema2 = {
 export default function JsonSchemaForm3() {
    const { schema, config } = useBknd();
 
+   config.media.storage.body_max_size = 1;
+   schema.media.properties.storage.properties.body_max_size.minimum = 0;
+
    return (
       <Scrollable>
          <div className="flex flex-col p-3">
-            <Form schema={schema2} className="flex flex-col gap-3">
+            {/*<Form
+               schema={{
+                  type: "object",
+                  properties: {
+                     name: { type: "string", default: "Peter", maxLength: 3 },
+                     age: { type: "number" },
+                     deep: {
+                        type: "object",
+                        properties: {
+                           nested: { type: "string" }
+                        }
+                     }
+                  },
+                  required: ["age"]
+               }}
+               initialValues={{ name: "Peter", age: 20, deep: { nested: "hello" } }}
+               className="flex flex-col gap-3"
+               validateOn="change"
+            />*/}
+
+            {/*<Form
+               schema={{
+                  type: "object",
+                  properties: {
+                     name: { type: "string", default: "Peter", minLength: 3 },
+                     age: { type: "number" },
+                     deep: {
+                        anyOf: [
+                           {
+                              type: "object",
+                              properties: {
+                                 nested: { type: "string" }
+                              }
+                           },
+                           {
+                              type: "object",
+                              properties: {
+                                 nested2: { type: "string" }
+                              }
+                           }
+                        ]
+                     }
+                  },
+                  required: ["age"]
+               }}
+               className="flex flex-col gap-3"
+               validateOn="change"
+            >
+               <Field name="" />
+               <Subscribe2>
+                  {(state) => (
+                     <pre className="text-wrap whitespace-break-spaces  break-all">
+                        {JSON.stringify(state, null, 2)}
+                     </pre>
+                  )}
+               </Subscribe2>
+            </Form>*/}
+
+            {/*<Form
+               schema={{
+                  type: "object",
+                  properties: {
+                     name: { type: "string", default: "Peter", maxLength: 3 },
+                     age: { type: "number" },
+                     gender: {
+                        type: "string",
+                        enum: ["male", "female", "uni"]
+                     },
+                     deep: {
+                        type: "object",
+                        properties: {
+                           nested: { type: "string" }
+                        }
+                     }
+                  },
+                  required: ["age"]
+               }}
+               className="flex flex-col gap-3"
+               validateOn="change"
+            >
                <div>random thing</div>
                <Field name="name" />
                <Field name="age" />
                <FormDebug />
                <FormDebug2 name="name" />
-            </Form>
+               <hr />
+               <Subscribe2
+               selector={(state) => ({ dirty: state.dirty, submitting: state.submitting })}
+               >
+                  {(state) => (
+                     <pre className="text-wrap whitespace-break-spaces  break-all">
+                        {JSON.stringify(state)}
+                     </pre>
+                  )}
+               </Subscribe2>
+            </Form>*/}
 
             {/*<Form
             schema={{
@@ -114,7 +206,7 @@ export default function JsonSchemaForm3() {
                      }
                   }
                }}
-               initialValues={{ tags: [0, 1] }}
+               initialValues={{ tags: [0, 1], method: ["GET"] }}
                options={{ debug: true }}
             >
                <Field name="" />
@@ -140,10 +232,15 @@ export default function JsonSchemaForm3() {
                   }
                }}
                initialValues={{ tags: [0, 1] }}
-            />*/}
+            >
+               <Field name="" />
+               <FormDebug force />
+            </Form>*/}
 
-            {/*<CustomMediaForm />*/}
-            {/*<Form schema={schema.media} initialValues={config.media} />*/}
+            <CustomMediaForm />
+            {/*<Form schema={schema.media} initialValues={config.media} validateOn="change">
+               <Field name="" />
+            </Form>*/}
 
             {/*<Form
                schema={removeKeyRecursively(schema.media, "pattern") as any}
@@ -166,8 +263,16 @@ export default function JsonSchemaForm3() {
 function CustomMediaForm() {
    const { schema, config } = useBknd();
 
+   config.media.storage.body_max_size = 1;
+   schema.media.properties.storage.properties.body_max_size.minimum = 0;
+
    return (
-      <Form schema={schema.media} initialValues={config.media} className="flex flex-col gap-3">
+      <Form
+         schema={schema.media}
+         initialValues={config.media}
+         className="flex flex-col gap-3"
+         validateOn="change"
+      >
          <Field name="enabled" />
          <Field name="basepath" />
          <Field name="entity_name" />
@@ -175,6 +280,7 @@ function CustomMediaForm() {
          <AnyOf.Root path="adapter">
             <CustomMediaFormAdapter />
          </AnyOf.Root>
+         <FormDebug force />
       </Form>
    );
 }
@@ -197,7 +303,7 @@ function CustomMediaFormAdapter() {
          </div>
 
          {ctx.selected !== null && (
-            <FormContextOverride schema={ctx.selectedSchema} path={ctx.path} overrideData>
+            <FormContextOverride schema={ctx.selectedSchema} prefix={ctx.path}>
                <Field name="type" hidden />
                <ObjectField path="config" wrapperProps={{ label: false, wrapper: "group" }} />
             </FormContextOverride>

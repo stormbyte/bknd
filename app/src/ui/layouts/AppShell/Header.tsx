@@ -73,18 +73,15 @@ export function HeaderNavigation() {
       <>
          <nav className="hidden md:flex flex-row gap-2.5 pl-0 p-2.5 items-center">
             {items.map((item) => (
-               <Tooltip
-                  key={item.label}
-                  label={item.tooltip}
-                  disabled={typeof item.tooltip === "undefined"}
-                  position="bottom"
+               <NavLink
+                  key={item.href}
+                  as={Link}
+                  href={item.href}
+                  Icon={item.Icon}
+                  disabled={item.disabled}
                >
-                  <div>
-                     <NavLink as={Link} href={item.href} Icon={item.Icon} disabled={item.disabled}>
-                        {item.label}
-                     </NavLink>
-                  </div>
-               </Tooltip>
+                  {item.label}
+               </NavLink>
             ))}
          </nav>
          <nav className="flex md:hidden flex-row items-center">

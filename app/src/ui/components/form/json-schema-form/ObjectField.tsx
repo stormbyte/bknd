@@ -1,9 +1,9 @@
-import type { JsonError } from "json-schema-library";
 import type { JSONSchema } from "json-schema-to-ts";
+import { isTypeSchema } from "ui/components/form/json-schema-form/utils";
 import { AnyOfField } from "./AnyOfField";
 import { Field } from "./Field";
 import { FieldWrapper, type FieldwrapperProps } from "./FieldWrapper";
-import { useFieldContext } from "./Form";
+import { useDerivedFieldContext } from "./Form";
 
 export type ObjectFieldProps = {
    path?: string;
@@ -18,29 +18,28 @@ export const ObjectField = ({
    label: _label,
    wrapperProps = {}
 }: ObjectFieldProps) => {
-   const ctx = useFieldContext(path);
+   const ctx = useDerivedFieldContext(path, _schema);
    const schema = _schema ?? ctx.schema;
-   if (!schema) return "ObjectField: no schema";
+   if (!isTypeSchema(schema)) return `ObjectField "${path}": no schema`;
    const properties = schema.properties ?? {};
 
    return (
       <FieldWrapper
-         pointer={path}
-         errors={ctx.errors}
+         name={path}
          schema={{ ...schema, description: undefined }}
          wrapper="fieldset"
          {...wrapperProps}
       >
          {Object.keys(properties).map((prop) => {
             const schema = properties[prop];
-            const pointer = `${path}/${prop}`.replace(/\/+/g, "/");
-            if (!schema) return;
+            const name = [path, prop].filter(Boolean).join(".");
+            if (typeof schema === "undefined" || typeof schema === "boolean") return;
 
             if (schema.anyOf || schema.oneOf) {
-               return <AnyOfField key={pointer} path={pointer} />;
+               return <AnyOfField key={name} path={name} />;
             }
 
-            return <Field key={pointer} name={pointer} />;
+            return <Field key={name} name={name} />;
          })}
       </FieldWrapper>
    );

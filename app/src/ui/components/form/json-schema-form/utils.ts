@@ -50,7 +50,7 @@ export function flatten(obj: any, parentKey = "", result: any = {}): any {
 // @todo: make sure it's in the right order
 export function unflatten(
    obj: Record<string, string>,
-   schema: JSONSchema,
+   schema: JsonSchema,
    selections?: Record<string, number | undefined>
 ) {
    const result = {};
@@ -78,11 +78,7 @@ export function unflatten(
    return result;
 }
 
-export function coerce(
-   value: any,
-   schema: Exclude<JSONSchema, boolean>,
-   opts?: { required?: boolean }
-) {
+export function coerce(value: any, schema: JsonSchema, opts?: { required?: boolean }) {
    if (!value && typeof opts?.required === "boolean" && !opts.required) {
       return undefined;
    }
@@ -121,16 +117,25 @@ export function normalizePath(path: string) {
       : `#/${path.replace(/#?\/?/, "").replace(/\./g, "/").replace(/\[/g, "/").replace(/\]/g, "")}`;
 }
 
+export function pathToPointer(path: string) {
+   return "#/" + (path.includes(".") ? path.split(".").join("/") : path);
+}
+
 export function prefixPointer(pointer: string, prefix: string) {
-   return pointer.replace("#/", `#/${prefix}/`).replace(/\/\//g, "/");
+   return pointer.replace("#/", `#/${prefix.length > 0 ? prefix + "/" : ""}`).replace(/\/\//g, "/");
+}
+
+export function prefixPath(path: string = "", prefix: string = "") {
+   const p = path.includes(".") ? path.split(".") : [path];
+   return [prefix, ...p].filter(Boolean).join(".");
 }
 
 export function getParentPointer(pointer: string) {
    return pointer.substring(0, pointer.lastIndexOf("/"));
 }
 
-export function isRequired(pointer: string, schema: JSONSchema, data?: any) {
-   if (pointer === "#/") {
+export function isRequired(pointer: string, schema: JsonSchema, data?: any) {
+   if (pointer === "#/" || !schema) {
       return false;
    }
    const lib = new Draft2019(schema as any);
@@ -144,13 +149,6 @@ export function isRequired(pointer: string, schema: JSONSchema, data?: any) {
    const parentSchema = lib.getSchema({ pointer: parentPointer, data });
    const required = parentSchema?.required?.includes(pointer.split("/").pop()!);
 
-   /*console.log("isRequired", {
-      pointer,
-      parentPointer,
-      parent: parentSchema ? JSON.parse(JSON.stringify(parentSchema)) : null,
-      required
-   });*/
-
    return !!required;
 }
 
@@ -162,13 +160,14 @@ export function isType(_type: TType, _compare: TType) {
    return compare.some((t) => type.includes(t));
 }
 
-export function getLabel(name: string, schema: JSONSchema) {
+export function getLabel(name: string, schema: JsonSchema) {
    if (typeof schema === "object" && "title" in schema) return schema.title;
-   const label = name.includes("/") ? (name.split("/").pop() ?? "") : name;
+   if (!name) return "";
+   const label = name.includes(".") ? (name.split(".").pop() ?? "") : name;
    return autoFormatString(label);
 }
 
-export function getMultiSchema(schema: JSONSchema): Exclude<JSONSchema, boolean>[] | undefined {
+export function getMultiSchema(schema: JsonSchema): JsonSchema[] | undefined {
    if (!schema || typeof schema !== "object") return;
    return (schema.anyOf ?? schema.oneOf) as any;
 }
@@ -176,8 +175,9 @@ export function getMultiSchema(schema: JSONSchema): Exclude<JSONSchema, boolean>
 export function getMultiSchemaMatched(
    schema: JsonSchema,
    data: any
-): [number, Exclude<JSONSchema, boolean>[], Exclude<JSONSchema, boolean> | undefined] {
+): [number, JsonSchema[], JsonSchema | undefined] {
    const multiSchema = getMultiSchema(schema);
+   //console.log("getMultiSchemaMatched", schema, data, multiSchema);
    if (!multiSchema) return [-1, [], undefined];
    const index = multiSchema.findIndex((subschema) => {
       const lib = new Draft2019(subschema as any);
@@ -220,7 +220,7 @@ export function omitSchema<Given extends JSONSchema>(_schema: Given, keys: strin
    return [updated, reducedConfig];
 }
 
-export function isTypeSchema(schema?: JSONSchema): schema is Exclude<JSONSchema, boolean> {
+export function isTypeSchema(schema?: JsonSchema): schema is JsonSchema {
    return typeof schema === "object" && "type" in schema && !isType(schema.type, "error");
 }
 

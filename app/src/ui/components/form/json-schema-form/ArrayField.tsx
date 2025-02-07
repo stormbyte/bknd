@@ -1,49 +1,33 @@
 import { IconLibraryPlus, IconTrash } from "@tabler/icons-react";
-import type { JSONSchema } from "json-schema-to-ts";
+import type { JsonSchema } from "json-schema-library";
+import { isEqual } from "lodash-es";
+import { memo, useMemo } from "react";
 import { Button } from "ui/components/buttons/Button";
 import { IconButton } from "ui/components/buttons/IconButton";
-import * as Formy from "ui/components/form/Formy";
 import { Dropdown } from "ui/components/overlay/Dropdown";
+import { useEvent } from "ui/hooks/use-event";
 import { FieldComponent } from "./Field";
 import { FieldWrapper } from "./FieldWrapper";
-import { useFieldContext } from "./Form";
+import { useDerivedFieldContext, useFormContext, useFormValue } from "./Form";
 import { coerce, getMultiSchema, getMultiSchemaMatched } from "./utils";
 
 export const ArrayField = ({
    path = "",
    schema: _schema
-}: { path?: string; schema?: Exclude<JSONSchema, boolean> }) => {
-   const { setValue, value, pointer, required, ...ctx } = useFieldContext(path);
+}: { path?: string; schema?: JsonSchema }) => {
+   const { setValue, pointer, required, ...ctx } = useDerivedFieldContext(path, _schema);
    const schema = _schema ?? ctx.schema;
    if (!schema || typeof schema === "undefined") return `ArrayField(${path}): no schema ${pointer}`;
-
-   const itemsMultiSchema = getMultiSchema(schema.items);
-
-   function handleAdd(template?: any) {
-      const currentIndex = value?.length ?? 0;
-      const newPointer = `${path}/${currentIndex}`.replace(/\/+/g, "/");
-      setValue(newPointer, template ?? ctx.lib.getTemplate(undefined, schema!.items));
-   }
-
-   function handleUpdate(pointer: string, value: any) {
-      setValue(pointer, value);
-   }
-
-   function handleDelete(pointer: string) {
-      return () => {
-         ctx.deleteValue(pointer);
-      };
-   }
 
    // if unique items with enum
    if (schema.uniqueItems && typeof schema.items === "object" && "enum" in schema.items) {
       return (
-         <FieldWrapper pointer={path} schema={schema} wrapper="fieldset">
+         <FieldWrapper name={path} schema={schema} wrapper="fieldset">
             <FieldComponent
                required
+               name={path}
                schema={schema.items}
                multiple
-               value={value}
                className="h-auto"
                onChange={(e: any) => {
                   // @ts-ignore
@@ -56,48 +40,101 @@ export const ArrayField = ({
    }
 
    return (
-      <FieldWrapper pointer={path} schema={schema} wrapper="fieldset">
-         {value?.map((v, index: number) => {
-            const pointer = `${path}/${index}`.replace(/\/+/g, "/");
-            let subschema = schema.items;
-            if (itemsMultiSchema) {
-               const [, , _subschema] = getMultiSchemaMatched(schema.items, v);
-               subschema = _subschema;
+      <FieldWrapper name={path} schema={schema} wrapper="fieldset">
+         <ArrayIterator name={path}>
+            {({ value }) =>
+               value?.map((v, index: number) => (
+                  <ArrayItem key={index} path={path} index={index} schema={schema} />
+               ))
             }
-
-            return (
-               <div key={pointer} className="flex flex-row gap-2">
-                  <FieldComponent
-                     name={pointer}
-                     schema={subschema!}
-                     value={v}
-                     onChange={(e) => {
-                        handleUpdate(pointer, coerce(e.target.value, subschema!));
-                     }}
-                     className="w-full"
-                  />
-                  <IconButton Icon={IconTrash} onClick={handleDelete(pointer)} size="sm" />
-               </div>
-            );
-         })}
+         </ArrayIterator>
          <div className="flex flex-row">
-            {itemsMultiSchema ? (
-               <Dropdown
-                  dropdownWrapperProps={{
-                     className: "min-w-0"
-                  }}
-                  items={itemsMultiSchema.map((s, i) => ({
-                     label: s!.title ?? `Option ${i + 1}`,
-                     onClick: () => handleAdd(ctx.lib.getTemplate(undefined, s!))
-                  }))}
-                  onClickItem={console.log}
-               >
-                  <Button IconLeft={IconLibraryPlus}>Add</Button>
-               </Dropdown>
-            ) : (
-               <Button onClick={() => handleAdd()}>Add</Button>
-            )}
+            <ArrayAdd path={path} schema={schema} />
          </div>
       </FieldWrapper>
    );
+};
+
+const ArrayItem = memo(({ path, index, schema }: any) => {
+   const { value, ...ctx } = useDerivedFieldContext(path, schema, (ctx) => {
+      return ctx.value?.[index];
+   });
+   const pointer = [path, index].join(".");
+   let subschema = schema.items;
+   const itemsMultiSchema = getMultiSchema(schema.items);
+   if (itemsMultiSchema) {
+      const [, , _subschema] = getMultiSchemaMatched(schema.items, value);
+      subschema = _subschema;
+   }
+
+   const handleUpdate = useEvent((pointer: string, value: any) => {
+      ctx.setValue(pointer, value);
+   });
+
+   const handleDelete = useEvent((pointer: string) => {
+      ctx.deleteValue(pointer);
+   });
+
+   const DeleteButton = useMemo(
+      () => <IconButton Icon={IconTrash} onClick={() => handleDelete(pointer)} size="sm" />,
+      [pointer]
+   );
+
+   return (
+      <div key={pointer} className="flex flex-row gap-2">
+         <FieldComponent
+            name={pointer}
+            schema={subschema!}
+            value={value}
+            onChange={(e) => {
+               handleUpdate(pointer, coerce(e.target.value, subschema!));
+            }}
+            className="w-full"
+         />
+         {DeleteButton}
+      </div>
+   );
+}, isEqual);
+
+const ArrayIterator = memo(
+   ({ name, children }: any) => {
+      return children(useFormValue(name));
+   },
+   (prev, next) => prev.value.length === next.value.length
+);
+
+const ArrayAdd = ({ schema, path }: { schema: JsonSchema; path: string }) => {
+   const {
+      setValue,
+      value: { currentIndex },
+      ...ctx
+   } = useDerivedFieldContext(path, schema, (ctx) => {
+      return { currentIndex: ctx.value?.length ?? 0 };
+   });
+   const itemsMultiSchema = getMultiSchema(schema.items);
+
+   function handleAdd(template?: any) {
+      //const currentIndex = value?.length ?? 0;
+      const newPointer = `${path}/${currentIndex}`.replace(/\/+/g, "/");
+      setValue(newPointer, template ?? ctx.lib.getTemplate(undefined, schema!.items));
+   }
+
+   if (itemsMultiSchema) {
+      return (
+         <Dropdown
+            dropdownWrapperProps={{
+               className: "min-w-0"
+            }}
+            items={itemsMultiSchema.map((s, i) => ({
+               label: s!.title ?? `Option ${i + 1}`,
+               onClick: () => handleAdd(ctx.lib.getTemplate(undefined, s!))
+            }))}
+            onClickItem={console.log}
+         >
+            <Button IconLeft={IconLibraryPlus}>Add</Button>
+         </Dropdown>
+      );
+   }
+
+   return <Button onClick={() => handleAdd()}>Add</Button>;
 };
