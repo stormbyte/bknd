@@ -30,7 +30,7 @@ const schema2 = {
       }
    },
    required: ["age"]
-};
+} as const satisfies JSONSchema;
 
 export default function JsonSchemaForm3() {
    const { schema: _schema, config } = useBknd();
@@ -46,7 +46,9 @@ export default function JsonSchemaForm3() {
    return (
       <Scrollable>
          <div className="flex flex-col p-3">
-            {/*<Form
+            <Form
+               onChange={(data) => console.log("change", data)}
+               onSubmit={(data) => console.log("submit", data)}
                schema={{
                   type: "object",
                   properties: {
@@ -59,12 +61,14 @@ export default function JsonSchemaForm3() {
                         }
                      }
                   },
-                  required: ["age"]
+                  required: ["age"],
+                  additionalProperties: false
                }}
                initialValues={{ name: "Peter", age: 20, deep: { nested: "hello" } }}
                className="flex flex-col gap-3"
                validateOn="change"
-            />*/}
+               options={{ debug: true }}
+            />
 
             {/*<Form
                schema={{
@@ -245,12 +249,12 @@ export default function JsonSchemaForm3() {
             </Form>*/}
 
             {/*<CustomMediaForm />*/}
-            <Form
+            {/*<Form
                schema={schema.media}
                initialValues={config.media as any}
                onSubmit={console.log}
                validateOn="change"
-            />
+            />*/}
 
             {/*<Form
                schema={removeKeyRecursively(schema.media, "pattern") as any}

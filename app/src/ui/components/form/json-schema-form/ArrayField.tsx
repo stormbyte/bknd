@@ -31,7 +31,7 @@ export const ArrayField = ({
                onChange={(e: any) => {
                   // @ts-ignore
                   const selected = Array.from(e.target.selectedOptions).map((o) => o.value);
-                  setValue(pointer, selected);
+                  setValue(ctx.path, selected);
                }}
             />
          </FieldWrapper>

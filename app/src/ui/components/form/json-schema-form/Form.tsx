@@ -43,24 +43,9 @@ type FormState<Data = any> = {
    data: Data;
 };
 
-export type FormProps<
-   Schema extends JSONSchema = JSONSchema,
-   Data = Schema extends JSONSchema ? FromSchema<Schema> : any,
-   InitialData = Schema extends JSONSchema ? FromSchema<Schema> : any
-> = Omit<ComponentPropsWithoutRef<"form">, "onChange" | "onSubmit"> & {
-   schema: Schema;
-   validateOn?: "change" | "submit";
-   initialOpts?: LibTemplateOptions;
-   ignoreKeys?: string[];
-   onChange?: (data: Partial<Data>, name: string, value: any) => void;
-   onSubmit?: (data: Data) => void | Promise<void>;
-   onInvalidSubmit?: (errors: JsonError[], data: Partial<Data>) => void;
-   hiddenSubmit?: boolean;
-   options?: {
-      debug?: boolean;
-      keepEmpty?: boolean;
-   };
-   initialValues?: InitialData;
+type FormOptions = {
+   debug?: boolean;
+   keepEmpty?: boolean;
 };
 
 export type FormContext<Data> = {
@@ -72,7 +57,7 @@ export type FormContext<Data> = {
    submitting: boolean;
    schema: LibJsonSchema;
    lib: Draft2019;
-   options: FormProps["options"];
+   options: FormOptions;
    root: string;
    _formStateAtom: PrimitiveAtom<FormState<Data>>;
 };
@@ -81,8 +66,8 @@ const FormContext = createContext<FormContext<any>>(undefined!);
 FormContext.displayName = "FormContext";
 
 export function Form<
-   Schema extends JSONSchema = JSONSchema,
-   Data = Schema extends JSONSchema ? FromSchema<Schema> : any
+   const Schema extends JSONSchema,
+   const Data = Schema extends JSONSchema ? FromSchema<Schema> : any
 >({
    schema: _schema,
    initialValues: _initialValues,
@@ -96,7 +81,18 @@ export function Form<
    ignoreKeys = [],
    options = {},
    ...props
-}: FormProps<Schema, Data>) {
+}: Omit<ComponentPropsWithoutRef<"form">, "onChange" | "onSubmit"> & {
+   schema: Schema;
+   validateOn?: "change" | "submit";
+   initialOpts?: LibTemplateOptions;
+   ignoreKeys?: string[];
+   onChange?: (data: Partial<Data>, name: string, value: any) => void;
+   onSubmit?: (data: Data) => void | Promise<void>;
+   onInvalidSubmit?: (errors: JsonError[], data: Partial<Data>) => void;
+   hiddenSubmit?: boolean;
+   options?: FormOptions;
+   initialValues?: Schema extends JSONSchema ? FromSchema<Schema> : never;
+}) {
    const [schema, initial] = omitSchema(_schema, ignoreKeys, _initialValues);
    const lib = useMemo(() => new Draft2019(schema), [JSON.stringify(schema)]);
    const initialValues = initial ?? lib.getTemplate(undefined, schema, initialOpts);

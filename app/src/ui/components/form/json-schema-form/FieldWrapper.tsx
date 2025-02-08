@@ -1,4 +1,3 @@
-import { Popover } from "@mantine/core";
 import { IconBug } from "@tabler/icons-react";
 import type { JsonSchema } from "json-schema-library";
 import { Children, type ReactElement, type ReactNode, cloneElement, isValidElement } from "react";
@@ -10,6 +9,7 @@ import {
    useFormError,
    useFormValue
 } from "ui/components/form/json-schema-form/Form";
+import { Popover } from "ui/components/overlay/Popover";
 import { getLabel } from "./utils";
 
 export type FieldwrapperProps = {
@@ -62,6 +62,7 @@ export function FieldWrapper({
                {label} {required && <span className="font-medium opacity-30">*</span>}
             </Formy.Label>
          )}
+
          <div className="flex flex-row gap-2">
             <div className="flex flex-1 flex-col gap-3">
                {Children.count(children) === 1 && isValidElement(children)
@@ -96,14 +97,15 @@ const FieldDebug = ({
    const errors = useFormError(name, { strict: true });
 
    return (
-      <div className="absolute right-0 top-0">
-         {/* @todo: use radix */}
-         <Popover>
-            <Popover.Target>
-               <IconButton Icon={IconBug} size="xs" className="opacity-30" />
-            </Popover.Target>
-            <Popover.Dropdown>
+      <div className="absolute top-0 right-0">
+         <Popover
+            overlayProps={{
+               className: "max-w-none"
+            }}
+            position="bottom-end"
+            target={({ toggle }) => (
                <JsonViewer
+                  className="bg-background pr-3 text-sm"
                   json={{
                      name,
                      value,
@@ -112,9 +114,10 @@ const FieldDebug = ({
                      errors
                   }}
                   expand={6}
-                  className="p-0"
                />
-            </Popover.Dropdown>
+            )}
+         >
+            <IconButton Icon={IconBug} size="xs" className="opacity-30" />
          </Popover>
       </div>
    );
