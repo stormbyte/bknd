@@ -21,6 +21,7 @@ export type FieldwrapperProps = {
    wrapper?: "group" | "fieldset";
    hidden?: boolean;
    children: ReactElement | ReactNode;
+   errorPlacement?: "top" | "bottom";
 };
 
 export function FieldWrapper({
@@ -30,6 +31,7 @@ export function FieldWrapper({
    schema,
    wrapper,
    hidden,
+   errorPlacement = "bottom",
    children
 }: FieldwrapperProps) {
    const errors = useFormError(name, { strict: true });
@@ -38,12 +40,17 @@ export function FieldWrapper({
    const description = schema?.description;
    const label = typeof _label !== "undefined" ? _label : schema ? getLabel(name, schema) : name;
 
+   const Errors = errors.length > 0 && (
+      <Formy.ErrorMessage>{errors.map((e) => e.message).join(", ")}</Formy.ErrorMessage>
+   );
+
    return (
       <Formy.Group
          error={errors.length > 0}
          as={wrapper === "fieldset" ? "fieldset" : "div"}
          className={hidden ? "hidden" : "relative"}
       >
+         {errorPlacement === "top" && Errors}
          <FieldDebug name={name} schema={schema} required={required} />
 
          {label && (
@@ -73,9 +80,7 @@ export function FieldWrapper({
             </div>
          </div>
          {description && <Formy.Help>{description}</Formy.Help>}
-         {errors.length > 0 && (
-            <Formy.ErrorMessage>{errors.map((e) => e.message).join(", ")}</Formy.ErrorMessage>
-         )}
+         {errorPlacement === "bottom" && Errors}
       </Formy.Group>
    );
 }

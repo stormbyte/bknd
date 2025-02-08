@@ -5,6 +5,7 @@ import { twMerge } from "tailwind-merge";
 import { useBknd } from "ui/client/BkndProvider";
 import { useBkndMedia } from "ui/client/schema/media/use-bknd-media";
 import { Button } from "ui/components/buttons/Button";
+import { Alert } from "ui/components/display/Alert";
 import { Message } from "ui/components/display/Message";
 import * as Formy from "ui/components/form/Formy";
 import {
@@ -14,7 +15,8 @@ import {
    FormContextOverride,
    FormDebug,
    ObjectField,
-   Subscribe
+   Subscribe,
+   useFormError
 } from "ui/components/form/json-schema-form";
 import { Media } from "ui/elements";
 import { useBrowserTitle } from "ui/hooks/use-browser-title";
@@ -37,7 +39,12 @@ const formConfig = {
 };
 
 function MediaSettingsInternal() {
-   const { config, schema, actions } = useBkndMedia();
+   const { config, schema: _schema, actions } = useBkndMedia();
+   const schema = JSON.parse(JSON.stringify(_schema));
+
+   schema.if = { properties: { enabled: { const: true } } };
+   // biome-ignore lint/suspicious/noThenProperty: <explanation>
+   schema.then = { required: ["adapter"] };
 
    async function onSubmit(data: any) {
       console.log("submit", data);
@@ -71,6 +78,7 @@ function MediaSettingsInternal() {
                )}
             </Subscribe>
             <AppShell.Scrollable>
+               <RootFormError />
                <div className="flex flex-col gap-3 p-3">
                   <Field name="enabled" />
                   <div className="flex flex-col gap-3 relative">
@@ -91,6 +99,19 @@ function MediaSettingsInternal() {
       </>
    );
 }
+
+const RootFormError = () => {
+   const errors = useFormError("", { strict: true });
+   if (errors.length === 0) return null;
+
+   return (
+      <Alert.Exception>
+         {errors.map((error, i) => (
+            <div key={i}>{error.message}</div>
+         ))}
+      </Alert.Exception>
+   );
+};
 
 const Icons = [IconBrandAws, IconCloud, IconServer];
 

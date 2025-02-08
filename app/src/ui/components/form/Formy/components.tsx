@@ -186,7 +186,7 @@ export const Switch = forwardRef<
       onChange?: (e: { target: { value: boolean } }) => void;
       onCheckedChange?: (checked: boolean) => void;
    }
->(({ type, ...props }, ref) => {
+>(({ type, required, ...props }, ref) => {
    return (
       <RadixSwitch.Root
          className="relative h-7 w-12 p-[2px] cursor-pointer rounded-full bg-muted border border-primary/10 outline-none data-[state=checked]:bg-primary/75 appearance-none transition-colors hover:bg-muted/80"

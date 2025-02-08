@@ -28,6 +28,7 @@ export const ObjectField = ({
          name={path}
          schema={{ ...schema, description: undefined }}
          wrapper="fieldset"
+         errorPlacement="top"
          {...wrapperProps}
       >
          {Object.keys(properties).map((prop) => {

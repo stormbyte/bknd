@@ -8,7 +8,8 @@ import {
    Form,
    FormContextOverride,
    FormDebug,
-   ObjectField
+   ObjectField,
+   useFormError
 } from "ui/components/form/json-schema-form";
 import { Scrollable } from "ui/layouts/AppShell/AppShell";
 
@@ -32,10 +33,14 @@ const schema2 = {
 };
 
 export default function JsonSchemaForm3() {
-   const { schema, config } = useBknd();
+   const { schema: _schema, config } = useBknd();
+   const schema = JSON.parse(JSON.stringify(_schema));
 
    config.media.storage.body_max_size = 1;
    schema.media.properties.storage.properties.body_max_size.minimum = 0;
+   schema.media.if = { properties: { enabled: { const: true } } };
+   // biome-ignore lint/suspicious/noThenProperty: <explanation>
+   schema.media.then = { required: ["adapter"] };
    //schema.media.properties.adapter.anyOf[2].properties.config.properties.path.minLength = 1;
 
    return (
@@ -243,11 +248,9 @@ export default function JsonSchemaForm3() {
             <Form
                schema={schema.media}
                initialValues={config.media as any}
-               /* validateOn="change"*/
                onSubmit={console.log}
-            >
-               <Field name="" />
-            </Form>
+               validateOn="change"
+            />
 
             {/*<Form
                schema={removeKeyRecursively(schema.media, "pattern") as any}
@@ -301,18 +304,23 @@ const ss = {
 } as const satisfies JSONSchema;
 
 function CustomMediaForm() {
-   const { schema, config } = useBknd();
+   const { schema: _schema, config } = useBknd();
+   const schema = JSON.parse(JSON.stringify(_schema));
 
    config.media.storage.body_max_size = 1;
    schema.media.properties.storage.properties.body_max_size.minimum = 0;
+   schema.media.if = { properties: { enabled: { const: true } } };
+   // biome-ignore lint/suspicious/noThenProperty: <explanation>
+   schema.media.then = { required: ["adapter"] };
 
    return (
       <Form
          schema={schema.media}
-         initialValues={config.media as any}
+         /*initialValues={config.media as any}*/
          className="flex flex-col gap-3"
          validateOn="change"
       >
+         <Test />
          <Field name="enabled" />
          <Field name="basepath" />
          <Field name="entity_name" />
@@ -320,10 +328,16 @@ function CustomMediaForm() {
          <AnyOf.Root path="adapter">
             <CustomMediaFormAdapter />
          </AnyOf.Root>
-         <FormDebug force />
+         {/*<FormDebug force />*/}
       </Form>
    );
 }
+
+const Test = () => {
+   const errors = useFormError("", { strict: true });
+   return <div>{errors.map((e) => e.message).join("\n")}</div>;
+   //return <pre>{JSON.stringify(errors, null, 2)}</pre>;
+};
 
 function CustomMediaFormAdapter() {
    const ctx = AnyOf.useContext();

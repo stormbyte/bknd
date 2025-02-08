@@ -119,12 +119,12 @@ export function Form<
 
    // @ts-ignore
    async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+      const { data, errors } = validate();
       if (onSubmit) {
          e.preventDefault();
          setFormState((prev) => ({ ...prev, submitting: true }));
 
          try {
-            const { data, errors } = validate();
             if (errors.length === 0) {
                await onSubmit(data as Data);
             } else {
@@ -135,6 +135,10 @@ export function Form<
             console.warn(e);
          }
          setFormState((prev) => ({ ...prev, submitting: false }));
+         return false;
+      } else if (errors.length > 0) {
+         e.preventDefault();
+         onInvalidSubmit?.(errors, data);
          return false;
       }
    }

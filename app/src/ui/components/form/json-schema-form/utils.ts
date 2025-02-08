@@ -26,15 +26,23 @@ export function coerce(value: any, schema: JsonSchema, opts?: { required?: boole
    return value;
 }
 
+const PathFilter = (value: any) => typeof value !== "undefined" && value !== null && value !== "";
+
 export function pathToPointer(path: string) {
-   return "#/" + (path.includes(".") ? path.split(".").join("/") : path);
+   const p = path.includes(".") ? path.split(".") : [path];
+   return (
+      "#" +
+      p
+         .filter(PathFilter)
+         .map((part) => "/" + part)
+         .join("")
+   );
 }
 
 export function prefixPointer(pointer: string, prefix: string) {
-   return pointer.replace("#/", `#/${prefix.length > 0 ? prefix + "/" : ""}`).replace(/\/\//g, "/");
+   const p = pointer.replace("#", "").split("/");
+   return "#" + p.map((part, i) => (i === 1 ? prefix : part)).join("/");
 }
-
-const PathFilter = (value: any) => typeof value !== "undefined" && value !== null && value !== "";
 
 export function prefixPath(path: string = "", prefix: string | number = "") {
    const p = path.includes(".") ? path.split(".") : [path];
