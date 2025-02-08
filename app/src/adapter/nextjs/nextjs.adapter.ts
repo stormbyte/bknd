@@ -1,6 +1,8 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { Api, type App } from "bknd";
-import { type FrameworkBkndConfig, createFrameworkApp, nodeRequestToRequest } from "../index";
+import { nodeRequestToRequest } from "adapter/utils";
+import type { App } from "bknd";
+import { type FrameworkBkndConfig, createFrameworkApp } from "bknd/adapter";
+import { Api } from "bknd/client";
 
 export type NextjsBkndConfig = FrameworkBkndConfig & {
    cleanSearch?: string[];
@@ -29,8 +31,10 @@ export function createApi({ req }: GetServerSidePropsContext) {
 }
 
 export function withApi<T>(handler: (ctx: GetServerSidePropsContext & { api: Api }) => T) {
-   return (ctx: GetServerSidePropsContext & { api: Api }) => {
-      return handler({ ...ctx, api: createApi(ctx) });
+   return async (ctx: GetServerSidePropsContext & { api: Api }) => {
+      const api = createApi(ctx);
+      await api.verifyAuth();
+      return handler({ ...ctx, api });
    };
 }
 

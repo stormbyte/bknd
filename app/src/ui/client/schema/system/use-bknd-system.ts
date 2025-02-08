@@ -1,8 +1,9 @@
 import { useBknd } from "ui/client/bknd";
+import { useTheme } from "ui/client/use-theme";
 
 export function useBkndSystem() {
    const { config, schema, actions: bkndActions } = useBknd();
-   const theme = config.server.admin.color_scheme ?? "light";
+   const { theme } = useTheme();
 
    const actions = {
       theme: {

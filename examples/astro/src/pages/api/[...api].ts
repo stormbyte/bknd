@@ -1,6 +1,6 @@
+import type { APIContext } from "astro";
 import { App } from "bknd";
-import { serve } from "bknd/adapter/astro";
-import { registerLocalMediaAdapter } from "bknd/adapter/node";
+import { registerLocalMediaAdapter, serve } from "bknd/adapter/astro";
 import { boolean, em, entity, text } from "bknd/data";
 import { secureRandomString } from "bknd/utils";
 
@@ -23,7 +23,7 @@ declare module "bknd/core" {
    interface DB extends Database {}
 }
 
-export const ALL = serve({
+export const ALL = serve<APIContext>({
    // we can use any libsql config, and if omitted, uses in-memory
    connection: {
       type: "libsql",

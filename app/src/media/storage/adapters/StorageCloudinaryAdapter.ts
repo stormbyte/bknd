@@ -9,7 +9,7 @@ export const cloudinaryAdapterConfig = Type.Object(
       api_secret: Type.String(),
       upload_preset: Type.Optional(Type.String())
    },
-   { title: "Cloudinary" }
+   { title: "Cloudinary", description: "Cloudinary media storage" }
 );
 
 export type CloudinaryConfig = Static<typeof cloudinaryAdapterConfig>;

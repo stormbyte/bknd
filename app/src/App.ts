@@ -1,6 +1,7 @@
 import type { CreateUserPayload } from "auth/AppAuth";
 import { Event } from "core/events";
 import { Connection, type LibSqlCredentials, LibsqlConnection } from "data";
+import type { Hono } from "hono";
 import {
    type InitialModuleConfigs,
    ModuleManager,
@@ -132,7 +133,7 @@ export class App {
       return this.modules.ctx().em;
    }
 
-   get fetch(): any {
+   get fetch(): Hono["fetch"] {
       return this.server.fetch;
    }
 
@@ -153,6 +154,10 @@ export class App {
 
    version() {
       return this.modules.version();
+   }
+
+   isBuilt(): boolean {
+      return this.modules.isBuilt();
    }
 
    registerAdminController(config?: AdminControllerOptions) {

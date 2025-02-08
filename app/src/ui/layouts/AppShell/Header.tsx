@@ -13,6 +13,7 @@ import {
 import { useAuth, useBkndWindowContext } from "ui/client";
 import { useBknd } from "ui/client/bknd";
 import { useBkndSystemTheme } from "ui/client/schema/system/use-bknd-system";
+import { useTheme } from "ui/client/use-theme";
 import { Button } from "ui/components/buttons/Button";
 import { IconButton } from "ui/components/buttons/IconButton";
 import { Logo } from "ui/components/display/Logo";
@@ -72,18 +73,15 @@ export function HeaderNavigation() {
       <>
          <nav className="hidden md:flex flex-row gap-2.5 pl-0 p-2.5 items-center">
             {items.map((item) => (
-               <Tooltip
-                  key={item.label}
-                  label={item.tooltip}
-                  disabled={typeof item.tooltip === "undefined"}
-                  position="bottom"
+               <NavLink
+                  key={item.href}
+                  as={Link}
+                  href={item.href}
+                  Icon={item.Icon}
+                  disabled={item.disabled}
                >
-                  <div>
-                     <NavLink as={Link} href={item.href} Icon={item.Icon} disabled={item.disabled}>
-                        {item.label}
-                     </NavLink>
-                  </div>
-               </Tooltip>
+                  {item.label}
+               </NavLink>
             ))}
          </nav>
          <nav className="flex md:hidden flex-row items-center">
@@ -114,9 +112,9 @@ function SidebarToggler() {
 }
 
 export function Header({ hasSidebar = true }) {
-   //const logoReturnPath = "";
    const { app } = useBknd();
-   const { logo_return_path = "/", color_scheme = "light" } = app.getAdminConfig();
+   const { theme } = useTheme();
+   const { logo_return_path = "/" } = app.getAdminConfig();
 
    return (
       <header
@@ -128,7 +126,7 @@ export function Header({ hasSidebar = true }) {
             native={logo_return_path !== "/"}
             className="max-h-full flex hover:bg-primary/5 link p-2.5 w-[134px] outline-none"
          >
-            <Logo theme={color_scheme} />
+            <Logo theme={theme} />
          </Link>
          <HeaderNavigation />
          <div className="flex flex-grow" />

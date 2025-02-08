@@ -1,9 +1,7 @@
 import { serve } from "bknd/adapter/cloudflare";
 
-import manifest from "__STATIC_CONTENT_MANIFEST";
-
 export default serve({
-   app: (env: Env) => ({
+   app: (args) => ({
       connection: {
          type: "libsql",
          config: {
@@ -13,6 +11,5 @@ export default serve({
    }),
    onBuilt: async (app) => {
       app.modules.server.get("/custom", (c) => c.json({ hello: "world" }));
-   },
-   manifest
+   }
 });

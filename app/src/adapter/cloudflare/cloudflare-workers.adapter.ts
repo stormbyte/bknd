@@ -1,18 +1,17 @@
-import type { CreateAppConfig } from "bknd";
+import type { FrameworkBkndConfig } from "bknd/adapter";
 import { Hono } from "hono";
 import { serveStatic } from "hono/cloudflare-workers";
-import type { FrameworkBkndConfig } from "../index";
 import { getCached } from "./modes/cached";
 import { getDurable } from "./modes/durable";
 import { getFresh, getWarm } from "./modes/fresh";
 
-export type CloudflareBkndConfig<Env = any> = Omit<FrameworkBkndConfig, "app"> & {
-   app: CreateAppConfig | ((env: Env) => CreateAppConfig);
+export type CloudflareBkndConfig<Env = any> = FrameworkBkndConfig<Context<Env>> & {
    mode?: "warm" | "fresh" | "cache" | "durable";
-   bindings?: (env: Env) => {
+   bindings?: (args: Context<Env>) => {
       kv?: KVNamespace;
       dobj?: DurableObjectNamespace;
    };
+   static?: "kv" | "assets";
    key?: string;
    keepAliveSeconds?: number;
    forceHttps?: boolean;
@@ -21,28 +20,33 @@ export type CloudflareBkndConfig<Env = any> = Omit<FrameworkBkndConfig, "app"> &
    html?: string;
 };
 
-export type Context = {
+export type Context<Env = any> = {
    request: Request;
-   env: any;
+   env: Env;
    ctx: ExecutionContext;
 };
 
-export function serve(config: CloudflareBkndConfig) {
+export function serve<Env = any>(config: CloudflareBkndConfig<Env>) {
    return {
-      async fetch(request: Request, env: any, ctx: ExecutionContext) {
+      async fetch(request: Request, env: Env, ctx: ExecutionContext) {
          const url = new URL(request.url);
-         const manifest = config.manifest;
 
-         if (manifest) {
+         if (config.manifest && config.static === "assets") {
+            console.warn("manifest is not useful with static 'assets'");
+         } else if (!config.manifest && config.static === "kv") {
+            throw new Error("manifest is required with static 'kv'");
+         }
+
+         if (config.manifest && config.static !== "assets") {
             const pathname = url.pathname.slice(1);
-            const assetManifest = JSON.parse(manifest);
+            const assetManifest = JSON.parse(config.manifest);
             if (pathname && pathname in assetManifest) {
                const hono = new Hono();
 
                hono.all("*", async (c, next) => {
                   const res = await serveStatic({
                      path: `./${pathname}`,
-                     manifest
+                     manifest: config.manifest!
                   })(c as any, next);
                   if (res instanceof Response) {
                      const ttl = 60 * 60 * 24 * 365;

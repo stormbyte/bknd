@@ -22,9 +22,17 @@ export function SocialLink({
    basepath = "/api/auth",
    children
 }: SocialLinkProps) {
+   const url = [basepath, provider, action].join("/");
+
    return (
-      <form method={method} action={[basepath, name, action].join("/")} className="w-full">
-         <Button type="submit" size="large" variant="outline" className="justify-center w-full">
+      <form method={method} action={url} className="w-full">
+         <Button
+            type="submit"
+            size="large"
+            variant="outline"
+            className="justify-center w-full"
+            IconLeft={icon}
+         >
             Continue with {label ?? ucFirstAllSnakeToPascalWithSpaces(provider)}
          </Button>
          {children}

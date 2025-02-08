@@ -1,7 +1,7 @@
 import { DurableObject } from "cloudflare:workers";
-import { createRuntimeApp } from "adapter";
-import type { CloudflareBkndConfig, Context } from "adapter/cloudflare";
 import type { App, CreateAppConfig } from "bknd";
+import { createRuntimeApp, makeConfig } from "bknd/adapter";
+import type { CloudflareBkndConfig, Context } from "../index";
 
 export async function getDurable(config: CloudflareBkndConfig, ctx: Context) {
    const { dobj } = config.bindings?.(ctx.env)!;
@@ -17,7 +17,7 @@ export async function getDurable(config: CloudflareBkndConfig, ctx: Context) {
    const id = dobj.idFromName(key);
    const stub = dobj.get(id) as unknown as DurableBkndApp;
 
-   const create_config = typeof config.app === "function" ? config.app(ctx.env) : config.app;
+   const create_config = makeConfig(config, ctx);
 
    const res = await stub.fire(ctx.request, {
       config: create_config,

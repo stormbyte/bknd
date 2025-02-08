@@ -1,6 +1,12 @@
-export * from "./node.adapter";
-export {
-   StorageLocalAdapter,
-   type LocalAdapterConfig
+import { registries } from "bknd";
+import {
+   type LocalAdapterConfig,
+   StorageLocalAdapter
 } from "../../media/storage/adapters/StorageLocalAdapter";
-export { registerLocalMediaAdapter } from "../index";
+
+export * from "./node.adapter";
+export { StorageLocalAdapter, type LocalAdapterConfig };
+
+export function registerLocalMediaAdapter() {
+   registries.media.register("local", StorageLocalAdapter);
+}

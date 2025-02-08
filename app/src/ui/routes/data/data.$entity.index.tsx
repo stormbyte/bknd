@@ -40,7 +40,7 @@ export function DataEntityList({ params }) {
    useBrowserTitle(["Data", entity?.label ?? params.entity]);
    const [navigate] = useNavigate();
    const search = useSearch(searchSchema, {
-      select: entity.getSelect(undefined, "form"),
+      select: entity.getSelect(undefined, "table"),
       sort: entity.getDefaultSort()
    });
 

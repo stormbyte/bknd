@@ -68,6 +68,12 @@ export type InitialModuleConfigs =
      } & ModuleConfigs)
    | PartialRec<ModuleConfigs>;
 
+enum Verbosity {
+   silent = 0,
+   error = 1,
+   log = 2
+}
+
 export type ModuleManagerOptions = {
    initial?: InitialModuleConfigs;
    eventManager?: EventManager<any>;
@@ -85,6 +91,8 @@ export type ModuleManagerOptions = {
    trustFetched?: boolean;
    // runs when initial config provided on a fresh database
    seed?: (ctx: ModuleBuildContext) => Promise<void>;
+   // wether
+   verbosity?: Verbosity;
 };
 
 type ConfigTable<Json = ModuleConfigs> = {
@@ -135,7 +143,7 @@ export class ModuleManager {
    private _built = false;
    private readonly _booted_with?: "provided" | "partial";
 
-   private logger = new DebugLogger(false);
+   private logger: DebugLogger;
 
    constructor(
       private readonly connection: Connection,
@@ -144,6 +152,7 @@ export class ModuleManager {
       this.__em = new EntityManager([__bknd], this.connection);
       this.modules = {} as Modules;
       this.emgr = new EventManager();
+      this.logger = new DebugLogger(this.verbosity === Verbosity.log);
       const context = this.ctx(true);
       let initial = {} as Partial<ModuleConfigs>;
 
@@ -169,6 +178,14 @@ export class ModuleManager {
 
          this.modules[key] = module;
       }
+   }
+
+   private get verbosity() {
+      return this.options?.verbosity ?? Verbosity.silent;
+   }
+
+   isBuilt(): boolean {
+      return this._built;
    }
 
    /**
@@ -241,20 +258,23 @@ export class ModuleManager {
       const startTime = performance.now();
 
       // disabling console log, because the table might not exist yet
-      const result = await withDisabledConsole(async () => {
-         const { data: result } = await this.repo().findOne(
-            { type: "config" },
-            {
-               sort: { by: "version", dir: "desc" }
+      const result = await withDisabledConsole(
+         async () => {
+            const { data: result } = await this.repo().findOne(
+               { type: "config" },
+               {
+                  sort: { by: "version", dir: "desc" }
+               }
+            );
+
+            if (!result) {
+               throw BkndError.with("no config");
             }
-         );
 
-         if (!result) {
-            throw BkndError.with("no config");
-         }
-
-         return result as unknown as ConfigTable;
-      }, ["log", "error", "warn"]);
+            return result as unknown as ConfigTable;
+         },
+         this.verbosity > Verbosity.silent ? [] : ["log", "error", "warn"]
+      );
 
       this.logger
          .log("took", performance.now() - startTime, "ms", {

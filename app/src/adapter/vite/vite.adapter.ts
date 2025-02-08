@@ -1,7 +1,8 @@
 import { serveStatic } from "@hono/node-server/serve-static";
 import { type DevServerOptions, default as honoViteDevServer } from "@hono/vite-dev-server";
-import { type RuntimeBkndConfig, createRuntimeApp } from "adapter";
 import type { App } from "bknd";
+import { type RuntimeBkndConfig, createRuntimeApp } from "bknd/adapter";
+import { registerLocalMediaAdapter } from "bknd/adapter/node";
 import { devServerConfig } from "./dev-server-config";
 
 export type ViteBkndConfig<Env = any> = RuntimeBkndConfig<Env> & {
@@ -28,10 +29,10 @@ ${addBkndContext ? "<!-- BKND_CONTEXT -->" : ""}
 }
 
 async function createApp(config: ViteBkndConfig = {}, env?: any) {
+   registerLocalMediaAdapter();
    return await createRuntimeApp(
       {
          ...config,
-         registerLocalMedia: true,
          adminOptions:
             config.setAdminHtml === false
                ? undefined

@@ -1,4 +1,3 @@
-import { IconCopy } from "@tabler/icons-react";
 import { TbCopy } from "react-icons/tb";
 import { JsonView } from "react-json-view-lite";
 import { twMerge } from "tailwind-merge";

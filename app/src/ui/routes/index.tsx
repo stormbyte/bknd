@@ -1,5 +1,6 @@
 import { Suspense, lazy } from "react";
 import { useBknd } from "ui/client/bknd";
+import { useTheme } from "ui/client/use-theme";
 import { Route, Router, Switch } from "wouter";
 import AuthRoutes from "./auth";
 import { AuthLogin } from "./auth/auth.login";
@@ -20,11 +21,11 @@ const TestRoutes = lazy(() => import("./test"));
 
 export function Routes() {
    const { app } = useBknd();
-   const { color_scheme: theme } = app.getAdminConfig();
+   const { theme } = useTheme();
    const { basepath } = app.getAdminConfig();
 
    return (
-      <div id="bknd-admin" className={(theme ?? "light") + " antialiased"}>
+      <div id="bknd-admin" className={theme + " antialiased"}>
          <Router base={basepath}>
             <Switch>
                <Route path="/auth/login" component={AuthLogin} />

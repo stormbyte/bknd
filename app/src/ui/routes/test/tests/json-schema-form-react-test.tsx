@@ -23,8 +23,8 @@ export default function JsonSchemaFormReactTest() {
       <>
          <Form
             schema={schema}
-            onChange={setData}
-            onSubmit={setData}
+            /*onChange={setData}
+            onSubmit={setData}*/
             validator={validator}
             validationMode="change"
          >

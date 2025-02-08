@@ -21,7 +21,6 @@ import {
    type ValueErrorIterator
 } from "@sinclair/typebox/errors";
 import { Check, Default, Value, type ValueError } from "@sinclair/typebox/value";
-import { cloneDeep } from "lodash-es";
 
 export type RecursivePartial<T> = {
    [P in keyof T]?: T[P] extends (infer U)[]
@@ -73,7 +72,7 @@ export class TypeInvalidError extends Error {
 }
 
 export function stripMark<O = any>(obj: O) {
-   const newObj = cloneDeep(obj);
+   const newObj = structuredClone(obj);
    mark(newObj, false);
    return newObj as O;
 }

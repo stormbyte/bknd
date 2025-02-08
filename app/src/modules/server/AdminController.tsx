@@ -70,7 +70,8 @@ export class AdminController extends Controller {
       hono.use("*", async (c, next) => {
          const obj = {
             user: auth.authenticator?.getUser(),
-            logout_route: this.withBasePath(authRoutes.logout)
+            logout_route: this.withBasePath(authRoutes.logout),
+            color_scheme: configs.server.admin.color_scheme
          };
          const html = await this.getHtml(obj);
          if (!html) {
@@ -190,6 +191,10 @@ export class AdminController extends Controller {
                   />
                   <link rel="icon" href={favicon} type="image/x-icon" />
                   <title>BKND</title>
+                  {/*<script
+                     crossOrigin="anonymous"
+                     src="//unpkg.com/react-scan/dist/auto.global.js"
+                  />*/}
                   {isProd ? (
                      <Fragment>
                         <script

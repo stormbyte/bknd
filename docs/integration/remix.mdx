@@ -10,7 +10,7 @@ Install bknd as a dependency:
 
 ## Serve the API
 Create a new api splat route file at `app/routes/api.$.ts`:
-``` tsx
+```ts
 // app/routes/api.$.ts
 import { serve } from "bknd/adapter/remix";
 
@@ -32,6 +32,9 @@ Now make sure that you wrap your root layout with the `ClientProvider` so that a
 share the same context:
 ```tsx
 // app/root.tsx
+import { withApi } from "bknd/adapter/remix"
+import { type Api, ClientProvider } from "bknd/client";
+
 export function Layout(props) {
    // nothing to change here, just for orientation
    return (
@@ -48,21 +51,12 @@ declare module "@remix-run/server-runtime" {
 }
 
 // export a loader that initiates the API
-// and pass it through the context
-export const loader = async (args: LoaderFunctionArgs) => {
-   const api = new Api({
-      host: new URL(args.request.url).origin,
-      headers: args.request.headers
-   });
-
-   // get the user from the API
-   const user = api.getUser();
-
-   // add api to the context
-   args.context.api = api;
-
-   return { user };
-};
+// and passes it down to args.context.api
+export const loader = withApi(async (args: LoaderFunctionArgs, api: Api) => {
+   return {
+      user: api.getUser()
+   };
+});
 
 export default function App() {
    const { user } = useLoaderData<typeof loader>();
@@ -93,15 +87,9 @@ Since the API has already been constructed in the root layout, you can now use i
 import type { LoaderFunctionArgs } from "@remix-run/server-runtime";
 import { useLoaderData } from "@remix-run/react";
 
-export const loader = async (args: LoaderFunctionArgs) => {
-   const { api } = args.context;
-
-   // get the authenticated user
-   const user = api.getAuthState().user;
-
-   // get the data from the API
+export const loader = async ({ context: { api } }: LoaderFunctionArgs) => {
    const { data } = await api.data.readMany("todos");
-   return { data, user };
+   return { data, user: api.getUser() };
 };
 
 export default function Index() {

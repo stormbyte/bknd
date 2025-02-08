@@ -30,7 +30,7 @@ export const ClientProvider = ({ children, baseUrl, user }: ClientProviderProps)
       console.error("error .....", e);
    }
 
-   console.log("api init", { host: actualBaseUrl, user: user ?? winCtx.user });
+   //console.log("api init", { host: actualBaseUrl, user: user ?? winCtx.user });
    const api = new Api({ host: actualBaseUrl, user: user ?? winCtx.user });
 
    return (
@@ -60,6 +60,7 @@ export const useBaseUrl = () => {
 type BkndWindowContext = {
    user?: TApiUser;
    logout_route: string;
+   color_scheme?: "light" | "dark";
 };
 export function useBkndWindowContext(): BkndWindowContext {
    if (typeof window !== "undefined" && window.__BKND__) {

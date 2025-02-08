@@ -259,7 +259,7 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
    }
 
    async requestCookieRefresh(c: Context) {
-      if (this.config.cookie.renew) {
+      if (this.config.cookie.renew && this.isUserLoggedIn()) {
          const token = await this.getAuthCookie(c);
          if (token) {
             await this.setAuthCookie(c, token);
@@ -299,8 +299,8 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
       }
    }
 
-   private getSuccessPath(c: Context) {
-      const p = (this.config.cookie.pathSuccess ?? "/").replace(/\/+$/, "/");
+   private getSafeUrl(c: Context, path: string) {
+      const p = path.replace(/\/+$/, "/");
 
       // nextjs doesn't support non-fq urls
       // but env could be proxied (stackblitz), so we shouldn't fq every url
@@ -312,19 +312,24 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
    }
 
    async respond(c: Context, data: AuthResponse | Error | any, redirect?: string) {
-      if (this.isJsonRequest(c)) {
-         return c.json(data);
-      }
-
-      const successUrl = this.getSuccessPath(c);
+      const successUrl = this.getSafeUrl(c, redirect ?? this.config.cookie.pathSuccess ?? "/");
       const referer = redirect ?? c.req.header("Referer") ?? successUrl;
       //console.log("auth respond", { redirect, successUrl, successPath });
 
       if ("token" in data) {
          await this.setAuthCookie(c, data.token);
+
+         if (this.isJsonRequest(c)) {
+            return c.json(data);
+         }
+
          // can't navigate to "/" – doesn't work on nextjs
          //console.log("auth success, redirecting to", successUrl);
          return c.redirect(successUrl);
+      }
+
+      if (this.isJsonRequest(c)) {
+         return c.json(data, 400);
       }
 
       let message = "An error occured";
