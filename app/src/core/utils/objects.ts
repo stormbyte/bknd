@@ -12,6 +12,20 @@ export function isObject(value: unknown): value is Record<string, unknown> {
    return value !== null && typeof value === "object";
 }
 
+export function omitKeys<T extends object, K extends keyof T>(
+   obj: T,
+   keys_: readonly K[]
+): Omit<T, Extract<K, keyof T>> {
+   const keys = new Set(keys_);
+   const result = {} as Omit<T, Extract<K, keyof T>>;
+   for (const [key, value] of Object.entries(obj) as [keyof T, T[keyof T]][]) {
+      if (!keys.has(key as K)) {
+         (result as any)[key] = value;
+      }
+   }
+   return result;
+}
+
 export function safelyParseObjectValues<T extends { [key: string]: any }>(obj: T): T {
    return Object.entries(obj).reduce((acc, [key, value]) => {
       try {
@@ -265,4 +279,83 @@ export function mergeObjectWith(object, source, customizer) {
    }
 
    return object;
+}
+
+export function isEqual(value1: any, value2: any): boolean {
+   // Each type corresponds to a particular comparison algorithm
+   const getType = (value: any) => {
+      if (value !== Object(value)) return "primitive";
+      if (Array.isArray(value)) return "array";
+      if (value instanceof Map) return "map";
+      if (value != null && [null, Object.prototype].includes(Object.getPrototypeOf(value)))
+         return "plainObject";
+      if (value instanceof Function) return "function";
+      throw new Error(
+         `deeply comparing an instance of type ${value1.constructor?.name} is not supported.`
+      );
+   };
+
+   const type = getType(value1);
+   if (type !== getType(value2)) {
+      return false;
+   }
+
+   if (type === "primitive") {
+      return value1 === value2 || (Number.isNaN(value1) && Number.isNaN(value2));
+   } else if (type === "array") {
+      return (
+         value1.length === value2.length &&
+         value1.every((iterValue: any, i: number) => isEqual(iterValue, value2[i]))
+      );
+   } else if (type === "map") {
+      // In this particular implementation, map keys are not
+      // being deeply compared, only map values.
+      return (
+         value1.size === value2.size &&
+         [...value1].every(([iterKey, iterValue]) => {
+            return value2.has(iterKey) && isEqual(iterValue, value2.get(iterKey));
+         })
+      );
+   } else if (type === "plainObject") {
+      const value1AsMap = new Map(Object.entries(value1));
+      const value2AsMap = new Map(Object.entries(value2));
+      return (
+         value1AsMap.size === value2AsMap.size &&
+         [...value1AsMap].every(([iterKey, iterValue]) => {
+            return value2AsMap.has(iterKey) && isEqual(iterValue, value2AsMap.get(iterKey));
+         })
+      );
+   } else if (type === "function") {
+      // just check signature
+      return value1.toString() === value2.toString();
+   } else {
+      throw new Error("Unreachable");
+   }
+}
+
+export function getPath(
+   object: object,
+   _path: string | (string | number)[],
+   defaultValue = undefined
+): any {
+   const path = typeof _path === "string" ? _path.split(/[.\[\]\"]+/).filter((x) => x) : _path;
+
+   if (path.length === 0) {
+      return object;
+   }
+
+   try {
+      const [head, ...tail] = path;
+      if (!head || !(head in object)) {
+         return defaultValue;
+      }
+
+      return getPath(object[head], tail, defaultValue);
+   } catch (error) {
+      if (typeof defaultValue !== "undefined") {
+         return defaultValue;
+      }
+
+      throw new Error(`Invalid path: ${path.join(".")}`);
+   }
 }

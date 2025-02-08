@@ -12,8 +12,8 @@ import {
 import type { IconType } from "react-icons";
 import { twMerge } from "tailwind-merge";
 import { IconButton } from "ui/components/buttons/IconButton";
+import { useEvent } from "ui/hooks/use-event";
 import { AppShellProvider, useAppShell } from "ui/layouts/AppShell/use-appshell";
-import { useEvent } from "../../hooks/use-event";
 
 export function Root({ children }) {
    return (
@@ -74,8 +74,15 @@ export function Content({ children, center }: { children: React.ReactNode; cente
 }
 
 export function Main({ children }) {
+   const { sidebar } = useAppShell();
    return (
-      <div data-shell="main" className="flex flex-col flex-grow w-1 flex-shrink-0">
+      <div
+         data-shell="main"
+         className={twMerge(
+            "flex flex-col flex-grow w-1 flex-shrink-1",
+            sidebar.open && "max-w-[calc(100%-350px)]"
+         )}
+      >
          {children}
       </div>
    );
@@ -298,7 +305,7 @@ export function Scrollable({
 
    return (
       <ScrollArea.Root style={{ height: `calc(100dvh - ${offset}px` }} ref={scrollRef}>
-         <ScrollArea.Viewport className="w-full h-full ">{children}</ScrollArea.Viewport>
+         <ScrollArea.Viewport className="w-full h-full">{children}</ScrollArea.Viewport>
          <ScrollArea.Scrollbar
             forceMount
             className="flex select-none touch-none bg-transparent w-0.5"

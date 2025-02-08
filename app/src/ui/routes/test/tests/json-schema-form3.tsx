@@ -1,7 +1,9 @@
+import type { JSONSchema } from "json-schema-to-ts";
 import { useBknd } from "ui/client/bknd";
 import { Button } from "ui/components/buttons/Button";
 import {
    AnyOf,
+   AnyOfField,
    Field,
    Form,
    FormContextOverride,
@@ -10,8 +12,31 @@ import {
 } from "ui/components/form/json-schema-form";
 import { Scrollable } from "ui/layouts/AppShell/AppShell";
 
+const schema2 = {
+   type: "object",
+   properties: {
+      name: { type: "string", default: "Peter" },
+      age: { type: "number" },
+      gender: {
+         type: "string",
+         enum: ["male", "female", "uni"]
+      },
+      deep: {
+         type: "object",
+         properties: {
+            nested: { type: "string" }
+         }
+      }
+   },
+   required: ["age"]
+};
+
 export default function JsonSchemaForm3() {
    const { schema, config } = useBknd();
+
+   config.media.storage.body_max_size = 1;
+   schema.media.properties.storage.properties.body_max_size.minimum = 0;
+   //schema.media.properties.adapter.anyOf[2].properties.config.properties.path.minLength = 1;
 
    return (
       <Scrollable>
@@ -20,7 +45,65 @@ export default function JsonSchemaForm3() {
                schema={{
                   type: "object",
                   properties: {
-                     name: { type: "string", default: "Peter" },
+                     name: { type: "string", default: "Peter", maxLength: 3 },
+                     age: { type: "number" },
+                     deep: {
+                        type: "object",
+                        properties: {
+                           nested: { type: "string" }
+                        }
+                     }
+                  },
+                  required: ["age"]
+               }}
+               initialValues={{ name: "Peter", age: 20, deep: { nested: "hello" } }}
+               className="flex flex-col gap-3"
+               validateOn="change"
+            />*/}
+
+            {/*<Form
+               schema={{
+                  type: "object",
+                  properties: {
+                     name: { type: "string", default: "Peter", minLength: 3 },
+                     age: { type: "number" },
+                     deep: {
+                        anyOf: [
+                           {
+                              type: "object",
+                              properties: {
+                                 nested: { type: "string" }
+                              }
+                           },
+                           {
+                              type: "object",
+                              properties: {
+                                 nested2: { type: "string" }
+                              }
+                           }
+                        ]
+                     }
+                  },
+                  required: ["age"]
+               }}
+               className="flex flex-col gap-3"
+               validateOn="change"
+            >
+               <Field name="" />
+               <Subscribe2>
+                  {(state) => (
+                     <pre className="text-wrap whitespace-break-spaces  break-all">
+                        {JSON.stringify(state, null, 2)}
+                     </pre>
+                  )}
+               </Subscribe2>
+            </Form>*/}
+
+            {/*<Form
+               schema={{
+                  type: "object",
+                  properties: {
+                     name: { type: "string", default: "Peter", maxLength: 3 },
                      age: { type: "number" },
                      gender: {
                         type: "string",
@@ -36,11 +119,23 @@ export default function JsonSchemaForm3() {
                   required: ["age"]
                }}
                className="flex flex-col gap-3"
+               validateOn="change"
             >
+               <div>random thing</div>
                <Field name="name" />
                <Field name="age" />
-               <Field name="gender" />
-               <Field name="deep" />
+               <FormDebug />
+               <FormDebug2 name="name" />
+               <hr />
+               <Subscribe2
+               selector={(state) => ({ dirty: state.dirty, submitting: state.submitting })}
+               >
+                  {(state) => (
+                     <pre className="text-wrap whitespace-break-spaces  break-all">
+                        {JSON.stringify(state)}
+                     </pre>
+                  )}
+               </Subscribe2>
             </Form>*/}
 
             {/*<Form
@@ -90,7 +185,7 @@ export default function JsonSchemaForm3() {
          >
             <AutoForm />
          </Form>*/}
-            <Form
+            {/*<Form
                schema={{
                   type: "object",
                   properties: {
@@ -113,12 +208,12 @@ export default function JsonSchemaForm3() {
                      }
                   }
                }}
-               initialValues={{ tags: [0, 1] }}
+               initialValues={{ tags: [0, 1], method: ["GET"] }}
                options={{ debug: true }}
             >
                <Field name="" />
                <FormDebug />
-            </Form>
+            </Form>*/}
 
             {/*<Form
                schema={{
@@ -139,10 +234,20 @@ export default function JsonSchemaForm3() {
                   }
                }}
                initialValues={{ tags: [0, 1] }}
-            />*/}
+            >
+               <Field name="" />
+               <FormDebug force />
+            </Form>*/}
 
             {/*<CustomMediaForm />*/}
-            {/*<Form schema={schema.media} initialValues={config.media} />*/}
+            <Form
+               schema={schema.media}
+               initialValues={config.media as any}
+               /* validateOn="change"*/
+               onSubmit={console.log}
+            >
+               <Field name="" />
+            </Form>
 
             {/*<Form
                schema={removeKeyRecursively(schema.media, "pattern") as any}
@@ -157,16 +262,57 @@ export default function JsonSchemaForm3() {
             >
                <AutoForm />
             </Form>*/}
+
+            {/*<Form schema={ss} validateOn="change" />*/}
          </div>
       </Scrollable>
    );
 }
 
+const ss = {
+   type: "object",
+   properties: {
+      name: { type: "string" },
+      email: { type: "string", format: "email" },
+      interested: { type: "boolean" },
+      bla: {
+         type: "string",
+         enum: ["small", "medium", "large"]
+      },
+      password: { type: "string", format: "password" },
+      birthdate: { type: "string", format: "date" },
+      dinnerTime: { type: "string", format: "date-time" },
+      age: { type: "number", minimum: 0, multipleOf: 5 },
+      tags: {
+         type: "array",
+         items: {
+            type: "string"
+         }
+      },
+      config: {
+         type: "object",
+         properties: {
+            min: { type: "number" }
+         }
+      }
+   },
+   required: ["name"],
+   additionalProperties: false
+} as const satisfies JSONSchema;
+
 function CustomMediaForm() {
    const { schema, config } = useBknd();
 
+   config.media.storage.body_max_size = 1;
+   schema.media.properties.storage.properties.body_max_size.minimum = 0;
+
    return (
-      <Form schema={schema.media} initialValues={config.media} className="flex flex-col gap-3">
+      <Form
+         schema={schema.media}
+         initialValues={config.media as any}
+         className="flex flex-col gap-3"
+         validateOn="change"
+      >
          <Field name="enabled" />
          <Field name="basepath" />
          <Field name="entity_name" />
@@ -174,6 +320,7 @@ function CustomMediaForm() {
          <AnyOf.Root path="adapter">
             <CustomMediaFormAdapter />
          </AnyOf.Root>
+         <FormDebug force />
       </Form>
    );
 }
@@ -196,7 +343,7 @@ function CustomMediaFormAdapter() {
          </div>
 
          {ctx.selected !== null && (
-            <FormContextOverride schema={ctx.selectedSchema} path={ctx.path} overrideData>
+            <FormContextOverride schema={ctx.selectedSchema} prefix={ctx.path}>
                <Field name="type" hidden />
                <ObjectField path="config" wrapperProps={{ label: false, wrapper: "group" }} />
             </FormContextOverride>

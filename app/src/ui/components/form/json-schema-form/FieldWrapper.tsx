@@ -1,19 +1,22 @@
 import { Popover } from "@mantine/core";
 import { IconBug } from "@tabler/icons-react";
-import type { JsonError } from "json-schema-library";
-import type { JSONSchema } from "json-schema-to-ts";
+import type { JsonSchema } from "json-schema-library";
 import { Children, type ReactElement, type ReactNode, cloneElement, isValidElement } from "react";
 import { IconButton } from "ui/components/buttons/IconButton";
 import { JsonViewer } from "ui/components/code/JsonViewer";
 import * as Formy from "ui/components/form/Formy";
+import {
+   useFormContext,
+   useFormError,
+   useFormValue
+} from "ui/components/form/json-schema-form/Form";
 import { getLabel } from "./utils";
 
 export type FieldwrapperProps = {
-   pointer: string;
+   name: string;
    label?: string | false;
    required?: boolean;
-   errors?: JsonError[];
-   schema?: Exclude<JSONSchema, boolean>;
+   schema?: JsonSchema;
    debug?: object | boolean;
    wrapper?: "group" | "fieldset";
    hidden?: boolean;
@@ -21,21 +24,19 @@ export type FieldwrapperProps = {
 };
 
 export function FieldWrapper({
-   pointer,
+   name,
    label: _label,
    required,
-   errors = [],
    schema,
-   debug,
    wrapper,
    hidden,
    children
 }: FieldwrapperProps) {
+   const errors = useFormError(name, { strict: true });
    const examples = schema?.examples || [];
-   const examplesId = `${pointer}-examples`;
+   const examplesId = `${name}-examples`;
    const description = schema?.description;
-   const label =
-      typeof _label !== "undefined" ? _label : schema ? getLabel(pointer, schema) : pointer;
+   const label = typeof _label !== "undefined" ? _label : schema ? getLabel(name, schema) : name;
 
    return (
       <Formy.Group
@@ -43,34 +44,12 @@ export function FieldWrapper({
          as={wrapper === "fieldset" ? "fieldset" : "div"}
          className={hidden ? "hidden" : "relative"}
       >
-         {debug && (
-            <div className="absolute right-0 top-0">
-               {/* @todo: use radix */}
-               <Popover>
-                  <Popover.Target>
-                     <IconButton Icon={IconBug} size="xs" className="opacity-30" />
-                  </Popover.Target>
-                  <Popover.Dropdown>
-                     <JsonViewer
-                        json={{
-                           ...(typeof debug === "object" ? debug : {}),
-                           pointer,
-                           required,
-                           schema,
-                           errors
-                        }}
-                        expand={6}
-                        className="p-0"
-                     />
-                  </Popover.Dropdown>
-               </Popover>
-            </div>
-         )}
+         <FieldDebug name={name} schema={schema} required={required} />
 
          {label && (
             <Formy.Label
                as={wrapper === "fieldset" ? "legend" : "label"}
-               htmlFor={pointer}
+               htmlFor={name}
                className="self-start"
             >
                {label} {required && <span className="font-medium opacity-30">*</span>}
@@ -100,3 +79,38 @@ export function FieldWrapper({
       </Formy.Group>
    );
 }
+
+const FieldDebug = ({
+   name,
+   schema,
+   required
+}: Pick<FieldwrapperProps, "name" | "schema" | "required">) => {
+   const { options } = useFormContext();
+   if (!options?.debug) return null;
+   const { value } = useFormValue(name);
+   const errors = useFormError(name, { strict: true });
+
+   return (
+      <div className="absolute right-0 top-0">
+         {/* @todo: use radix */}
+         <Popover>
+            <Popover.Target>
+               <IconButton Icon={IconBug} size="xs" className="opacity-30" />
+            </Popover.Target>
+            <Popover.Dropdown>
+               <JsonViewer
+                  json={{
+                     name,
+                     value,
+                     required,
+                     schema,
+                     errors
+                  }}
+                  expand={6}
+                  className="p-0"
+               />
+            </Popover.Dropdown>
+         </Popover>
+      </div>
+   );
+};

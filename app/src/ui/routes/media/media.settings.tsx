@@ -42,20 +42,25 @@ function MediaSettingsInternal() {
    async function onSubmit(data: any) {
       console.log("submit", data);
       await actions.config.patch(data);
-      //await new Promise((resolve) => setTimeout(resolve, 1000));
    }
 
    return (
       <>
          <Form schema={schema} initialValues={config as any} onSubmit={onSubmit} {...formConfig}>
-            <Subscribe>
+            <Subscribe
+               selector={(state) => ({
+                  dirty: state.dirty,
+                  errors: state.errors.length > 0,
+                  submitting: state.submitting
+               })}
+            >
                {({ dirty, errors, submitting }) => (
                   <AppShell.SectionHeader
                      right={
                         <Button
                            variant="primary"
                            type="submit"
-                           disabled={!dirty || errors.length > 0 || submitting}
+                           disabled={!dirty || errors || submitting}
                         >
                            Update
                         </Button>
@@ -132,7 +137,7 @@ function Adapters() {
                <Formy.Label as="legend" className="font-mono px-2">
                   {autoFormatString(ctx.selectedSchema!.title!)}
                </Formy.Label>
-               <FormContextOverride schema={ctx.selectedSchema} path={ctx.path} overrideData>
+               <FormContextOverride schema={ctx.selectedSchema} prefix={ctx.path}>
                   <Field name="type" hidden />
                   <ObjectField path="config" wrapperProps={{ label: false, wrapper: "group" }} />
                </FormContextOverride>
@@ -143,9 +148,9 @@ function Adapters() {
 }
 
 const Overlay = () => (
-   <Subscribe>
-      {({ data }) =>
-         !data.enabled && (
+   <Subscribe selector={(state) => ({ enabled: state.data.enabled })}>
+      {({ enabled }) =>
+         !enabled && (
             <div className="absolute w-full h-full z-50 bg-background opacity-70 pointer-events-none" />
          )
       }

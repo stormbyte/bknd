@@ -1,62 +1,88 @@
-import { Draft2019, type JsonError } from "json-schema-library";
+import {
+   type PrimitiveAtom,
+   atom,
+   getDefaultStore,
+   useAtom,
+   useAtomValue,
+   useSetAtom
+} from "jotai";
+import { selectAtom } from "jotai/utils";
+import { Draft2019, type JsonError, type JsonSchema as LibJsonSchema } from "json-schema-library";
 import type { TemplateOptions as LibTemplateOptions } from "json-schema-library/dist/lib/getTemplate";
-import type { JsonSchema as LibJsonSchema } from "json-schema-library/dist/lib/types";
 import type { JSONSchema as $JSONSchema, FromSchema } from "json-schema-to-ts";
-import { get, isEqual } from "lodash-es";
 import * as immutable from "object-path-immutable";
 import {
    type ComponentPropsWithoutRef,
    type FormEvent,
    type ReactNode,
    createContext,
+   useCallback,
    useContext,
    useEffect,
-   useRef,
-   useState
+   useMemo,
+   useRef
 } from "react";
 import { JsonViewer } from "ui/components/code/JsonViewer";
+import { useEvent } from "ui/hooks/use-event";
 import { Field } from "./Field";
-import { isRequired, normalizePath, omitSchema, prefixPointer } from "./utils";
+import {
+   getPath,
+   isEqual,
+   isRequired,
+   omitSchema,
+   pathToPointer,
+   prefixPath,
+   prefixPointer
+} from "./utils";
 
 type JSONSchema = Exclude<$JSONSchema, boolean>;
+type FormState<Data = any> = {
+   dirty: boolean;
+   submitting: boolean;
+   errors: JsonError[];
+   data: Data;
+};
 
 export type FormProps<
    Schema extends JSONSchema = JSONSchema,
-   Data = Schema extends JSONSchema ? FromSchema<JSONSchema> : any
-> = Omit<ComponentPropsWithoutRef<"form">, "onChange"> & {
+   Data = Schema extends JSONSchema ? FromSchema<Schema> : any,
+   InitialData = Schema extends JSONSchema ? FromSchema<Schema> : any
+> = Omit<ComponentPropsWithoutRef<"form">, "onChange" | "onSubmit"> & {
    schema: Schema;
    validateOn?: "change" | "submit";
-   initialValues?: Partial<Data>;
    initialOpts?: LibTemplateOptions;
    ignoreKeys?: string[];
    onChange?: (data: Partial<Data>, name: string, value: any) => void;
-   onSubmit?: (data: Partial<Data>) => void | Promise<void>;
+   onSubmit?: (data: Data) => void | Promise<void>;
    onInvalidSubmit?: (errors: JsonError[], data: Partial<Data>) => void;
    hiddenSubmit?: boolean;
    options?: {
       debug?: boolean;
       keepEmpty?: boolean;
    };
+   initialValues?: InitialData;
 };
 
 export type FormContext<Data> = {
-   data: Data;
    setData: (data: Data) => void;
    setValue: (pointer: string, value: any) => void;
    deleteValue: (pointer: string) => void;
    errors: JsonError[];
    dirty: boolean;
    submitting: boolean;
-   schema: JSONSchema;
+   schema: LibJsonSchema;
    lib: Draft2019;
    options: FormProps["options"];
+   root: string;
+   _formStateAtom: PrimitiveAtom<FormState<Data>>;
 };
 
 const FormContext = createContext<FormContext<any>>(undefined!);
+FormContext.displayName = "FormContext";
 
 export function Form<
    Schema extends JSONSchema = JSONSchema,
-   Data = Schema extends JSONSchema ? FromSchema<JSONSchema> : any
+   Data = Schema extends JSONSchema ? FromSchema<Schema> : any
 >({
    schema: _schema,
    initialValues: _initialValues,
@@ -72,24 +98,35 @@ export function Form<
    ...props
 }: FormProps<Schema, Data>) {
    const [schema, initial] = omitSchema(_schema, ignoreKeys, _initialValues);
-   const lib = new Draft2019(schema);
+   const lib = useMemo(() => new Draft2019(schema), [JSON.stringify(schema)]);
    const initialValues = initial ?? lib.getTemplate(undefined, schema, initialOpts);
-   const [data, setData] = useState<Partial<Data>>(initialValues);
-   const [dirty, setDirty] = useState<boolean>(false);
-   const [errors, setErrors] = useState<JsonError[]>([]);
-   const [submitting, setSubmitting] = useState<boolean>(false);
+   const _formStateAtom = useMemo(() => {
+      return atom<FormState<Data>>({
+         dirty: false,
+         submitting: false,
+         errors: [] as JsonError[],
+         data: initialValues
+      });
+   }, [initialValues]);
+   const setFormState = useSetAtom(_formStateAtom);
    const formRef = useRef<HTMLFormElement | null>(null);
+
+   useEffect(() => {
+      if (initialValues) {
+         validate();
+      }
+   }, [initialValues]);
 
    // @ts-ignore
    async function handleSubmit(e: FormEvent<HTMLFormElement>) {
       if (onSubmit) {
          e.preventDefault();
-         setSubmitting(true);
+         setFormState((prev) => ({ ...prev, submitting: true }));
 
          try {
             const { data, errors } = validate();
             if (errors.length === 0) {
-               await onSubmit(data);
+               await onSubmit(data as Data);
             } else {
                console.log("invalid", errors);
                onInvalidSubmit?.(errors, data);
@@ -97,71 +134,70 @@ export function Form<
          } catch (e) {
             console.warn(e);
          }
-
-         setSubmitting(false);
+         setFormState((prev) => ({ ...prev, submitting: false }));
          return false;
       }
    }
 
-   function setValue(pointer: string, value: any) {
-      const normalized = normalizePath(pointer);
-      //console.log("setValue", { pointer, normalized, value });
-      const key = normalized.substring(2).replace(/\//g, ".");
-      setData((prev) => {
-         const changed = immutable.set(prev, key, value);
-         onChange?.(changed, key, value);
-         //console.log("changed", prev, changed, { key, value });
-         return changed;
+   const setValue = useEvent((path: string, value: any) => {
+      setFormState((state) => {
+         const prev = state.data;
+         const changed = immutable.set(prev, path, value);
+         onChange?.(changed, path, value);
+         return { ...state, data: changed };
       });
-   }
+      check();
+   });
 
-   function deleteValue(pointer: string) {
-      const normalized = normalizePath(pointer);
-      const key = normalized.substring(2).replace(/\//g, ".");
-      setData((prev) => {
-         const changed = immutable.del(prev, key);
-         onChange?.(changed, key, undefined);
-         //console.log("changed", prev, changed, { key });
-         return changed;
+   const deleteValue = useEvent((path: string) => {
+      setFormState((state) => {
+         const prev = state.data;
+         const changed = immutable.del(prev, path);
+         onChange?.(changed, path, undefined);
+         return { ...state, data: changed };
       });
-   }
+      check();
+   });
 
-   useEffect(() => {
-      setDirty(!isEqual(initialValues, data));
+   const getCurrentState = useEvent(() => getDefaultStore().get(_formStateAtom));
+
+   const check = useEvent(() => {
+      const state = getCurrentState();
+      setFormState((prev) => ({ ...prev, dirty: !isEqual(initialValues, state.data) }));
 
       if (validateOn === "change") {
          validate();
-      } else if (errors.length > 0) {
+      } else if (state?.errors?.length > 0) {
          validate();
       }
-   }, [data]);
+   });
 
-   function validate(_data?: Partial<Data>) {
-      const actual = _data ?? data;
+   const validate = useEvent((_data?: Partial<Data>) => {
+      const actual = _data ?? getCurrentState()?.data;
       const errors = lib.validate(actual, schema);
-      //console.log("errors", errors);
-      setErrors(errors);
+      setFormState((prev) => ({ ...prev, errors }));
       return { data: actual, errors };
-   }
+   });
 
-   const context = {
-      data: data ?? {},
-      dirty,
-      submitting,
-      setData,
-      setValue,
-      deleteValue,
-      errors,
-      schema,
-      lib,
-      options
-   } as any;
-   //console.log("context", context);
+   const context = useMemo(
+      () => ({
+         _formStateAtom,
+         setValue,
+         deleteValue,
+         schema,
+         lib,
+         options,
+         root: "",
+         path: ""
+      }),
+      [schema, initialValues]
+   ) as any;
 
    return (
       <form {...props} ref={formRef} onSubmit={handleSubmit}>
          <FormContext.Provider value={context}>
             {children ? children : <Field name="" />}
+            {options?.debug && <FormDebug />}
          </FormContext.Provider>
          {hiddenSubmit && (
             <button style={{ visibility: "hidden" }} type="submit">
@@ -179,25 +215,21 @@ export function useFormContext() {
 export function FormContextOverride({
    children,
    overrideData,
-   path,
+   prefix,
    ...overrides
-}: Partial<FormContext<any>> & { children: ReactNode; path?: string; overrideData?: boolean }) {
+}: Partial<FormContext<any>> & { children: ReactNode; prefix?: string; overrideData?: boolean }) {
    const ctx = useFormContext();
    const additional: Partial<FormContext<any>> = {};
 
    // this makes a local schema down the three
    // especially useful for AnyOf, since it doesn't need to fully validate (e.g. pattern)
-   if (overrideData && path) {
-      const pointer = normalizePath(path);
-      const value =
-         pointer === "#/" ? ctx.data : get(ctx.data, pointer.substring(2).replace(/\//g, "."));
-
-      additional.data = value;
+   if (prefix) {
+      additional.root = prefix;
       additional.setValue = (pointer: string, value: any) => {
-         ctx.setValue(prefixPointer(pointer, path), value);
+         ctx.setValue(prefixPointer(pointer, prefix), value);
       };
       additional.deleteValue = (pointer: string) => {
-         ctx.deleteValue(prefixPointer(pointer, path));
+         ctx.deleteValue(prefixPointer(pointer, prefix));
       };
    }
 
@@ -210,37 +242,137 @@ export function FormContextOverride({
    return <FormContext.Provider value={context}>{children}</FormContext.Provider>;
 }
 
-export function useFieldContext(name: string) {
-   const { data, lib, schema, errors: formErrors, ...rest } = useFormContext();
-   const pointer = normalizePath(name);
-   const isRootPointer = pointer === "#/";
-   //console.log("pointer", pointer);
-   const value = isRootPointer ? data : get(data, pointer.substring(2).replace(/\//g, "."));
-   const errors = formErrors.filter((error) => error.data.pointer.startsWith(pointer));
-   const fieldSchema = isRootPointer
-      ? (schema as LibJsonSchema)
-      : lib.getSchema({ pointer, data, schema });
-   const required = isRequired(pointer, schema, data);
+export function useFormValue(name: string, opts?: { strict?: boolean }) {
+   const { _formStateAtom, root } = useFormContext();
+   if ((typeof name !== "string" || name.length === 0) && opts?.strict === true)
+      return { value: undefined, errors: [] };
 
+   const selected = selectAtom(
+      _formStateAtom,
+      useCallback(
+         (state) => {
+            const prefixedName = prefixPath(name, root);
+            const pointer = pathToPointer(prefixedName);
+            return {
+               value: getPath(state.data, prefixedName),
+               errors: state.errors.filter((error) => error.data.pointer.startsWith(pointer))
+            };
+         },
+         [name]
+      ),
+      isEqual
+   );
+   return useAtom(selected)[0];
+}
+
+export function useFormError(name: string, opt?: { strict?: boolean; debug?: boolean }) {
+   const { _formStateAtom, root } = useFormContext();
+   const selected = selectAtom(
+      _formStateAtom,
+      useCallback(
+         (state) => {
+            const prefixedName = prefixPath(name, root);
+            const pointer = pathToPointer(prefixedName);
+            return state.errors.filter((error) => {
+               return opt?.strict
+                  ? error.data.pointer === pointer
+                  : error.data.pointer.startsWith(pointer);
+            });
+         },
+         [name]
+      ),
+      isEqual
+   );
+   return useAtom(selected)[0];
+}
+
+export function useFormStateSelector<Data = any, Reduced = Data>(
+   selector: (state: FormState<Data>) => Reduced
+): Reduced {
+   const { _formStateAtom } = useFormContext();
+   const selected = selectAtom(_formStateAtom, useCallback(selector, []), isEqual);
+   return useAtom(selected)[0];
+}
+
+type SelectorFn<Ctx = any, Refined = any> = (state: Ctx) => Refined;
+
+export function useDerivedFieldContext<Data = any, Reduced = undefined>(
+   path,
+   _schema?: LibJsonSchema,
+   deriveFn?: SelectorFn<
+      FormContext<Data> & {
+         pointer: string;
+         required: boolean;
+         value: any;
+         path: string;
+      },
+      Reduced
+   >
+): FormContext<Data> & {
+   value: Reduced;
+   pointer: string;
+   required: boolean;
+   path: string;
+} {
+   const { _formStateAtom, root, lib, ...ctx } = useFormContext();
+   const schema = _schema ?? ctx.schema;
+   const selected = selectAtom(
+      _formStateAtom,
+      useCallback(
+         (state) => {
+            const pointer = pathToPointer(path);
+            const prefixedName = prefixPath(path, root);
+            const prefixedPointer = pathToPointer(prefixedName);
+            const value = getPath(state.data, prefixedName);
+            /*const errors = state.errors.filter((error) =>
+               error.data.pointer.startsWith(prefixedPointer)
+            );*/
+            const fieldSchema =
+               pointer === "#/"
+                  ? (schema as LibJsonSchema)
+                  : lib.getSchema({ pointer, data: value, schema });
+            const required = isRequired(lib, prefixedPointer, schema, state.data);
+
+            const context = {
+               ...ctx,
+               path: prefixedName,
+               root,
+               schema: fieldSchema as LibJsonSchema,
+               pointer,
+               required
+            };
+            const derived = deriveFn?.({ ...context, _formStateAtom, lib, value });
+
+            return {
+               ...context,
+               value: derived
+            };
+         },
+         [path, schema ?? {}, root]
+      ),
+      isEqual
+   );
    return {
-      ...rest,
-      lib,
-      value,
-      errors,
-      schema: fieldSchema,
-      pointer,
-      required
-   };
+      ...useAtomValue(selected),
+      _formStateAtom,
+      lib
+   } as any;
 }
 
-export function Subscribe({ children }: { children: (ctx: FormContext<any>) => ReactNode }) {
-   const ctx = useFormContext();
-   return children(ctx);
+export function Subscribe<Data = any, Refined = Data>({
+   children,
+   selector
+}: {
+   children: (state: Refined) => ReactNode;
+   selector?: SelectorFn<FormState<Data>, Refined>;
+}) {
+   return children(useFormStateSelector(selector ?? ((state) => state as unknown as Refined)));
 }
 
-export function FormDebug() {
-   const { options, data, dirty, errors, submitting } = useFormContext();
-   if (options?.debug !== true) return null;
+export function FormDebug({ force = false }: { force?: boolean }) {
+   const { options } = useFormContext();
+   if (options?.debug !== true && force !== true) return null;
+   const ctx = useFormStateSelector((s) => s);
 
-   return <JsonViewer json={{ dirty, submitting, data, errors }} expand={99} />;
+   return <JsonViewer json={ctx} expand={99} />;
 }

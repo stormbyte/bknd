@@ -189,7 +189,7 @@ export const Switch = forwardRef<
 >(({ type, ...props }, ref) => {
    return (
       <RadixSwitch.Root
-         className="relative h-7 w-12 p-[2px] cursor-pointer rounded-full bg-muted/50 border border-muted outline-none data-[state=checked]:bg-primary appearance-none transition-colors hover:bg-muted/80"
+         className="relative h-7 w-12 p-[2px] cursor-pointer rounded-full bg-muted border border-primary/10 outline-none data-[state=checked]:bg-primary/75 appearance-none transition-colors hover:bg-muted/80"
          onCheckedChange={(bool) => {
             props.onChange?.({ target: { value: bool } });
          }}
@@ -229,7 +229,7 @@ export const Select = forwardRef<
             <>
                {!props.required && <option value="" />}
                {options
-                  .map((o, i) => {
+                  .map((o) => {
                      if (typeof o !== "object") {
                         return { value: o, label: String(o) };
                      }
@@ -246,7 +246,10 @@ export const Select = forwardRef<
          )}
       </select>
       {!props.multiple && (
-         <TbChevronDown className="absolute right-3 top-0 bottom-0 h-full opacity-70" size={18} />
+         <TbChevronDown
+            className="absolute right-3 top-0 bottom-0 h-full opacity-70 pointer-events-none"
+            size={18}
+         />
       )}
    </div>
 ));

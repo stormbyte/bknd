@@ -34,7 +34,10 @@ body {
    scrollbar-width: none; /* Firefox */
 }
 
-/*div[data-radix-scroll-area-viewport] > div:first-child {}*/
+div[data-radix-scroll-area-viewport] > div:first-child {
+   min-width: auto !important;
+   display: block !important;
+}
 
 /* hide calendar icon on inputs */
 input[type="datetime-local"]::-webkit-calendar-picker-indicator,

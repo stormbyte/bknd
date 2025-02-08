@@ -26,6 +26,7 @@ type BkndContextProps = {
 };
 
 const BkndContextContext = createContext<BkndGlobalContextProps>({} as any);
+BkndContextContext.displayName = "BkndContext";
 
 export const BkndContext = ({
    children,

@@ -2,23 +2,9 @@ import { describe, expect, test } from "bun:test";
 import { Draft2019 } from "json-schema-library";
 import type { JSONSchema } from "json-schema-to-ts";
 import * as utils from "../../src/ui/components/form/json-schema-form/utils";
+import type { IsTypeType } from "../../src/ui/components/form/json-schema-form/utils";
 
 describe("json form", () => {
-   test("normalize path", () => {
-      const examples = [
-         ["description", "#/description"],
-         ["/description", "#/description"],
-         ["nested/property", "#/nested/property"],
-         ["nested.property", "#/nested/property"],
-         ["nested.property[0]", "#/nested/property/0"],
-         ["nested.property[0].name", "#/nested/property/0/name"]
-      ];
-
-      for (const [input, output] of examples) {
-         expect(utils.normalizePath(input)).toBe(output);
-      }
-   });
-
    test("coerse", () => {
       const examples = [
          ["test", { type: "string" }, "test"],
@@ -35,6 +21,25 @@ describe("json form", () => {
 
       for (const [input, schema, output] of examples) {
          expect(utils.coerce(input, schema)).toBe(output);
+      }
+   });
+
+   test("isType", () => {
+      const examples = [
+         ["string", "string", true],
+         ["integer", "number", false],
+         ["number", "number", true],
+         ["boolean", "boolean", true],
+         ["null", "null", true],
+         ["object", "object", true],
+         ["array", "array", true],
+         ["object", "array", false],
+         [["string", "number"], "number", true],
+         ["number", ["string", "number"], true]
+      ] satisfies [IsTypeType, IsTypeType, boolean][];
+
+      for (const [type, schemaType, output] of examples) {
+         expect(utils.isType(type, schemaType)).toBe(output);
       }
    });
 
@@ -97,49 +102,37 @@ describe("json form", () => {
       ] satisfies [string, Exclude<JSONSchema, boolean>, boolean][];
 
       for (const [pointer, schema, output] of examples) {
-         expect(utils.isRequired(pointer, schema)).toBe(output);
+         expect(utils.isRequired(new Draft2019(schema), pointer, schema)).toBe(output);
       }
    });
 
-   test("unflatten", () => {
+   test("prefixPath", () => {
       const examples = [
-         [
-            { "#/description": "test" },
-            {
-               type: "object",
-               properties: {
-                  description: { type: "string" }
-               }
-            },
-            {
-               description: "test"
-            }
-         ]
-      ] satisfies [Record<string, string>, Exclude<JSONSchema, boolean>, object][];
+         ["normal", "", "normal"],
+         ["", "prefix", "prefix"],
+         ["tags", "0", "0.tags"],
+         ["tags", 0, "0.tags"],
+         ["nested.property", "prefix", "prefix.nested.property"],
+         ["nested.property", "", "nested.property"]
+      ] satisfies [string, any, string][];
 
-      for (const [input, schema, output] of examples) {
-         expect(utils.unflatten(input, schema)).toEqual(output);
+      for (const [path, prefix, output] of examples) {
+         expect(utils.prefixPath(path, prefix)).toBe(output);
       }
    });
 
-   test("...", () => {
-      const schema = {
-         type: "object",
-         properties: {
-            name: { type: "string", maxLength: 2 },
-            description: { type: "string", maxLength: 2 },
-            age: { type: "number", description: "Age of you" },
-            deep: {
-               type: "object",
-               properties: {
-                  nested: { type: "string", maxLength: 2 }
-               }
-            }
-         },
-         required: ["description"]
-      };
+   test("suffixPath", () => {
+      const examples = [
+         ["normal", "", "normal"],
+         ["", "suffix", "suffix"],
+         ["tags", "0", "tags.0"],
+         ["tags", 0, "tags.0"],
+         ["nested.property", "suffix", "nested.property.suffix"],
+         ["nested.property", "", "nested.property"]
+      ] satisfies [string, any, string][];
 
-      //const lib = new Draft2019(schema);
-      //lib.eachSchema(console.log);
+      for (const [path, suffix, output] of examples) {
+         expect(utils.suffixPath(path, suffix)).toBe(output);
+      }
    });
 });
