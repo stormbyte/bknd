@@ -42,7 +42,6 @@ function MediaSettingsInternal() {
    async function onSubmit(data: any) {
       console.log("submit", data);
       await actions.config.patch(data);
-      //await new Promise((resolve) => setTimeout(resolve, 1000));
    }
 
    return (

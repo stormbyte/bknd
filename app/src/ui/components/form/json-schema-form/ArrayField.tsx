@@ -1,6 +1,5 @@
 import { IconLibraryPlus, IconTrash } from "@tabler/icons-react";
 import type { JsonSchema } from "json-schema-library";
-import { isEqual } from "lodash-es";
 import { memo, useMemo } from "react";
 import { Button } from "ui/components/buttons/Button";
 import { IconButton } from "ui/components/buttons/IconButton";
@@ -8,8 +7,8 @@ import { Dropdown } from "ui/components/overlay/Dropdown";
 import { useEvent } from "ui/hooks/use-event";
 import { FieldComponent } from "./Field";
 import { FieldWrapper } from "./FieldWrapper";
-import { useDerivedFieldContext, useFormContext, useFormValue } from "./Form";
-import { coerce, getMultiSchema, getMultiSchemaMatched } from "./utils";
+import { useDerivedFieldContext, useFormValue } from "./Form";
+import { coerce, getMultiSchema, getMultiSchemaMatched, isEqual, suffixPath } from "./utils";
 
 export const ArrayField = ({
    path = "",
@@ -59,7 +58,7 @@ const ArrayItem = memo(({ path, index, schema }: any) => {
    const { value, ...ctx } = useDerivedFieldContext(path, schema, (ctx) => {
       return ctx.value?.[index];
    });
-   const pointer = [path, index].join(".");
+   const itemPath = suffixPath(path, index);
    let subschema = schema.items;
    const itemsMultiSchema = getMultiSchema(schema.items);
    if (itemsMultiSchema) {
@@ -76,18 +75,18 @@ const ArrayItem = memo(({ path, index, schema }: any) => {
    });
 
    const DeleteButton = useMemo(
-      () => <IconButton Icon={IconTrash} onClick={() => handleDelete(pointer)} size="sm" />,
-      [pointer]
+      () => <IconButton Icon={IconTrash} onClick={() => handleDelete(itemPath)} size="sm" />,
+      [itemPath]
    );
 
    return (
-      <div key={pointer} className="flex flex-row gap-2">
+      <div key={itemPath} className="flex flex-row gap-2">
          <FieldComponent
-            name={pointer}
+            name={itemPath}
             schema={subschema!}
             value={value}
             onChange={(e) => {
-               handleUpdate(pointer, coerce(e.target.value, subschema!));
+               handleUpdate(itemPath, coerce(e.target.value, subschema!));
             }}
             className="w-full"
          />
@@ -114,8 +113,8 @@ const ArrayAdd = ({ schema, path }: { schema: JsonSchema; path: string }) => {
    const itemsMultiSchema = getMultiSchema(schema.items);
 
    function handleAdd(template?: any) {
-      const newPointer = `${path}/${currentIndex}`.replace(/\/+/g, "/");
-      setValue(newPointer, template ?? ctx.lib.getTemplate(undefined, schema!.items));
+      const newPath = suffixPath(path, currentIndex);
+      setValue(newPath, template ?? ctx.lib.getTemplate(undefined, schema!.items));
    }
 
    if (itemsMultiSchema) {

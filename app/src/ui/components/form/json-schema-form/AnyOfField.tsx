@@ -5,7 +5,7 @@ import { twMerge } from "tailwind-merge";
 import * as Formy from "ui/components/form/Formy";
 import { useEvent } from "ui/hooks/use-event";
 import { FieldComponent, Field as FormField, type FieldProps as FormFieldProps } from "./Field";
-import { FormContextOverride, useDerivedFieldContext } from "./Form";
+import { FormContextOverride, useDerivedFieldContext, useFormError } from "./Form";
 import { getLabel, getMultiSchemaMatched } from "./utils";
 
 export type AnyOfFieldRootProps = {
@@ -39,19 +39,19 @@ const Root = ({ path = "", schema: _schema, children }: AnyOfFieldRootProps) => 
       setValue,
       lib,
       pointer,
-      errors,
       value: { matchedIndex, schemas },
       schema
    } = useDerivedFieldContext(path, _schema, (ctx) => {
       const [matchedIndex, schemas = []] = getMultiSchemaMatched(ctx.schema, ctx.value);
       return { matchedIndex, schemas };
    });
+   const errors = useFormError(path, { strict: true });
    if (!schema) return `AnyOfField(${path}): no schema ${pointer}`;
    const [_selected, setSelected] = useAtom(selectedAtom);
    const selected = _selected !== null ? _selected : matchedIndex > -1 ? matchedIndex : null;
 
    const select = useEvent((index: number | null) => {
-      setValue(pointer, index !== null ? lib.getTemplate(undefined, schemas[index]) : undefined);
+      setValue(path, index !== null ? lib.getTemplate(undefined, schemas[index]) : undefined);
       setSelected(index);
    });
 
@@ -92,20 +92,20 @@ const Root = ({ path = "", schema: _schema, children }: AnyOfFieldRootProps) => 
 const Select = () => {
    const { selected, select, path, schema, options, selectSchema } = useAnyOfContext();
 
-   function handleSelect(e: ChangeEvent<HTMLInputElement>) {
+   const handleSelect = useEvent((e: ChangeEvent<HTMLInputElement>) => {
       const i = e.target.value ? Number(e.target.value) : null;
       select(i);
-   }
+   });
+
+   const _options = useMemo(() => options.map((label, value) => ({ label, value })), []);
 
    return (
       <>
-         <Formy.Label>
-            {getLabel(path, schema)} {selected}
-         </Formy.Label>
+         <Formy.Label>{getLabel(path, schema)}</Formy.Label>
          <FieldComponent
             schema={selectSchema as any}
             /* @ts-ignore */
-            options={options.map((label, value) => ({ label, value }))}
+            options={_options}
             onChange={handleSelect}
             value={selected ?? undefined}
             className="h-8 py-1"
@@ -114,6 +114,7 @@ const Select = () => {
    );
 };
 
+// @todo: add local validation for AnyOf fields
 const Field = ({ name, label, schema, ...props }: Partial<FormFieldProps>) => {
    const { selected, selectedSchema, path, errors } = useAnyOfContext();
    if (selected === null) return null;

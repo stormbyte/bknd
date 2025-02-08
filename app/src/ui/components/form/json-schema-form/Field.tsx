@@ -17,12 +17,12 @@ export type FieldProps = {
 };
 
 export const Field = ({ name, schema: _schema, onChange, label: _label, hidden }: FieldProps) => {
-   const { pointer, setValue, required, ...ctx } = useDerivedFieldContext(name, _schema);
+   const { path, setValue, required, ...ctx } = useDerivedFieldContext(name, _schema);
    const schema = _schema ?? ctx.schema;
    if (!isTypeSchema(schema))
       return (
          <Pre>
-            [Field] {pointer} has no schema ({JSON.stringify(schema)})
+            [Field] {path} has no schema ({JSON.stringify(schema)})
          </Pre>
       );
 
@@ -39,9 +39,9 @@ export const Field = ({ name, schema: _schema, onChange, label: _label, hidden }
    const handleChange = useEvent((e: ChangeEvent<HTMLInputElement>) => {
       const value = coerce(e.target.value, schema as any, { required });
       if (typeof value === "undefined" && !required && ctx.options?.keepEmpty !== true) {
-         ctx.deleteValue(pointer);
+         ctx.deleteValue(path);
       } else {
-         setValue(pointer, value);
+         setValue(path, value);
       }
    });
 
@@ -68,7 +68,7 @@ export const FieldComponent = ({
    schema,
    ..._props
 }: { schema: JsonSchema } & ComponentPropsWithoutRef<"input">) => {
-   const { value } = useFormValue(_props.name!);
+   const { value } = useFormValue(_props.name!, { strict: true });
    if (!isTypeSchema(schema)) return null;
    const props = {
       ..._props,

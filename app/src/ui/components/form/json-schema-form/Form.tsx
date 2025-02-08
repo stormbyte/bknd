@@ -10,7 +10,6 @@ import { selectAtom } from "jotai/utils";
 import { Draft2019, type JsonError, type JsonSchema as LibJsonSchema } from "json-schema-library";
 import type { TemplateOptions as LibTemplateOptions } from "json-schema-library/dist/lib/getTemplate";
 import type { JSONSchema as $JSONSchema, FromSchema } from "json-schema-to-ts";
-import { get, isEqual } from "lodash-es";
 import * as immutable from "object-path-immutable";
 import {
    type ComponentPropsWithoutRef,
@@ -27,8 +26,9 @@ import { JsonViewer } from "ui/components/code/JsonViewer";
 import { useEvent } from "ui/hooks/use-event";
 import { Field } from "./Field";
 import {
+   getPath,
+   isEqual,
    isRequired,
-   normalizePath,
    omitSchema,
    pathToPointer,
    prefixPath,
@@ -139,25 +139,21 @@ export function Form<
       }
    }
 
-   const setValue = useEvent((pointer: string, value: any) => {
-      const normalized = normalizePath(pointer);
-      const key = normalized.substring(2).replace(/\//g, ".");
+   const setValue = useEvent((path: string, value: any) => {
       setFormState((state) => {
          const prev = state.data;
-         const changed = immutable.set(prev, key, value);
-         onChange?.(changed, key, value);
+         const changed = immutable.set(prev, path, value);
+         onChange?.(changed, path, value);
          return { ...state, data: changed };
       });
       check();
    });
 
-   const deleteValue = useEvent((pointer: string) => {
-      const normalized = normalizePath(pointer);
-      const key = normalized.substring(2).replace(/\//g, ".");
+   const deleteValue = useEvent((path: string) => {
       setFormState((state) => {
          const prev = state.data;
-         const changed = immutable.del(prev, key);
-         onChange?.(changed, key, undefined);
+         const changed = immutable.del(prev, path);
+         onChange?.(changed, path, undefined);
          return { ...state, data: changed };
       });
       check();
@@ -191,7 +187,8 @@ export function Form<
          schema,
          lib,
          options,
-         root: ""
+         root: "",
+         path: ""
       }),
       [schema, initialValues]
    ) as any;
@@ -245,8 +242,11 @@ export function FormContextOverride({
    return <FormContext.Provider value={context}>{children}</FormContext.Provider>;
 }
 
-export function useFormValue(name: string) {
+export function useFormValue(name: string, opts?: { strict?: boolean }) {
    const { _formStateAtom, root } = useFormContext();
+   if ((typeof name !== "string" || name.length === 0) && opts?.strict === true)
+      return { value: undefined, errors: [] };
+
    const selected = selectAtom(
       _formStateAtom,
       useCallback(
@@ -254,7 +254,7 @@ export function useFormValue(name: string) {
             const prefixedName = prefixPath(name, root);
             const pointer = pathToPointer(prefixedName);
             return {
-               value: get(state.data, prefixedName),
+               value: getPath(state.data, prefixedName),
                errors: state.errors.filter((error) => error.data.pointer.startsWith(pointer))
             };
          },
@@ -265,7 +265,7 @@ export function useFormValue(name: string) {
    return useAtom(selected)[0];
 }
 
-export function useFormError(name: string, opt?: { strict?: boolean }) {
+export function useFormError(name: string, opt?: { strict?: boolean; debug?: boolean }) {
    const { _formStateAtom, root } = useFormContext();
    const selected = selectAtom(
       _formStateAtom,
@@ -303,12 +303,17 @@ export function useDerivedFieldContext<Data = any, Reduced = undefined>(
       FormContext<Data> & {
          pointer: string;
          required: boolean;
-         errors: JsonError[];
          value: any;
+         path: string;
       },
       Reduced
    >
-): FormContext<Data> & { value: Reduced; pointer: string; required: boolean; errors: JsonError[] } {
+): FormContext<Data> & {
+   value: Reduced;
+   pointer: string;
+   required: boolean;
+   path: string;
+} {
    const { _formStateAtom, root, lib, ...ctx } = useFormContext();
    const schema = _schema ?? ctx.schema;
    const selected = selectAtom(
@@ -318,23 +323,23 @@ export function useDerivedFieldContext<Data = any, Reduced = undefined>(
             const pointer = pathToPointer(path);
             const prefixedName = prefixPath(path, root);
             const prefixedPointer = pathToPointer(prefixedName);
-            const value = get(state.data, prefixedName);
-            const errors = state.errors.filter((error) =>
+            const value = getPath(state.data, prefixedName);
+            /*const errors = state.errors.filter((error) =>
                error.data.pointer.startsWith(prefixedPointer)
-            );
+            );*/
             const fieldSchema =
                pointer === "#/"
                   ? (schema as LibJsonSchema)
                   : lib.getSchema({ pointer, data: value, schema });
-            const required = isRequired(prefixedPointer, schema, state.data);
+            const required = isRequired(lib, prefixedPointer, schema, state.data);
 
             const context = {
                ...ctx,
+               path: prefixedName,
                root,
                schema: fieldSchema as LibJsonSchema,
                pointer,
-               required,
-               errors
+               required
             };
             const derived = deriveFn?.({ ...context, _formStateAtom, lib, value });
 

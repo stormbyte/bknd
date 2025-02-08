@@ -36,6 +36,7 @@ export default function JsonSchemaForm3() {
 
    config.media.storage.body_max_size = 1;
    schema.media.properties.storage.properties.body_max_size.minimum = 0;
+   //schema.media.properties.adapter.anyOf[2].properties.config.properties.path.minLength = 1;
 
    return (
       <Scrollable>
@@ -239,9 +240,14 @@ export default function JsonSchemaForm3() {
             </Form>*/}
 
             {/*<CustomMediaForm />*/}
-            {/*<Form schema={schema.media} initialValues={config.media} validateOn="change">
+            <Form
+               schema={schema.media}
+               initialValues={config.media as any}
+               /* validateOn="change"*/
+               onSubmit={console.log}
+            >
                <Field name="" />
-            </Form>*/}
+            </Form>
 
             {/*<Form
                schema={removeKeyRecursively(schema.media, "pattern") as any}
@@ -257,20 +263,7 @@ export default function JsonSchemaForm3() {
                <AutoForm />
             </Form>*/}
 
-            <Form
-               schema={ss}
-               initialValues={{
-                  name: "Peter",
-                  age: 20,
-                  interested: true,
-                  dinnerTime: "2023-12-31T23:59:59+02:00"
-               }}
-               ignoreKeys={["what"]}
-               onChange={(state) => console.log(state)}
-               onSubmit={(state) => console.log(state)}
-               validateOn="change"
-               options={{ debug: true }}
-            />
+            {/*<Form schema={ss} validateOn="change" />*/}
          </div>
       </Scrollable>
    );
