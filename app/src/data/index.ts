@@ -28,3 +28,5 @@ export const DatabaseEvents = {
 export { MutatorEvents, RepositoryEvents };
 
 export * as DataPermissions from "./permissions";
+
+export { MediaField, type MediaFieldConfig, type MediaItem } from "media/MediaField";

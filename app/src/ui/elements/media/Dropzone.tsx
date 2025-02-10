@@ -37,19 +37,20 @@ export type DropzoneRenderProps = {
       deleteFile: (file: FileState) => Promise<void>;
       openFileInput: () => void;
    };
-   dropzoneProps: Pick<DropzoneProps, "maxItems" | "placeholder" | "autoUpload">;
+   dropzoneProps: Pick<DropzoneProps, "maxItems" | "placeholder" | "autoUpload" | "flow">;
 };
 
 export type DropzoneProps = {
    getUploadInfo: (file: FileWithPath) => { url: string; headers?: Headers; method?: string };
    handleDelete: (file: FileState) => Promise<boolean>;
    initialItems?: FileState[];
+   flow?: "start" | "end";
    maxItems?: number;
    overwrite?: boolean;
    autoUpload?: boolean;
    onRejected?: (files: FileWithPath[]) => void;
    onDeleted?: (file: FileState) => void;
-   onUploaded?: (file: FileState) => void;
+   onUploaded?: (files: FileState[]) => void;
    placeholder?: {
       show?: boolean;
       text?: string;
@@ -61,6 +62,7 @@ export function Dropzone({
    getUploadInfo,
    handleDelete,
    initialItems = [],
+   flow = "start",
    maxItems,
    overwrite,
    autoUpload,
@@ -133,7 +135,7 @@ export function Dropzone({
                   progress: 0
                }));
 
-            return [..._prev, ...filteredFiles];
+            return flow === "start" ? [...filteredFiles, ..._prev] : [..._prev, ...filteredFiles];
          });
 
          if (autoUpload) {
@@ -164,6 +166,8 @@ export function Dropzone({
                for (const file of pendingFiles) {
                   await uploadFileProgress(file);
                }
+               setUploading(false);
+               onUploaded?.(files);
             }
          })();
       }
@@ -259,7 +263,6 @@ export function Dropzone({
             if (xhr.status === 200) {
                //setFileState(file.path, "uploaded", 1);
                console.log("Upload complete");
-               onUploaded?.(file);
 
                try {
                   const response = JSON.parse(xhr.responseText);
@@ -312,6 +315,11 @@ export function Dropzone({
       }
    }
 
+   async function uploadFile(file: FileState) {
+      await uploadFileProgress(file);
+      onUploaded?.([file]);
+   }
+
    const openFileInput = () => inputRef.current?.click();
    const showPlaceholder = Boolean(
       placeholder?.show === true || !maxItems || (maxItems && files.length < maxItems)
@@ -332,14 +340,15 @@ export function Dropzone({
          showPlaceholder
       },
       actions: {
-         uploadFile: uploadFileProgress,
+         uploadFile,
          deleteFile,
          openFileInput
       },
       dropzoneProps: {
          maxItems,
          placeholder,
-         autoUpload
+         autoUpload,
+         flow
       }
    };
 
@@ -351,8 +360,12 @@ const DropzoneInner = ({
    inputProps,
    state: { files, isOver, isOverAccepted, showPlaceholder },
    actions: { uploadFile, deleteFile, openFileInput },
-   dropzoneProps: { placeholder }
+   dropzoneProps: { placeholder, flow }
 }: DropzoneRenderProps) => {
+   const Placeholder = showPlaceholder && (
+      <UploadPlaceholder onClick={openFileInput} text={placeholder?.text} />
+   );
+
    return (
       <div
          ref={wrapperRef}
@@ -367,6 +380,7 @@ const DropzoneInner = ({
          </div>
          <div className="flex flex-1 flex-col">
             <div className="flex flex-row flex-wrap gap-2 md:gap-3">
+               {flow === "start" && Placeholder}
                {files.map((file) => (
                   <Preview
                      key={file.path}
@@ -375,9 +389,7 @@ const DropzoneInner = ({
                      handleDelete={deleteFile}
                   />
                ))}
-               {showPlaceholder && (
-                  <UploadPlaceholder onClick={openFileInput} text={placeholder?.text} />
-               )}
+               {flow === "end" && Placeholder}
             </div>
          </div>
       </div>

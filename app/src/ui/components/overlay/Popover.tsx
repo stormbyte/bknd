@@ -47,7 +47,7 @@ export function Popover({
                <div
                   {...overlayProps}
                   className={twMerge(
-                     "animate-fade-in absolute z-20 flex flex-col bg-background border border-muted px-1 py-1 rounded-lg shadow-lg backdrop-blur-sm min-w-0 max-w-20",
+                     "animate-fade-in absolute z-20 flex flex-col bg-background border border-muted px-1 py-1 rounded-lg shadow-lg backdrop-blur-sm min-w-full max-w-20",
                      pos,
                      overlayProps?.className
                   )}

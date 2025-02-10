@@ -1,8 +1,9 @@
+import type { Api } from "bknd/client";
 import type { RepoQueryIn } from "data";
 import type { MediaFieldSchema } from "media/AppMedia";
 import type { TAppMediaConfig } from "media/media-schema";
 import { type ReactNode, createContext, useContext, useId } from "react";
-import { useApi, useEntityQuery, useInvalidate } from "ui/client";
+import { useApi, useApiQuery, useInvalidate } from "ui/client";
 import { useEvent } from "ui/hooks/use-event";
 import { Dropzone, type DropzoneProps, type DropzoneRenderProps, type FileState } from "./Dropzone";
 import { mediaItemsToFileStates } from "./helper";
@@ -31,28 +32,32 @@ export function DropzoneContainer({
 }: DropzoneContainerProps) {
    const id = useId();
    const api = useApi();
-   const baseUrl = api.baseUrl;
    const invalidate = useInvalidate();
-   const limit = query?.limit ? query?.limit : props.maxItems ? props.maxItems : 50;
+   const baseUrl = api.baseUrl;
+   const defaultQuery = {
+      limit: query?.limit ? query?.limit : props.maxItems ? props.maxItems : 50,
+      sort: "-id"
+   };
    const entity_name = (media?.entity_name ?? "media") as "media";
    //console.log("dropzone:baseUrl", baseUrl);
 
-   const $q = useEntityQuery(
-      entity_name,
-      undefined,
-      {
-         ...query,
-         limit,
-         where: entity
-            ? {
+   const selectApi = (api: Api) =>
+      entity
+         ? api.data.readManyByReference(entity.name, entity.id, entity.field, {
+              ...defaultQuery,
+              ...query,
+              where: {
                  reference: `${entity.name}.${entity.field}`,
                  entity_id: entity.id,
                  ...query?.where
               }
-            : query?.where
-      },
-      { enabled: !initialItems }
-   );
+           })
+         : api.data.readMany(entity_name, {
+              ...defaultQuery,
+              ...query
+           });
+
+   const $q = useApiQuery(selectApi, { enabled: !initialItems });
 
    const getUploadInfo = useEvent((file) => {
       const url = entity
@@ -67,10 +72,7 @@ export function DropzoneContainer({
    });
 
    const refresh = useEvent(async () => {
-      if (entity) {
-         invalidate((api) => api.data.readOne(entity.name, entity.id));
-      }
-      await $q.mutate();
+      await invalidate($q.promise.key({ search: false }));
    });
 
    const handleDelete = useEvent(async (file: FileState) => {
