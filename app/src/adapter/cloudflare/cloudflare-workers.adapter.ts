@@ -3,7 +3,9 @@
 import { type FrameworkBkndConfig, makeConfig } from "bknd/adapter";
 import { Hono } from "hono";
 import { serveStatic } from "hono/cloudflare-workers";
-import { D1Connection } from "./connection/D1Connection";
+import { D1Connection } from "./D1Connection";
+import { registerMedia } from "./StorageR2Adapter";
+import { getBinding } from "./bindings";
 import { getCached } from "./modes/cached";
 import { getDurable } from "./modes/durable";
 import { getFresh, getWarm } from "./modes/fresh";
@@ -29,6 +31,38 @@ export type Context<Env = any> = {
    env: Env;
    ctx: ExecutionContext;
 };
+
+let media_registered: boolean = false;
+export function makeCfConfig(config: CloudflareBkndConfig, context: Context) {
+   if (!media_registered) {
+      registerMedia(context.env as any);
+      media_registered = true;
+   }
+
+   const appConfig = makeConfig(config, context);
+   const bindings = config.bindings?.(context);
+   if (!appConfig.connection) {
+      let db: D1Database | undefined;
+      if (bindings?.db) {
+         console.log("Using database from bindings");
+         db = bindings.db;
+      } else if (Object.keys(context.env ?? {}).length > 0) {
+         const binding = getBinding(context.env, "D1Database");
+         if (binding) {
+            console.log(`Using database from env "${binding.key}"`);
+            db = binding.value;
+         }
+      }
+
+      if (db) {
+         appConfig.connection = new D1Connection({ binding: db });
+      } else {
+         throw new Error("No database connection given");
+      }
+   }
+
+   return appConfig;
+}
 
 export function serve<Env = any>(config: CloudflareBkndConfig<Env> = {}) {
    return {
@@ -68,43 +102,15 @@ export function serve<Env = any>(config: CloudflareBkndConfig<Env> = {}) {
          const context = { request, env, ctx } as Context;
          const mode = config.mode ?? "warm";
 
-         const appConfig = makeConfig(config, context);
-         const bindings = config.bindings?.(context);
-         if (!appConfig.connection) {
-            let db: D1Database | undefined;
-            if (bindings && "db" in bindings && bindings.db) {
-               console.log("Using database from bindings");
-               db = bindings.db;
-            } else if (env && Object.keys(env).length > 0) {
-               // try to find a database in env
-               for (const key in env) {
-                  try {
-                     // @ts-ignore
-                     if (env[key].constructor.name === "D1Database") {
-                        console.log(`Using database from env "${key}"`);
-                        db = env[key] as D1Database;
-                        break;
-                     }
-                  } catch (e) {}
-               }
-            }
-
-            if (db) {
-               appConfig.connection = new D1Connection({ binding: db });
-            } else {
-               throw new Error("No database connection given");
-            }
-         }
-
          switch (mode) {
             case "fresh":
-               return await getFresh(appConfig, context);
+               return await getFresh(config, context);
             case "warm":
-               return await getWarm(appConfig, context);
+               return await getWarm(config, context);
             case "cache":
-               return await getCached(appConfig, context);
+               return await getCached(config, context);
             case "durable":
-               return await getDurable(appConfig, context);
+               return await getDurable(config, context);
             default:
                throw new Error(`Unknown mode ${mode}`);
          }

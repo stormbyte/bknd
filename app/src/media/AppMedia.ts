@@ -40,7 +40,8 @@ export class AppMedia extends Module<typeof mediaConfigSchema> {
       let adapter: StorageAdapter;
       try {
          const { type, config } = this.config.adapter;
-         adapter = new (registry.get(type as any).cls)(config as any);
+         const cls = registry.get(type as any).cls;
+         adapter = new cls(config as any);
 
          this._storage = new Storage(adapter, this.config.storage, this.ctx.emgr);
          this.setBuilt();
@@ -53,8 +54,6 @@ export class AppMedia extends Module<typeof mediaConfigSchema> {
                index(media).on(["path"], true).on(["reference"]);
             })
          );
-
-         this.setBuilt();
       } catch (e) {
          console.error(e);
          throw new Error(

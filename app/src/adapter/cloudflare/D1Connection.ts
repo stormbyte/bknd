@@ -1,9 +1,7 @@
 /// <reference types="@cloudflare/workers-types" />
 
-import { SqliteConnection } from "bknd/data";
-import { KyselyPluginRunner } from "data";
+import { KyselyPluginRunner, SqliteConnection, SqliteIntrospector } from "bknd/data";
 import type { QB } from "data/connection/Connection";
-import { SqliteIntrospector } from "data/connection/SqliteIntrospector";
 import { type DatabaseIntrospector, Kysely, ParseJSONResultsPlugin } from "kysely";
 import { D1Dialect } from "kysely-d1";
 

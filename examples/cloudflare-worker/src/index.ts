@@ -2,4 +2,8 @@
 
 import { serve } from "bknd/adapter/cloudflare";
 
-export default serve();
+export default serve({
+   onBuilt: async (app) => {
+      app.modules.server.get("/custom", (c) => c.json({ hello: "world" }));
+   }
+});

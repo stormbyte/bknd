@@ -1,4 +1,4 @@
-import { IconBrandAws, IconCloud, IconServer } from "@tabler/icons-react";
+import { IconBrandAws, IconBrandCloudflare, IconCloud, IconServer } from "@tabler/icons-react";
 import { isDebug } from "core";
 import { autoFormatString } from "core/utils";
 import { twMerge } from "tailwind-merge";
@@ -113,10 +113,15 @@ const RootFormError = () => {
    );
 };
 
-const Icons = [IconBrandAws, IconCloud, IconServer];
+const Icons = {
+   s3: IconBrandAws,
+   cloudinary: IconCloud,
+   local: IconServer,
+   r2: IconBrandCloudflare
+};
 
-const AdapterIcon = ({ index }: { index: number }) => {
-   const Icon = Icons[index];
+const AdapterIcon = ({ type }: { type: string }) => {
+   const Icon = Icons[type];
    if (!Icon) return null;
    return <Icon />;
 };
@@ -142,7 +147,7 @@ function Adapters() {
                   )}
                >
                   <div>
-                     <AdapterIcon index={i} />
+                     <AdapterIcon type={schema.properties.type.const} />
                   </div>
                   <div className="flex flex-col items-start justify-center">
                      <span>{autoFormatString(schema.title)}</span>
