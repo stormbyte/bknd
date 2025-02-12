@@ -104,7 +104,7 @@ async function action(options: {
    let app: App;
    if (options.dbUrl || !configFilePath) {
       const connection = options.dbUrl
-         ? { type: "libsql" as const, config: { url: options.dbUrl, authToken: options.dbToken } }
+         ? { url: options.dbUrl, authToken: options.dbToken }
          : undefined;
       app = await makeApp({ connection, server: { platform: options.server } });
    } else {

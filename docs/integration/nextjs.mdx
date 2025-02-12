@@ -20,11 +20,8 @@ export const config = {
 
 export default serve({
    connection: {
-      type: "libsql",
-      config: {
-         url: process.env.DB_URL!,
-         authToken: process.env.DB_AUTH_TOKEN!
-      }
+      url: process.env.DB_URL!,
+      authToken: process.env.DB_AUTH_TOKEN!
    }
 });
 ```

@@ -39,19 +39,16 @@ implements the `Fetch` API.
 The `CreateAppConfig` type is the main configuration object for the `createApp` function. It has
 the following properties:
 ```ts
+import type { App, InitialModuleConfigs, ModuleBuildContext } from "bknd";
 import type { Connection } from "bknd/data";
 import type { Config } from "@libsql/client";
 
 type AppPlugin = (app: App) => Promise<void> | void;
-type LibSqlCredentials = Config;
 
 type CreateAppConfig = {
    connection?:
       | Connection
-      | {
-           type: "libsql";
-           config: LibSqlCredentials;
-        };
+      | Config;
    initialConfig?: InitialModuleConfigs;
    plugins?: AppPlugin[];
    options?: {
@@ -63,17 +60,12 @@ type CreateAppConfig = {
 };
 ```
 ### `connection`
-The `connection` property is the main connection object to the database. It can be either an
-object with a type specifier (only `libsql` is supported at the moment) and the actual
-`Connection` class. The `libsql` connection object looks like this:
+The `connection` property is the main connection object to the database. It can be either an object with libsql config or the actual `Connection` class.
 
 ```ts
 const connection = {
-   type: "libsql",
-   config: {
-      url: string;
-      authToken?: string;
-   };
+   url: "<url>",
+   authToken: "<token>"
 }
 ```
 
@@ -168,6 +160,8 @@ but before its event is emitted. This is useful for adding custom routes or othe
 A simple plugin that adds a custom route looks like this:
 
 ```ts
+import type { AppPlugin } from "bknd";
+
 export const myPlugin: AppPlugin = (app) => {
    app.server.get("/hello", (c) => c.json({ hello: "world" }));
 };
