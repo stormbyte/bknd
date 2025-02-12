@@ -76,3 +76,9 @@ export async function getConfigPath(filePath?: string) {
 
    return;
 }
+
+export function getConnectionCredentialsFromEnv() {
+   const dbUrl = process.env.DB_URL;
+   const dbToken = process.env.DB_TOKEN;
+   return dbUrl ? { url: dbUrl, authToken: dbToken } : undefined;
+}

@@ -74,6 +74,7 @@
     "@vitejs/plugin-react": "^4.3.3",
     "autoprefixer": "^10.4.20",
     "clsx": "^2.1.1",
+    "dotenv": "^16.4.7",
     "esbuild-postcss": "^0.0.4",
     "jotai": "^2.10.1",
     "kysely-d1": "^0.3.0",

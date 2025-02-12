@@ -107,7 +107,6 @@ export class SqliteIntrospector implements DatabaseIntrospector, ConnectionIntro
       }
 
       const tables = await query.execute();
-      console.log("tables", tables);
       return Promise.all(tables.map(({ name }) => this.#getTableMetadata(name)));
    }
 
@@ -119,7 +118,6 @@ export class SqliteIntrospector implements DatabaseIntrospector, ConnectionIntro
 
    async #getTableMetadata(table: string): Promise<TableMetadata> {
       const db = this.#db;
-      console.log("get table metadata", table);
 
       // Get the SQL that was used to create the table.
       const tableDefinition = await db
