@@ -1,6 +1,7 @@
-import { describe, expect, test } from "bun:test";
-import { stripMark } from "../../src/core/utils";
+import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
+import { Type, disableConsoleLog, enableConsoleLog, stripMark } from "../../src/core/utils";
 import { entity, text } from "../../src/data";
+import { Module } from "../../src/modules/Module";
 import { ModuleManager, getDefaultConfig } from "../../src/modules/ModuleManager";
 import { CURRENT_VERSION, TABLE_NAME } from "../../src/modules/migrations";
 import { getDummyConnection } from "../helper";
@@ -252,4 +253,126 @@ describe("ModuleManager", async () => {
    });
 
    // @todo: add tests for migrations (check "backup" and new version)
+
+   describe("revert", async () => {
+      const failingModuleSchema = Type.Object({
+         value: Type.Optional(Type.Number())
+      });
+      class FailingModule extends Module<typeof failingModuleSchema> {
+         getSchema() {
+            return failingModuleSchema;
+         }
+
+         override async build() {
+            //console.log("building FailingModule", this.config);
+            if (this.config.value < 0) {
+               throw new Error("value must be positive");
+            }
+            this.setBuilt();
+         }
+      }
+      class TestModuleManager extends ModuleManager {
+         constructor(...args: ConstructorParameters<typeof ModuleManager>) {
+            super(...args);
+            const [, options] = args;
+            // @ts-ignore
+            const initial = options?.initial?.failing ?? {};
+            this.modules["failing"] = new FailingModule(initial, this.ctx());
+            this.modules["failing"].setListener(async (c) => {
+               // @ts-ignore
+               await this.onModuleConfigUpdated("failing", c);
+            });
+         }
+      }
+
+      beforeEach(() => disableConsoleLog(["log", "warn", "error"]));
+      afterEach(enableConsoleLog);
+
+      test("it builds", async () => {
+         const { dummyConnection } = getDummyConnection();
+         const mm = new TestModuleManager(dummyConnection);
+         expect(mm).toBeDefined();
+         await mm.build();
+         expect(mm.toJSON()).toBeDefined();
+      });
+
+      test("it accepts config", async () => {
+         const { dummyConnection } = getDummyConnection();
+         const mm = new TestModuleManager(dummyConnection, {
+            initial: {
+               // @ts-ignore
+               failing: { value: 2 }
+            }
+         });
+         await mm.build();
+         expect(mm.configs()["failing"].value).toBe(2);
+      });
+
+      test("it crashes on invalid", async () => {
+         const { dummyConnection } = getDummyConnection();
+         const mm = new TestModuleManager(dummyConnection, {
+            initial: {
+               // @ts-ignore
+               failing: { value: -1 }
+            }
+         });
+         expect(mm.build()).rejects.toThrow(/value must be positive/);
+         expect(mm.configs()["failing"].value).toBe(-1);
+      });
+
+      test("it correctly accepts valid", async () => {
+         const mockOnUpdated = mock(() => null);
+         const { dummyConnection } = getDummyConnection();
+         const mm = new TestModuleManager(dummyConnection, {
+            onUpdated: async () => {
+               mockOnUpdated();
+            }
+         });
+         await mm.build();
+         // @ts-ignore
+         const f = mm.mutateConfigSafe("failing");
+
+         expect(f.set({ value: 2 })).resolves.toBeDefined();
+         expect(mockOnUpdated).toHaveBeenCalled();
+      });
+
+      test("it reverts on safe mutate", async () => {
+         const mockOnUpdated = mock(() => null);
+         const { dummyConnection } = getDummyConnection();
+         const mm = new TestModuleManager(dummyConnection, {
+            initial: {
+               // @ts-ignore
+               failing: { value: 1 }
+            },
+            onUpdated: async () => {
+               mockOnUpdated();
+            }
+         });
+         await mm.build();
+         expect(mm.configs()["failing"].value).toBe(1);
+
+         // now safe mutate
+         // @ts-ignore
+         expect(mm.mutateConfigSafe("failing").set({ value: -2 })).rejects.toThrow(
+            /value must be positive/
+         );
+         expect(mm.configs()["failing"].value).toBe(1);
+         expect(mockOnUpdated).toHaveBeenCalled();
+      });
+
+      test("it only accepts schema mutating methods", async () => {
+         const { dummyConnection } = getDummyConnection();
+         const mm = new TestModuleManager(dummyConnection);
+         await mm.build();
+
+         // @ts-ignore
+         const f = mm.mutateConfigSafe("failing");
+
+         expect(() => f.has("value")).toThrow();
+         expect(() => f.bypass()).toThrow();
+         expect(() => f.clone()).toThrow();
+         expect(() => f.get()).toThrow();
+         expect(() => f.default()).toThrow();
+      });
+   });
 });

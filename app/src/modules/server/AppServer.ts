@@ -1,10 +1,7 @@
-import { Exception, isDebug } from "core";
+import { Exception } from "core";
 import { type Static, StringEnum, Type } from "core/utils";
-import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { timing } from "hono/timing";
 import { Module } from "modules/Module";
-import * as SystemPermissions from "modules/permissions";
 
 const serverMethods = ["GET", "POST", "PATCH", "PUT", "DELETE"];
 export const serverConfigSchema = Type.Object(

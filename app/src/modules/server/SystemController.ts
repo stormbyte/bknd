@@ -256,17 +256,15 @@ export class SystemController extends Controller {
          tb(
             "query",
             Type.Object({
-               sync: Type.Optional(booleanLike),
-               drop: Type.Optional(booleanLike),
-               save: Type.Optional(booleanLike)
+               sync: Type.Optional(booleanLike)
             })
          ),
          async (c) => {
-            const { sync, drop, save } = c.req.valid("query") as Record<string, boolean>;
+            const { sync } = c.req.valid("query") as Record<string, boolean>;
             this.ctx.guard.throwUnlessGranted(SystemPermissions.build);
 
-            await this.app.build({ sync, drop, save });
-            return c.json({ success: true, options: { sync, drop, save } });
+            await this.app.build({ sync });
+            return c.json({ success: true, options: { sync } });
          }
       );
 
