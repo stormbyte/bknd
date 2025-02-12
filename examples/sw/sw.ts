@@ -8,10 +8,7 @@ import { App } from "bknd";
 async function getBknd() {
    const bknd = App.create({
       connection: {
-         type: "libsql",
-         config: {
-            url: "http://localhost:8080"
-         }
+         url: "http://localhost:8080"
       }
    });
    await bknd.build();

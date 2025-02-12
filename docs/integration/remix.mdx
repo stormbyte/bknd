@@ -16,10 +16,7 @@ import { serve } from "bknd/adapter/remix";
 
 const handler = serve({
    connection: {
-      type: "libsql",
-      config: {
-         url: "http://localhost:8080"
-      }
+      url: "http://localhost:8080"
    }
 });
 

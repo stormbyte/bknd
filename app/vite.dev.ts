@@ -32,10 +32,7 @@ export default {
    async fetch(request: Request) {
       if (!app || recreate) {
          app = App.create({
-            connection: {
-               type: "libsql",
-               config: credentials
-            },
+            connection: credentials,
             initialConfig
          });
          app.emgr.onEvent(

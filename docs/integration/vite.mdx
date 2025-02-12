@@ -26,10 +26,7 @@ import { serve } from "bknd/adapter/vite";
 export default serve({
    mode: "cached", // that's the default
    connection: {
-      type: "libsql",
-      config: {
-         url: ":memory:"
-      }
+      url: ":memory:"
    }
 })
 ```

@@ -1,5 +1,6 @@
 import { App } from "bknd";
-import { registerLocalMediaAdapter, serve } from "bknd/adapter/remix";
+import { registerLocalMediaAdapter } from "bknd/adapter/node";
+import { serve } from "bknd/adapter/remix";
 import { boolean, em, entity, text } from "bknd/data";
 import { secureRandomString } from "bknd/utils";
 
@@ -22,10 +23,7 @@ declare module "bknd/core" {
 const handler = serve({
    // we can use any libsql config, and if omitted, uses in-memory
    connection: {
-      type: "libsql",
-      config: {
-         url: "file:test.db"
-      }
+      url: "file:test.db"
    },
    // an initial config is only applied if the database is empty
    initialConfig: {

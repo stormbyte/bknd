@@ -30,9 +30,11 @@ export type CreateAppConfig = {
    connection?:
       | Connection
       | {
+           // @deprecated
            type: "libsql";
            config: LibSqlCredentials;
-        };
+        }
+      | LibSqlCredentials;
    initialConfig?: InitialModuleConfigs;
    plugins?: AppPlugin[];
    options?: Omit<ModuleManagerOptions, "initial" | "onUpdated">;
@@ -179,7 +181,14 @@ export function createApp(config: CreateAppConfig = {}) {
       if (Connection.isConnection(config.connection)) {
          connection = config.connection;
       } else if (typeof config.connection === "object") {
-         connection = new LibsqlConnection(config.connection.config);
+         if ("type" in config.connection) {
+            console.warn(
+               "[WARN] Using deprecated connection type 'libsql', use the 'config' object directly."
+            );
+            connection = new LibsqlConnection(config.connection.config);
+         } else {
+            connection = new LibsqlConnection(config.connection);
+         }
       } else {
          connection = new LibsqlConnection({ url: ":memory:" });
          console.warn("[!] No connection provided, using in-memory database");
