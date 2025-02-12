@@ -4,15 +4,18 @@ import { StorageLocalAdapter } from "adapter/node";
 import type { CliBkndConfig, CliCommand } from "cli/types";
 import { Option } from "commander";
 import { config } from "core";
+import dotenv from "dotenv";
 import { registries } from "modules/registries";
 import {
    PLATFORMS,
    type Platform,
    attachServeStatic,
    getConfigPath,
+   getConnectionCredentialsFromEnv,
    startServer
 } from "./platform";
 
+dotenv.config();
 const isBun = typeof Bun !== "undefined";
 
 export const run: CliCommand = (program) => {
@@ -101,16 +104,26 @@ async function action(options: {
 }) {
    const configFilePath = await getConfigPath(options.config);
 
-   let app: App;
-   if (options.dbUrl || !configFilePath) {
+   let app: App | undefined = undefined;
+   if (options.dbUrl) {
       const connection = options.dbUrl
          ? { url: options.dbUrl, authToken: options.dbToken }
          : undefined;
       app = await makeApp({ connection, server: { platform: options.server } });
-   } else {
-      console.log("Using config from:", configFilePath);
+   } else if (configFilePath) {
+      console.log("[INFO] Using config from:", configFilePath);
       const config = (await import(configFilePath).then((m) => m.default)) as CliBkndConfig;
       app = await makeConfigApp(config, options.server);
+   } else {
+      const credentials = getConnectionCredentialsFromEnv();
+      if (credentials) {
+         console.log("[INFO] Using connection from environment");
+         app = await makeConfigApp({ app: { connection: credentials } }, options.server);
+      }
+   }
+
+   if (!app) {
+      app = await makeApp({ server: { platform: options.server } });
    }
 
    await startServer(options.server, app, { port: options.port });
