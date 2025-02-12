@@ -58,13 +58,15 @@ export class App {
          onUpdated: async (key, config) => {
             // if the EventManager was disabled, we assume we shouldn't
             // respond to events, such as "onUpdated".
+            // this is important if multiple changes are done, and then build() is called manually
             if (!this.emgr.enabled) {
                console.warn("[APP] config updated, but event manager is disabled, skip.");
                return;
             }
 
             console.log("[APP] config updated", key);
-            await this.build({ sync: true, save: true });
+            // @todo: potentially double syncing
+            await this.build({ sync: true });
             await this.emgr.emit(new AppConfigUpdatedEvent({ app: this }));
          },
          onFirstBoot: async () => {
@@ -85,15 +87,9 @@ export class App {
       return this.modules.ctx().emgr;
    }
 
-   async build(options?: { sync?: boolean; drop?: boolean; save?: boolean }) {
+   async build(options?: { sync?: boolean }) {
+      if (options?.sync) this.modules.ctx().flags.sync_required = true;
       await this.modules.build();
-
-      if (options?.sync) {
-         const syncResult = await this.module.data.em
-            .schema()
-            .sync({ force: true, drop: options.drop });
-         //console.log("syncing", syncResult);
-      }
 
       const { guard, server } = this.modules.ctx();
 
@@ -110,10 +106,6 @@ export class App {
 
       server.all("/api/*", async (c) => c.notFound());
 
-      if (options?.save) {
-         await this.modules.save();
-      }
-
       // first boot is set from ModuleManager when there wasn't a config table
       if (this.trigger_first_boot) {
          this.trigger_first_boot = false;
@@ -122,7 +114,7 @@ export class App {
    }
 
    mutateConfig<Module extends keyof Modules>(module: Module) {
-      return this.modules.get(module).schema();
+      return this.modules.mutateConfigSafe(module);
    }
 
    get server() {
