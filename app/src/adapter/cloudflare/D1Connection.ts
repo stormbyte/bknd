@@ -12,7 +12,7 @@ export type D1ConnectionConfig = {
 class CustomD1Dialect extends D1Dialect {
    override createIntrospector(db: Kysely<any>): DatabaseIntrospector {
       return new SqliteIntrospector(db, {
-         excludeTables: [""]
+         excludeTables: ["_cf_KV"]
       });
    }
 }

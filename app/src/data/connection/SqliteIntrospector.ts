@@ -5,7 +5,7 @@ import type {
    ExpressionBuilder,
    Kysely,
    SchemaMetadata,
-   TableMetadata,
+   TableMetadata
 } from "kysely";
 import { DEFAULT_MIGRATION_LOCK_TABLE, DEFAULT_MIGRATION_TABLE, sql } from "kysely";
 import type { ConnectionIntrospector, IndexMetadata } from "./Connection";
@@ -62,7 +62,7 @@ export class SqliteIntrospector implements DatabaseIntrospector, ConnectionIntro
                seqno: number;
                cid: number;
                name: string;
-            }>`pragma_index_info(${index})`.as("index_info"),
+            }>`pragma_index_info(${index})`.as("index_info")
          )
          .select(["seqno", "cid", "name"])
          .orderBy("cid")
@@ -74,8 +74,8 @@ export class SqliteIntrospector implements DatabaseIntrospector, ConnectionIntro
          isUnique: isUnique,
          columns: columns.map((col) => ({
             name: col.name,
-            order: col.seqno,
-         })),
+            order: col.seqno
+         }))
       };
    }
 
@@ -87,7 +87,7 @@ export class SqliteIntrospector implements DatabaseIntrospector, ConnectionIntro
    }
 
    async getTables(
-      options: DatabaseMetadataOptions = { withInternalKyselyTables: false },
+      options: DatabaseMetadataOptions = { withInternalKyselyTables: false }
    ): Promise<TableMetadata[]> {
       let query = this.#db
          .selectFrom("sqlite_master")
@@ -99,7 +99,7 @@ export class SqliteIntrospector implements DatabaseIntrospector, ConnectionIntro
 
       if (!options.withInternalKyselyTables) {
          query = query.where(
-            this.excludeTables([DEFAULT_MIGRATION_TABLE, DEFAULT_MIGRATION_LOCK_TABLE]),
+            this.excludeTables([DEFAULT_MIGRATION_TABLE, DEFAULT_MIGRATION_LOCK_TABLE])
          );
       }
       if (this._excludeTables.length > 0) {
@@ -107,17 +107,19 @@ export class SqliteIntrospector implements DatabaseIntrospector, ConnectionIntro
       }
 
       const tables = await query.execute();
+      console.log("tables", tables);
       return Promise.all(tables.map(({ name }) => this.#getTableMetadata(name)));
    }
 
    async getMetadata(options?: DatabaseMetadataOptions): Promise<DatabaseMetadata> {
       return {
-         tables: await this.getTables(options),
+         tables: await this.getTables(options)
       };
    }
 
    async #getTableMetadata(table: string): Promise<TableMetadata> {
       const db = this.#db;
+      console.log("get table metadata", table);
 
       // Get the SQL that was used to create the table.
       const tableDefinition = await db
@@ -142,7 +144,7 @@ export class SqliteIntrospector implements DatabaseIntrospector, ConnectionIntro
                type: string;
                notnull: 0 | 1;
                dflt_value: any;
-            }>`pragma_table_info(${table})`.as("table_info"),
+            }>`pragma_table_info(${table})`.as("table_info")
          )
          .select(["name", "type", "notnull", "dflt_value"])
          .orderBy("cid")
@@ -157,8 +159,8 @@ export class SqliteIntrospector implements DatabaseIntrospector, ConnectionIntro
             isNullable: !col.notnull,
             isAutoIncrementing: col.name === autoIncrementCol,
             hasDefaultValue: col.dflt_value != null,
-            comment: undefined,
-         })),
+            comment: undefined
+         }))
       };
    }
 }
