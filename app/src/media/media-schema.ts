@@ -16,8 +16,8 @@ export function buildMediaSchema() {
             config: adapter.schema
          },
          {
-            title: adapter.schema.title ?? name,
-            description: adapter.schema.description,
+            title: adapter.schema?.title ?? name,
+            description: adapter.schema?.description,
             additionalProperties: false
          }
       );

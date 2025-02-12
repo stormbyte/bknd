@@ -1,6 +1,6 @@
 import { App } from "bknd";
 import { createRuntimeApp } from "bknd/adapter";
-import type { CloudflareBkndConfig, Context } from "../index";
+import { type CloudflareBkndConfig, type Context, makeCfConfig } from "../index";
 
 export async function getCached(config: CloudflareBkndConfig, { env, ctx, ...args }: Context) {
    const { kv } = config.bindings?.(env)!;
@@ -16,7 +16,7 @@ export async function getCached(config: CloudflareBkndConfig, { env, ctx, ...arg
 
    const app = await createRuntimeApp(
       {
-         ...config,
+         ...makeCfConfig(config, { env, ctx, ...args }),
          initialConfig,
          onBuilt: async (app) => {
             app.module.server.client.get("/__bknd/cache", async (c) => {
