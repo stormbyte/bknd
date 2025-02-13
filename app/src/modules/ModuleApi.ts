@@ -26,7 +26,11 @@ export abstract class ModuleApi<Options extends BaseModuleApiOptions = BaseModul
    constructor(
       protected readonly _options: Partial<Options> = {},
       protected fetcher?: typeof fetch
-   ) {}
+   ) {
+      if (!fetcher) {
+         this.fetcher = fetch;
+      }
+   }
 
    protected getDefaultOptions(): Partial<Options> {
       return {};
