@@ -172,25 +172,29 @@ async function action(options: { template?: string; dir?: string; integration?: 
    const ctx = { template, dir: downloadOpts.dir };
 
    {
+      // @todo: only while in PR
+      const ref = "feat/cli-starters";
+      //const ref = `v${version}`;
+
       const prefix =
          template.ref === true
-            ? `#v${version}`
+            ? `#${ref}`
             : typeof template.ref === "string"
               ? `#${template.ref}`
               : "";
       const url = `${template.path}${prefix}`;
 
-      console.log("url", url);
+      //console.log("url", url);
       const s = $p.spinner();
       s.start("Downloading template...");
       const result = await downloadTemplate(url, {
          dir: ctx.dir,
          force: downloadOpts.clean ? "clean" : true
       });
-      console.log("result", result);
+      //console.log("result", result);
 
       s.stop("Template downloaded.");
-      await updateBkndPackages({ dir: ctx.dir });
+      await updateBkndPackages(ctx.dir);
 
       if (template.preinstall) {
          await template.preinstall(ctx);

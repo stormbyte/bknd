@@ -65,11 +65,18 @@ export async function replacePackageJsonVersions(
    );
 }
 
-export async function updateBkndPackages(opts?: { dir?: string }) {
-   await replacePackageJsonVersions(async (pkg) => {
-      if (pkg === "bknd") {
-         return "^" + (await getVersion(pkg));
-      }
-      return;
-   }, opts);
+export async function updateBkndPackages(dir?: string, map?: Record<string, string>) {
+   const versions = {
+      bknd: "^" + (await getVersion("bknd")),
+      ...(map ?? {})
+   };
+   await replacePackageJsonVersions(
+      async (pkg) => {
+         if (pkg in versions) {
+            return versions[pkg];
+         }
+         return;
+      },
+      { dir }
+   );
 }

@@ -12,6 +12,18 @@ export const cloudflare = {
    path: "gh:bknd-io/bknd/examples/cloudflare-worker",
    ref: true,
    setup: async (ctx) => {
+      // overwrite assets directory
+      await overrideJson(
+         "wrangler.json",
+         (json) => ({
+            ...json,
+            assets: {
+               directory: "node_modules/bknd/dist/static"
+            }
+         }),
+         { dir: ctx.dir }
+      );
+
       const db = await $p.select({
          message: "What database do you want to use?",
          options: [
