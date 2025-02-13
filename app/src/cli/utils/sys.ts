@@ -1,3 +1,4 @@
+import { execSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import url from "node:url";
@@ -37,4 +38,16 @@ export async function fileExists(filePath: string) {
    } catch {
       return false;
    }
+}
+
+export function exec(command: string, opts?: { silent?: boolean; env?: Record<string, string> }) {
+   const stdio = opts?.silent ? "pipe" : "inherit";
+   const output = execSync(command, {
+      stdio: ["inherit", stdio, stdio],
+      env: { ...process.env, ...opts?.env }
+   });
+   if (!opts?.silent) {
+      return;
+   }
+   return output.toString();
 }
