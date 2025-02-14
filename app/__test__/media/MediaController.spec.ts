@@ -1,56 +1,96 @@
-import { describe, test } from "bun:test";
-import { Hono } from "hono";
-import { Guard } from "../../src/auth";
-import { EventManager } from "../../src/core/events";
-import { EntityManager } from "../../src/data";
-import { AppMedia } from "../../src/media/AppMedia";
-import { MediaController } from "../../src/media/api/MediaController";
-import { getDummyConnection } from "../helper";
+/// <reference types="@types/bun" />
 
-const { dummyConnection, afterAllCleanup } = getDummyConnection();
+import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { createApp, registries } from "../../src";
+import { StorageLocalAdapter } from "../../src/adapter/node";
+import { mergeObject, randomString } from "../../src/core/utils";
+import type { TAppMediaConfig } from "../../src/media/media-schema";
+import { assetsPath, assetsTmpPath, disableConsoleLog, enableConsoleLog } from "../helper";
 
-/**
- * R2
- *     value: ReadableStream | ArrayBuffer | ArrayBufferView | string | Blob | null,
- * Node writefile
- * data: string | NodeJS.ArrayBufferView | Iterable<string | NodeJS.ArrayBufferView> | AsyncIterable<string | NodeJS.ArrayBufferView> | Stream,
- */
-const ALL_TESTS = !!process.env.ALL_TESTS;
-describe.skipIf(ALL_TESTS)("MediaController", () => {
-   test("..", async () => {
-      const ctx: any = {
-         em: new EntityManager([], dummyConnection, []),
-         guard: new Guard(),
-         emgr: new EventManager(),
-         server: new Hono()
-      };
+beforeAll(() => {
+   registries.media.register("local", StorageLocalAdapter);
+});
 
-      const media = new AppMedia(
-         // @ts-ignore
-         {
-            enabled: true,
-            adapter: {
-               type: "s3",
-               config: {
-                  access_key: process.env.R2_ACCESS_KEY as string,
-                  secret_access_key: process.env.R2_SECRET_ACCESS_KEY as string,
-                  url: process.env.R2_URL as string
+const path = `${assetsPath}/image.png`;
+
+async function makeApp(mediaOverride: Partial<TAppMediaConfig> = {}) {
+   const app = createApp({
+      initialConfig: {
+         media: mergeObject(
+            {
+               enabled: true,
+               adapter: {
+                  type: "local",
+                  config: {
+                     path: assetsTmpPath
+                  }
                }
-            }
-         },
-         ctx
-      );
-      await media.build();
-      const app = new MediaController(media).getController();
+            },
+            mediaOverride
+         )
+      }
+   });
 
-      const file = Bun.file(`${import.meta.dir}/adapters/icon.png`);
-      console.log("file", file);
-      const form = new FormData();
-      form.append("file", file);
+   await app.build();
+   return app;
+}
 
-      await app.request("/upload/test.png", {
+function makeName(ext: string) {
+   return randomString(10) + "." + ext;
+}
+
+beforeAll(disableConsoleLog);
+afterAll(enableConsoleLog);
+
+describe("MediaController", () => {
+   test("accepts direct", async () => {
+      const app = await makeApp();
+
+      const file = Bun.file(path);
+      const name = makeName("png");
+      const res = await app.server.request("/api/media/upload/" + name, {
          method: "POST",
          body: file
       });
+      const result = (await res.json()) as any;
+      expect(result.name).toBe(name);
+
+      const destFile = Bun.file(assetsTmpPath + "/" + name);
+      expect(destFile.exists()).resolves.toBe(true);
+      await destFile.delete();
+   });
+
+   test("accepts form data", async () => {
+      const app = await makeApp();
+
+      const file = Bun.file(path);
+      const name = makeName("png");
+      const form = new FormData();
+      form.append("file", file);
+
+      const res = await app.server.request("/api/media/upload/" + name, {
+         method: "POST",
+         body: form
+      });
+      const result = (await res.json()) as any;
+      expect(result.name).toBe(name);
+
+      const destFile = Bun.file(assetsTmpPath + "/" + name);
+      expect(destFile.exists()).resolves.toBe(true);
+      await destFile.delete();
+   });
+
+   test("limits body", async () => {
+      const app = await makeApp({ storage: { body_max_size: 1 } });
+
+      const file = await Bun.file(path);
+      const name = makeName("png");
+      const res = await app.server.request("/api/media/upload/" + name, {
+         method: "POST",
+         body: file
+      });
+
+      expect(res.status).toBe(413);
+      expect(await Bun.file(assetsTmpPath + "/" + name).exists()).toBe(false);
    });
 });

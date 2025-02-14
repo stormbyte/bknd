@@ -1,6 +1,12 @@
 import { readFile, readdir, stat, unlink, writeFile } from "node:fs/promises";
-import { type Static, Type, parse } from "core/utils";
-import type { FileBody, FileListObject, FileMeta, StorageAdapter } from "../../Storage";
+import { type Static, Type, isFile, parse } from "core/utils";
+import type {
+   FileBody,
+   FileListObject,
+   FileMeta,
+   FileUploadPayload,
+   StorageAdapter
+} from "../../Storage";
 import { guess } from "../../mime-types-tiny";
 
 export const localAdapterConfig = Type.Object(
@@ -43,8 +49,9 @@ export class StorageLocalAdapter implements StorageAdapter {
       return fileStats;
    }
 
-   private async computeEtag(content: BufferSource): Promise<string> {
-      const hashBuffer = await crypto.subtle.digest("SHA-256", content);
+   private async computeEtag(body: FileBody): Promise<string> {
+      const content = isFile(body) ? body : new Response(body);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", await content.arrayBuffer());
       const hashArray = Array.from(new Uint8Array(hashBuffer));
       const hashHex = hashArray.map((byte) => byte.toString(16).padStart(2, "0")).join("");
 
@@ -52,17 +59,16 @@ export class StorageLocalAdapter implements StorageAdapter {
       return `"${hashHex}"`;
    }
 
-   async putObject(key: string, body: FileBody): Promise<string> {
+   async putObject(key: string, body: FileBody): Promise<string | FileUploadPayload> {
       if (body === null) {
          throw new Error("Body is empty");
       }
 
-      // @todo: this is too hacky
-      const file = body as File;
-
       const filePath = `${this.config.path}/${key}`;
-      await writeFile(filePath, file.stream());
-      return await this.computeEtag(await file.arrayBuffer());
+      const is_file = isFile(body);
+      await writeFile(filePath, is_file ? body.stream() : body);
+
+      return await this.computeEtag(body);
    }
 
    async deleteObject(key: string): Promise<void> {

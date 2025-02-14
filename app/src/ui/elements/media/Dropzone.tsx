@@ -226,8 +226,6 @@ export function Dropzone({
          const uploadInfo = getUploadInfo(file.body);
          console.log("dropzone:uploadInfo", uploadInfo);
          const { url, headers, method = "POST" } = uploadInfo;
-         const formData = new FormData();
-         formData.append("file", file.body);
 
          const xhr = new XMLHttpRequest();
          console.log("xhr:url", url);
@@ -295,7 +293,7 @@ export function Dropzone({
          };
 
          xhr.setRequestHeader("Accept", "application/json");
-         xhr.send(formData);
+         xhr.send(file.body);
       });
    }
 

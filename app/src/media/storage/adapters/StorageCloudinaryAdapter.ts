@@ -13,12 +13,6 @@ export const cloudinaryAdapterConfig = Type.Object(
 );
 
 export type CloudinaryConfig = Static<typeof cloudinaryAdapterConfig>;
-/*export type CloudinaryConfig = {
-   cloud_name: string;
-   api_key: string;
-   api_secret: string;
-   upload_preset?: string;
-};*/
 
 type CloudinaryObject = {
    asset_id: string;
@@ -91,10 +85,8 @@ export class StorageCloudinaryAdapter implements StorageAdapter {
    }
 
    async putObject(_key: string, body: FileBody) {
-      //console.log("_key", _key);
       // remove extension, as it is added by cloudinary
       const key = _key.replace(/\.[a-z0-9]{2,5}$/, "");
-      //console.log("key", key);
 
       const formData = new FormData();
       formData.append("file", body as any);
@@ -117,21 +109,12 @@ export class StorageCloudinaryAdapter implements StorageAdapter {
             body: formData
          }
       );
-      //console.log("putObject:cloudinary", formData);
 
       if (!result.ok) {
-         /*console.log(
-            "failed to upload using cloudinary",
-            Object.fromEntries(formData.entries()),
-            result
-         );*/
          return undefined;
       }
 
-      //console.log("putObject:result", result);
-
       const data = (await result.json()) as CloudinaryPutObjectResponse;
-      //console.log("putObject:result:json", data);
 
       return {
          name: data.public_id + "." + data.format,
@@ -154,7 +137,6 @@ export class StorageCloudinaryAdapter implements StorageAdapter {
             }
          }
       );
-      //console.log("result", result);
 
       if (!result.ok) {
          throw new Error("Failed to list objects");
@@ -179,10 +161,7 @@ export class StorageCloudinaryAdapter implements StorageAdapter {
    }
 
    async objectExists(key: string): Promise<boolean> {
-      //console.log("--object exists?", key);
       const result = await this.headObject(key);
-      //console.log("object exists", result);
-
       return result.ok;
    }
 
@@ -214,12 +193,10 @@ export class StorageCloudinaryAdapter implements StorageAdapter {
       const type = this.guessType(key) ?? "image";
 
       const objectUrl = `https://res.cloudinary.com/${this.config.cloud_name}/${type}/upload/${key}`;
-      //console.log("objectUrl", objectUrl);
       return objectUrl;
    }
 
    async getObject(key: string, headers: Headers): Promise<Response> {
-      //console.log("url", this.getObjectUrl(key));
       const res = await fetch(this.getObjectUrl(key), {
          method: "GET",
          headers: pickHeaders(headers, ["range"])
@@ -237,14 +214,10 @@ export class StorageCloudinaryAdapter implements StorageAdapter {
       const formData = new FormData();
       formData.append("public_ids[]", key);
 
-      const result = await fetch(
-         `https://res.cloudinary.com/${this.config.cloud_name}/${type}/upload/`,
-         {
-            method: "DELETE",
-            body: formData
-         }
-      );
-      //console.log("deleteObject:result", result);
+      await fetch(`https://res.cloudinary.com/${this.config.cloud_name}/${type}/upload/`, {
+         method: "DELETE",
+         body: formData
+      });
    }
 
    toJSON(secrets?: boolean) {

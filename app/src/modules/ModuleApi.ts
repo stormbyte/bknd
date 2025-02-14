@@ -23,13 +23,13 @@ export type ApiResponse<Data = any> = {
 export type TInput = string | (string | number | PrimaryFieldType)[];
 
 export abstract class ModuleApi<Options extends BaseModuleApiOptions = BaseModuleApiOptions> {
+   protected fetcher: typeof fetch;
+
    constructor(
       protected readonly _options: Partial<Options> = {},
-      protected fetcher?: typeof fetch
+      fetcher?: typeof fetch
    ) {
-      if (!fetcher) {
-         this.fetcher = fetch;
-      }
+      this.fetcher = fetcher ?? fetch;
    }
 
    protected getDefaultOptions(): Partial<Options> {
@@ -80,7 +80,9 @@ export abstract class ModuleApi<Options extends BaseModuleApiOptions = BaseModul
          headers.set(key, value as string);
       }
 
-      headers.set("Accept", "application/json");
+      if (!headers.has("Accept")) {
+         headers.set("Accept", "application/json");
+      }
 
       // only add token if initial headers not provided
       if (this.options.token && this.options.token_transport === "header") {
@@ -170,7 +172,11 @@ export function createResponseProxy<Body = any, Data = any>(
    const actualData = data ?? (body as unknown as Data);
    const _props = ["raw", "body", "ok", "status", "res", "data", "toJSON"];
 
-   return new Proxy(actualData as any, {
+   if (typeof actualData !== "object") {
+      throw new Error(`Response data must be an object, "${typeof actualData}" given.`);
+   }
+
+   return new Proxy(actualData ?? ({} as any), {
       get(target, prop, receiver) {
          if (prop === "raw" || prop === "res") return raw;
          if (prop === "body") return body;
@@ -232,6 +238,8 @@ export class FetchPromise<T = ApiResponse<any>> implements Promise<T> {
          }
       } else if (contentType.startsWith("text")) {
          resBody = await res.text();
+      } else {
+         resBody = res.body;
       }
 
       return createResponseProxy<T>(res, resBody, resData);
