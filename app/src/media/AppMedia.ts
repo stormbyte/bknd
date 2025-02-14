@@ -123,7 +123,8 @@ export class AppMedia extends Module<typeof mediaConfigSchema> {
          async (e) => {
             const mutator = em.mutator(media);
             mutator.__unstable_toggleSystemEntityCreation(false);
-            await mutator.insertOne(this.uploadedEventDataToMediaPayload(e.params));
+            const payload = this.uploadedEventDataToMediaPayload(e.params);
+            await mutator.insertOne(payload);
             mutator.__unstable_toggleSystemEntityCreation(true);
             console.log("App:storage:file uploaded", e);
          },

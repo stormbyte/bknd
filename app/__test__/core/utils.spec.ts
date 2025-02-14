@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { Perf } from "../../src/core/utils";
+import { Perf, isBlob, ucFirst } from "../../src/core/utils";
 import * as utils from "../../src/core/utils";
 
 async function wait(ms: number) {
@@ -75,6 +75,57 @@ describe("Core Utils", async () => {
          const result3 = utils.encodeSearch(obj3, { encode: true });
          expect(result3).toBe("id=123&name=%7B%22test%22%3A%22test%22%7D");
       });
+
+      describe("guards", () => {
+         const types = {
+            blob: new Blob(),
+            file: new File([""], "file.txt"),
+            stream: new ReadableStream(),
+            arrayBuffer: new ArrayBuffer(10),
+            arrayBufferView: new Uint8Array(new ArrayBuffer(10))
+         };
+
+         const fns = [
+            [utils.isReadableStream, "stream"],
+            [utils.isBlob, "blob", ["stream", "arrayBuffer", "arrayBufferView"]],
+            [utils.isFile, "file", ["stream", "arrayBuffer", "arrayBufferView"]],
+            [utils.isArrayBuffer, "arrayBuffer"],
+            [utils.isArrayBufferView, "arrayBufferView"]
+         ] as const;
+
+         const additional = [0, 0.0, "", null, undefined, {}, []];
+
+         for (const [fn, type, _to_test] of fns) {
+            test(`is${ucFirst(type)}`, () => {
+               const to_test = _to_test ?? (Object.keys(types) as string[]);
+               for (const key of to_test) {
+                  const value = types[key as keyof typeof types];
+                  const result = fn(value);
+                  expect(result).toBe(key === type);
+               }
+
+               for (const value of additional) {
+                  const result = fn(value);
+                  expect(result).toBe(false);
+               }
+            });
+         }
+      });
+
+      test("getContentName", () => {
+         const name = "test.json";
+         const text = "attachment; filename=" + name;
+         const headers = new Headers({
+            "Content-Disposition": text
+         });
+         const request = new Request("http://example.com", {
+            headers
+         });
+
+         expect(utils.getContentName(text)).toBe(name);
+         expect(utils.getContentName(headers)).toBe(name);
+         expect(utils.getContentName(request)).toBe(name);
+      });
    });
 
    describe("perf", async () => {
@@ -134,8 +185,8 @@ describe("Core Utils", async () => {
             [true, true, true],
             [true, false, false],
             [false, false, true],
-            [1, NaN, false],
-            [NaN, NaN, true],
+            [1, Number.NaN, false],
+            [Number.NaN, Number.NaN, true],
             [null, null, true],
             [null, undefined, false],
             [undefined, undefined, true],

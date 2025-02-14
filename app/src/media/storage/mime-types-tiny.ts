@@ -75,3 +75,21 @@ export function guess(f: string): string {
       return c.a();
    }
 }
+
+export function isMimeType(mime: any, exclude: string[] = []) {
+   for (const [k, v] of M.entries()) {
+      if (v === mime && !exclude.includes(k)) {
+         return true;
+      }
+   }
+   return false;
+}
+
+export function extension(mime: string) {
+   for (const [k, v] of M.entries()) {
+      if (v === mime) {
+         return k;
+      }
+   }
+   return "";
+}

@@ -7,7 +7,7 @@ import type {
    PutObjectRequest
 } from "@aws-sdk/client-s3";
 import { AwsClient, isDebug } from "core";
-import { type Static, Type, parse, pickHeaders } from "core/utils";
+import { type Static, Type, isFile, parse, pickHeaders } from "core/utils";
 import { transform } from "lodash-es";
 import type { FileBody, FileListObject, StorageAdapter } from "../Storage";
 
@@ -82,17 +82,14 @@ export class StorageS3Adapter extends AwsClient implements StorageAdapter {
       };
 
       const url = this.getUrl("", params);
-      //console.log("url", url);
       const res = await this.fetchJson<{ ListBucketResult: ListObjectsV2Output }>(url, {
          method: "GET"
       });
-      //console.log("res", res);
 
       // absolutely weird, but if only one object is there, it's an object, not an array
       const { Contents } = res.ListBucketResult;
       const objects = !Contents ? [] : Array.isArray(Contents) ? Contents : [Contents];
 
-      //console.log(JSON.stringify(res.ListBucketResult, null, 2), objects);
       const transformed = transform(
          objects,
          (acc, obj) => {
@@ -107,28 +104,21 @@ export class StorageS3Adapter extends AwsClient implements StorageAdapter {
          },
          [] as FileListObject[]
       );
-      //console.log(transformed);
 
       return transformed;
    }
 
    async putObject(
       key: string,
-      body: FileBody | null,
+      body: FileBody,
       // @todo: params must be added as headers, skipping for now
       params: Omit<PutObjectRequest, "Bucket" | "Key"> = {}
    ) {
       const url = this.getUrl(key, {});
-      //console.log("url", url);
       const res = await this.fetch(url, {
          method: "PUT",
          body
       });
-      /*console.log("putObject:raw:res", {
-         ok: res.ok,
-         status: res.status,
-         statusText: res.statusText,
-      });*/
 
       if (res.ok) {
          // "df20fcb574dba1446cf5ec997940492b"
