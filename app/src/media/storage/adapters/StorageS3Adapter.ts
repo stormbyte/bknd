@@ -122,18 +122,7 @@ export class StorageS3Adapter extends AwsClient implements StorageAdapter {
 
       if (res.ok) {
          // "df20fcb574dba1446cf5ec997940492b"
-         const etag = String(res.headers.get("etag"));
-         if (isFile(body)) {
-            return {
-               etag,
-               name: body.name,
-               meta: {
-                  size: body.size,
-                  type: body.type
-               }
-            };
-         }
-         return etag;
+         return String(res.headers.get("etag"));
       }
 
       return undefined;

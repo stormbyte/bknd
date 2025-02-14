@@ -225,12 +225,12 @@ export function FormContextOverride({
    // especially useful for AnyOf, since it doesn't need to fully validate (e.g. pattern)
    if (prefix) {
       additional.root = prefix;
-      additional.setValue = (pointer: string, value: any) => {
-         ctx.setValue(prefixPointer(pointer, prefix), value);
+      /*additional.setValue = (path: string, value: any) => {
+         ctx.setValue(prefixPath(path, prefix), value);
       };
-      additional.deleteValue = (pointer: string) => {
-         ctx.deleteValue(prefixPointer(pointer, prefix));
-      };
+      additional.deleteValue = (path: string) => {
+         ctx.deleteValue(prefixPath(path, prefix));
+      };*/
    }
 
    const context = {

@@ -89,7 +89,8 @@ export class MediaController extends Controller {
             );
          }
 
-         return c.json(await this.getStorage().uploadFile(body, filename), HttpStatus.CREATED);
+         const res = await this.getStorage().uploadFile(body, filename);
+         return c.json(res, HttpStatus.CREATED);
       });
 
       // add upload file to entity

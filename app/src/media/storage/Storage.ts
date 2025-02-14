@@ -80,7 +80,6 @@ export class Storage implements EmitsEvents {
       noEmit?: boolean
    ): Promise<FileUploadedEventData> {
       const result = await this.#adapter.putObject(name, file);
-      console.log("result", result);
 
       let info: FileUploadPayload;
 
