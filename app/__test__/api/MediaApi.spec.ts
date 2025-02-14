@@ -43,18 +43,6 @@ describe("MediaApi", () => {
       expect(api.getUploadHeaders().get("Authorization")).toBe("Bearer token");
    });
 
-   it("should upload file directly", async () => {
-      const name = "image.png";
-      const file = await Bun.file(`${assetsPath}/${name}`);
-
-      // @ts-ignore tests
-      const api = new MediaApi({}, mockedBackend.request);
-      const result = await api.uploadFile(file as any, name);
-      expect(result.name).toBe(name);
-      expect(result.is_file).toBe(true);
-      expect(result.size).toBe(file.size);
-   });
-
    it("should get file: native", async () => {
       const name = "image.png";
       const path = `${assetsTmpPath}/${name}`;
@@ -67,24 +55,24 @@ describe("MediaApi", () => {
       await file.delete();
    });
 
-   it("getFile", async () => {
+   it("download", async () => {
       // @ts-ignore tests
       const api = new MediaApi({}, mockedBackend.request);
 
       const name = "image.png";
-      const file = await api.getFile(name);
+      const file = await api.download(name);
       expect(isFile(file)).toBe(true);
       expect(file.size).toBeGreaterThan(0);
       expect(file.type).toBe("image/png");
       expect(file.name).toContain(name);
    });
 
-   it("getFileResponse", async () => {
+   it("getFile", async () => {
       // @ts-ignore tests
       const api = new MediaApi({}, mockedBackend.request);
 
       const name = "image.png";
-      const res = await api.getFileResponse(name);
+      const res = await api.getFile(name);
       expect(res.ok).toBe(true);
       // make sure it's a normal api request as usual
       expect(res.res.ok).toBe(true);
@@ -143,7 +131,13 @@ describe("MediaApi", () => {
          await matches(api.upload(response, "response.png"), "response.png");
       }
 
-      // upload via readable
+      // upload via readable from bun
       await matches(await api.upload(file.stream(), "readable.png"), "readable.png");
+
+      // upload via readable from response
+      {
+         const response = (await mockedBackend.request(url)) as Response;
+         await matches(await api.upload(response.body!, "readable.png"), "readable.png");
+      }
    });
 });

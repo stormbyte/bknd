@@ -1,3 +1,4 @@
+import type { FileListObject } from "media";
 import { type BaseModuleApiOptions, ModuleApi, type PrimaryFieldType } from "modules/ModuleApi";
 import type { FileWithPath } from "ui/elements/media/file-selector";
 
@@ -10,32 +11,32 @@ export class MediaApi extends ModuleApi<MediaApiOptions> {
       };
    }
 
-   getFiles() {
-      return this.get(["files"]);
+   listFiles() {
+      return this.get<FileListObject[]>(["files"]);
    }
 
-   getFileResponse(filename: string) {
-      return this.get(["file", filename], undefined, {
+   getFile(filename: string) {
+      return this.get<ReadableStream<Uint8Array>>(["file", filename], undefined, {
          headers: {
             Accept: "*/*"
          }
       });
    }
 
-   async getFile(filename: string): Promise<Blob> {
-      const { res } = await this.getFileResponse(filename);
-      if (!res.ok || !res.body) {
-         throw new Error("Failed to fetch file");
-      }
-      return await res.blob();
-   }
-
    async getFileStream(filename: string): Promise<ReadableStream<Uint8Array>> {
-      const { res } = await this.getFileResponse(filename);
+      const { res } = await this.getFile(filename);
       if (!res.ok || !res.body) {
          throw new Error("Failed to fetch file");
       }
       return res.body;
+   }
+
+   async download(filename: string): Promise<File> {
+      const { res } = await this.getFile(filename);
+      if (!res.ok || !res.body) {
+         throw new Error("Failed to fetch file");
+      }
+      return (await res.blob()) as File;
    }
 
    getFileUploadUrl(file: FileWithPath): string {
@@ -52,7 +53,7 @@ export class MediaApi extends ModuleApi<MediaApiOptions> {
       });
    }
 
-   uploadFile(body: File | ReadableStream, filename?: string) {
+   protected uploadFile(body: File | ReadableStream, filename?: string) {
       let type: string = "application/octet-stream";
       let name: string = filename || "";
       try {
