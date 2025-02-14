@@ -4,6 +4,8 @@ import { uuid } from "core/utils";
 import color from "picocolors";
 import type { Template, TemplateSetupCtx } from ".";
 
+const WRANGLER_FILE = "wrangler.json";
+
 export const cloudflare = {
    key: "cloudflare",
    title: "Cloudflare Basic",
@@ -12,11 +14,12 @@ export const cloudflare = {
    path: "gh:bknd-io/bknd/examples/cloudflare-worker",
    ref: true,
    setup: async (ctx) => {
-      // overwrite assets directory
+      // overwrite assets directory & name
       await overrideJson(
-         "wrangler.json",
+         WRANGLER_FILE,
          (json) => ({
             ...json,
+            name,
             assets: {
                directory: "node_modules/bknd/dist/static"
             }
@@ -70,7 +73,7 @@ async function createD1(ctx: TemplateSetupCtx) {
    }
 
    await overrideJson(
-      "wrangler.json",
+      WRANGLER_FILE,
       (json) => ({
          ...json,
          d1_databases: [
@@ -90,7 +93,7 @@ async function createD1(ctx: TemplateSetupCtx) {
 
 async function createLibsql(ctx: TemplateSetupCtx) {
    await overrideJson(
-      "wrangler.json",
+      WRANGLER_FILE,
       (json) => ({
          ...json,
          vars: {

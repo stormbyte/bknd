@@ -6,7 +6,7 @@ import { typewriter, wait } from "cli/utils/cli";
 import { exec, getVersion } from "cli/utils/sys";
 import { Option } from "commander";
 import color from "picocolors";
-import { updateBkndPackages } from "./npm";
+import { overridePackageJson, updateBkndPackages } from "./npm";
 import { type Template, templates } from "./templates";
 
 const config = {
@@ -36,16 +36,21 @@ export const create: CliCommand = (program) => {
       .action(action);
 };
 
+function errorOutro() {
+   $p.outro(color.red("Failed to create project."));
+   console.log(
+      color.yellow("Sorry that this happened. If you think this is a bug, please report it at: ") +
+         color.cyan("https://github.com/bknd-io/bknd/issues")
+   );
+   console.log("");
+   process.exit(1);
+}
+
 async function action(options: { template?: string; dir?: string; integration?: string }) {
-   const _config = {
-      defaultDir: process.env.LOCAL ? "./.template" : "./",
-      speed: {
-         typewriter: process.env.LOCAL ? 0 : 20,
-         wait: process.env.LOCAL ? 0 : 250
-      }
-   };
+   console.log("");
+
    const downloadOpts = {
-      dir: options.dir || _config.defaultDir,
+      dir: options.dir || "./",
       clean: false
    };
 
@@ -56,12 +61,8 @@ async function action(options: { template?: string; dir?: string; integration?: 
 
    await $p.stream.message(
       (async function* () {
-         yield* typewriter(
-            "Thanks for choosing to create a new project with bknd!",
-            _config.speed.typewriter,
-            color.dim
-         );
-         await wait(_config.speed.wait);
+         yield* typewriter("Thanks for choosing to create a new project with bknd!", color.dim);
+         await wait();
       })()
    );
 
@@ -90,6 +91,12 @@ async function action(options: { template?: string; dir?: string; integration?: 
       downloadOpts.clean = clean;
    }
 
+   let name = downloadOpts.dir.includes("/")
+      ? downloadOpts.dir.split("/").pop()
+      : downloadOpts.dir.replace(/[./]/g, "");
+
+   if (!name || name.length === 0) name = "bknd";
+
    let template: Template | undefined;
    if (options.template) {
       template = templates.find((t) => t.key === options.template) as Template;
@@ -102,14 +109,10 @@ async function action(options: { template?: string; dir?: string; integration?: 
       if (!integration) {
          await $p.stream.info(
             (async function* () {
-               yield* typewriter("Ready? ", _config.speed.typewriter * 1.5, color.bold);
-               await wait(500);
-               yield* typewriter(
-                  "Let's find the perfect template for you.",
-                  _config.speed.typewriter,
-                  color.dim
-               );
-               await wait(500);
+               yield* typewriter("Ready? ", color.bold, 1.5);
+               await wait(2);
+               yield* typewriter("Let's find the perfect template for you.", color.dim);
+               await wait(2);
             })()
          );
 
@@ -169,12 +172,13 @@ async function action(options: { template?: string; dir?: string; integration?: 
       process.exit(1);
    }
 
-   const ctx = { template, dir: downloadOpts.dir };
+   const ctx = { template, dir: downloadOpts.dir, name };
 
    {
-      // @todo: only while in PR
-      const ref = "feat/cli-starters";
-      //const ref = `v${version}`;
+      const ref = process.env.BKND_CLI_CREATE_REF ?? `v${version}`;
+      if (process.env.BKND_CLI_CREATE_REF) {
+         $p.log.warn(color.dim("[DEV] Using local ref: ") + color.yellow(ref));
+      }
 
       const prefix =
          template.ref === true
@@ -187,11 +191,21 @@ async function action(options: { template?: string; dir?: string; integration?: 
       //console.log("url", url);
       const s = $p.spinner();
       s.start("Downloading template...");
-      const result = await downloadTemplate(url, {
-         dir: ctx.dir,
-         force: downloadOpts.clean ? "clean" : true
-      });
-      //console.log("result", result);
+      try {
+         await downloadTemplate(url, {
+            dir: ctx.dir,
+            force: downloadOpts.clean ? "clean" : true
+         });
+      } catch (e) {
+         if (e instanceof Error) {
+            s.stop("Failed to download template: " + color.red(e.message), 1);
+         } else {
+            console.error(e);
+            s.stop("Failed to download template. Check logs above.", 1);
+         }
+
+         errorOutro();
+      }
 
       s.stop("Template downloaded.");
       await updateBkndPackages(ctx.dir);
@@ -201,6 +215,16 @@ async function action(options: { template?: string; dir?: string; integration?: 
       }
    }
 
+   // update package name
+   await overridePackageJson(
+      (pkg) => ({
+         ...pkg,
+         name: ctx.name
+      }),
+      { dir: ctx.dir }
+   );
+   $p.log.success(`Updated package name to ${color.cyan(ctx.name)}`);
+
    {
       const install = await $p.confirm({
          message: "Install dependencies?"
@@ -209,9 +233,23 @@ async function action(options: { template?: string; dir?: string; integration?: 
       if ($p.isCancel(install)) {
          process.exit(1);
       } else if (install) {
+         const install_cmd = template.scripts?.install || "npm install";
+
          const s = $p.spinner();
          s.start("Installing dependencies...");
-         exec(`cd ${ctx.dir} && npm install`, { silent: true });
+         try {
+            exec(`cd ${ctx.dir} && ${install_cmd}`, { silent: true });
+         } catch (e) {
+            if (e instanceof Error) {
+               s.stop("Failed to install: " + color.red(e.message), 1);
+            } else {
+               console.error(e);
+               s.stop("Failed to install. Check logs above.", 1);
+            }
+
+            errorOutro();
+         }
+
          s.stop("Dependencies installed.");
 
          if (template!.postinstall) {
@@ -220,12 +258,12 @@ async function action(options: { template?: string; dir?: string; integration?: 
       } else {
          await $p.stream.warn(
             (async function* () {
-               yield* typewriter("Remember to run ", _config.speed.typewriter, color.dim);
-               await wait(_config.speed.typewriter);
-               yield* typewriter("npm install", _config.speed.typewriter, color.cyan);
-               await wait(_config.speed.typewriter);
-               yield* typewriter(" after setup", _config.speed.typewriter, color.dim);
-               await wait(_config.speed.wait / 2);
+               yield* typewriter(
+                  color.dim("Remember to run ") +
+                     color.cyan("npm install") +
+                     color.dim(" after setup")
+               );
+               await wait();
             })()
          );
       }
@@ -237,17 +275,16 @@ async function action(options: { template?: string; dir?: string; integration?: 
 
    await $p.stream.success(
       (async function* () {
-         yield* typewriter("That's it! ", _config.speed.typewriter);
-         await wait(_config.speed.wait / 2);
+         yield* typewriter("That's it! ");
+         await wait(0.5);
          yield "🎉";
-         await wait(_config.speed.wait);
+         await wait();
          yield "\n\n";
          yield* typewriter(
             `Enter your project's directory using ${color.cyan("cd " + ctx.dir)}
-If you need help, check ${color.cyan("https://docs.bknd.io")} or join our Discord!`,
-            _config.speed.typewriter
+If you need help, check ${color.cyan("https://docs.bknd.io")} or join our Discord!`
          );
-         await wait(_config.speed.wait * 2);
+         await wait(2);
       })()
    );
 

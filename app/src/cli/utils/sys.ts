@@ -17,9 +17,9 @@ export function getRelativeDistPath() {
    return path.relative(process.cwd(), getDistPath());
 }
 
-export async function getVersion() {
+export async function getVersion(_path: string = "") {
    try {
-      const resolved = path.resolve(getRootPath(), "package.json");
+      const resolved = path.resolve(getRootPath(), path.join(_path, "package.json"));
       const pkg = await readFile(resolved, "utf-8");
       if (pkg) {
          return JSON.parse(pkg).version ?? "preview";

@@ -1,5 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { getVersion as sysGetVersion } from "cli/utils/sys";
 
 export type TPackageJson = Partial<{
    name: string;
@@ -67,7 +68,7 @@ export async function replacePackageJsonVersions(
 
 export async function updateBkndPackages(dir?: string, map?: Record<string, string>) {
    const versions = {
-      bknd: "^" + (await getVersion("bknd")),
+      bknd: "^" + (await sysGetVersion()),
       ...(map ?? {})
    };
    await replacePackageJsonVersions(
