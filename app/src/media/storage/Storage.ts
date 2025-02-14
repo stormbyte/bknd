@@ -1,5 +1,6 @@
 import { type EmitsEvents, EventManager } from "core/events";
 import { type TSchema, isFile } from "core/utils";
+import { isMimeType } from "media/storage/mime-types-tiny";
 import * as StorageEvents from "./events";
 import type { FileUploadedEventData } from "./events";
 
@@ -80,37 +81,33 @@ export class Storage implements EmitsEvents {
       noEmit?: boolean
    ): Promise<FileUploadedEventData> {
       const result = await this.#adapter.putObject(name, file);
+      if (typeof result === "undefined") {
+         throw new Error("Failed to upload file");
+      }
 
-      let info: FileUploadPayload;
+      let info: FileUploadPayload = {
+         name,
+         meta: {
+            size: 0,
+            type: "application/octet-stream"
+         },
+         etag: typeof result === "string" ? result : ""
+      };
 
-      switch (typeof result) {
-         case "undefined":
-            throw new Error("Failed to upload file");
-         case "string": {
-            if (isFile(file)) {
-               info = {
-                  name,
-                  meta: {
-                     size: file.size,
-                     type: file.type
-                  },
-                  etag: result
-               };
-               break;
-            } else {
-               // get object meta
-               const meta = await this.#adapter.getObjectMeta(name);
-               if (!meta) {
-                  throw new Error("Failed to get object meta");
-               }
+      if (typeof result === "object") {
+         info = result;
+      } else if (isFile(file)) {
+         info.meta.size = file.size;
+         info.meta.type = file.type;
+      }
 
-               info = { name, meta, etag: result };
-            }
-            break;
+      // try to get better meta info
+      if (!isMimeType(info?.meta.type, ["application/octet-stream", "application/json"])) {
+         const meta = await this.#adapter.getObjectMeta(name);
+         if (!meta) {
+            throw new Error("Failed to get object meta");
          }
-         case "object":
-            info = result;
-            break;
+         info.meta = meta;
       }
 
       const eventData = {

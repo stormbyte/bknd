@@ -6,6 +6,7 @@ export type RegisterListenerConfig =
    | {
         mode?: ListenerMode;
         once?: boolean;
+        id?: string;
      };
 
 export interface EmitsEvents {
@@ -124,6 +125,14 @@ export class EventManager<
    addListener(listener: EventListener) {
       this.throwIfEventNotRegistered(listener.event);
 
+      if (listener.id) {
+         const existing = this.listeners.find((l) => l.id === listener.id);
+         if (existing) {
+            console.warn(`Listener with id "${listener.id}" already exists.`);
+            return this;
+         }
+      }
+
       this.listeners.push(listener);
       return this;
    }
@@ -139,6 +148,9 @@ export class EventManager<
       const listener = new EventListener(event, handler, config.mode);
       if (config.once) {
          listener.once = true;
+      }
+      if (config.id) {
+         listener.id = `${event.slug}-${config.id}`;
       }
       this.addListener(listener as any);
    }

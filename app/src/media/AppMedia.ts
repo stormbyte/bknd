@@ -126,9 +126,8 @@ export class AppMedia extends Module<typeof mediaConfigSchema> {
             const payload = this.uploadedEventDataToMediaPayload(e.params);
             await mutator.insertOne(payload);
             mutator.__unstable_toggleSystemEntityCreation(true);
-            console.log("App:storage:file uploaded", e);
          },
-         "sync"
+         { mode: "sync", id: "add-data-media" }
       );
 
       // when file is deleted, sync with media entity
@@ -144,7 +143,7 @@ export class AppMedia extends Module<typeof mediaConfigSchema> {
 
             console.log("App:storage:file deleted", e);
          },
-         "sync"
+         { mode: "sync", id: "delete-data-media" }
       );
    }
 

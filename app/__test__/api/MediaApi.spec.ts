@@ -117,27 +117,30 @@ describe("MediaApi", () => {
       const url = "http://localhost/api/media/file/image.png";
 
       // upload bun file
-      await matches(api.upload(file as any, "bunfile.png"), "bunfile.png");
+      await matches(api.upload(file as any, { filename: "bunfile.png" }), "bunfile.png");
 
       // upload via request
-      await matches(api.upload(new Request(url), "request.png"), "request.png");
+      await matches(api.upload(new Request(url), { filename: "request.png" }), "request.png");
 
       // upload via url
-      await matches(api.upload(url, "url.png"), "url.png");
+      await matches(api.upload(url, { filename: "url.png" }), "url.png");
 
       // upload via response
       {
          const response = await mockedBackend.request(url);
-         await matches(api.upload(response, "response.png"), "response.png");
+         await matches(api.upload(response, { filename: "response.png" }), "response.png");
       }
 
       // upload via readable from bun
-      await matches(await api.upload(file.stream(), "readable.png"), "readable.png");
+      await matches(await api.upload(file.stream(), { filename: "readable.png" }), "readable.png");
 
       // upload via readable from response
       {
          const response = (await mockedBackend.request(url)) as Response;
-         await matches(await api.upload(response.body!, "readable.png"), "readable.png");
+         await matches(
+            await api.upload(response.body!, { filename: "readable.png" }),
+            "readable.png"
+         );
       }
    });
 });

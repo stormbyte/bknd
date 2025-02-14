@@ -169,14 +169,15 @@ export function createResponseProxy<Body = any, Data = any>(
    body: Body,
    data?: Data
 ): ResponseObject<Body, Data> {
-   const actualData = data ?? (body as unknown as Data);
+   let actualData: any = data ?? body;
    const _props = ["raw", "body", "ok", "status", "res", "data", "toJSON"];
 
+   // that's okay, since you have to check res.ok anyway
    if (typeof actualData !== "object") {
-      throw new Error(`Response data must be an object, "${typeof actualData}" given.`);
+      actualData = {};
    }
 
-   return new Proxy(actualData ?? ({} as any), {
+   return new Proxy(actualData, {
       get(target, prop, receiver) {
          if (prop === "raw" || prop === "res") return raw;
          if (prop === "body") return body;

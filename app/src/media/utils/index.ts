@@ -17,5 +17,6 @@ export function getRandomizedFilename(file: File | string, length = 16): string 
       throw new Error("Invalid file name");
    }
 
+   // @todo: use uuid instead?
    return [randomString(length), getExtension(filename)].filter(Boolean).join(".");
 }

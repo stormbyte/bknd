@@ -14,10 +14,17 @@ export class EventListener<E extends Event = Event> {
    event: EventClass;
    handler: ListenerHandler<E>;
    once: boolean = false;
+   id?: string;
 
-   constructor(event: EventClass, handler: ListenerHandler<E>, mode: ListenerMode = "async") {
+   constructor(
+      event: EventClass,
+      handler: ListenerHandler<E>,
+      mode: ListenerMode = "async",
+      id?: string
+   ) {
       this.event = event;
       this.handler = handler;
       this.mode = mode;
+      this.id = id;
    }
 }

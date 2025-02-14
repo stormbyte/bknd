@@ -107,18 +107,24 @@ export class Mutator<
    protected async many(qb: MutatorQB): Promise<MutatorResponse> {
       const entity = this.entity;
       const { sql, parameters } = qb.compile();
-      //console.log("mutatoar:exec", sql, parameters);
-      const result = await qb.execute();
 
-      const data = this.em.hydrate(entity.name, result) as EntityData[];
+      try {
+         const result = await qb.execute();
 
-      return {
-         entity,
-         sql,
-         parameters: [...parameters],
-         result: result,
-         data
-      };
+         const data = this.em.hydrate(entity.name, result) as EntityData[];
+
+         return {
+            entity,
+            sql,
+            parameters: [...parameters],
+            result: result,
+            data
+         };
+      } catch (e) {
+         // @todo: redact
+         console.log("[Error in query]", sql);
+         throw e;
+      }
    }
 
    protected async single(qb: MutatorQB): Promise<MutatorResponse<EntityData>> {

@@ -207,7 +207,7 @@ export async function blobToFile(
    if (isFile(blob)) return blob;
    if (!isBlob(blob)) throw new Error("Not a Blob");
 
-   const type = !isMimeType(overrides.type, ["application/octet-stream"])
+   const type = isMimeType(overrides.type, ["application/octet-stream"])
       ? overrides.type
       : await detectMimeType(blob);
    const ext = type ? extension(type) : "";
