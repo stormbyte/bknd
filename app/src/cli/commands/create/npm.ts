@@ -7,9 +7,9 @@ export type TPackageJson = Partial<{
    main: string;
    version: string;
    scripts: Record<string, string>;
-   dependencies: Record<string, string>;
-   devDependencies: Record<string, string>;
-   optionalDependencies: Record<string, string>;
+   dependencies: Record<string, string | undefined>;
+   devDependencies: Record<string, string | undefined>;
+   optionalDependencies: Record<string, string | undefined>;
    [key: string]: any;
 }>;
 

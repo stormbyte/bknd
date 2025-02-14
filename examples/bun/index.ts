@@ -8,10 +8,7 @@ import { type BunBkndConfig, serve } from "bknd/adapter/bun";
 const config: BunBkndConfig = {
    connection: {
       url: ":memory:"
-   },
-   // this is only required to run inside the same workspace
-   // leave blank if you're running this from a different project
-   distPath: "../../app/dist"
+   }
 };
 
 serve(config);

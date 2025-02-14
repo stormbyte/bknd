@@ -107,7 +107,7 @@ async function createLibsql(ctx: TemplateSetupCtx) {
       ...pkg,
       scripts: {
          ...pkg.scripts,
-         db: "turso db",
+         db: "turso dev",
          dev: "npm run db && wrangler dev"
       }
    }));

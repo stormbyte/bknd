@@ -3,20 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "npm run db & next dev",
     "db": "turso dev --db-file test.db",
-    "db:check": "sqlite3 test.db \"PRAGMA wal_checkpoint(FULL);\"",
     "build": "next build",
-    "start": "next start",
+    "start": "npm run db & next start",
     "lint": "next lint"
   },
   "dependencies": {
-    "bknd": "workspace:*",
-    "next": "15.0.2"
-  },
-  "peerDependencies": {
-    "react": ">=18",
-    "react-dom": ">=18"
+    "bknd": "file:../../app",
+    "next": "15.0.2",
+    "react": "file:../../node_modules/react",
+    "react-dom": "file:../../node_modules/react-dom"
   },
   "devDependencies": {
     "typescript": "^5",

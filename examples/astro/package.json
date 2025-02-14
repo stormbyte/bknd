@@ -7,8 +7,6 @@
     "start": "astro dev",
     "build": "astro check && astro build",
     "preview": "astro preview",
-    "db": "turso dev --db-file test.db",
-    "db:check": "sqlite3 test.db \"PRAGMA wal_checkpoint(FULL);\"",
     "astro": "astro"
   },
   "dependencies": {
@@ -17,7 +15,7 @@
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "astro": "^4.16.16",
-    "bknd": "workspace:*",
+    "bknd": "file:../../app",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "typescript": "^5.7.2"

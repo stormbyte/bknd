@@ -1,4 +1,6 @@
 import { cloudflare } from "./cloudflare";
+import { nextjs } from "./nextjs";
+import { remix } from "./remix";
 
 export type TemplateSetupCtx = {
    template: Template;
@@ -32,6 +34,9 @@ export type Template = {
 };
 
 export const templates: Template[] = [
+   cloudflare,
+   nextjs,
+   remix,
    {
       key: "node",
       title: "Node.js Basic",
@@ -46,27 +51,6 @@ export const templates: Template[] = [
       integration: "bun",
       description: "A basic bknd Bun server",
       path: "gh:bknd-io/bknd/examples/bun",
-      ref: true
-   },
-   cloudflare,
-   {
-      key: "remix",
-      title: "Remix Basic",
-      integration: "remix",
-      description: "A basic bknd Remix starter",
-      path: "gh:bknd-io/bknd/examples/remix",
-      ref: true
-   },
-   {
-      // @todo: add `concurrently`?
-      key: "nextjs",
-      title: "Next.js Basic",
-      integration: "nextjs",
-      description: "A basic bknd Next.js starter",
-      path: "gh:bknd-io/bknd/examples/nextjs",
-      scripts: {
-         install: "npm install --force"
-      },
       ref: true
    },
    {
