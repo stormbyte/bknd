@@ -69,7 +69,7 @@ export class AdminController extends Controller {
 
       hono.use("*", async (c, next) => {
          const obj = {
-            user: auth.authenticator?.getUser(),
+            user: c.get("auth")?.user,
             logout_route: this.withBasePath(authRoutes.logout),
             color_scheme: configs.server.admin.color_scheme
          };
@@ -91,7 +91,7 @@ export class AdminController extends Controller {
                // @ts-ignore
                onGranted: async (c) => {
                   // @todo: add strict test to permissions middleware?
-                  if (auth.authenticator.isUserLoggedIn()) {
+                  if (c.get("auth")?.user) {
                      console.log("redirecting to success");
                      return c.redirect(authRoutes.success);
                   }

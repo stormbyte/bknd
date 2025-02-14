@@ -1,21 +1,23 @@
 import { Exception, Permission } from "core";
 import { objectTransform } from "core/utils";
+import type { Context } from "hono";
+import type { ServerEnv } from "modules/Module";
 import { Role } from "./Role";
 
 export type GuardUserContext = {
-   role: string | null | undefined;
+   role?: string | null;
    [key: string]: any;
 };
 
 export type GuardConfig = {
    enabled?: boolean;
 };
+export type GuardContext = Context<ServerEnv> | GuardUserContext;
 
 const debug = false;
 
 export class Guard {
    permissions: Permission[];
-   user?: GuardUserContext;
    roles?: Role[];
    config?: GuardConfig;
 
@@ -89,24 +91,19 @@ export class Guard {
       return this;
    }
 
-   setUserContext(user: GuardUserContext | undefined) {
-      this.user = user;
-      return this;
-   }
-
-   getUserRole(): Role | undefined {
-      if (this.user && typeof this.user.role === "string") {
-         const role = this.roles?.find((role) => role.name === this.user?.role);
+   getUserRole(user?: GuardUserContext): Role | undefined {
+      if (user && typeof user.role === "string") {
+         const role = this.roles?.find((role) => role.name === user?.role);
          if (role) {
-            debug && console.log("guard: role found", [this.user.role]);
+            debug && console.log("guard: role found", [user.role]);
             return role;
          }
       }
 
       debug &&
          console.log("guard: role not found", {
-            user: this.user,
-            role: this.user?.role
+            user: user,
+            role: user?.role
          });
       return this.getDefaultRole();
    }
@@ -119,9 +116,9 @@ export class Guard {
       return this.config?.enabled === true;
    }
 
-   hasPermission(permission: Permission): boolean;
-   hasPermission(name: string): boolean;
-   hasPermission(permissionOrName: Permission | string): boolean {
+   hasPermission(permission: Permission, user?: GuardUserContext): boolean;
+   hasPermission(name: string, user?: GuardUserContext): boolean;
+   hasPermission(permissionOrName: Permission | string, user?: GuardUserContext): boolean {
       if (!this.isEnabled()) {
          //console.log("guard not enabled, allowing");
          return true;
@@ -133,7 +130,7 @@ export class Guard {
          throw new Error(`Permission ${name} does not exist`);
       }
 
-      const role = this.getUserRole();
+      const role = this.getUserRole(user);
 
       if (!role) {
          debug && console.log("guard: role not found, denying");
@@ -156,12 +153,13 @@ export class Guard {
       return !!rolePermission;
    }
 
-   granted(permission: Permission | string): boolean {
-      return this.hasPermission(permission as any);
+   granted(permission: Permission | string, c?: GuardContext): boolean {
+      const user = c && "get" in c ? c.get("auth")?.user : c;
+      return this.hasPermission(permission as any, user);
    }
 
-   throwUnlessGranted(permission: Permission | string) {
-      if (!this.granted(permission)) {
+   throwUnlessGranted(permission: Permission | string, c: GuardContext) {
+      if (!this.granted(permission, c)) {
          throw new Exception(
             `Permission "${typeof permission === "string" ? permission : permission.name}" not granted`,
             403

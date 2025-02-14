@@ -40,6 +40,7 @@ export class SystemController extends Controller {
 
    private registerConfigController(client: Hono<any>): void {
       const { permission } = this.middlewares;
+      // don't add auth again, it's already added in getController
       const hono = this.create();
 
       hono.use(permission(SystemPermissions.configRead));
@@ -63,7 +64,7 @@ export class SystemController extends Controller {
             const { secrets } = c.req.valid("query");
             const { module } = c.req.valid("param");
 
-            secrets && this.ctx.guard.throwUnlessGranted(SystemPermissions.configReadSecrets);
+            secrets && this.ctx.guard.throwUnlessGranted(SystemPermissions.configReadSecrets, c);
 
             const config = this.app.toJSON(secrets);
 
@@ -227,8 +228,8 @@ export class SystemController extends Controller {
             const module = c.req.param("module") as ModuleKey | undefined;
             const { config, secrets } = c.req.valid("query");
 
-            config && this.ctx.guard.throwUnlessGranted(SystemPermissions.configRead);
-            secrets && this.ctx.guard.throwUnlessGranted(SystemPermissions.configReadSecrets);
+            config && this.ctx.guard.throwUnlessGranted(SystemPermissions.configRead, c);
+            secrets && this.ctx.guard.throwUnlessGranted(SystemPermissions.configReadSecrets, c);
 
             const { version, ...schema } = this.app.getSchema();
 
@@ -261,72 +262,26 @@ export class SystemController extends Controller {
          ),
          async (c) => {
             const { sync } = c.req.valid("query") as Record<string, boolean>;
-            this.ctx.guard.throwUnlessGranted(SystemPermissions.build);
+            this.ctx.guard.throwUnlessGranted(SystemPermissions.build, c);
 
             await this.app.build({ sync });
             return c.json({ success: true, options: { sync } });
          }
       );
 
-      hono.get("/ping", async (c) => {
-         //console.log("c", c);
-         try {
-            // @ts-ignore @todo: fix with env
-            const context: any = c.req.raw.cf ? c.req.raw.cf : c.env.cf;
-            const cf = {
-               colo: context.colo,
-               city: context.city,
-               postal: context.postalCode,
-               region: context.region,
-               regionCode: context.regionCode,
-               continent: context.continent,
-               country: context.country,
-               eu: context.isEUCountry,
-               lat: context.latitude,
-               lng: context.longitude,
-               timezone: context.timezone
-            };
-            return c.json({ pong: true });
-         } catch (e) {
-            return c.json({ pong: true });
-         }
-      });
+      hono.get("/ping", (c) => c.json({ pong: true }));
 
-      hono.get("/info", async (c) => {
-         return c.json({
-            version: this.app.version(),
-            test: 2,
-            app: c.get("app")?.version(),
+      hono.get("/info", (c) =>
+         c.json({
+            version: c.get("app")?.version(),
             runtime: getRuntimeKey()
-         });
-      });
+         })
+      );
 
       hono.get("/openapi.json", async (c) => {
-         //const config = this.app.toJSON();
          const config = getDefaultConfig();
          return c.json(generateOpenAPI(config));
       });
-
-      /*hono.get("/test/sql", async (c) => {
-         // @ts-ignore
-         const ai = c.env?.AI as Ai;
-         const messages = [
-            { role: "system", content: "You are a friendly assistant" },
-            {
-               role: "user",
-               content: "just say hello"
-            }
-         ];
-
-         const stream = await ai.run("@cf/meta/llama-3.1-8b-instruct", {
-            messages,
-            stream: true
-         });
-
-         return new Response(stream, {
-            headers: { "content-type": "text/event-stream" }
-         });
-      });*/
 
       return hono;
    }
