@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "deploy": "wrangler deploy",
-    "db": "turso dev --db-file test.db",
+    "db": "turso dev",
     "dev": "wrangler dev",
     "start": "wrangler dev",
     "test": "vitest",
