@@ -58,6 +58,15 @@ export type DropzoneProps = {
    children?: (props: DropzoneRenderProps) => JSX.Element;
 };
 
+function handleUploadError(e: unknown) {
+   if (e && e instanceof XMLHttpRequest) {
+      const res = JSON.parse(e.responseText) as any;
+      alert(`Upload failed with code ${e.status}: ${res.error}`);
+   } else {
+      alert("Upload failed");
+   }
+}
+
 export function Dropzone({
    getUploadInfo,
    handleDelete,
@@ -164,7 +173,11 @@ export function Dropzone({
                return;
             } else {
                for (const file of pendingFiles) {
-                  await uploadFileProgress(file);
+                  try {
+                     await uploadFileProgress(file);
+                  } catch (e) {
+                     handleUploadError(e);
+                  }
                }
                setUploading(false);
                onUploaded?.(files);
@@ -258,7 +271,7 @@ export function Dropzone({
 
          xhr.onload = () => {
             console.log("onload", file.path, xhr.status);
-            if (xhr.status === 200) {
+            if (xhr.status >= 200 && xhr.status < 300) {
                //setFileState(file.path, "uploaded", 1);
                console.log("Upload complete");
 
@@ -279,8 +292,8 @@ export function Dropzone({
                resolve();
             } else {
                setFileState(file.path, "failed", 1);
-               console.error("Upload failed with status: ", xhr.status);
-               reject();
+               console.error("Upload failed with status: ", xhr.status, xhr.statusText);
+               reject(xhr);
             }
          };
 
@@ -364,6 +377,14 @@ const DropzoneInner = ({
       <UploadPlaceholder onClick={openFileInput} text={placeholder?.text} />
    );
 
+   async function uploadHandler(file: FileState) {
+      try {
+         return await uploadFile(file);
+      } catch (e) {
+         handleUploadError(e);
+      }
+   }
+
    return (
       <div
          ref={wrapperRef}
@@ -383,7 +404,7 @@ const DropzoneInner = ({
                   <Preview
                      key={file.path}
                      file={file}
-                     handleUpload={uploadFile}
+                     handleUpload={uploadHandler}
                      handleDelete={deleteFile}
                   />
                ))}
@@ -450,6 +471,7 @@ const Preview: React.FC<PreviewProps> = ({ file, handleUpload, handleDelete }) =
       <div
          className={twMerge(
             "w-[49%] md:w-60 flex flex-col border border-muted relative",
+            file.state === "failed" && "border-red-500 bg-red-200/20",
             file.state === "deleting" && "opacity-70"
          )}
       >
