@@ -1,6 +1,5 @@
-import { tbValidator as tb } from "core";
-import { Type } from "core/utils";
-import { bodyLimit } from "hono/body-limit";
+import { isDebug, tbValidator as tb } from "core";
+import { HttpStatus, Type, getFileFromContext } from "core/utils";
 import type { StorageAdapter } from "media";
 import { StorageEvents, getRandomizedFilename } from "media";
 import { Controller } from "modules/Controller";
@@ -42,7 +41,6 @@ export class MediaController extends Controller {
          if (!filename) {
             throw new Error("No file name provided");
          }
-         //console.log("getting file", filename, headersToObject(c.req.raw.headers));
 
          await this.getStorage().emgr.emit(new StorageEvents.FileAccessEvent({ name: filename }));
          return await this.getStorageAdapter().getObject(filename, c.req.raw.headers);
@@ -59,24 +57,40 @@ export class MediaController extends Controller {
          return c.json({ message: "File deleted" });
       });
 
-      const uploadSizeMiddleware = bodyLimit({
-         maxSize: this.getStorage().getConfig().body_max_size,
-         onError: (c: any) => {
-            return c.text(`Payload exceeds ${this.getStorage().getConfig().body_max_size}`, 413);
-         }
-      });
+      const maxSize = this.getStorage().getConfig().body_max_size ?? Number.POSITIVE_INFINITY;
+
+      if (isDebug()) {
+         hono.post("/inspect", async (c) => {
+            const file = await getFileFromContext(c);
+            return c.json({
+               type: file?.type,
+               name: file?.name,
+               size: file?.size
+            });
+         });
+      }
 
       // upload file
       // @todo: add required type for "upload endpoints"
-      hono.post("/upload/:filename", uploadSizeMiddleware, async (c) => {
+      hono.post("/upload/:filename", async (c) => {
          const { filename } = c.req.param();
          if (!filename) {
             throw new Error("No file name provided");
          }
 
-         const file = await this.getStorage().getFileFromRequest(c);
-         console.log("----file", file);
-         return c.json(await this.getStorage().uploadFile(file, filename));
+         const body = await getFileFromContext(c);
+         if (!body) {
+            return c.json({ error: "No file provided" }, HttpStatus.BAD_REQUEST);
+         }
+         if (body.size > maxSize) {
+            return c.json(
+               { error: `Max size (${maxSize} bytes) exceeded` },
+               HttpStatus.PAYLOAD_TOO_LARGE
+            );
+         }
+
+         const res = await this.getStorage().uploadFile(body, filename);
+         return c.json(res, HttpStatus.CREATED);
       });
 
       // add upload file to entity
@@ -89,23 +103,21 @@ export class MediaController extends Controller {
                overwrite: Type.Optional(booleanLike)
             })
          ),
-         uploadSizeMiddleware,
          async (c) => {
             const entity_name = c.req.param("entity");
             const field_name = c.req.param("field");
             const entity_id = Number.parseInt(c.req.param("id"));
-            console.log("params", { entity_name, field_name, entity_id });
 
             // check if entity exists
             const entity = this.media.em.entity(entity_name);
             if (!entity) {
-               return c.json({ error: `Entity "${entity_name}" not found` }, 404);
+               return c.json({ error: `Entity "${entity_name}" not found` }, HttpStatus.NOT_FOUND);
             }
 
             // check if field exists and is of type MediaField
             const field = entity.field(field_name);
             if (!field || !(field instanceof MediaField)) {
-               return c.json({ error: `Invalid field "${field_name}"` }, 400);
+               return c.json({ error: `Invalid field "${field_name}"` }, HttpStatus.BAD_REQUEST);
             }
 
             const media_entity = this.media.getMediaEntity().name as "media";
@@ -127,7 +139,10 @@ export class MediaController extends Controller {
                if (count >= max_items) {
                   // if overwrite not set, abort early
                   if (!overwrite) {
-                     return c.json({ error: `Max items (${max_items}) reached` }, 400);
+                     return c.json(
+                        { error: `Max items (${max_items}) reached` },
+                        HttpStatus.BAD_REQUEST
+                     );
                   }
 
                   // if already more in database than allowed, abort early
@@ -135,7 +150,7 @@ export class MediaController extends Controller {
                   if (count > max_items) {
                      return c.json(
                         { error: `Max items (${max_items}) exceeded already with ${count} items.` },
-                        400
+                        HttpStatus.UNPROCESSABLE_ENTITY
                      );
                   }
 
@@ -161,11 +176,21 @@ export class MediaController extends Controller {
             if (!exists) {
                return c.json(
                   { error: `Entity "${entity_name}" with ID "${entity_id}" doesn't exist found` },
-                  404
+                  HttpStatus.NOT_FOUND
                );
             }
 
-            const file = await this.getStorage().getFileFromRequest(c);
+            const file = await getFileFromContext(c);
+            if (!file) {
+               return c.json({ error: "No file provided" }, HttpStatus.BAD_REQUEST);
+            }
+            if (file.size > maxSize) {
+               return c.json(
+                  { error: `Max size (${maxSize} bytes) exceeded` },
+                  HttpStatus.PAYLOAD_TOO_LARGE
+               );
+            }
+
             const file_name = getRandomizedFilename(file as File);
             const info = await this.getStorage().uploadFile(file, file_name, true);
 
@@ -185,7 +210,7 @@ export class MediaController extends Controller {
                }
             }
 
-            return c.json({ ok: true, result: result.data, ...info });
+            return c.json({ ok: true, result: result.data, ...info }, HttpStatus.CREATED);
          }
       );
 
