@@ -18,13 +18,14 @@ import { isEqual } from "lodash-es";
 
 export type ServerEnv = {
    Variables: {
-      app?: App;
+      app: App;
       // to prevent resolving auth multiple times
-      auth_resolved?: boolean;
-      // to only register once
-      auth_registered?: boolean;
-      // whether or not to bypass auth
-      auth_skip?: boolean;
+      auth?: {
+         resolved: boolean;
+         registered: boolean;
+         skip: boolean;
+         user?: { id: any; role?: string; [key: string]: any };
+      };
       html?: string;
    };
 };

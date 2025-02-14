@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { App, createApp } from "../../src";
 import type { AuthResponse } from "../../src/auth";
+import { auth } from "../../src/auth/middlewares";
 import { randomString, secureRandomString, withDisabledConsole } from "../../src/core/utils";
 import { disableConsoleLog, enableConsoleLog } from "../helper";
 
@@ -98,7 +99,7 @@ const fns = <Mode extends "cookie" | "token" = "token">(app: App, mode?: Mode) =
       }
 
       return {
-         Authorization: `Bearer ${token}`,
+         Authorization: token ? `Bearer ${token}` : "",
          "Content-Type": "application/json",
          ...additional
       };
@@ -209,5 +210,37 @@ describe("integration auth", () => {
          const res = await app.server.request("/api/system/schema");
          expect(res.status).toBe(403);
       });
+   });
+
+   it("context is exclusive", async () => {
+      const app = createAuthApp();
+      await app.build();
+      const $fns = fns(app);
+
+      app.server.get("/get", auth(), async (c) => {
+         return c.json({
+            user: c.get("auth").user ?? null
+         });
+      });
+      app.server.get("/wait", auth(), async (c) => {
+         await new Promise((r) => setTimeout(r, 20));
+         return c.json({ ok: true });
+      });
+
+      const { data } = await $fns.login(configs.users.normal);
+      const me = await $fns.me(data.token);
+      expect(me.user.email).toBe(configs.users.normal.email);
+
+      app.server.request("/wait", {
+         headers: { Authorization: `Bearer ${data.token}` }
+      });
+
+      {
+         await new Promise((r) => setTimeout(r, 10));
+         const res = await app.server.request("/get");
+         const data = await res.json();
+         expect(data.user).toBe(null);
+         expect(await $fns.me()).toEqual({ user: null as any });
+      }
    });
 });

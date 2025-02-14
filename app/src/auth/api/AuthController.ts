@@ -104,10 +104,9 @@ export class AuthController extends Controller {
       }
 
       hono.get("/me", auth(), async (c) => {
-         if (this.auth.authenticator.isUserLoggedIn()) {
-            const claims = this.auth.authenticator.getUser()!;
+         const claims = c.get("auth")?.user;
+         if (claims) {
             const { data: user } = await this.userRepo.findId(claims.id);
-
             return c.json({ user });
          }
 

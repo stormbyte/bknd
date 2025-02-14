@@ -16,10 +16,8 @@ describe("authorize", () => {
          role: "admin"
       };
 
-      guard.setUserContext(user);
-
-      expect(guard.granted("read")).toBe(true);
-      expect(guard.granted("write")).toBe(true);
+      expect(guard.granted("read", user)).toBe(true);
+      expect(guard.granted("write", user)).toBe(true);
 
       expect(() => guard.granted("something")).toThrow();
    });
@@ -46,10 +44,8 @@ describe("authorize", () => {
          role: "admin"
       };
 
-      guard.setUserContext(user);
-
-      expect(guard.granted("read")).toBe(true);
-      expect(guard.granted("write")).toBe(true);
+      expect(guard.granted("read", user)).toBe(true);
+      expect(guard.granted("write", user)).toBe(true);
    });
 
    test("guard implicit allow", async () => {
@@ -66,12 +62,12 @@ describe("authorize", () => {
          }
       });
 
-      guard.setUserContext({
+      const user = {
          role: "admin"
-      });
+      };
 
-      expect(guard.granted("read")).toBe(true);
-      expect(guard.granted("write")).toBe(true);
+      expect(guard.granted("read", user)).toBe(true);
+      expect(guard.granted("write", user)).toBe(true);
    });
 
    test("guard with guest role implicit allow", async () => {

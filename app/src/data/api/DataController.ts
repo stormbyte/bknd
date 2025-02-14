@@ -327,12 +327,9 @@ export class DataController extends Controller {
          // delete one
          .delete(
             "/:entity/:id",
-
             permission(DataPermissions.entityDelete),
             tb("param", Type.Object({ entity: Type.String(), id: tbNumber })),
             async (c) => {
-               this.guard.throwUnlessGranted(DataPermissions.entityDelete);
-
                const { entity, id } = c.req.param();
                if (!this.entityExists(entity)) {
                   return c.notFound();
@@ -350,14 +347,11 @@ export class DataController extends Controller {
             tb("param", Type.Object({ entity: Type.String() })),
             tb("json", querySchema.properties.where),
             async (c) => {
-               //console.log("request", c.req.raw);
                const { entity } = c.req.param();
                if (!this.entityExists(entity)) {
                   return c.notFound();
                }
                const where = c.req.valid("json") as RepoQuery["where"];
-               //console.log("where", where);
-
                const result = await this.em.mutator(entity).deleteWhere(where);
 
                return c.json(this.mutatorResult(result));
