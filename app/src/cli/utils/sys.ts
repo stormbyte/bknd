@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { execSync, exec as nodeExec } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import url from "node:url";
@@ -50,4 +50,24 @@ export function exec(command: string, opts?: { silent?: boolean; env?: Record<st
       return;
    }
    return output.toString();
+}
+
+export function execAsync(
+   command: string,
+   opts?: { silent?: boolean; env?: Record<string, string> }
+) {
+   return new Promise((resolve, reject) => {
+      nodeExec(
+         command,
+         {
+            env: { ...process.env, ...opts?.env }
+         },
+         (err, stdout, stderr) => {
+            if (err) {
+               return reject(err);
+            }
+            resolve(stdout);
+         }
+      );
+   });
 }

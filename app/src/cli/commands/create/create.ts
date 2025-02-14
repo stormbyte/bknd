@@ -3,7 +3,7 @@ import { downloadTemplate } from "@bluwy/giget-core";
 import * as $p from "@clack/prompts";
 import type { CliCommand } from "cli/types";
 import { typewriter, wait } from "cli/utils/cli";
-import { exec, getVersion } from "cli/utils/sys";
+import { execAsync, getVersion } from "cli/utils/sys";
 import { Option } from "commander";
 import color from "picocolors";
 import { overridePackageJson, updateBkndPackages } from "./npm";
@@ -190,7 +190,7 @@ async function action(options: { template?: string; dir?: string; integration?: 
 
       //console.log("url", url);
       const s = $p.spinner();
-      s.start("Downloading template...");
+      await s.start("Downloading template...");
       try {
          await downloadTemplate(url, {
             dir: ctx.dir,
@@ -236,9 +236,9 @@ async function action(options: { template?: string; dir?: string; integration?: 
          const install_cmd = template.scripts?.install || "npm install";
 
          const s = $p.spinner();
-         s.start("Installing dependencies...");
+         await s.start("Installing dependencies...");
          try {
-            exec(`cd ${ctx.dir} && ${install_cmd}`, { silent: true });
+            await execAsync(`cd ${ctx.dir} && ${install_cmd}`, { silent: true });
          } catch (e) {
             if (e instanceof Error) {
                s.stop("Failed to install: " + color.red(e.message), 1);
