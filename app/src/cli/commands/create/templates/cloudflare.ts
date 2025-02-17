@@ -1,7 +1,8 @@
 import * as $p from "@clack/prompts";
 import { overrideJson, overridePackageJson } from "cli/commands/create/npm";
+import { typewriter, wait } from "cli/utils/cli";
 import { uuid } from "core/utils";
-import color from "picocolors";
+import c from "picocolors";
 import type { Template, TemplateSetupCtx } from ".";
 
 const WRANGLER_FILE = "wrangler.json";
@@ -19,7 +20,7 @@ export const cloudflare = {
          WRANGLER_FILE,
          (json) => ({
             ...json,
-            name,
+            name: ctx.name,
             assets: {
                directory: "node_modules/bknd/dist/static"
             }
@@ -52,7 +53,7 @@ export const cloudflare = {
       } catch (e) {
          const message = (e as any).message || "An error occurred";
          $p.log.warn(
-            "Couldn't add database. You can add it manually later. Error: " + color.red(message)
+            "Couldn't add database. You can add it manually later. Error: " + c.red(message)
          );
       }
    }
@@ -86,8 +87,16 @@ async function createD1(ctx: TemplateSetupCtx) {
       }),
       { dir: ctx.dir }
    );
-   $p.log.info(
-      "Database created. Note that if you deploy, you have to create a real database using `npx wrangler d1 create <name>` and update your wrangler configuration."
+
+   await $p.stream.info(
+      (async function* () {
+         yield* typewriter(`Database added to ${c.cyan("wrangler.json")}`);
+         await wait();
+         yield* typewriter(
+            `\nNote that if you deploy, you have to create a real database using ${c.cyan("npx wrangler d1 create <name>")} and update your wrangler configuration.`,
+            c.dim
+         );
+      })()
    );
 }
 
@@ -103,19 +112,31 @@ async function createLibsql(ctx: TemplateSetupCtx) {
       { dir: ctx.dir }
    );
 
-   await overridePackageJson((pkg) => ({
-      ...pkg,
-      scripts: {
-         ...pkg.scripts,
-         db: "turso dev",
-         dev: "npm run db && wrangler dev"
-      }
-   }));
-
-   $p.log.info(
-      "Database set to LibSQL. You can now run `npm run db` to start the database and `npm run dev` to start the worker."
+   await overridePackageJson(
+      (pkg) => ({
+         ...pkg,
+         scripts: {
+            ...pkg.scripts,
+            db: "turso dev",
+            dev: "npm run db && wrangler dev"
+         }
+      }),
+      { dir: ctx.dir }
    );
-   $p.log.info(
-      `Make sure you have Turso's CLI installed. Check their docs on how to install at ${color.cyan("https://docs.turso.tech/cli/introduction")}`
+
+   await $p.stream.info(
+      (async function* () {
+         yield* typewriter("Database set to LibSQL");
+         await wait();
+         yield* typewriter(
+            `\nYou can now run ${c.cyan("npm run db")} to start the database and ${c.cyan("npm run dev")} to start the worker.`,
+            c.dim
+         );
+         await wait();
+         yield* typewriter(
+            `\nAlso make sure you have Turso's CLI installed. Check their docs on how to install at ${c.cyan("https://docs.turso.tech/cli/introduction")}`,
+            c.dim
+         );
+      })()
    );
 }
