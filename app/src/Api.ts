@@ -22,6 +22,7 @@ export type ApiOptions = {
    key?: string;
    localStorage?: boolean;
    fetcher?: typeof fetch;
+   verbose?: boolean;
    verified?: boolean;
 } & (
    | {
@@ -196,7 +197,8 @@ export class Api {
          host: this.baseUrl,
          token: this.token,
          headers: this.options.headers,
-         token_transport: this.token_transport
+         token_transport: this.token_transport,
+         verbose: this.options.verbose
       });
    }
 

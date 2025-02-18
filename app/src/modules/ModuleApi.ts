@@ -9,6 +9,7 @@ export type BaseModuleApiOptions = {
    token?: string;
    headers?: Headers;
    token_transport?: "header" | "cookie" | "none";
+   verbose?: boolean;
 };
 
 /** @deprecated */
@@ -107,7 +108,8 @@ export abstract class ModuleApi<Options extends BaseModuleApiOptions = BaseModul
       });
 
       return new FetchPromise(request, {
-         fetcher: this.fetcher
+         fetcher: this.fetcher,
+         verbose: this.options.verbose
       });
    }
 
@@ -219,15 +221,35 @@ export class FetchPromise<T = ApiResponse<any>> implements Promise<T> {
       public request: Request,
       protected options?: {
          fetcher?: typeof fetch;
+         verbose?: boolean;
       }
    ) {}
+
+   get verbose() {
+      return this.options?.verbose ?? false;
+   }
 
    async execute(): Promise<ResponseObject<T>> {
       // delay in dev environment
       isDebug() && (await new Promise((resolve) => setTimeout(resolve, 200)));
 
       const fetcher = this.options?.fetcher ?? fetch;
+      if (this.verbose) {
+         console.log("[FetchPromise] Request", {
+            method: this.request.method,
+            url: this.request.url
+         });
+      }
+
       const res = await fetcher(this.request);
+      if (this.verbose) {
+         console.log("[FetchPromise] Response", {
+            res: res,
+            ok: res.ok,
+            status: res.status
+         });
+      }
+
       let resBody: any;
       let resData: any;
 
@@ -242,6 +264,7 @@ export class FetchPromise<T = ApiResponse<any>> implements Promise<T> {
       } else {
          resBody = res.body;
       }
+      console.groupEnd();
 
       return createResponseProxy<T>(res, resBody, resData);
    }

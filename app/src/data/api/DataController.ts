@@ -109,44 +109,7 @@ export class DataController extends Controller {
       });
 
       /**
-       * Function endpoints
-       */
-      hono
-         // fn: count
-         .post(
-            "/:entity/fn/count",
-            permission(DataPermissions.entityRead),
-            tb("param", Type.Object({ entity: Type.String() })),
-            async (c) => {
-               const { entity } = c.req.valid("param");
-               if (!this.entityExists(entity)) {
-                  return c.notFound();
-               }
-
-               const where = c.req.json() as any;
-               const result = await this.em.repository(entity).count(where);
-               return c.json({ entity, count: result.count });
-            }
-         )
-         // fn: exists
-         .post(
-            "/:entity/fn/exists",
-            permission(DataPermissions.entityRead),
-            tb("param", Type.Object({ entity: Type.String() })),
-            async (c) => {
-               const { entity } = c.req.valid("param");
-               if (!this.entityExists(entity)) {
-                  return c.notFound();
-               }
-
-               const where = c.req.json() as any;
-               const result = await this.em.repository(entity).exists(where);
-               return c.json({ entity, exists: result.exists });
-            }
-         );
-
-      /**
-       * Read endpoints
+       * Schema endpoints
        */
       hono
          // read entity schema
@@ -197,7 +160,64 @@ export class DataController extends Controller {
                   ...schema
                });
             }
+         );
+
+      // entity endpoints
+      hono.route("/entity", this.getEntityRoutes());
+
+      return hono.all("*", (c) => c.notFound());
+   }
+
+   private getEntityRoutes() {
+      const { permission } = this.middlewares;
+      const hono = this.create();
+
+      const definedEntities = this.em.entities.map((e) => e.name);
+      const tbNumber = Type.Transform(Type.String({ pattern: "^[1-9][0-9]{0,}$" }))
+         .Decode(Number.parseInt)
+         .Encode(String);
+
+      /**
+       * Function endpoints
+       */
+      hono
+         // fn: count
+         .post(
+            "/:entity/fn/count",
+            permission(DataPermissions.entityRead),
+            tb("param", Type.Object({ entity: Type.String() })),
+            async (c) => {
+               const { entity } = c.req.valid("param");
+               if (!this.entityExists(entity)) {
+                  return c.notFound();
+               }
+
+               const where = c.req.json() as any;
+               const result = await this.em.repository(entity).count(where);
+               return c.json({ entity, count: result.count });
+            }
          )
+         // fn: exists
+         .post(
+            "/:entity/fn/exists",
+            permission(DataPermissions.entityRead),
+            tb("param", Type.Object({ entity: Type.String() })),
+            async (c) => {
+               const { entity } = c.req.valid("param");
+               if (!this.entityExists(entity)) {
+                  return c.notFound();
+               }
+
+               const where = c.req.json() as any;
+               const result = await this.em.repository(entity).exists(where);
+               return c.json({ entity, exists: result.exists });
+            }
+         );
+
+      /**
+       * Read endpoints
+       */
+      hono
          // read many
          .get(
             "/:entity",
