@@ -63,6 +63,8 @@ export class AppFlows extends Module<typeof flowsConfigSchema> {
          });
       });
 
+      hono.all("*", (c) => c.notFound());
+
       this.ctx.server.route(this.config.basepath, hono);
 
       // register flows

@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { serveStatic } from "@hono/node-server/serve-static";
+import { showRoutes } from "hono/dev";
 import { App, registries } from "./src";
 import { StorageLocalAdapter } from "./src/media/storage/adapters/StorageLocalAdapter";
 
@@ -28,6 +29,7 @@ if (example) {
 
 let app: App;
 const recreate = import.meta.env.VITE_APP_DISABLE_FRESH !== "1";
+let routesShown = false;
 export default {
    async fetch(request: Request) {
       if (!app || recreate) {
@@ -44,6 +46,14 @@ export default {
             "sync"
          );
          await app.build();
+
+         // log routes
+         if (!routesShown) {
+            routesShown = true;
+            console.log("\n\n[APP ROUTES]");
+            showRoutes(app.server);
+            console.log("-------\n\n");
+         }
       }
 
       return app.fetch(request);
