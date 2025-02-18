@@ -18,7 +18,7 @@ export function DataEntityCreate({ params }) {
    const entity = $data.entity(params.entity as string);
    if (!entity) {
       return <Message.NotFound description={`Entity "${params.entity}" doesn't exist.`} />;
-   } else if (entity.type !== "regular") {
+   } else if (entity.type === "system") {
       return <Message.NotAllowed description={`Entity "${params.entity}" cannot be created.`} />;
    }
 

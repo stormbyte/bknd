@@ -2,6 +2,7 @@ import type { PrimaryFieldType } from "core";
 import type { Entity, EntityManager } from "../entities";
 import {
    type EntityRelation,
+   ManyToManyRelation,
    type MutationOperation,
    MutationOperations,
    RelationField
@@ -26,11 +27,26 @@ export class RelationMutator {
     */
    getRelationalKeys(): string[] {
       const references: string[] = [];
+
+      // if persisting a manytomany connection table
+      // @todo: improve later
+      if (this.entity.type === "generated") {
+         const relation = this.em.relations.all.find(
+            (r) => r instanceof ManyToManyRelation && r.connectionEntity.name === this.entity.name
+         );
+         if (relation instanceof ManyToManyRelation) {
+            references.push(
+               ...this.entity.fields.filter((f) => f.type === "relation").map((f) => f.name)
+            );
+         }
+      }
+
       this.em.relationsOf(this.entity.name).map((r) => {
          const info = r.helper(this.entity.name).getMutationInfo();
          references.push(info.reference);
          info.local_field && references.push(info.local_field);
       });
+
       return references;
    }
 
