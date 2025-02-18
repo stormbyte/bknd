@@ -62,17 +62,17 @@ export class App {
             // respond to events, such as "onUpdated".
             // this is important if multiple changes are done, and then build() is called manually
             if (!this.emgr.enabled) {
-               console.warn("[APP] config updated, but event manager is disabled, skip.");
+               console.warn("App config updated, but event manager is disabled, skip.");
                return;
             }
 
-            console.log("[APP] config updated", key);
+            console.log("App config updated", key);
             // @todo: potentially double syncing
             await this.build({ sync: true });
             await this.emgr.emit(new AppConfigUpdatedEvent({ app: this }));
          },
          onFirstBoot: async () => {
-            console.log("[APP] first boot");
+            console.log("App first boot");
             this.trigger_first_boot = true;
          },
          onServerInit: async (server) => {
@@ -183,7 +183,7 @@ export function createApp(config: CreateAppConfig = {}) {
       } else if (typeof config.connection === "object") {
          if ("type" in config.connection) {
             console.warn(
-               "[WARN] Using deprecated connection type 'libsql', use the 'config' object directly."
+               "Using deprecated connection type 'libsql', use the 'config' object directly."
             );
             connection = new LibsqlConnection(config.connection.config);
          } else {
@@ -191,7 +191,7 @@ export function createApp(config: CreateAppConfig = {}) {
          }
       } else {
          connection = new LibsqlConnection({ url: ":memory:" });
-         console.warn("[!] No connection provided, using in-memory database");
+         console.warn("No connection provided, using in-memory database");
       }
    } catch (e) {
       console.error("Could not create connection", e);
