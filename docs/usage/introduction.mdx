@@ -44,18 +44,21 @@ import type { Connection } from "bknd/data";
 import type { Config } from "@libsql/client";
 
 type AppPlugin = (app: App) => Promise<void> | void;
+type ManagerOptions = {
+   basePath?: string;
+   trustFetched?: boolean;
+   onFirstBoot?: () => Promise<void>;
+   seed?: (ctx: ModuleBuildContext) => Promise<void>;
+};
 
 type CreateAppConfig = {
    connection?:
       | Connection
       | Config;
    initialConfig?: InitialModuleConfigs;
-   plugins?: AppPlugin[];
    options?: {
-      basePath?: string;
-      trustFetched?: boolean;
-      onFirstBoot?: () => Promise<void>;
-      seed?: (ctx: ModuleBuildContext) => Promise<void>;
+      plugins?: AppPlugin[];
+      manager?: ManagerOptions
    };
 };
 ```

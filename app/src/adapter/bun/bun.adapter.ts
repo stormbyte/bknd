@@ -30,7 +30,6 @@ export function serve({
    distPath,
    connection,
    initialConfig,
-   plugins,
    options,
    port = config.server.default_port,
    onBuilt,
@@ -44,7 +43,6 @@ export function serve({
          const app = await createApp({
             connection,
             initialConfig,
-            plugins,
             options,
             onBuilt,
             buildConfig,
