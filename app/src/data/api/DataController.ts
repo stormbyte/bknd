@@ -144,7 +144,7 @@ export class DataController extends Controller {
                //console.log("request", c.req.raw);
                const { entity, context } = c.req.param();
                if (!this.entityExists(entity)) {
-                  console.log("not found", entity, definedEntities);
+                  console.warn("not found:", entity, definedEntities);
                   return c.notFound();
                }
                const _entity = this.em.entity(entity);
@@ -228,7 +228,7 @@ export class DataController extends Controller {
                //console.log("request", c.req.raw);
                const { entity } = c.req.param();
                if (!this.entityExists(entity)) {
-                  console.log("not found", entity, definedEntities);
+                  console.warn("not found:", entity, definedEntities);
                   return c.notFound();
                }
                const options = c.req.valid("query") as RepoQuery;

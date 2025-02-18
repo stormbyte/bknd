@@ -26,6 +26,10 @@ export class AppFirstBoot extends AppEvent {
 }
 export const AppEvents = { AppConfigUpdatedEvent, AppBuiltEvent, AppFirstBoot } as const;
 
+export type AppOptions = {
+   plugins?: AppPlugin[];
+   manager?: Omit<ModuleManagerOptions, "initial" | "onUpdated">;
+};
 export type CreateAppConfig = {
    connection?:
       | Connection
@@ -36,8 +40,7 @@ export type CreateAppConfig = {
         }
       | LibSqlCredentials;
    initialConfig?: InitialModuleConfigs;
-   plugins?: AppPlugin[];
-   options?: Omit<ModuleManagerOptions, "initial" | "onUpdated">;
+   options?: AppOptions;
 };
 
 export type AppConfig = InitialModuleConfigs;
@@ -47,32 +50,33 @@ export class App {
    static readonly Events = AppEvents;
    adminController?: AdminController;
    private trigger_first_boot = false;
+   private plugins: AppPlugin[];
 
    constructor(
       private connection: Connection,
       _initialConfig?: InitialModuleConfigs,
-      private plugins: AppPlugin[] = [],
-      moduleManagerOptions?: ModuleManagerOptions
+      private options?: AppOptions
    ) {
+      this.plugins = options?.plugins ?? [];
       this.modules = new ModuleManager(connection, {
-         ...moduleManagerOptions,
+         ...(options?.manager ?? {}),
          initial: _initialConfig,
          onUpdated: async (key, config) => {
             // if the EventManager was disabled, we assume we shouldn't
             // respond to events, such as "onUpdated".
             // this is important if multiple changes are done, and then build() is called manually
             if (!this.emgr.enabled) {
-               console.warn("[APP] config updated, but event manager is disabled, skip.");
+               console.warn("App config updated, but event manager is disabled, skip.");
                return;
             }
 
-            console.log("[APP] config updated", key);
+            console.log("App config updated", key);
             // @todo: potentially double syncing
             await this.build({ sync: true });
             await this.emgr.emit(new AppConfigUpdatedEvent({ app: this }));
          },
          onFirstBoot: async () => {
-            console.log("[APP] first boot");
+            console.log("App first boot");
             this.trigger_first_boot = true;
          },
          onServerInit: async (server) => {
@@ -105,8 +109,6 @@ export class App {
       }
 
       await this.emgr.emit(new AppBuiltEvent({ app: this }));
-
-      server.all("/api/*", async (c) => c.notFound());
 
       // first boot is set from ModuleManager when there wasn't a config table
       if (this.trigger_first_boot) {
@@ -183,7 +185,7 @@ export function createApp(config: CreateAppConfig = {}) {
       } else if (typeof config.connection === "object") {
          if ("type" in config.connection) {
             console.warn(
-               "[WARN] Using deprecated connection type 'libsql', use the 'config' object directly."
+               "Using deprecated connection type 'libsql', use the 'config' object directly."
             );
             connection = new LibsqlConnection(config.connection.config);
          } else {
@@ -191,7 +193,7 @@ export function createApp(config: CreateAppConfig = {}) {
          }
       } else {
          connection = new LibsqlConnection({ url: ":memory:" });
-         console.warn("[!] No connection provided, using in-memory database");
+         console.warn("No connection provided, using in-memory database");
       }
    } catch (e) {
       console.error("Could not create connection", e);
@@ -201,5 +203,5 @@ export function createApp(config: CreateAppConfig = {}) {
       throw new Error("Invalid connection");
    }
 
-   return new App(connection, config.initialConfig, config.plugins, config.options);
+   return new App(connection, config.initialConfig, config.options);
 }
