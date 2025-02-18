@@ -1,6 +1,5 @@
 import { type MetaFunction, useLoaderData } from "@remix-run/react";
 import type { LoaderFunctionArgs } from "@remix-run/server-runtime";
-import { useAuth } from "bknd/client";
 
 export const meta: MetaFunction = () => {
    return [{ title: "Remix & bknd" }, { name: "description", content: "Welcome to Remix & bknd!" }];
@@ -13,8 +12,6 @@ export const loader = async ({ context: { api } }: LoaderFunctionArgs) => {
 
 export default function Index() {
    const { data, user } = useLoaderData<typeof loader>();
-   const auth = useAuth();
-   console.log("auth", auth);
 
    return (
       <div>

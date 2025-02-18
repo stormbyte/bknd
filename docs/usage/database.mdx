@@ -67,6 +67,7 @@ described above, or an class instance that extends from `Connection`:
 ```ts
 import { createApp } from "bknd";
 import { Connection } from "bknd/data";
+import { Kysely } from "kysely";
 
 class CustomConnection extends Connection {
    constructor() {
@@ -85,6 +86,7 @@ const app = createApp({ connection })
 To provide an initial database structure, you can pass `initialConfig` to the creation of an app. This will only be used if there isn't an existing configuration found in the database given. Here is a quick example:
 
 ```ts
+import { createApp } from "bknd";
 import { em, entity, text, number } from "bknd/data";
 
 const schema = em({
@@ -142,9 +144,9 @@ All entity related functions use the types defined in `DB` from `bknd/core`. To 
 
 ```ts
 import { em } from "bknd/data";
-import { Api } from "bknd";
+import { Api } from "bknd/client";
 
-// const schema = em({ ... });
+ const schema = em({ /* ... */ });
 
 type Database = (typeof schema)["DB"];
 declare module "bknd/core" {
@@ -160,7 +162,7 @@ The type completion is available for the API as well as all provided [React hook
 
 ### Seeding the database
 To seed your database with initial data, you can pass a `seed` function to the configuration. It
-provides the `ModuleBuildContext` ([reference](/usage/introduction#modulebuildcontext)) as the first argument.
+provides the `ModuleBuildContext` as the first argument.
 
 Note that the seed function will only be executed on app's first boot. If a configuration
 already exists in the database, it will not be executed.

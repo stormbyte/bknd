@@ -27,7 +27,7 @@ declare module "bknd/core" {
 export const ALL = serve<APIContext>({
    // we can use any libsql config, and if omitted, uses in-memory
    connection: {
-      url: "file:test.db"
+      url: "file:data.db"
    },
    // an initial config is only applied if the database is empty
    initialConfig: {

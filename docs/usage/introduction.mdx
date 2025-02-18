@@ -157,7 +157,7 @@ npx bknd schema
 
 To create an initial data structure, you can use helpers [described here](/usage/database#initial-structure).
 
-### `plugins`
+### `options.plugins`
 The `plugins` property is an array of functions that are called after the app has been built,
 but before its event is emitted. This is useful for adding custom routes or other functionality.
 A simple plugin that adds a custom route looks like this:
@@ -174,23 +174,9 @@ Since each plugin has full access to the `app` instance, it can add routes, modi
 structure, add custom middlewares, respond to or add events, etc. Plugins are very powerful, so
 make sure to only run trusted ones.
 
-### `options`
-This object is passed to the `ModuleManager` which is responsible for:
-- validating and maintaining configuration of all modules
-- building all modules (data, auth, media, flows)
-- maintaining the `ModuleBuildContext` used by the modules
+### `options.seed`
+The `seed` property is a function that is called when the app is booted for the first time. It is used to seed the database with initial data. The function is passed a `ModuleBuildContext` object:
 
-The `options` object has the following properties:
-- `basePath` (`string`): The base path for the Hono instance. This is used to prefix all routes.
-- `trustFetched` (`boolean`): If set to `true`, the app will not perform any validity checks for
-the given or fetched configuration.
-- `onFirstBoot` (`() => Promise<void>`): A function that is called when the app is booted for
-the first time.
-- `seed` (`(ctx: ModuleBuildContext) => Promise<void>`): A function that is called when the app is
-booted for the first time and an initial partial configuration is provided.
-
-
-## `ModuleBuildContext`
 ```ts
 type ModuleBuildContext = {
    connection: Connection;
@@ -199,4 +185,25 @@ type ModuleBuildContext = {
    emgr: EventManager;
    guard: Guard;
 };
+
+const seed = async (ctx: ModuleBuildContext) => {
+   // seed the database
+   await ctx.em.mutator("todos").insertMany([
+      { title: "Learn bknd", done: true },
+      { title: "Build something cool", done: false }
+   ]);
+};
 ```
+
+### `options.manager`
+This object is passed to the `ModuleManager` which is responsible for:
+- validating and maintaining configuration of all modules
+- building all modules (data, auth, media, flows)
+- maintaining the `ModuleBuildContext` used by the modules
+
+The `options.manager` object has the following properties:
+- `basePath` (`string`): The base path for the Hono instance. This is used to prefix all routes.
+- `trustFetched` (`boolean`): If set to `true`, the app will not perform any validity checks for
+the given or fetched configuration.
+- `onFirstBoot` (`() => Promise<void>`): A function that is called when the app is booted for
+the first time.

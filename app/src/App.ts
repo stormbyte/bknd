@@ -4,6 +4,7 @@ import { Connection, type LibSqlCredentials, LibsqlConnection } from "data";
 import type { Hono } from "hono";
 import {
    type InitialModuleConfigs,
+   type ModuleBuildContext,
    ModuleManager,
    type ModuleManagerOptions,
    type Modules
@@ -28,7 +29,8 @@ export const AppEvents = { AppConfigUpdatedEvent, AppBuiltEvent, AppFirstBoot } 
 
 export type AppOptions = {
    plugins?: AppPlugin[];
-   manager?: Omit<ModuleManagerOptions, "initial" | "onUpdated">;
+   seed?: (ctx: ModuleBuildContext) => Promise<void>;
+   manager?: Omit<ModuleManagerOptions, "initial" | "onUpdated" | "seed">;
 };
 export type CreateAppConfig = {
    connection?:
@@ -61,6 +63,7 @@ export class App {
       this.modules = new ModuleManager(connection, {
          ...(options?.manager ?? {}),
          initial: _initialConfig,
+         seed: options?.seed,
          onUpdated: async (key, config) => {
             // if the EventManager was disabled, we assume we shouldn't
             // respond to events, such as "onUpdated".
