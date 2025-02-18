@@ -6,8 +6,6 @@
   "scripts": {
     "build": "remix vite:build",
     "dev": "remix vite:dev",
-    "db": "turso dev --db-file test.db",
-    "db:check": "sqlite3 test.db \"PRAGMA wal_checkpoint(FULL);\"",
     "start": "remix-serve ./build/server/index.js",
     "typecheck": "tsc"
   },
