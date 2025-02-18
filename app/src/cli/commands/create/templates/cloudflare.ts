@@ -62,6 +62,8 @@ export const cloudflare = {
 async function createD1(ctx: TemplateSetupCtx) {
    const name = await $p.text({
       message: "Enter database name",
+      initialValue: "data",
+      placeholder: "data",
       validate: (v) => {
          if (!v) {
             return "Invalid name";

@@ -178,7 +178,7 @@ describe("ModuleManager", async () => {
       await mm.build();
       const configs = stripMark(mm.configs());
 
-      expect(mm.configs().server.admin.color_scheme).toBe("light");
+      expect(mm.configs().server.admin.color_scheme).toBeUndefined();
       expect(() => mm.get("server").schema().patch("admin", { color_scheme: "violet" })).toThrow();
       await mm.get("server").schema().patch("admin", { color_scheme: "dark" });
       await mm.save();
@@ -368,10 +368,15 @@ describe("ModuleManager", async () => {
          // @ts-ignore
          const f = mm.mutateConfigSafe("failing");
 
+         // @ts-expect-error
          expect(() => f.has("value")).toThrow();
+         // @ts-expect-error
          expect(() => f.bypass()).toThrow();
+         // @ts-expect-error
          expect(() => f.clone()).toThrow();
+         // @ts-expect-error
          expect(() => f.get()).toThrow();
+         // @ts-expect-error
          expect(() => f.default()).toThrow();
       });
    });
