@@ -116,7 +116,7 @@ describe("[data] DataController", async () => {
          //console.log("app.routes", app.routes);
          // create users
          for await (const _user of fixtures.users) {
-            const res = await app.request("/users", {
+            const res = await app.request("/entity/users", {
                method: "POST",
                body: JSON.stringify(_user)
             });
@@ -131,7 +131,7 @@ describe("[data] DataController", async () => {
 
          // create posts
          for await (const _post of fixtures.posts) {
-            const res = await app.request("/posts", {
+            const res = await app.request("/entity/posts", {
                method: "POST",
                body: JSON.stringify(_post)
             });
@@ -145,7 +145,7 @@ describe("[data] DataController", async () => {
       });
 
       test("/:entity (read many)", async () => {
-         const res = await app.request("/users");
+         const res = await app.request("/entity/users");
          const data = (await res.json()) as RepositoryResponse;
 
          expect(data.meta.total).toBe(3);
@@ -156,7 +156,7 @@ describe("[data] DataController", async () => {
       });
 
       test("/:entity/query (func query)", async () => {
-         const res = await app.request("/users/query", {
+         const res = await app.request("/entity/users/query", {
             method: "POST",
             headers: {
                "Content-Type": "application/json"
@@ -175,7 +175,7 @@ describe("[data] DataController", async () => {
       });
 
       test("/:entity (read many, paginated)", async () => {
-         const res = await app.request("/users?limit=1&offset=2");
+         const res = await app.request("/entity/users?limit=1&offset=2");
          const data = (await res.json()) as RepositoryResponse;
 
          expect(data.meta.total).toBe(3);
@@ -186,7 +186,7 @@ describe("[data] DataController", async () => {
       });
 
       test("/:entity/:id (read one)", async () => {
-         const res = await app.request("/users/3");
+         const res = await app.request("/entity/users/3");
          const data = (await res.json()) as RepositoryResponse<EntityData>;
          console.log("data", data);
 
@@ -197,7 +197,7 @@ describe("[data] DataController", async () => {
       });
 
       test("/:entity (update one)", async () => {
-         const res = await app.request("/users/3", {
+         const res = await app.request("/entity/users/3", {
             method: "PATCH",
             body: JSON.stringify({ name: "new name" })
          });
@@ -208,7 +208,7 @@ describe("[data] DataController", async () => {
       });
 
       test("/:entity/:id/:reference (read references)", async () => {
-         const res = await app.request("/users/1/posts");
+         const res = await app.request("/entity/users/1/posts");
          const data = (await res.json()) as RepositoryResponse;
          console.log("data", data);
 
@@ -220,14 +220,14 @@ describe("[data] DataController", async () => {
       });
 
       test("/:entity/:id (delete one)", async () => {
-         const res = await app.request("/posts/2", {
+         const res = await app.request("/entity/posts/2", {
             method: "DELETE"
          });
          const { data } = (await res.json()) as RepositoryResponse<EntityData>;
          expect(data).toEqual({ id: 2, ...fixtures.posts[1] });
 
          // verify
-         const res2 = await app.request("/posts");
+         const res2 = await app.request("/entity/posts");
          const data2 = (await res2.json()) as RepositoryResponse;
          expect(data2.meta.total).toBe(1);
       });

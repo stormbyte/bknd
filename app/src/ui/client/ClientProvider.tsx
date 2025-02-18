@@ -1,4 +1,5 @@
 import { Api, type ApiOptions, type TApiUser } from "Api";
+import { isDebug } from "core";
 import { createContext, useContext } from "react";
 
 const ClientContext = createContext<{ baseUrl: string; api: Api }>({
@@ -31,7 +32,7 @@ export const ClientProvider = ({ children, baseUrl, user }: ClientProviderProps)
    }
 
    //console.log("api init", { host: actualBaseUrl, user: user ?? winCtx.user });
-   const api = new Api({ host: actualBaseUrl, user: user ?? winCtx.user });
+   const api = new Api({ host: actualBaseUrl, user: user ?? winCtx.user, verbose: isDebug() });
 
    return (
       <ClientContext.Provider value={{ baseUrl: api.baseUrl, api }}>

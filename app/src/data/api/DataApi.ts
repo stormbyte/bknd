@@ -23,7 +23,10 @@ export class DataApi extends ModuleApi<DataApiOptions> {
       id: PrimaryFieldType,
       query: Omit<RepoQueryIn, "where" | "limit" | "offset"> = {}
    ) {
-      return this.get<Pick<RepositoryResponse<Data>, "meta" | "data">>([entity as any, id], query);
+      return this.get<Pick<RepositoryResponse<Data>, "meta" | "data">>(
+         ["entity", entity as any, id],
+         query
+      );
    }
 
    readMany<E extends keyof DB | string, Data = E extends keyof DB ? DB[E] : EntityData>(
@@ -33,13 +36,13 @@ export class DataApi extends ModuleApi<DataApiOptions> {
       type T = Pick<RepositoryResponse<Data[]>, "meta" | "data">;
 
       const input = query ?? this.options.defaultQuery;
-      const req = this.get<T>([entity as any], input);
+      const req = this.get<T>(["entity", entity as any], input);
 
       if (req.request.url.length <= this.options.queryLengthLimit) {
          return req;
       }
 
-      return this.post<T>([entity as any, "query"], input);
+      return this.post<T>(["entity", entity as any, "query"], input);
    }
 
    readManyByReference<
@@ -48,7 +51,7 @@ export class DataApi extends ModuleApi<DataApiOptions> {
       Data = R extends keyof DB ? DB[R] : EntityData
    >(entity: E, id: PrimaryFieldType, reference: R, query: RepoQueryIn = {}) {
       return this.get<Pick<RepositoryResponse<Data[]>, "meta" | "data">>(
-         [entity as any, id, reference],
+         ["entity", entity as any, id, reference],
          query ?? this.options.defaultQuery
       );
    }
@@ -57,7 +60,7 @@ export class DataApi extends ModuleApi<DataApiOptions> {
       entity: E,
       input: Omit<Data, "id">
    ) {
-      return this.post<RepositoryResponse<Data>>([entity as any], input);
+      return this.post<RepositoryResponse<Data>>(["entity", entity as any], input);
    }
 
    updateOne<E extends keyof DB | string, Data = E extends keyof DB ? DB[E] : EntityData>(
@@ -65,19 +68,19 @@ export class DataApi extends ModuleApi<DataApiOptions> {
       id: PrimaryFieldType,
       input: Partial<Omit<Data, "id">>
    ) {
-      return this.patch<RepositoryResponse<Data>>([entity as any, id], input);
+      return this.patch<RepositoryResponse<Data>>(["entity", entity as any, id], input);
    }
 
    deleteOne<E extends keyof DB | string, Data = E extends keyof DB ? DB[E] : EntityData>(
       entity: E,
       id: PrimaryFieldType
    ) {
-      return this.delete<RepositoryResponse<Data>>([entity as any, id]);
+      return this.delete<RepositoryResponse<Data>>(["entity", entity as any, id]);
    }
 
    count<E extends keyof DB | string>(entity: E, where: RepoQuery["where"] = {}) {
       return this.post<RepositoryResponse<{ entity: E; count: number }>>(
-         [entity as any, "fn", "count"],
+         ["entity", entity as any, "fn", "count"],
          where
       );
    }

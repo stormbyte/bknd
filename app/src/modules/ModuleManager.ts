@@ -556,7 +556,9 @@ export class ModuleManager {
       await this.options?.onFirstBoot?.();
    }
 
-   mutateConfigSafe<Module extends keyof Modules>(name: Module) {
+   mutateConfigSafe<Module extends keyof Modules>(
+      name: Module
+   ): Pick<ReturnType<Modules[Module]["schema"]>, "set" | "patch" | "overwrite" | "remove"> {
       const module = this.modules[name];
       const copy = structuredClone(this.configs());
 

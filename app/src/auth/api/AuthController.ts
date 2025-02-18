@@ -132,6 +132,6 @@ export class AuthController extends Controller {
          return c.json({ strategies, basepath });
       });
 
-      return hono;
+      return hono.all("*", (c) => c.notFound());
    }
 }

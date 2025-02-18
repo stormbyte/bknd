@@ -142,14 +142,13 @@ export class SystemController extends Controller {
          const value = await c.req.json();
          const path = c.req.param("path") as string;
 
-         const moduleConfig = this.app.mutateConfig(module);
-         if (moduleConfig.has(path)) {
+         if (this.app.modules.get(module).schema().has(path)) {
             return c.json({ success: false, path, error: "Path already exists" }, { status: 400 });
          }
          console.log("-- add", module, path, value);
 
          return await handleConfigUpdateResponse(c, async () => {
-            await moduleConfig.patch(path, value);
+            await this.app.mutateConfig(module).patch(path, value);
             return {
                success: true,
                module,
@@ -283,6 +282,6 @@ export class SystemController extends Controller {
          return c.json(generateOpenAPI(config));
       });
 
-      return hono;
+      return hono.all("*", (c) => c.notFound());
    }
 }

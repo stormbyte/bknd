@@ -91,7 +91,7 @@
         "tags": ["system"]
       }
     },
-    "/api/data/{entity}": {
+    "/api/data/entity/{entity}": {
       "get": {
         "summary": "List entities",
         "parameters": [
@@ -155,7 +155,7 @@
         "tags": ["data"]
       }
     },
-    "/api/data/{entity}/{id}": {
+    "/api/data/entity/{entity}/{id}": {
       "get": {
         "summary": "Get entity",
         "parameters": [
