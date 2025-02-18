@@ -1,4 +1,5 @@
 import { Api, type ApiOptions, type TApiUser } from "Api";
+import type { AppTheme } from "modules/server/AppServer";
 import { createContext, useContext } from "react";
 
 const ClientContext = createContext<{ baseUrl: string; api: Api }>({
@@ -60,7 +61,7 @@ export const useBaseUrl = () => {
 type BkndWindowContext = {
    user?: TApiUser;
    logout_route: string;
-   color_scheme?: "light" | "dark";
+   color_scheme?: AppTheme;
 };
 export function useBkndWindowContext(): BkndWindowContext {
    if (typeof window !== "undefined" && window.__BKND__) {
