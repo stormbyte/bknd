@@ -105,13 +105,13 @@ export class ManyToManyRelation extends EntityRelation<typeof ManyToManyRelation
    }
 
    override getReferenceQuery(entity: Entity, id: number): Partial<RepoQuery> {
-      const conn = this.connectionEntity;
+      const { other, otherRef } = this.getQueryInfo(entity);
 
       return {
          where: {
-            [`${conn.name}.${entity.name}_${entity.getPrimaryField().name}`]: id
+            [otherRef]: id
          },
-         join: [this.target.reference]
+         join: [other.reference]
       };
    }
 
@@ -160,47 +160,27 @@ export class ManyToManyRelation extends EntityRelation<typeof ManyToManyRelation
             .whereRef(entityRef, "=", otherRef)
             .innerJoin(...join)
             .limit(limit);
-
-      /*return qb.select((eb) => {
-         const select: any[] = other.entity.getSelect(other.entity.name);
-         // @todo: also add to find by references
-         if (additionalFields.length > 0) {
-            const conn = this.connectionEntity.name;
-            select.push(
-               jsonBuildObject(
-                  Object.fromEntries(
-                     additionalFields.map((f) => [f.name, eb.ref(`${conn}.${f.name}`)])
-                  )
-               ).as(this.connectionTableMappedName)
-            );
-         }
-
-         return jsonFrom(
-            eb
-               .selectFrom(other.entity.name)
-               .select(select)
-               .whereRef(entityRef, "=", otherRef)
-               .innerJoin(...join)
-               .limit(limit)
-         ).as(other.reference);
-      });*/
    }
 
    initialize(em: EntityManager<any>) {
       this.em = em;
 
-      //this.connectionEntity.addField(new RelationField(this.source.entity));
-      //this.connectionEntity.addField(new RelationField(this.target.entity));
-      this.connectionEntity.addField(RelationField.create(this, this.source));
-      this.connectionEntity.addField(RelationField.create(this, this.target));
+      const sourceField = RelationField.create(this, this.source);
+      const targetField = RelationField.create(this, this.target);
 
-      // @todo: check this
-      for (const field of this.additionalFields) {
-         this.source.entity.addField(new VirtualField(this.connectionTableMappedName));
-         this.target.entity.addField(new VirtualField(this.connectionTableMappedName));
+      if (em.hasEntity(this.connectionEntity)) {
+         // @todo: also check for correct signatures of field
+         if (!this.connectionEntity.hasField(sourceField)) {
+            this.connectionEntity.addField(sourceField);
+         }
+         if (!this.connectionEntity.hasField(targetField)) {
+            this.connectionEntity.addField(targetField);
+         }
+      } else {
+         this.connectionEntity.addField(sourceField);
+         this.connectionEntity.addField(targetField);
+         em.addEntity(this.connectionEntity);
       }
-
-      em.addEntity(this.connectionEntity);
    }
 
    override getName(): string {

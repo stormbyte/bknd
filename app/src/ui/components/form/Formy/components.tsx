@@ -72,8 +72,9 @@ export const FieldLabel: React.FC<React.ComponentProps<"label"> & { field: Field
 }) => {
    const desc = field.getDescription();
    return (
-      <Label {...props} title={desc} className="flex flex-row gap-2 items-center">
+      <Label {...props} title={desc} className="flex flex-row gap-1 items-center">
          {field.getLabel()}
+         {field.isRequired() && <span className="font-medium opacity-30">*</span>}
          {desc && <TbInfoCircle className="opacity-50" />}
       </Label>
    );

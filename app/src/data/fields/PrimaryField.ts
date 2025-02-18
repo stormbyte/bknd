@@ -37,7 +37,7 @@ export class PrimaryField<Required extends true | false = false> extends Field<
    }
 
    override async transformPersist(value: any): Promise<number> {
-      throw new Error("This function should not be called");
+      throw new Error("PrimaryField: This function should not be called");
    }
 
    override toJsonSchema() {

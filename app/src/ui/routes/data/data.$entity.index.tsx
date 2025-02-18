@@ -155,7 +155,7 @@ function EntityCreateButton({ entity }: { entity: Entity }) {
 
    const [navigate] = useNavigate();
    if (!entity) return null;
-   if (entity.type !== "regular") {
+   if (entity.type === "system") {
       const system = {
          users: b.app.config.auth.entity_name,
          media: b.app.config.media.entity_name

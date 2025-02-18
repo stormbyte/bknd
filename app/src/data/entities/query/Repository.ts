@@ -73,7 +73,6 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
          sort: entity.getDefaultSort(),
          select: entity.getSelect()
       };
-      //console.log("validated", validated);
 
       if (!options) return validated;
 
@@ -144,7 +143,9 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
          });
 
          if (invalid.length > 0) {
-            throw new InvalidSearchParamsException(`Invalid where field(s): ${invalid.join(", ")}`);
+            throw new InvalidSearchParamsException(
+               `Invalid where field(s): ${invalid.join(", ")}`
+            ).context({ aliases, entity: entity.name });
          }
 
          validated.where = options.where;
@@ -334,7 +335,6 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
 
    async findMany(_options?: Partial<RepoQuery>): Promise<RepositoryResponse<TBD[TB][]>> {
       const { qb, options } = this.buildQuery(_options);
-      //console.log("findMany:options", options);
 
       await this.emgr.emit(
          new Repository.Events.RepositoryFindManyBefore({ entity: this.entity, options })
@@ -386,7 +386,6 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
          }
       };
 
-      //console.log("findManyOptions", newEntity.name, findManyOptions);
       return this.cloneFor(newEntity).findMany(findManyOptions);
    }
 

@@ -165,6 +165,13 @@ export class Entity<
       return this.getField(name);
    }
 
+   hasField(name: string): boolean;
+   hasField(field: Field): boolean;
+   hasField(nameOrField: string | Field): boolean {
+      const name = typeof nameOrField === "string" ? nameOrField : nameOrField.name;
+      return this.fields.findIndex((field) => field.name === name) !== -1;
+   }
+
    getFields(include_virtual: boolean = false): Field[] {
       if (include_virtual) return this.fields;
       return this.fields.filter((f) => !f.isVirtual());

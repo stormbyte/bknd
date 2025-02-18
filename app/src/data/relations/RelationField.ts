@@ -88,7 +88,7 @@ export class RelationField extends Field<RelationFieldConfig> {
    }
 
    override async transformPersist(value: any, em: EntityManager<any>): Promise<any> {
-      throw new Error("This function should not be called");
+      throw new Error("RelationField: This function should not be called");
    }
 
    override toJsonSchema() {
