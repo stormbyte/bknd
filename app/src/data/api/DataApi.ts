@@ -1,10 +1,10 @@
 import type { DB } from "core";
-import type { EntityData, RepoQuery, RepoQueryIn, RepositoryResponse } from "data";
+import type { EntityData, RepoQueryIn, RepositoryResponse } from "data";
 import { type BaseModuleApiOptions, ModuleApi, type PrimaryFieldType } from "modules";
 
 export type DataApiOptions = BaseModuleApiOptions & {
    queryLengthLimit: number;
-   defaultQuery: Partial<RepoQuery>;
+   defaultQuery: Partial<RepoQueryIn>;
 };
 
 export class DataApi extends ModuleApi<DataApiOptions> {
@@ -78,7 +78,7 @@ export class DataApi extends ModuleApi<DataApiOptions> {
       return this.delete<RepositoryResponse<Data>>(["entity", entity as any, id]);
    }
 
-   count<E extends keyof DB | string>(entity: E, where: RepoQuery["where"] = {}) {
+   count<E extends keyof DB | string>(entity: E, where: RepoQueryIn["where"] = {}) {
       return this.post<RepositoryResponse<{ entity: E; count: number }>>(
          ["entity", entity as any, "fn", "count"],
          where

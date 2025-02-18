@@ -165,6 +165,34 @@ export class DataController extends Controller {
       // entity endpoints
       hono.route("/entity", this.getEntityRoutes());
 
+      /**
+       * Info endpoints
+       */
+      hono.get("/info/:entity", async (c) => {
+         const { entity } = c.req.param();
+         if (!this.entityExists(entity)) {
+            return c.notFound();
+         }
+         const _entity = this.em.entity(entity);
+         const fields = _entity.fields.map((f) => f.name);
+         const $rels = (r: any) =>
+            r.map((r: any) => ({
+               entity: r.other(_entity).entity.name,
+               ref: r.other(_entity).reference
+            }));
+
+         return c.json({
+            name: _entity.name,
+            fields,
+            relations: {
+               all: $rels(this.em.relations.relationsOf(_entity)),
+               listable: $rels(this.em.relations.listableRelationsOf(_entity)),
+               source: $rels(this.em.relations.sourceRelationsOf(_entity)),
+               target: $rels(this.em.relations.targetRelationsOf(_entity))
+            }
+         });
+      });
+
       return hono.all("*", (c) => c.notFound());
    }
 
