@@ -7,6 +7,7 @@ import { html } from "hono/html";
 import { Fragment } from "hono/jsx";
 import { Controller } from "modules/Controller";
 import * as SystemPermissions from "modules/permissions";
+import type { AppTheme } from "modules/server/AppServer";
 
 const htmlBkndContextReplace = "<!-- BKND_CONTEXT -->";
 
@@ -246,7 +247,7 @@ export class AdminController extends Controller {
    }
 }
 
-const style = (theme: "light" | "dark" = "light") => {
+const style = (theme: AppTheme) => {
    const base = {
       margin: 0,
       padding: 0,
@@ -271,6 +272,6 @@ const style = (theme: "light" | "dark" = "light") => {
 
    return {
       ...base,
-      ...styles[theme]
+      ...styles[theme === "light" ? "light" : "dark"]
    };
 };

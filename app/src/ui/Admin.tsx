@@ -44,7 +44,7 @@ function AdminInternal() {
    const { theme } = useTheme();
 
    return (
-      <MantineProvider {...createMantineTheme(theme ?? "light")}>
+      <MantineProvider {...createMantineTheme(theme as any)}>
          <Notifications />
          <FlashMessage />
          <BkndModalsProvider>

@@ -1,3 +1,5 @@
+import tailwindCssAnimate from "tailwindcss-animate";
+
 /** @type {import("tailwindcss").Config} */
 export default {
    content: ["./index.html", "./src/ui/**/*.tsx", "./src/ui/lib/mantine/theme.ts"],
@@ -13,5 +15,5 @@ export default {
          }
       }
    },
-   plugins: [require("tailwindcss-animate")]
+   plugins: [tailwindCssAnimate]
 };

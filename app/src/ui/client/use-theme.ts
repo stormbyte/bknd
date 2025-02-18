@@ -1,18 +1,26 @@
+import type { AppTheme } from "modules/server/AppServer";
 import { useBkndWindowContext } from "ui/client/ClientProvider";
 import { useBknd } from "ui/client/bknd";
 
-export type Theme = "light" | "dark";
-
-export function useTheme(fallback: Theme = "light"): { theme: Theme } {
+export function useTheme(fallback: AppTheme = "system"): { theme: AppTheme } {
    const b = useBknd();
    const winCtx = useBkndWindowContext();
-   if (b) {
-      if (b?.adminOverride?.color_scheme) {
-         return { theme: b.adminOverride.color_scheme };
-      } else if (!b.fallback) {
-         return { theme: b.config.server.admin.color_scheme ?? fallback };
-      }
+
+   // 1. override
+   // 2. config
+   // 3. winCtx
+   // 4. fallback
+   // 5. default
+   const override = b?.adminOverride?.color_scheme;
+   const config = b?.config.server.admin.color_scheme;
+   const win = winCtx.color_scheme;
+   const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+   const theme = override ?? config ?? win ?? fallback;
+
+   if (theme === "system") {
+      return { theme: prefersDark ? "dark" : "light" };
    }
 
-   return { theme: winCtx.color_scheme ?? fallback };
+   return { theme };
 }
