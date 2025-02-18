@@ -26,6 +26,10 @@ export class AppFirstBoot extends AppEvent {
 }
 export const AppEvents = { AppConfigUpdatedEvent, AppBuiltEvent, AppFirstBoot } as const;
 
+export type AppOptions = {
+   plugins?: AppPlugin[];
+   manager?: Omit<ModuleManagerOptions, "initial" | "onUpdated">;
+};
 export type CreateAppConfig = {
    connection?:
       | Connection
@@ -36,8 +40,7 @@ export type CreateAppConfig = {
         }
       | LibSqlCredentials;
    initialConfig?: InitialModuleConfigs;
-   plugins?: AppPlugin[];
-   options?: Omit<ModuleManagerOptions, "initial" | "onUpdated">;
+   options?: AppOptions;
 };
 
 export type AppConfig = InitialModuleConfigs;
@@ -47,15 +50,16 @@ export class App {
    static readonly Events = AppEvents;
    adminController?: AdminController;
    private trigger_first_boot = false;
+   private plugins: AppPlugin[];
 
    constructor(
       private connection: Connection,
       _initialConfig?: InitialModuleConfigs,
-      private plugins: AppPlugin[] = [],
-      moduleManagerOptions?: ModuleManagerOptions
+      private options?: AppOptions
    ) {
+      this.plugins = options?.plugins ?? [];
       this.modules = new ModuleManager(connection, {
-         ...moduleManagerOptions,
+         ...(options?.manager ?? {}),
          initial: _initialConfig,
          onUpdated: async (key, config) => {
             // if the EventManager was disabled, we assume we shouldn't
@@ -201,5 +205,5 @@ export function createApp(config: CreateAppConfig = {}) {
       throw new Error("Invalid connection");
    }
 
-   return new App(connection, config.initialConfig, config.plugins, config.options);
+   return new App(connection, config.initialConfig, config.options);
 }
