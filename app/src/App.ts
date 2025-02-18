@@ -106,8 +106,6 @@ export class App {
 
       await this.emgr.emit(new AppBuiltEvent({ app: this }));
 
-      server.all("/api/*", async (c) => c.notFound());
-
       // first boot is set from ModuleManager when there wasn't a config table
       if (this.trigger_first_boot) {
          this.trigger_first_boot = false;
