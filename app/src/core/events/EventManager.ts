@@ -128,7 +128,8 @@ export class EventManager<
       if (listener.id) {
          const existing = this.listeners.find((l) => l.id === listener.id);
          if (existing) {
-            console.warn(`Listener with id "${listener.id}" already exists.`);
+            // @todo: add a verbose option?
+            //console.warn(`Listener with id "${listener.id}" already exists.`);
             return this;
          }
       }
