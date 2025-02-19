@@ -31,9 +31,6 @@ export const loader = async (args: LoaderFunctionArgs) => {
 
 export default function App() {
    const data = useLoaderData<typeof loader>();
-
-   // add user to the client provider to indicate
-   // that you're authed using cookie
    return (
       <ClientProvider user={data.user}>
          <Outlet context={data} />
