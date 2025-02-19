@@ -5,30 +5,51 @@ description: 'Run bknd inside Cloudflare Worker'
 import InstallBknd from '/snippets/install-bknd.mdx';
 
 ## Installation
-Create a new cloudflare worker project by following the
-[official guide](https://developers.cloudflare.com/workers/get-started/guide/),
-and then install bknd as a dependency:
+To get started with Cloudflare Workers and bknd you can either install the package manually, and follow the descriptions below, or use the CLI starter:
 
-<InstallBknd />
+<Tabs>
+   <Tab title="CLI Starter">
+      Create a new Cloudflare CLI starter project by running the following command:
+
+      ```sh
+      npx bknd create -i cloudflare
+      ```
+   </Tab>
+   <Tab title="Manual">
+      Create a new cloudflare worker project by following the [official guide](https://developers.cloudflare.com/workers/get-started/guide/), and then install bknd as a dependency:
+
+      <InstallBknd />
+   </Tab>
+</Tabs>
 
 
 ## Serve the API
-If you don't choose anything specific, the following code will use the `warm` mode. See the
+If you don't choose anything specific, the following code will use the `warm` mode and uses the first D1 binding it finds. See the
 chapter [Using a different mode](#using-a-different-mode) for available modes.
 
 ```ts src/index.ts
-import { serve } from "bknd/adapter/cloudflare";
+import { serve, d1 } from "bknd/adapter/cloudflare";
 
+// scans your environment for the first D1 binding it finds
+export default serve();
+
+// manually specifying a D1 binding:
 export default serve<Env>({
-   app: ({ env }) => ({
-      connection: {
-         url: env.DB_URL,
-         authToken: env.DB_TOKEN
-      }
-   })
+  app: ({ env }) => d1({ binding: env.D1_BINDING })
+});
+
+// or specify binding using `bindings`
+export default serve<Env>({
+  bindings: ({ env }) => ({ db: env.D1_BINDING })
+});
+
+// or use LibSQL
+export default serve<Env>({
+  app: ({ env }) => ({ url: env.DB_URL })
 });
 ```
-For more information about the connection object, refer to the [Database](/usage/database) guide.
+
+For more information about the connection object when using LibSQL, refer to the [Database](/usage/database) guide.
 
 Now run the worker:
 ```bash
@@ -73,24 +94,17 @@ Now in order to also server the static admin files, you have to modify the `wran
 
 ## Adding custom routes
 You can also add custom routes by defining them after the app has been built, like so:
-```ts {14-16}
+```ts {5-7}
 import { serve } from "bknd/adapter/cloudflare";
-import manifest from "__STATIC_CONTENT_MANIFEST";
 
 export default serve<Env>({
-   app: ({ env }) => ({
-      connection: {
-         url: env.DB_URL,
-         authToken: env.DB_TOKEN
-      }
-   }),
+   // ...
    onBuilt: async (app) => {
-      app.modules.server.get("/hello", (c) => c.json({ hello: "world" }));
-   },
-   manifest,
-   setAdminHtml: true
+      app.server.get("/hello", (c) => c.json({ hello: "world" }));
+   }
 });
 ```
+The property `app.server` is a [Hono](https://hono.dev/) instance, you can literally anything you can do with Hono.
 
 ## Using a different mode
 With the Cloudflare Workers adapter, you're being offered to 4 modes to choose from (default:

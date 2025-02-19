@@ -5,34 +5,48 @@ description: 'Run bknd inside Astro'
 import InstallBknd from '/snippets/install-bknd.mdx';
 
 ## Installation
-Install bknd as a dependency:
-<InstallBknd />
+To get started with Astro and bknd you can either install the package manually, and follow the descriptions below, or use the CLI starter:
 
-<Note>The guide below assumes you're using Astro v4. We've experienced issues with Astro DB
-   using v5, see [this issue](https://github.com/withastro/astro/issues/12474).</Note>
+<Tabs>
+   <Tab title="CLI Starter">
+      Create a new Astro CLI starter project by running the following command:
 
-For the Astro integration to work, you also need to [add the react integration](https://docs.astro.build/en/guides/integrations-guide/react/):
-```bash
-npx astro add react
-```
+      ```sh
+      npx bknd create -i astro
+      ```
+   </Tab>
+   <Tab title="Manual">
+      Create a new Astro project by following the [official guide](https://docs.astro.build/en/install-and-setup/), and then install bknd as a dependency:
 
-You also need to make sure to set the output to `hybrid` in your Astro config:
-```js {6}
-// astro.config.mjs
-import { defineConfig } from "astro/config";
-import react from "@astrojs/react";
+      <InstallBknd />
 
-export default defineConfig({
-   output: "hybrid",
-   integrations: [react()]
-});
-```
+      <Note>The guide below assumes you're using Astro v4. We've experienced issues with Astro DB
+         using v5, see [this issue](https://github.com/withastro/astro/issues/12474).</Note>
 
-<Note>
-   If you don't want to use React with Astro, there is also an option to serve the bknd Admin UI
-   statically using Astro's middleware. In case you're interested in this, feel free to reach
-   out in [Discord](https://discord.gg/952SFk8Tb8) or open an [issue on GitHub](https://github.com/bknd-io/bknd/issues/new).
-</Note>
+         For the Astro integration to work, you also need to [add the react integration](https://docs.astro.build/en/guides/integrations-guide/react/):
+         ```bash
+         npx astro add react
+         ```
+
+         You also need to make sure to set the output to `hybrid` in your Astro config:
+         ```js {6}
+         // astro.config.mjs
+         import { defineConfig } from "astro/config";
+         import react from "@astrojs/react";
+
+         export default defineConfig({
+            output: "hybrid",
+            integrations: [react()]
+         });
+         ```
+
+      <Note>
+         If you don't want to use React with Astro, there is also an option to serve the bknd Admin UI
+         statically using Astro's middleware. In case you're interested in this, feel free to reach
+         out in [Discord](https://discord.gg/952SFk8Tb8) or open an [issue on GitHub](https://github.com/bknd-io/bknd/issues/new).
+      </Note>
+   </Tab>
+</Tabs>
 
 ## Serve the API
 Create a new catch-all route at `src/pages/api/[...api].ts`:

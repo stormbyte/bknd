@@ -5,8 +5,23 @@ description: 'Run bknd inside Remix'
 import InstallBknd from '/snippets/install-bknd.mdx';
 
 ## Installation
-Install bknd as a dependency:
-<InstallBknd />
+To get started with Remix and bknd you can either install the package manually, and follow the descriptions below, or use the CLI starter:
+
+<Tabs>
+   <Tab title="CLI Starter">
+      Create a new Remix CLI starter project by running the following command:
+
+      ```sh
+      npx bknd create -i remix
+      ```
+   </Tab>
+   <Tab title="Manual">
+      Create a new Remix project by following the [official guide](https://remix.run/docs/en/main/other-api/create-remix), and then install bknd as a dependency:
+
+      <InstallBknd />
+   </Tab>
+</Tabs>
+
 
 ## Serve the API
 Since Remix doesn't support middleware yet, we need a helper file to initialize the App to import from. Create a new file at `app/bknd.ts`:
