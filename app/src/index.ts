@@ -1,4 +1,11 @@
-export { App, createApp, AppEvents, type AppConfig, type CreateAppConfig } from "./App";
+export {
+   App,
+   createApp,
+   AppEvents,
+   type AppConfig,
+   type CreateAppConfig,
+   type AppPlugin
+} from "./App";
 
 export {
    getDefaultConfig,
@@ -6,7 +13,8 @@ export {
    type ModuleConfigs,
    type ModuleSchemas,
    type ModuleManagerOptions,
-   type ModuleBuildContext
+   type ModuleBuildContext,
+   type InitialModuleConfigs
 } from "./modules/ModuleManager";
 
 export * as middlewares from "modules/middlewares";

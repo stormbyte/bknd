@@ -19,7 +19,7 @@
   "dependencies": {},
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@clack/prompts": "^0.7.0",
+    "@clack/prompts": "^0.10.0",
     "@cloudflare/workers-types": "^4.20240620.0",
     "@tsconfig/strictest": "^2.0.5",
     "@types/lodash-es": "^4.17.12",
@@ -36,7 +36,7 @@
     "tsup": "^8.1.0",
     "typescript": "^5.5.3",
     "verdaccio": "^5.32.1",
-    "wrangler": "^3.71.0"
+    "wrangler": "^3.108.1"
   },
   "engines": {
     "node": ">=20.0.0"
@@ -44,7 +44,6 @@
   "workspaces": [
     "app",
     "docs",
-    "packages/*",
-    "examples/*"
+    "packages/*"
   ]
 }

@@ -1,3 +1,4 @@
+import { execSync, exec as nodeExec } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import url from "node:url";
@@ -16,9 +17,9 @@ export function getRelativeDistPath() {
    return path.relative(process.cwd(), getDistPath());
 }
 
-export async function getVersion() {
+export async function getVersion(_path: string = "") {
    try {
-      const resolved = path.resolve(getRootPath(), "package.json");
+      const resolved = path.resolve(getRootPath(), path.join(_path, "package.json"));
       const pkg = await readFile(resolved, "utf-8");
       if (pkg) {
          return JSON.parse(pkg).version ?? "preview";
@@ -37,4 +38,36 @@ export async function fileExists(filePath: string) {
    } catch {
       return false;
    }
+}
+
+export function exec(command: string, opts?: { silent?: boolean; env?: Record<string, string> }) {
+   const stdio = opts?.silent ? "pipe" : "inherit";
+   const output = execSync(command, {
+      stdio: ["inherit", stdio, stdio],
+      env: { ...process.env, ...opts?.env }
+   });
+   if (!opts?.silent) {
+      return;
+   }
+   return output.toString();
+}
+
+export function execAsync(
+   command: string,
+   opts?: { silent?: boolean; env?: Record<string, string> }
+) {
+   return new Promise((resolve, reject) => {
+      nodeExec(
+         command,
+         {
+            env: { ...process.env, ...opts?.env }
+         },
+         (err, stdout, stderr) => {
+            if (err) {
+               return reject(err);
+            }
+            resolve(stdout);
+         }
+      );
+   });
 }

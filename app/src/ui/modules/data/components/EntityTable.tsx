@@ -25,7 +25,7 @@ export const Check = () => {
    );
 };
 
-type TableProps = {
+export type EntityTableProps = {
    data: EntityData[];
    entity: Entity;
    select?: string[];
@@ -44,7 +44,7 @@ type TableProps = {
    };
 };
 
-export const EntityTable: React.FC<TableProps> = ({
+export const EntityTable: React.FC<EntityTableProps> = ({
    data = [],
    entity,
    select,
@@ -184,7 +184,7 @@ const SortIndicator = ({
    sort,
    field
 }: {
-   sort: Pick<TableProps, "sort">["sort"];
+   sort: Pick<EntityTableProps, "sort">["sort"];
    field: string;
 }) => {
    if (!sort || sort.by !== field) return <TbSelector size={18} className="mt-[1px]" />;

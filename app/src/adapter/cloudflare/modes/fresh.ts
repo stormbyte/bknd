@@ -1,11 +1,11 @@
 import type { App } from "bknd";
 import { createRuntimeApp } from "bknd/adapter";
-import type { CloudflareBkndConfig, Context } from "../index";
+import { type CloudflareBkndConfig, type Context, makeCfConfig } from "../index";
 
 export async function makeApp(config: CloudflareBkndConfig, ctx: Context) {
    return await createRuntimeApp(
       {
-         ...config,
+         ...makeCfConfig(config, ctx),
          adminOptions: config.html ? { html: config.html } : undefined
       },
       ctx

@@ -46,7 +46,7 @@ export default function JsonSchemaForm3() {
    return (
       <Scrollable>
          <div className="flex flex-col p-3">
-            <Form
+            {/*<Form
                onChange={(data) => console.log("change", data)}
                onSubmit={(data) => console.log("submit", data)}
                schema={{
@@ -68,7 +68,7 @@ export default function JsonSchemaForm3() {
                className="flex flex-col gap-3"
                validateOn="change"
                options={{ debug: true }}
-            />
+            />*/}
 
             {/*<Form
                schema={{
@@ -249,12 +249,13 @@ export default function JsonSchemaForm3() {
             </Form>*/}
 
             {/*<CustomMediaForm />*/}
-            {/*<Form
+            <Form
                schema={schema.media}
                initialValues={config.media as any}
                onSubmit={console.log}
-               validateOn="change"
-            />*/}
+               options={{ debug: true }}
+               /*validateOn="change"*/
+            />
 
             {/*<Form
                schema={removeKeyRecursively(schema.media, "pattern") as any}

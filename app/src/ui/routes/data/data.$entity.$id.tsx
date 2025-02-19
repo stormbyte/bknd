@@ -262,18 +262,18 @@ function EntityDetailInner({
       navigate(routes.data.entity.edit(other.entity.name, row.id));
    }
 
-   function handleClickNew() {
-      try {
+   let handleClickNew: any;
+   try {
+      if (other.entity.type !== "system") {
          const ref = relation.getReferenceQuery(other.entity, id, other.reference);
-
-         navigate(routes.data.entity.create(other.entity.name), {
-            query: ref.where
-         });
-         //navigate(routes.data.entity.create(other.entity.name) + `?${query}`);
-      } catch (e) {
-         console.error("handleClickNew", e);
+         handleClickNew = () => {
+            navigate(routes.data.entity.create(other.entity.name), {
+               query: ref.where
+            });
+            //navigate(routes.data.entity.create(other.entity.name) + `?${query}`);
+         };
       }
-   }
+   } catch (e) {}
 
    if (!$q.data) {
       return null;

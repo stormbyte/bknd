@@ -70,4 +70,34 @@ describe("repros", async () => {
 
       expect(app.em.entities.map((e) => e.name)).toEqual(["media", "test"]);
    });
+
+   test.only("verify inversedBy", async () => {
+      const schema = proto.em(
+         {
+            products: proto.entity("products", {
+               title: proto.text()
+            }),
+            product_likes: proto.entity("product_likes", {
+               created_at: proto.date()
+            }),
+            users: proto.entity("users", {})
+         },
+         (fns, schema) => {
+            fns.relation(schema.product_likes).manyToOne(schema.products, { inversedBy: "likes" });
+            fns.relation(schema.product_likes).manyToOne(schema.users);
+         }
+      );
+      const app = createApp({ initialConfig: { data: schema.toJSON() } });
+      await app.build();
+
+      const info = (await (await app.server.request("/api/data/info/products")).json()) as any;
+
+      expect(info.fields).toEqual(["id", "title"]);
+      expect(info.relations.listable).toEqual([
+         {
+            entity: "product_likes",
+            ref: "likes"
+         }
+      ]);
+   });
 });

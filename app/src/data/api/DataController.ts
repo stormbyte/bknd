@@ -109,6 +109,103 @@ export class DataController extends Controller {
       });
 
       /**
+       * Schema endpoints
+       */
+      hono
+         // read entity schema
+         .get("/schema.json", permission(DataPermissions.entityRead), async (c) => {
+            const $id = `${this.config.basepath}/schema.json`;
+            const schemas = Object.fromEntries(
+               this.em.entities.map((e) => [
+                  e.name,
+                  {
+                     $ref: `${this.config.basepath}/schemas/${e.name}`
+                  }
+               ])
+            );
+            return c.json({
+               $schema: "https://json-schema.org/draft/2020-12/schema",
+               $id,
+               properties: schemas
+            });
+         })
+         // read schema
+         .get(
+            "/schemas/:entity/:context?",
+            permission(DataPermissions.entityRead),
+            tb(
+               "param",
+               Type.Object({
+                  entity: Type.String(),
+                  context: Type.Optional(StringEnum(["create", "update"]))
+               })
+            ),
+            async (c) => {
+               //console.log("request", c.req.raw);
+               const { entity, context } = c.req.param();
+               if (!this.entityExists(entity)) {
+                  console.warn("not found:", entity, definedEntities);
+                  return c.notFound();
+               }
+               const _entity = this.em.entity(entity);
+               const schema = _entity.toSchema({ context } as any);
+               const url = new URL(c.req.url);
+               const base = `${url.origin}${this.config.basepath}`;
+               const $id = `${this.config.basepath}/schemas/${entity}`;
+               return c.json({
+                  $schema: `${base}/schema.json`,
+                  $id,
+                  title: _entity.label,
+                  $comment: _entity.config.description,
+                  ...schema
+               });
+            }
+         );
+
+      // entity endpoints
+      hono.route("/entity", this.getEntityRoutes());
+
+      /**
+       * Info endpoints
+       */
+      hono.get("/info/:entity", async (c) => {
+         const { entity } = c.req.param();
+         if (!this.entityExists(entity)) {
+            return c.notFound();
+         }
+         const _entity = this.em.entity(entity);
+         const fields = _entity.fields.map((f) => f.name);
+         const $rels = (r: any) =>
+            r.map((r: any) => ({
+               entity: r.other(_entity).entity.name,
+               ref: r.other(_entity).reference
+            }));
+
+         return c.json({
+            name: _entity.name,
+            fields,
+            relations: {
+               all: $rels(this.em.relations.relationsOf(_entity)),
+               listable: $rels(this.em.relations.listableRelationsOf(_entity)),
+               source: $rels(this.em.relations.sourceRelationsOf(_entity)),
+               target: $rels(this.em.relations.targetRelationsOf(_entity))
+            }
+         });
+      });
+
+      return hono.all("*", (c) => c.notFound());
+   }
+
+   private getEntityRoutes() {
+      const { permission } = this.middlewares;
+      const hono = this.create();
+
+      const definedEntities = this.em.entities.map((e) => e.name);
+      const tbNumber = Type.Transform(Type.String({ pattern: "^[1-9][0-9]{0,}$" }))
+         .Decode(Number.parseInt)
+         .Encode(String);
+
+      /**
        * Function endpoints
        */
       hono
@@ -149,55 +246,6 @@ export class DataController extends Controller {
        * Read endpoints
        */
       hono
-         // read entity schema
-         .get("/schema.json", permission(DataPermissions.entityRead), async (c) => {
-            const $id = `${this.config.basepath}/schema.json`;
-            const schemas = Object.fromEntries(
-               this.em.entities.map((e) => [
-                  e.name,
-                  {
-                     $ref: `${this.config.basepath}/schemas/${e.name}`
-                  }
-               ])
-            );
-            return c.json({
-               $schema: "https://json-schema.org/draft/2020-12/schema",
-               $id,
-               properties: schemas
-            });
-         })
-         // read schema
-         .get(
-            "/schemas/:entity/:context?",
-            permission(DataPermissions.entityRead),
-            tb(
-               "param",
-               Type.Object({
-                  entity: Type.String(),
-                  context: Type.Optional(StringEnum(["create", "update"]))
-               })
-            ),
-            async (c) => {
-               //console.log("request", c.req.raw);
-               const { entity, context } = c.req.param();
-               if (!this.entityExists(entity)) {
-                  console.log("not found", entity, definedEntities);
-                  return c.notFound();
-               }
-               const _entity = this.em.entity(entity);
-               const schema = _entity.toSchema({ context } as any);
-               const url = new URL(c.req.url);
-               const base = `${url.origin}${this.config.basepath}`;
-               const $id = `${this.config.basepath}/schemas/${entity}`;
-               return c.json({
-                  $schema: `${base}/schema.json`,
-                  $id,
-                  title: _entity.label,
-                  $comment: _entity.config.description,
-                  ...schema
-               });
-            }
-         )
          // read many
          .get(
             "/:entity",
@@ -208,7 +256,7 @@ export class DataController extends Controller {
                //console.log("request", c.req.raw);
                const { entity } = c.req.param();
                if (!this.entityExists(entity)) {
-                  console.log("not found", entity, definedEntities);
+                  console.warn("not found:", entity, definedEntities);
                   return c.notFound();
                }
                const options = c.req.valid("query") as RepoQuery;
@@ -327,12 +375,9 @@ export class DataController extends Controller {
          // delete one
          .delete(
             "/:entity/:id",
-
             permission(DataPermissions.entityDelete),
             tb("param", Type.Object({ entity: Type.String(), id: tbNumber })),
             async (c) => {
-               this.guard.throwUnlessGranted(DataPermissions.entityDelete);
-
                const { entity, id } = c.req.param();
                if (!this.entityExists(entity)) {
                   return c.notFound();
@@ -350,14 +395,11 @@ export class DataController extends Controller {
             tb("param", Type.Object({ entity: Type.String() })),
             tb("json", querySchema.properties.where),
             async (c) => {
-               //console.log("request", c.req.raw);
                const { entity } = c.req.param();
                if (!this.entityExists(entity)) {
                   return c.notFound();
                }
                const where = c.req.valid("json") as RepoQuery["where"];
-               //console.log("where", where);
-
                const result = await this.em.mutator(entity).deleteWhere(where);
 
                return c.json(this.mutatorResult(result));

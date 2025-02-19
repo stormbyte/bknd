@@ -29,10 +29,7 @@ declare module "bknd/core" {
 export default serve({
    // we can use any libsql config, and if omitted, uses in-memory
    connection: {
-      type: "libsql",
-      config: {
-         url: "http://localhost:8080"
-      }
+      url: "http://localhost:8080"
    },
    // an initial config is only applied if the database is empty
    initialConfig: {

@@ -72,8 +72,9 @@ export const FieldLabel: React.FC<React.ComponentProps<"label"> & { field: Field
 }) => {
    const desc = field.getDescription();
    return (
-      <Label {...props} title={desc} className="flex flex-row gap-2 items-center">
+      <Label {...props} title={desc} className="flex flex-row gap-1 items-center">
          {field.getLabel()}
+         {field.isRequired() && <span className="font-medium opacity-30">*</span>}
          {desc && <TbInfoCircle className="opacity-50" />}
       </Label>
    );
@@ -189,7 +190,7 @@ export const Switch = forwardRef<
 >(({ type, required, ...props }, ref) => {
    return (
       <RadixSwitch.Root
-         className="relative h-7 w-12 p-[2px] cursor-pointer rounded-full bg-muted border border-primary/10 outline-none data-[state=checked]:bg-primary/75 appearance-none transition-colors hover:bg-muted/80"
+         className="relative h-7 w-12 cursor-pointer rounded-full bg-muted border-2 border-transparent outline-none data-[state=checked]:bg-primary/75 appearance-none transition-colors hover:bg-muted/80"
          onCheckedChange={(bool) => {
             props.onChange?.({ target: { value: bool } });
          }}
@@ -203,7 +204,7 @@ export const Switch = forwardRef<
          }
          ref={ref}
       >
-         <RadixSwitch.Thumb className="block h-full aspect-square translate-x-0 rounded-full bg-background transition-transform duration-100 will-change-transform border border-muted data-[state=checked]:translate-x-[17px]" />
+         <RadixSwitch.Thumb className="absolute top-0 left-0 h-full aspect-square rounded-full bg-background transition-[left,right] duration-100 border border-muted data-[state=checked]:left-[calc(100%-1.5rem)]" />
       </RadixSwitch.Root>
    );
 });

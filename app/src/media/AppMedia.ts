@@ -40,7 +40,8 @@ export class AppMedia extends Module<typeof mediaConfigSchema> {
       let adapter: StorageAdapter;
       try {
          const { type, config } = this.config.adapter;
-         adapter = new (registry.get(type as any).cls)(config as any);
+         const cls = registry.get(type as any).cls;
+         adapter = new cls(config as any);
 
          this._storage = new Storage(adapter, this.config.storage, this.ctx.emgr);
          this.setBuilt();
@@ -53,8 +54,6 @@ export class AppMedia extends Module<typeof mediaConfigSchema> {
                index(media).on(["path"], true).on(["reference"]);
             })
          );
-
-         this.setBuilt();
       } catch (e) {
          console.error(e);
          throw new Error(
@@ -124,11 +123,11 @@ export class AppMedia extends Module<typeof mediaConfigSchema> {
          async (e) => {
             const mutator = em.mutator(media);
             mutator.__unstable_toggleSystemEntityCreation(false);
-            await mutator.insertOne(this.uploadedEventDataToMediaPayload(e.params));
+            const payload = this.uploadedEventDataToMediaPayload(e.params);
+            await mutator.insertOne(payload);
             mutator.__unstable_toggleSystemEntityCreation(true);
-            console.log("App:storage:file uploaded", e);
          },
-         "sync"
+         { mode: "sync", id: "add-data-media" }
       );
 
       // when file is deleted, sync with media entity
@@ -144,7 +143,7 @@ export class AppMedia extends Module<typeof mediaConfigSchema> {
 
             console.log("App:storage:file deleted", e);
          },
-         "sync"
+         { mode: "sync", id: "delete-data-media" }
       );
    }
 

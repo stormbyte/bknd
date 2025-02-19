@@ -42,3 +42,21 @@ export function enableConsoleLog() {
       console[severity as ConsoleSeverity] = fn;
    });
 }
+
+export function tryit(fn: () => void, fallback?: any) {
+   try {
+      return fn();
+   } catch (e) {
+      return fallback || e;
+   }
+}
+
+export function formatMemoryUsage() {
+   const usage = process.memoryUsage();
+   return {
+      rss: usage.rss / 1024 / 1024,
+      heapUsed: usage.heapUsed / 1024 / 1024,
+      external: usage.external / 1024 / 1024,
+      arrayBuffers: usage.arrayBuffers / 1024 / 1024
+   };
+}

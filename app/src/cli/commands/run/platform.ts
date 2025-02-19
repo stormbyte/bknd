@@ -32,7 +32,7 @@ export async function attachServeStatic(app: any, platform: Platform) {
 
 export async function startServer(server: Platform, app: any, options: { port: number }) {
    const port = options.port;
-   console.log(`(using ${server} serve)`);
+   console.log(`Using ${server} serve`);
 
    switch (server) {
       case "node": {
@@ -54,7 +54,7 @@ export async function startServer(server: Platform, app: any, options: { port: n
    }
 
    const url = `http://localhost:${port}`;
-   console.log(`Server listening on ${url}`);
+   console.info("Server listening on", url);
    await open(url);
 }
 
@@ -75,4 +75,10 @@ export async function getConfigPath(filePath?: string) {
    }
 
    return;
+}
+
+export function getConnectionCredentialsFromEnv() {
+   const dbUrl = process.env.DB_URL;
+   const dbToken = process.env.DB_TOKEN;
+   return dbUrl ? { url: dbUrl, authToken: dbToken } : undefined;
 }

@@ -18,10 +18,7 @@ The easiest to get started is using SQLite as a file. When serving the API in th
 the function accepts an object with connection details. To use a file, use the following:
 ```json
 {
-   "type": "libsql",
-   "config": {
-      "url": "file:<path/to/your/database.db>"
-   }
+   "url": "file:<path/to/your/database.db>"
 }
 ```
 Please note that using SQLite as a file is only supported in server environments.
@@ -36,10 +33,7 @@ turso dev
 The command will yield a URL. Use it in the connection object:
 ```json
 {
-   "type": "libsql",
-   "config": {
-      "url": "http://localhost:8080"
-   }
+   "url": "http://localhost:8080"
 }
 ```
 
@@ -48,11 +42,8 @@ If you want to use LibSQL on Turso, [sign up for a free account](https://turso.t
 connection object to your new database:
 ```json
 {
-   "type": "libsql",
-   "config": {
-      "url": "libsql://your-database-url.turso.io",
-      "authToken": "your-auth-token"
-   }
+   "url": "libsql://your-database-url.turso.io",
+   "authToken": "your-auth-token"
 }
 ```
 

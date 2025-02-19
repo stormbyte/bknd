@@ -3,16 +3,20 @@ import { App, type CreateAppConfig } from "App";
 import { StorageLocalAdapter } from "adapter/node";
 import type { CliBkndConfig, CliCommand } from "cli/types";
 import { Option } from "commander";
-import { config } from "core";
+import { colorizeConsole, config } from "core";
+import dotenv from "dotenv";
 import { registries } from "modules/registries";
+import c from "picocolors";
 import {
    PLATFORMS,
    type Platform,
    attachServeStatic,
    getConfigPath,
+   getConnectionCredentialsFromEnv,
    startServer
 } from "./platform";
 
+dotenv.config();
 const isBun = typeof Bun !== "undefined";
 
 export const run: CliCommand = (program) => {
@@ -23,6 +27,13 @@ export const run: CliCommand = (program) => {
             .env("PORT")
             .default(config.server.default_port)
             .argParser((v) => Number.parseInt(v))
+      )
+      .addOption(
+         new Option("-m, --memory", "use in-memory database").conflicts([
+            "config",
+            "db-url",
+            "db-token"
+         ])
       )
       .addOption(new Option("-c, --config <config>", "config file"))
       .addOption(
@@ -94,23 +105,44 @@ export async function makeConfigApp(config: CliBkndConfig, platform?: Platform) 
 
 async function action(options: {
    port: number;
+   memory?: boolean;
    config?: string;
    dbUrl?: string;
    dbToken?: string;
    server: Platform;
 }) {
+   colorizeConsole(console);
    const configFilePath = await getConfigPath(options.config);
 
-   let app: App;
-   if (options.dbUrl || !configFilePath) {
+   let app: App | undefined = undefined;
+   if (options.dbUrl) {
+      console.info("Using connection from", c.cyan("--db-url"));
       const connection = options.dbUrl
-         ? { type: "libsql" as const, config: { url: options.dbUrl, authToken: options.dbToken } }
+         ? { url: options.dbUrl, authToken: options.dbToken }
          : undefined;
       app = await makeApp({ connection, server: { platform: options.server } });
-   } else {
-      console.log("Using config from:", configFilePath);
+   } else if (configFilePath) {
+      console.info("Using config from", c.cyan(configFilePath));
       const config = (await import(configFilePath).then((m) => m.default)) as CliBkndConfig;
       app = await makeConfigApp(config, options.server);
+   } else if (options.memory) {
+      console.info("Using", c.cyan("in-memory"), "connection");
+      app = await makeApp({ server: { platform: options.server } });
+   } else {
+      const credentials = getConnectionCredentialsFromEnv();
+      if (credentials) {
+         console.info("Using connection from env", c.cyan(credentials.url));
+         app = await makeConfigApp({ app: { connection: credentials } }, options.server);
+      }
+   }
+
+   if (!app) {
+      const connection = { url: "file:data.db" } as Config;
+      console.info("Using connection", c.cyan(connection.url));
+      app = await makeApp({
+         connection,
+         server: { platform: options.server }
+      });
    }
 
    await startServer(options.server, app, { port: options.port });

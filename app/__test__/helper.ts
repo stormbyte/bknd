@@ -68,3 +68,6 @@ export function schemaToEm(s: ReturnType<typeof protoEm>, conn?: Connection): En
    const connection = conn ? conn : getDummyConnection().dummyConnection;
    return new EntityManager(Object.values(s.entities), connection, s.relations, s.indices);
 }
+
+export const assetsPath = `${import.meta.dir}/_assets`;
+export const assetsTmpPath = `${import.meta.dir}/_assets/tmp`;

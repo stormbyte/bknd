@@ -7,14 +7,8 @@ import { serve } from "bknd/adapter/node";
 /** @type {import("bknd/adapter/node").NodeBkndConfig} */
 const config = {
    connection: {
-      type: "libsql",
-      config: {
-         url: ":memory:"
-      }
-   },
-   // this is only required to run inside the same workspace
-   // leave blank if you're running this from a different project
-   distPath: "../../app/dist"
+      url: "file:data.db"
+   }
 };
 
 serve(config);

@@ -12,7 +12,8 @@ import { Popover } from "ui/components/overlay/Popover";
 import { Link } from "ui/components/wouter/Link";
 import { routes } from "ui/lib/routes";
 import { useLocation } from "wouter";
-import { EntityTable } from "../EntityTable";
+import { EntityTable, type EntityTableProps } from "../EntityTable";
+import type { ResponseObject } from "modules/ModuleApi";
 
 // @todo: allow clear if not required
 export function EntityRelationalFormField({
@@ -20,7 +21,7 @@ export function EntityRelationalFormField({
    field,
    data,
    disabled,
-   tabIndex
+   tabIndex,
 }: {
    fieldApi: FieldApi<any, any>;
    field: RelationField;
@@ -30,12 +31,18 @@ export function EntityRelationalFormField({
 }) {
    const { app } = useBknd();
    const entity = app.entity(field.target())!;
-   const [query, setQuery] = useState<any>({ limit: 10, page: 1, perPage: 10 });
+   const [query, setQuery] = useState<any>({
+      limit: 10,
+      page: 1,
+      perPage: 10,
+      select: entity.getSelect(undefined, "table"),
+   });
    const [, navigate] = useLocation();
    const ref = useRef<any>(null);
    const $q = useEntityQuery(field.target(), undefined, {
+      select: query.select,
       limit: query.limit,
-      offset: (query.page - 1) * query.limit
+      offset: (query.page - 1) * query.limit,
    });
    const [_value, _setValue] = useState<{ id: number | undefined; [key: string]: any }>();
 
@@ -120,8 +127,8 @@ export function EntityRelationalFormField({
                         "Enter",
                         () => {
                            ref.current?.click();
-                        }
-                     ]
+                        },
+                     ],
                   ])}
                >
                   {_value ? (
@@ -179,31 +186,37 @@ export function EntityRelationalFormField({
    );
 }
 
-const PopoverTable = ({ container, entity, query, toggle, onClickRow, onClickPage }) => {
+type PropoverTableProps = Omit<EntityTableProps, "data"> & {
+   container: ResponseObject;
+   query: any;
+   toggle: () => void;
+}
+const PopoverTable = ({ container, entity, query, toggle, onClickRow, onClickPage }: PropoverTableProps) => {
    function handleNext() {
       if (query.limit * query.page < container.meta?.count) {
-         onClickPage(query.page + 1);
+         onClickPage?.(query.page + 1);
       }
    }
 
    function handlePrev() {
       if (query.page > 1) {
-         onClickPage(query.page - 1);
+         onClickPage?.(query.page - 1);
       }
    }
 
    useHotkeys([
       ["ArrowRight", handleNext],
       ["ArrowLeft", handlePrev],
-      ["Escape", toggle]
+      ["Escape", toggle],
    ]);
 
    return (
       <div>
          <EntityTable
             classNames={{ value: "line-clamp-1 truncate max-w-52 text-nowrap" }}
-            data={container.data ?? []}
+            data={container ?? []}
             entity={entity}
+            select={query.select}
             total={container.meta?.count}
             page={query.page}
             onClickRow={onClickRow}

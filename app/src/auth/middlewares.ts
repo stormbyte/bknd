@@ -10,7 +10,12 @@ function getPath(reqOrCtx: Request | Context) {
 }
 
 export function shouldSkip(c: Context<ServerEnv>, skip?: (string | RegExp)[]) {
-   if (c.get("auth_skip")) return true;
+   const authCtx = c.get("auth");
+   if (!authCtx) {
+      throw new Error("auth ctx not found");
+   }
+
+   if (authCtx.skip) return true;
 
    const req = c.req.raw;
    if (!skip) return false;
@@ -18,7 +23,7 @@ export function shouldSkip(c: Context<ServerEnv>, skip?: (string | RegExp)[]) {
    const path = getPath(req);
    const result = skip.some((s) => patternMatch(path, s));
 
-   c.set("auth_skip", result);
+   authCtx.skip = result;
    return result;
 }
 
@@ -26,29 +31,31 @@ export const auth = (options?: {
    skip?: (string | RegExp)[];
 }) =>
    createMiddleware<ServerEnv>(async (c, next) => {
+      if (!c.get("auth")) {
+         c.set("auth", {
+            registered: false,
+            resolved: false,
+            skip: false,
+            user: undefined
+         });
+      }
+
       const app = c.get("app");
-      const guard = app?.modules.ctx().guard;
+      const authCtx = c.get("auth")!;
       const authenticator = app?.module.auth.authenticator;
 
       let skipped = shouldSkip(c, options?.skip) || !app?.module.auth.enabled;
 
       // make sure to only register once
-      if (c.get("auth_registered")) {
+      if (authCtx.registered) {
          skipped = true;
          console.warn(`auth middleware already registered for ${getPath(c)}`);
       } else {
-         c.set("auth_registered", true);
+         authCtx.registered = true;
 
-         if (!skipped) {
-            const resolved = c.get("auth_resolved");
-            if (!resolved) {
-               if (!app?.module.auth.enabled) {
-                  guard?.setUserContext(undefined);
-               } else {
-                  guard?.setUserContext(await authenticator?.resolveAuthFromRequest(c));
-                  c.set("auth_resolved", true);
-               }
-            }
+         if (!skipped && !authCtx.resolved && app?.module.auth.enabled) {
+            authCtx.user = await authenticator?.resolveAuthFromRequest(c);
+            authCtx.resolved = true;
          }
       }
 
@@ -60,9 +67,9 @@ export const auth = (options?: {
       }
 
       // release
-      guard?.setUserContext(undefined);
-      authenticator?.resetUser();
-      c.set("auth_resolved", false);
+      authCtx.skip = false;
+      authCtx.resolved = false;
+      authCtx.user = undefined;
    });
 
 export const permission = (
@@ -75,23 +82,26 @@ export const permission = (
    // @ts-ignore
    createMiddleware<ServerEnv>(async (c, next) => {
       const app = c.get("app");
-      //console.log("skip?", c.get("auth_skip"));
+      const authCtx = c.get("auth");
+      if (!authCtx) {
+         throw new Error("auth ctx not found");
+      }
 
       // in tests, app is not defined
-      if (!c.get("auth_registered") || !app) {
+      if (!authCtx.registered || !app) {
          const msg = `auth middleware not registered, cannot check permissions for ${getPath(c)}`;
          if (app?.module.auth.enabled) {
             throw new Error(msg);
          } else {
             console.warn(msg);
          }
-      } else if (!c.get("auth_skip")) {
+      } else if (!authCtx.skip) {
          const guard = app.modules.ctx().guard;
          const permissions = Array.isArray(permission) ? permission : [permission];
 
          if (options?.onGranted || options?.onDenied) {
             let returned: undefined | void | Response;
-            if (permissions.every((p) => guard.granted(p))) {
+            if (permissions.every((p) => guard.granted(p, c))) {
                returned = await options?.onGranted?.(c);
             } else {
                returned = await options?.onDenied?.(c);
@@ -100,7 +110,7 @@ export const permission = (
                return returned;
             }
          } else {
-            permissions.some((p) => guard.throwUnlessGranted(p));
+            permissions.some((p) => guard.throwUnlessGranted(p, c));
          }
       }
 

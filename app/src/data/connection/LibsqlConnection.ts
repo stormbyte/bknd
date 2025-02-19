@@ -1,6 +1,6 @@
 import { type Client, type Config, type InStatement, createClient } from "@libsql/client";
 import { LibsqlDialect } from "@libsql/kysely-libsql";
-import { type DatabaseIntrospector, Kysely, ParseJSONResultsPlugin, sql } from "kysely";
+import { type DatabaseIntrospector, Kysely, ParseJSONResultsPlugin } from "kysely";
 import { FilterNumericKeysPlugin } from "../plugins/FilterNumericKeysPlugin";
 import { KyselyPluginRunner } from "../plugins/KyselyPluginRunner";
 import type { QB } from "./Connection";
@@ -28,7 +28,7 @@ export class LibsqlConnection extends SqliteConnection {
    constructor(clientOrCredentials: Client | LibSqlCredentials) {
       const plugins = [new FilterNumericKeysPlugin(), new ParseJSONResultsPlugin()];
       let client: Client;
-      if ("url" in clientOrCredentials) {
+      if (clientOrCredentials && "url" in clientOrCredentials) {
          let { url, authToken, protocol } = clientOrCredentials;
          if (protocol && LIBSQL_PROTOCOLS.includes(protocol)) {
             console.log("changing protocol to", protocol);
@@ -36,11 +36,8 @@ export class LibsqlConnection extends SqliteConnection {
             url = `${protocol}://${rest}`;
          }
 
-         //console.log("using", url, { protocol });
-
          client = createClient({ url, authToken });
       } else {
-         //console.log("-- client provided");
          client = clientOrCredentials;
       }
 
@@ -48,7 +45,6 @@ export class LibsqlConnection extends SqliteConnection {
          // @ts-expect-error libsql has type issues
          dialect: new CustomLibsqlDialect({ client }),
          plugins
-         //log: ["query"],
       });
 
       super(kysely, {}, plugins);
@@ -74,7 +70,6 @@ export class LibsqlConnection extends SqliteConnection {
    }> {
       const stms: InStatement[] = queries.map((q) => {
          const compiled = q.compile();
-         //console.log("compiled", compiled.sql, compiled.parameters);
          return {
             sql: compiled.sql,
             args: compiled.parameters as any[]
@@ -91,7 +86,6 @@ export class LibsqlConnection extends SqliteConnection {
          const rows = await kyselyPlugins.transformResultRows(r.rows);
          data.push(rows);
       }
-      //console.log("data", data);
 
       return data;
    }

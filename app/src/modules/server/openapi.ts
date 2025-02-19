@@ -127,7 +127,7 @@ function dataRoutes(config: ModuleConfigs): { paths: OAS.Document["paths"] } {
 
    const tags = ["data"];
    const paths: OAS.PathsObject = {
-      "/{entity}": {
+      "/entity/{entity}": {
          get: {
             summary: "List entities",
             parameters: [params.entity],
@@ -148,7 +148,7 @@ function dataRoutes(config: ModuleConfigs): { paths: OAS.Document["paths"] } {
             tags
          }
       },
-      "/{entity}/{id}": {
+      "/entity/{entity}/{id}": {
          get: {
             summary: "Get entity",
             parameters: [params.entity, params.entityId],

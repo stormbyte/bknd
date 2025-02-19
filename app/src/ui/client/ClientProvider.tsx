@@ -1,4 +1,6 @@
 import { Api, type ApiOptions, type TApiUser } from "Api";
+import { isDebug } from "core";
+import type { AppTheme } from "modules/server/AppServer";
 import { createContext, useContext } from "react";
 
 const ClientContext = createContext<{ baseUrl: string; api: Api }>({
@@ -23,15 +25,15 @@ export const ClientProvider = ({ children, baseUrl, user }: ClientProviderProps)
             console.warn("wrapped many times, take from context", actualBaseUrl);
          } else if (typeof window !== "undefined") {
             actualBaseUrl = window.location.origin;
-            console.log("setting from window", actualBaseUrl);
+            //console.log("setting from window", actualBaseUrl);
          }
       }
    } catch (e) {
-      console.error("error .....", e);
+      console.error("Error in ClientProvider", e);
    }
 
    //console.log("api init", { host: actualBaseUrl, user: user ?? winCtx.user });
-   const api = new Api({ host: actualBaseUrl, user: user ?? winCtx.user });
+   const api = new Api({ host: actualBaseUrl, user: user ?? winCtx.user, verbose: isDebug() });
 
    return (
       <ClientContext.Provider value={{ baseUrl: api.baseUrl, api }}>
@@ -60,7 +62,7 @@ export const useBaseUrl = () => {
 type BkndWindowContext = {
    user?: TApiUser;
    logout_route: string;
-   color_scheme?: "light" | "dark";
+   color_scheme?: AppTheme;
 };
 export function useBkndWindowContext(): BkndWindowContext {
    if (typeof window !== "undefined" && window.__BKND__) {

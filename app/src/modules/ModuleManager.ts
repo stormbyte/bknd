@@ -1,5 +1,5 @@
 import { Guard } from "auth";
-import { BkndError, DebugLogger } from "core";
+import { BkndError, DebugLogger, withDisabledConsole } from "core";
 import { EventManager } from "core/events";
 import { clone, diff } from "core/object/diff";
 import {
@@ -10,8 +10,7 @@ import {
    mark,
    objectEach,
    stripMark,
-   transformObject,
-   withDisabledConsole
+   transformObject
 } from "core/utils";
 import {
    type Connection,
@@ -130,7 +129,7 @@ interface T_INTERNAL_EM {
 // @todo: cleanup old diffs on upgrade
 // @todo: cleanup multiple backups on upgrade
 export class ModuleManager {
-   private modules: Modules;
+   protected modules: Modules;
    // internal em for __bknd config table
    __em!: EntityManager<T_INTERNAL_EM>;
    // ctx for modules
@@ -433,44 +432,6 @@ export class ModuleManager {
       });
    }
 
-   private async buildModules(options?: { graceful?: boolean; ignoreFlags?: boolean }) {
-      this.logger.log("buildModules() triggered", options, this._built);
-      if (options?.graceful && this._built) {
-         this.logger.log("skipping build (graceful)");
-         return;
-      }
-
-      this.logger.log("building");
-      const ctx = this.ctx(true);
-      for (const key in this.modules) {
-         await this.modules[key].setContext(ctx).build();
-         this.logger.log("built", key);
-      }
-
-      this._built = true;
-      this.logger.log("modules built", ctx.flags);
-
-      if (options?.ignoreFlags !== true) {
-         if (ctx.flags.sync_required) {
-            ctx.flags.sync_required = false;
-            this.logger.log("db sync requested");
-
-            // sync db
-            await ctx.em.schema().sync({ force: true });
-            await this.save();
-         }
-
-         if (ctx.flags.ctx_reload_required) {
-            ctx.flags.ctx_reload_required = false;
-            this.logger.log("ctx reload requested");
-            this.ctx(true);
-         }
-      }
-
-      // reset all falgs
-      ctx.flags = Module.ctx_flags;
-   }
-
    async build() {
       this.logger.context("build").log("version", this.version());
       this.logger.log("booted with", this._booted_with);
@@ -503,8 +464,10 @@ export class ModuleManager {
             // it's up to date because we use default configs (no fetch result)
             this._version = CURRENT_VERSION;
             await this.syncConfigTable();
-            await this.buildModules();
-            await this.save();
+            const state = await this.buildModules();
+            if (!state.saved) {
+               await this.save();
+            }
 
             // run initial setup
             await this.setupInitial();
@@ -523,6 +486,60 @@ export class ModuleManager {
       return this;
    }
 
+   private async buildModules(options?: { graceful?: boolean; ignoreFlags?: boolean }) {
+      const state = {
+         built: false,
+         modules: [] as ModuleKey[],
+         synced: false,
+         saved: false,
+         reloaded: false
+      };
+
+      this.logger.log("buildModules() triggered", options, this._built);
+      if (options?.graceful && this._built) {
+         this.logger.log("skipping build (graceful)");
+         return state;
+      }
+
+      this.logger.log("building");
+      const ctx = this.ctx(true);
+      for (const key in this.modules) {
+         await this.modules[key].setContext(ctx).build();
+         this.logger.log("built", key);
+         state.modules.push(key as ModuleKey);
+      }
+
+      this._built = state.built = true;
+      this.logger.log("modules built", ctx.flags);
+
+      if (options?.ignoreFlags !== true) {
+         if (ctx.flags.sync_required) {
+            ctx.flags.sync_required = false;
+            this.logger.log("db sync requested");
+
+            // sync db
+            await ctx.em.schema().sync({ force: true });
+            state.synced = true;
+
+            // save
+            await this.save();
+            state.saved = true;
+         }
+
+         if (ctx.flags.ctx_reload_required) {
+            ctx.flags.ctx_reload_required = false;
+            this.logger.log("ctx reload requested");
+            this.ctx(true);
+            state.reloaded = true;
+         }
+      }
+
+      // reset all falgs
+      ctx.flags = Module.ctx_flags;
+
+      return state;
+   }
+
    protected async setupInitial() {
       const ctx = {
          ...this.ctx(),
@@ -536,6 +553,56 @@ export class ModuleManager {
 
       // run first boot event
       await this.options?.onFirstBoot?.();
+   }
+
+   mutateConfigSafe<Module extends keyof Modules>(
+      name: Module
+   ): Pick<ReturnType<Modules[Module]["schema"]>, "set" | "patch" | "overwrite" | "remove"> {
+      const module = this.modules[name];
+      const copy = structuredClone(this.configs());
+
+      return new Proxy(module.schema(), {
+         get: (target, prop: string) => {
+            if (!["set", "patch", "overwrite", "remove"].includes(prop)) {
+               throw new Error(`Method ${prop} is not allowed`);
+            }
+
+            return async (...args) => {
+               console.log("[Safe Mutate]", name);
+               try {
+                  // overwrite listener to run build inside this try/catch
+                  module.setListener(async () => {
+                     await this.buildModules();
+                  });
+
+                  const result = await target[prop](...args);
+
+                  // revert to original listener
+                  module.setListener(async (c) => {
+                     await this.onModuleConfigUpdated(name, c);
+                  });
+
+                  // if there was an onUpdated listener, call it after success
+                  // e.g. App uses it to register module routes
+                  if (this.options?.onUpdated) {
+                     await this.options.onUpdated(name, module.config as any);
+                  }
+
+                  return result;
+               } catch (e) {
+                  console.error("[Safe Mutate] failed", e);
+
+                  // revert to previous config & rebuild using original listener
+                  this.setConfigs(copy);
+                  await this.onModuleConfigUpdated(name, module.config as any);
+                  console.log("[Safe Mutate] reverted");
+
+                  // make sure to throw the error
+                  throw e;
+               }
+            };
+         }
+      });
    }
 
    get<K extends keyof Modules>(key: K): Modules[K] {

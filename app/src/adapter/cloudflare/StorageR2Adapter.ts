@@ -1,6 +1,47 @@
-import { isDebug } from "core";
-import type { FileBody, StorageAdapter } from "../Storage";
-import { guessMimeType } from "../mime-types";
+import { registries } from "bknd";
+import { isDebug } from "bknd/core";
+import { StringEnum, Type } from "bknd/utils";
+import type { FileBody, StorageAdapter } from "media/storage/Storage";
+import { guess } from "media/storage/mime-types-tiny";
+import { getBindings } from "./bindings";
+
+export function makeSchema(bindings: string[] = []) {
+   return Type.Object(
+      {
+         binding: bindings.length > 0 ? StringEnum(bindings) : Type.Optional(Type.String())
+      },
+      { title: "R2", description: "Cloudflare R2 storage" }
+   );
+}
+
+export function registerMedia(env: Record<string, any>) {
+   const r2_bindings = getBindings(env, "R2Bucket");
+
+   registries.media.register(
+      "r2",
+      class extends StorageR2Adapter {
+         constructor(private config: any) {
+            const binding = r2_bindings.find((b) => b.key === config.binding);
+            if (!binding) {
+               throw new Error(`No R2Bucket found with key ${config.binding}`);
+            }
+
+            super(binding?.value);
+         }
+
+         override getSchema() {
+            return makeSchema(r2_bindings.map((b) => b.key));
+         }
+
+         override toJSON() {
+            return {
+               ...super.toJSON(),
+               config: this.config
+            };
+         }
+      }
+   );
+}
 
 /**
  * Adapter for R2 storage
@@ -14,7 +55,7 @@ export class StorageR2Adapter implements StorageAdapter {
    }
 
    getSchema() {
-      return undefined;
+      return makeSchema();
    }
 
    async putObject(key: string, body: FileBody) {
@@ -47,7 +88,8 @@ export class StorageR2Adapter implements StorageAdapter {
    async getObject(key: string, headers: Headers): Promise<Response> {
       let object: R2ObjectBody | null;
       const responseHeaders = new Headers({
-         "Accept-Ranges": "bytes"
+         "Accept-Ranges": "bytes",
+         "Content-Type": guess(key)
       });
 
       //console.log("getObject:headers", headersToObject(headers));
@@ -97,10 +139,9 @@ export class StorageR2Adapter implements StorageAdapter {
       if (!metadata || Object.keys(metadata).length === 0) {
          // guessing is especially required for dev environment (miniflare)
          metadata = {
-            contentType: guessMimeType(object.key)
+            contentType: guess(object.key)
          };
       }
-      //console.log("writeHttpMetadata", object.httpMetadata, metadata);
 
       for (const [key, value] of Object.entries(metadata)) {
          const camelToDash = key.replace(/([A-Z])/g, "-$1").toLowerCase();
@@ -115,7 +156,7 @@ export class StorageR2Adapter implements StorageAdapter {
       }
 
       return {
-         type: String(head.httpMetadata?.contentType ?? "application/octet-stream"),
+         type: String(head.httpMetadata?.contentType ?? guess(key)),
          size: head.size
       };
    }

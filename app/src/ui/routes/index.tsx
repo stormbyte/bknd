@@ -10,12 +10,6 @@ import MediaRoutes from "./media";
 import { Root, RootEmpty } from "./root";
 import SettingsRoutes from "./settings";
 
-/*const DataRoutes = lazy(() => import("./data"));
-const AuthRoutes = lazy(() => import("./auth"));
-const MediaRoutes = lazy(() => import("./media"));
-const FlowRoutes = lazy(() => import("./flows"));
-const SettingsRoutes = lazy(() => import("./settings"));*/
-
 // @ts-ignore
 const TestRoutes = lazy(() => import("./test"));
 

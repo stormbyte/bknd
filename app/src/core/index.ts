@@ -26,6 +26,8 @@ export {
 } from "./object/query/query";
 export { Registry, type Constructor } from "./registry/Registry";
 
+export * from "./console";
+
 // compatibility
 export type Middleware = MiddlewareHandler<any, any, any>;
 export interface ClassController {

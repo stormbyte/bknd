@@ -106,17 +106,15 @@ export type AuthUserResolver = (
    identifier: string,
    profile: ProfileExchange
 ) => Promise<SafeUser | undefined>;
+type AuthClaims = SafeUser & {
+   iat: number;
+   iss?: string;
+   exp?: number;
+};
 
 export class Authenticator<Strategies extends Record<string, Strategy> = Record<string, Strategy>> {
    private readonly strategies: Strategies;
    private readonly config: AuthConfig;
-   private _claims:
-      | undefined
-      | (SafeUser & {
-           iat: number;
-           iss?: string;
-           exp?: number;
-        });
    private readonly userResolver: AuthUserResolver;
 
    constructor(strategies: Strategies, userResolver?: AuthUserResolver, config?: AuthConfig) {
@@ -146,21 +144,6 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
 
    getStrategies(): Strategies {
       return this.strategies;
-   }
-
-   isUserLoggedIn(): boolean {
-      return this._claims !== undefined;
-   }
-
-   getUser(): SafeUser | undefined {
-      if (!this._claims) return;
-
-      const { iat, exp, iss, ...user } = this._claims;
-      return user;
-   }
-
-   resetUser() {
-      this._claims = undefined;
    }
 
    strategy<
@@ -206,7 +189,7 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
       return sign(payload, secret, this.config.jwt?.alg ?? "HS256");
    }
 
-   async verify(jwt: string): Promise<boolean> {
+   async verify(jwt: string): Promise<AuthClaims | undefined> {
       try {
          const payload = await verify(
             jwt,
@@ -221,14 +204,10 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
             }
          }
 
-         this._claims = payload as any;
-         return true;
-      } catch (e) {
-         this.resetUser();
-         //console.error(e);
-      }
+         return payload as any;
+      } catch (e) {}
 
-      return false;
+      return;
    }
 
    private get cookieOptions(): CookieOptions {
@@ -258,8 +237,8 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
       }
    }
 
-   async requestCookieRefresh(c: Context) {
-      if (this.config.cookie.renew && this.isUserLoggedIn()) {
+   async requestCookieRefresh(c: Context<ServerEnv>) {
+      if (this.config.cookie.renew && c.get("auth")?.user) {
          const token = await this.getAuthCookie(c);
          if (token) {
             await this.setAuthCookie(c, token);
@@ -276,13 +255,14 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
       await deleteCookie(c, "auth", this.cookieOptions);
    }
 
-   async logout(c: Context) {
+   async logout(c: Context<ServerEnv>) {
+      c.set("auth", undefined);
+
       const cookie = await this.getAuthCookie(c);
       if (cookie) {
          await this.deleteAuthCookie(c);
          await addFlashMessage(c, "Signed out", "info");
       }
-      this.resetUser();
    }
 
    // @todo: move this to a server helper
@@ -353,8 +333,7 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
       }
 
       if (token) {
-         await this.verify(token);
-         return this.getUser();
+         return await this.verify(token);
       }
 
       return undefined;

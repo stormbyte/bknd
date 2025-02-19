@@ -19,6 +19,7 @@ packages/media/.env
 .history
 **/*/.db/*
 **/*/.configs/*
+**/*/.template/*
 **/*/*.db
 **/*/*.db-shm
 **/*/*.db-wal

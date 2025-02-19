@@ -7,6 +7,7 @@ import { html } from "hono/html";
 import { Fragment } from "hono/jsx";
 import { Controller } from "modules/Controller";
 import * as SystemPermissions from "modules/permissions";
+import type { AppTheme } from "modules/server/AppServer";
 
 const htmlBkndContextReplace = "<!-- BKND_CONTEXT -->";
 
@@ -16,6 +17,7 @@ export type AdminControllerOptions = {
    assets_path?: string;
    html?: string;
    forceDev?: boolean | { mainPath: string };
+   debug_rerenders?: boolean;
 };
 
 export class AdminController extends Controller {
@@ -69,7 +71,7 @@ export class AdminController extends Controller {
 
       hono.use("*", async (c, next) => {
          const obj = {
-            user: auth.authenticator?.getUser(),
+            user: c.get("auth")?.user,
             logout_route: this.withBasePath(authRoutes.logout),
             color_scheme: configs.server.admin.color_scheme
          };
@@ -91,7 +93,7 @@ export class AdminController extends Controller {
                // @ts-ignore
                onGranted: async (c) => {
                   // @todo: add strict test to permissions middleware?
-                  if (auth.authenticator.isUserLoggedIn()) {
+                  if (c.get("auth")?.user) {
                      console.log("redirecting to success");
                      return c.redirect(authRoutes.success);
                   }
@@ -162,17 +164,13 @@ export class AdminController extends Controller {
       };
 
       if (isProd) {
-         try {
-            // @ts-ignore
-            const manifest = await import("bknd/dist/manifest.json", {
-               assert: { type: "json" }
-            }).then((m) => m.default);
-            // @todo: load all marked as entry (incl. css)
-            assets.js = manifest["src/ui/main.tsx"].file;
-            assets.css = manifest["src/ui/main.tsx"].css[0] as any;
-         } catch (e) {
-            console.error("Error loading manifest", e);
-         }
+         // @ts-ignore
+         const manifest = await import("bknd/dist/manifest.json", {
+            assert: { type: "json" }
+         });
+         // @todo: load all marked as entry (incl. css)
+         assets.js = manifest.default["src/ui/main.tsx"].file;
+         assets.css = manifest.default["src/ui/main.tsx"].css[0] as any;
       }
 
       const theme = configs.server.admin.color_scheme ?? "light";
@@ -191,10 +189,12 @@ export class AdminController extends Controller {
                   />
                   <link rel="icon" href={favicon} type="image/x-icon" />
                   <title>BKND</title>
-                  {/*<script
-                     crossOrigin="anonymous"
-                     src="//unpkg.com/react-scan/dist/auto.global.js"
-                  />*/}
+                  {this.options.debug_rerenders && (
+                     <script
+                        crossOrigin="anonymous"
+                        src="//unpkg.com/react-scan/dist/auto.global.js"
+                     />
+                  )}
                   {isProd ? (
                      <Fragment>
                         <script
@@ -246,7 +246,7 @@ export class AdminController extends Controller {
    }
 }
 
-const style = (theme: "light" | "dark" = "light") => {
+const style = (theme: AppTheme) => {
    const base = {
       margin: 0,
       padding: 0,
@@ -271,6 +271,6 @@ const style = (theme: "light" | "dark" = "light") => {
 
    return {
       ...base,
-      ...styles[theme]
+      ...styles[theme === "light" ? "light" : "dark"]
    };
 };

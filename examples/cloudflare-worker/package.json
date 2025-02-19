@@ -4,18 +4,16 @@
   "private": true,
   "scripts": {
     "deploy": "wrangler deploy",
-    "db": "turso dev --db-file test.db",
     "dev": "wrangler dev",
-    "start": "wrangler dev",
-    "test": "vitest",
-    "cf-typegen": "wrangler types"
+    "typegen": "wrangler types"
   },
   "dependencies": {
-    "bknd": "workspace:*"
+    "bknd": "file:../../app",
+    "kysely-d1": "^0.3.0"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20241106.0",
-    "typescript": "^5.5.2",
-    "wrangler": "^3.86.0"
+    "@cloudflare/workers-types": "^4.20240620.0",
+    "typescript": "^5.5.3",
+    "wrangler": "^3.108.1"
   }
 }

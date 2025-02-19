@@ -9,6 +9,7 @@ export type BaseModuleApiOptions = {
    token?: string;
    headers?: Headers;
    token_transport?: "header" | "cookie" | "none";
+   verbose?: boolean;
 };
 
 /** @deprecated */
@@ -23,10 +24,14 @@ export type ApiResponse<Data = any> = {
 export type TInput = string | (string | number | PrimaryFieldType)[];
 
 export abstract class ModuleApi<Options extends BaseModuleApiOptions = BaseModuleApiOptions> {
+   protected fetcher: typeof fetch;
+
    constructor(
       protected readonly _options: Partial<Options> = {},
-      protected fetcher?: typeof fetch
-   ) {}
+      fetcher?: typeof fetch
+   ) {
+      this.fetcher = fetcher ?? fetch;
+   }
 
    protected getDefaultOptions(): Partial<Options> {
       return {};
@@ -76,7 +81,9 @@ export abstract class ModuleApi<Options extends BaseModuleApiOptions = BaseModul
          headers.set(key, value as string);
       }
 
-      headers.set("Accept", "application/json");
+      if (!headers.has("Accept")) {
+         headers.set("Accept", "application/json");
+      }
 
       // only add token if initial headers not provided
       if (this.options.token && this.options.token_transport === "header") {
@@ -101,7 +108,8 @@ export abstract class ModuleApi<Options extends BaseModuleApiOptions = BaseModul
       });
 
       return new FetchPromise(request, {
-         fetcher: this.fetcher
+         fetcher: this.fetcher,
+         verbose: this.options.verbose
       });
    }
 
@@ -163,10 +171,15 @@ export function createResponseProxy<Body = any, Data = any>(
    body: Body,
    data?: Data
 ): ResponseObject<Body, Data> {
-   const actualData = data ?? (body as unknown as Data);
+   let actualData: any = data ?? body;
    const _props = ["raw", "body", "ok", "status", "res", "data", "toJSON"];
 
-   return new Proxy(actualData as any, {
+   // that's okay, since you have to check res.ok anyway
+   if (typeof actualData !== "object") {
+      actualData = {};
+   }
+
+   return new Proxy(actualData, {
       get(target, prop, receiver) {
          if (prop === "raw" || prop === "res") return raw;
          if (prop === "body") return body;
@@ -208,15 +221,35 @@ export class FetchPromise<T = ApiResponse<any>> implements Promise<T> {
       public request: Request,
       protected options?: {
          fetcher?: typeof fetch;
+         verbose?: boolean;
       }
    ) {}
+
+   get verbose() {
+      return this.options?.verbose ?? false;
+   }
 
    async execute(): Promise<ResponseObject<T>> {
       // delay in dev environment
       isDebug() && (await new Promise((resolve) => setTimeout(resolve, 200)));
 
       const fetcher = this.options?.fetcher ?? fetch;
+      if (this.verbose) {
+         console.log("[FetchPromise] Request", {
+            method: this.request.method,
+            url: this.request.url
+         });
+      }
+
       const res = await fetcher(this.request);
+      if (this.verbose) {
+         console.log("[FetchPromise] Response", {
+            res: res,
+            ok: res.ok,
+            status: res.status
+         });
+      }
+
       let resBody: any;
       let resData: any;
 
@@ -228,7 +261,10 @@ export class FetchPromise<T = ApiResponse<any>> implements Promise<T> {
          }
       } else if (contentType.startsWith("text")) {
          resBody = await res.text();
+      } else {
+         resBody = res.body;
       }
+      console.groupEnd();
 
       return createResponseProxy<T>(res, resBody, resData);
    }

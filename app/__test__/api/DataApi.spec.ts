@@ -17,11 +17,11 @@ describe("DataApi", () => {
 
       const get = api.readMany("a".repeat(300), { select: ["id", "name"] });
       expect(get.request.method).toBe("GET");
-      expect(new URL(get.request.url).pathname).toBe(`/api/data/${"a".repeat(300)}`);
+      expect(new URL(get.request.url).pathname).toBe(`/api/data/entity/${"a".repeat(300)}`);
 
       const post = api.readMany("a".repeat(1000), { select: ["id", "name"] });
       expect(post.request.method).toBe("POST");
-      expect(new URL(post.request.url).pathname).toBe(`/api/data/${"a".repeat(1000)}/query`);
+      expect(new URL(post.request.url).pathname).toBe(`/api/data/entity/${"a".repeat(1000)}/query`);
    });
 
    it("returns result", async () => {
@@ -39,7 +39,7 @@ describe("DataApi", () => {
       const app = controller.getController();
 
       {
-         const res = (await app.request("/posts")) as Response;
+         const res = (await app.request("/entity/posts")) as Response;
          const { data } = await res.json();
          expect(data.length).toEqual(3);
       }
