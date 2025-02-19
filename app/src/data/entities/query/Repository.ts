@@ -1,4 +1,5 @@
 import type { DB as DefaultDB, PrimaryFieldType } from "core";
+import { $console } from "core";
 import { type EmitsEvents, EventManager } from "core/events";
 import { type SelectQueryBuilder, sql } from "kysely";
 import { cloneDeep } from "lodash-es";
@@ -161,7 +162,7 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
    protected async performQuery(qb: RepositoryQB): Promise<RepositoryResponse> {
       const entity = this.entity;
       const compiled = qb.compile();
-      //console.log("performQuery", compiled.sql, compiled.parameters);
+      //$console.log("performQuery", compiled.sql, compiled.parameters);
 
       const start = performance.now();
       const selector = (as = "count") => this.conn.fn.countAll<number>().as(as);
@@ -180,7 +181,7 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
             totalQuery,
             qb
          ]);
-         //console.log("result", { _count, _total });
+         //$console.log("result", { _count, _total });
 
          const time = Number.parseFloat((performance.now() - start).toFixed(2));
          const data = this.em.hydrate(entity.name, result);
@@ -201,7 +202,7 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
          };
       } catch (e) {
          if (e instanceof Error) {
-            console.error("[ERROR] Repository.performQuery", e.message);
+            $console.error("[ERROR] Repository.performQuery", e.message);
          }
 
          throw e;
@@ -254,7 +255,7 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
          ...config?.defaults
       };
 
-      /*console.log("build query options", {
+      /*$console.log("build query options", {
          entity: entity.name,
          options,
          config
@@ -426,9 +427,9 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
       qb = qb.limit(1);
 
       const compiled = qb.compile();
-      //console.log("exists query", compiled.sql, compiled.parameters);
+      //$console.log("exists query", compiled.sql, compiled.parameters);
       const result = await qb.execute();
-      //console.log("result", result);
+      //$console.log("result", result);
 
       return {
          sql: compiled.sql,

@@ -1,6 +1,3 @@
-import { isDebug } from "core";
-import c from "picocolors";
-import type { Formatter } from "picocolors/types";
 const _SPEEDUP = process.env.LOCAL;
 
 const DEFAULT_WAIT = _SPEEDUP ? 0 : 250;
@@ -56,32 +53,4 @@ export async function* typewriter(
          await wait(delay, true);
       }
    }
-}
-
-function ifString(args: any[], c: Formatter) {
-   return args.map((a) => (typeof a === "string" ? c(a) : a));
-}
-
-const originalConsole = {
-   log: console.log,
-   info: console.info,
-   debug: console.debug,
-   warn: console.warn,
-   error: console.error
-};
-
-export const $console = {
-   log: (...args: any[]) => originalConsole.info(c.gray("[LOG]  "), ...ifString(args, c.dim)),
-   info: (...args: any[]) => originalConsole.info(c.cyan("[INFO] "), ...args),
-   debug: (...args: any[]) => isDebug() && originalConsole.info(c.yellow("[DEBUG]"), ...args),
-   warn: (...args: any[]) => originalConsole.info(c.yellow("[WARN] "), ...ifString(args, c.yellow)),
-   error: (...args: any[]) => originalConsole.info(c.red("[ERROR]"), ...ifString(args, c.red))
-};
-
-export function replaceConsole() {
-   console.log = $console.log;
-   console.info = $console.info;
-   console.debug = $console.debug;
-   console.warn = $console.warn;
-   console.error = $console.error;
 }

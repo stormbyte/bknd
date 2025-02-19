@@ -36,7 +36,6 @@ const subjects = {
 };
 
 async function action(subject: string) {
-   console.log("debug", { subject });
    if (subject in subjects) {
       await subjects[subject]();
    } else {

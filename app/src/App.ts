@@ -1,4 +1,6 @@
 import type { CreateUserPayload } from "auth/AppAuth";
+import { Api, type ApiOptions } from "bknd/client";
+import { $console } from "core";
 import { Event } from "core/events";
 import { Connection, type LibSqlCredentials, LibsqlConnection } from "data";
 import type { Hono } from "hono";
@@ -69,17 +71,17 @@ export class App {
             // respond to events, such as "onUpdated".
             // this is important if multiple changes are done, and then build() is called manually
             if (!this.emgr.enabled) {
-               console.warn("App config updated, but event manager is disabled, skip.");
+               $console.warn("App config updated, but event manager is disabled, skip.");
                return;
             }
 
-            console.log("App config updated", key);
+            $console.log("App config updated", key);
             // @todo: potentially double syncing
             await this.build({ sync: true });
             await this.emgr.emit(new AppConfigUpdatedEvent({ app: this }));
          },
          onFirstBoot: async () => {
-            console.log("App first boot");
+            $console.log("App first boot");
             this.trigger_first_boot = true;
          },
          onServerInit: async (server) => {
@@ -177,6 +179,15 @@ export class App {
    async createUser(p: CreateUserPayload) {
       return this.module.auth.createUser(p);
    }
+
+   getApi(options: Request | ApiOptions = {}) {
+      const fetcher = this.server.request as typeof fetch;
+      if (options instanceof Request) {
+         return new Api({ request: options, headers: options.headers, fetcher });
+      }
+
+      return new Api({ host: "http://localhost", ...options, fetcher });
+   }
 }
 
 export function createApp(config: CreateAppConfig = {}) {
@@ -187,7 +198,7 @@ export function createApp(config: CreateAppConfig = {}) {
          connection = config.connection;
       } else if (typeof config.connection === "object") {
          if ("type" in config.connection) {
-            console.warn(
+            $console.warn(
                "Using deprecated connection type 'libsql', use the 'config' object directly."
             );
             connection = new LibsqlConnection(config.connection.config);
@@ -196,10 +207,10 @@ export function createApp(config: CreateAppConfig = {}) {
          }
       } else {
          connection = new LibsqlConnection({ url: ":memory:" });
-         console.warn("No connection provided, using in-memory database");
+         $console.warn("No connection provided, using in-memory database");
       }
    } catch (e) {
-      console.error("Could not create connection", e);
+      $console.error("Could not create connection", e);
    }
 
    if (!connection) {

@@ -17,6 +17,7 @@ export type AdminControllerOptions = {
    assets_path?: string;
    html?: string;
    forceDev?: boolean | { mainPath: string };
+   debug_rerenders?: boolean;
 };
 
 export class AdminController extends Controller {
@@ -192,10 +193,12 @@ export class AdminController extends Controller {
                   />
                   <link rel="icon" href={favicon} type="image/x-icon" />
                   <title>BKND</title>
-                  {/*<script
-                     crossOrigin="anonymous"
-                     src="//unpkg.com/react-scan/dist/auto.global.js"
-                  />*/}
+                  {this.options.debug_rerenders && (
+                     <script
+                        crossOrigin="anonymous"
+                        src="//unpkg.com/react-scan/dist/auto.global.js"
+                     />
+                  )}
                   {isProd ? (
                      <Fragment>
                         <script
