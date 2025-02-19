@@ -48,8 +48,8 @@ function errorOutro() {
 }
 
 async function action(options: { template?: string; dir?: string; integration?: string }) {
-   colorizeConsole(console);
    console.log("");
+   colorizeConsole(console);
 
    const downloadOpts = {
       dir: options.dir || "./",
