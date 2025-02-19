@@ -17,6 +17,7 @@ export type AdminControllerOptions = {
    assets_path?: string;
    html?: string;
    forceDev?: boolean | { mainPath: string };
+   debug_rerenders?: boolean;
 };
 
 export class AdminController extends Controller {
@@ -163,17 +164,13 @@ export class AdminController extends Controller {
       };
 
       if (isProd) {
-         try {
-            // @ts-ignore
-            const manifest = await import("bknd/dist/manifest.json", {
-               assert: { type: "json" }
-            }).then((m) => m.default);
-            // @todo: load all marked as entry (incl. css)
-            assets.js = manifest["src/ui/main.tsx"].file;
-            assets.css = manifest["src/ui/main.tsx"].css[0] as any;
-         } catch (e) {
-            console.error("Error loading manifest", e);
-         }
+         // @ts-ignore
+         const manifest = await import("bknd/dist/manifest.json", {
+            assert: { type: "json" }
+         });
+         // @todo: load all marked as entry (incl. css)
+         assets.js = manifest.default["src/ui/main.tsx"].file;
+         assets.css = manifest.default["src/ui/main.tsx"].css[0] as any;
       }
 
       const theme = configs.server.admin.color_scheme ?? "light";
@@ -192,10 +189,12 @@ export class AdminController extends Controller {
                   />
                   <link rel="icon" href={favicon} type="image/x-icon" />
                   <title>BKND</title>
-                  {/*<script
-                     crossOrigin="anonymous"
-                     src="//unpkg.com/react-scan/dist/auto.global.js"
-                  />*/}
+                  {this.options.debug_rerenders && (
+                     <script
+                        crossOrigin="anonymous"
+                        src="//unpkg.com/react-scan/dist/auto.global.js"
+                     />
+                  )}
                   {isProd ? (
                      <Fragment>
                         <script

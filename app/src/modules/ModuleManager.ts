@@ -1,5 +1,5 @@
 import { Guard } from "auth";
-import { BkndError, DebugLogger } from "core";
+import { BkndError, DebugLogger, withDisabledConsole } from "core";
 import { EventManager } from "core/events";
 import { clone, diff } from "core/object/diff";
 import {
@@ -10,8 +10,7 @@ import {
    mark,
    objectEach,
    stripMark,
-   transformObject,
-   withDisabledConsole
+   transformObject
 } from "core/utils";
 import {
    type Connection,

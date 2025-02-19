@@ -5,6 +5,7 @@ import type { CliCommand } from "cli/types";
 import { typewriter, wait } from "cli/utils/cli";
 import { execAsync, getVersion } from "cli/utils/sys";
 import { Option } from "commander";
+import { colorizeConsole } from "core";
 import color from "picocolors";
 import { overridePackageJson, updateBkndPackages } from "./npm";
 import { type Template, templates } from "./templates";
@@ -48,6 +49,7 @@ function errorOutro() {
 
 async function action(options: { template?: string; dir?: string; integration?: string }) {
    console.log("");
+   colorizeConsole(console);
 
    const downloadOpts = {
       dir: options.dir || "./",

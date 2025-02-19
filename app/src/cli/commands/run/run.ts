@@ -2,9 +2,8 @@ import type { Config } from "@libsql/client/node";
 import { App, type CreateAppConfig } from "App";
 import { StorageLocalAdapter } from "adapter/node";
 import type { CliBkndConfig, CliCommand } from "cli/types";
-import { replaceConsole } from "cli/utils/cli";
 import { Option } from "commander";
-import { config } from "core";
+import { colorizeConsole, config } from "core";
 import dotenv from "dotenv";
 import { registries } from "modules/registries";
 import c from "picocolors";
@@ -112,7 +111,7 @@ async function action(options: {
    dbToken?: string;
    server: Platform;
 }) {
-   replaceConsole();
+   colorizeConsole(console);
    const configFilePath = await getConfigPath(options.config);
 
    let app: App | undefined = undefined;

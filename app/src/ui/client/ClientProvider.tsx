@@ -25,11 +25,11 @@ export const ClientProvider = ({ children, baseUrl, user }: ClientProviderProps)
             console.warn("wrapped many times, take from context", actualBaseUrl);
          } else if (typeof window !== "undefined") {
             actualBaseUrl = window.location.origin;
-            console.log("setting from window", actualBaseUrl);
+            //console.log("setting from window", actualBaseUrl);
          }
       }
    } catch (e) {
-      console.error("error .....", e);
+      console.error("Error in ClientProvider", e);
    }
 
    //console.log("api init", { host: actualBaseUrl, user: user ?? winCtx.user });

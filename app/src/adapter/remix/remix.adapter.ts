@@ -1,6 +1,5 @@
 import type { App } from "bknd";
 import { type FrameworkBkndConfig, createFrameworkApp } from "bknd/adapter";
-import { Api } from "bknd/client";
 
 export type RemixBkndConfig<Args = RemixContext> = FrameworkBkndConfig<Args>;
 
@@ -9,29 +8,30 @@ type RemixContext = {
 };
 
 let app: App;
+let building: boolean = false;
+
+export async function getApp(config: RemixBkndConfig, args?: RemixContext) {
+   if (building) {
+      while (building) {
+         await new Promise((resolve) => setTimeout(resolve, 5));
+      }
+      if (app) return app;
+   }
+
+   building = true;
+   if (!app) {
+      app = await createFrameworkApp(config, args);
+      await app.build();
+   }
+   building = false;
+   return app;
+}
+
 export function serve<Args extends RemixContext = RemixContext>(
    config: RemixBkndConfig<Args> = {}
 ) {
    return async (args: Args) => {
-      if (!app) {
-         app = await createFrameworkApp(config, args);
-      }
+      app = await createFrameworkApp(config, args);
       return app.fetch(args.request);
-   };
-}
-
-export function withApi<Args extends { request: Request; context: { api: Api } }, R>(
-   handler: (args: Args, api: Api) => Promise<R>
-) {
-   return async (args: Args) => {
-      if (!args.context.api) {
-         args.context.api = new Api({
-            host: new URL(args.request.url).origin,
-            headers: args.request.headers
-         });
-         await args.context.api.verifyAuth();
-      }
-
-      return handler(args, args.context.api);
    };
 }

@@ -28,7 +28,7 @@ export class LibsqlConnection extends SqliteConnection {
    constructor(clientOrCredentials: Client | LibSqlCredentials) {
       const plugins = [new FilterNumericKeysPlugin(), new ParseJSONResultsPlugin()];
       let client: Client;
-      if ("url" in clientOrCredentials) {
+      if (clientOrCredentials && "url" in clientOrCredentials) {
          let { url, authToken, protocol } = clientOrCredentials;
          if (protocol && LIBSQL_PROTOCOLS.includes(protocol)) {
             console.log("changing protocol to", protocol);
@@ -36,11 +36,8 @@ export class LibsqlConnection extends SqliteConnection {
             url = `${protocol}://${rest}`;
          }
 
-         //console.log("using", url, { protocol });
-
          client = createClient({ url, authToken });
       } else {
-         //console.log("-- client provided");
          client = clientOrCredentials;
       }
 
@@ -48,7 +45,6 @@ export class LibsqlConnection extends SqliteConnection {
          // @ts-expect-error libsql has type issues
          dialect: new CustomLibsqlDialect({ client }),
          plugins
-         //log: ["query"],
       });
 
       super(kysely, {}, plugins);
@@ -90,7 +86,6 @@ export class LibsqlConnection extends SqliteConnection {
          const rows = await kyselyPlugins.transformResultRows(r.rows);
          data.push(rows);
       }
-      //console.log("data", data);
 
       return data;
    }

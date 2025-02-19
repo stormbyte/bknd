@@ -9,28 +9,52 @@ Install bknd as a dependency:
 <InstallBknd />
 
 ## Serve the API
-Create a new api splat route file at `app/routes/api.$.ts`:
-```ts
-// app/routes/api.$.ts
-import { serve } from "bknd/adapter/remix";
+Since Remix doesn't support middleware yet, we need a helper file to initialize the App to import from. Create a new file at `app/bknd.ts`:
+```ts app/bknd.ts
+import { type RemixBkndConfig, getApp as getBkndApp } from "bknd/adapter/remix";
 
-const handler = serve({
+const config = {
    connection: {
-      url: "http://localhost:8080"
+      url: "file:data.db"
    }
-});
+} as const satisfies RemixBkndConfig;
+
+export async function getApp(args?: { request: Request }) {
+   return await getBkndApp(config, args);
+}
+
+export async function getApi(args?: { request: Request }) {
+   const app = await getApp(args);
+   if (args) {
+      const api = app.getApi(args.request);
+      await api.verifyAuth();
+      return api;
+   }
+
+   return app.getApi();
+}
+```
+
+Create a new api splat route file at `app/routes/api.$.ts`:
+```ts app/routes/api.$.ts
+import { getApp } from "~/bknd";
+
+const handler = async (args: { request: Request }) => {
+   const app = await getApp(args);
+   return app.fetch(args.request);
+};
 
 export const loader = handler;
 export const action = handler;
 ```
 For more information about the connection object, refer to the [Database](/usage/database) guide.
 
-Now make sure that you wrap your root layout with the `ClientProvider` so that all components
-share the same context:
-```tsx
-// app/root.tsx
-import { withApi } from "bknd/adapter/remix"
-import { type Api, ClientProvider } from "bknd/client";
+Now make sure that you wrap your root layout with the `ClientProvider` so that all components share the same context. Also add the user context to both the `Outlet` and the provider:
+```tsx app/root.tsx
+import type { LoaderFunctionArgs } from "@remix-run/server-runtime";
+import { useLoaderData, Outlet } from "@remix-run/react";
+import { ClientProvider } from "bknd/client";
+import { getApi } from "~/bknd";
 
 export function Layout(props) {
    // nothing to change here, just for orientation
@@ -39,27 +63,18 @@ export function Layout(props) {
    );
 }
 
-// add the api to the `AppLoadContext`
-// so you don't have to manually type it again
-declare module "@remix-run/server-runtime" {
-   export interface AppLoadContext {
-      api: Api;
-   }
-}
-
-// export a loader that initiates the API
-// and passes it down to args.context.api
-export const loader = withApi(async (args: LoaderFunctionArgs, api: Api) => {
+export const loader = async (args: LoaderFunctionArgs) => {
+   const api = await getApi(args);
    return {
       user: api.getUser()
    };
-});
+};
 
 export default function App() {
-   const { user } = useLoaderData<typeof loader>();
+   const data = useLoaderData<typeof loader>();
    return (
-      <ClientProvider user={user}>
-         <Outlet />
+      <ClientProvider user={data.user}>
+         <Outlet context={data} />
       </ClientProvider>
    );
 }
@@ -67,24 +82,29 @@ export default function App() {
 
 ## Enabling the Admin UI
 Create a new splat route file at `app/routes/admin.$.tsx`:
-```tsx
-// app/routes/admin.$.tsx
+```tsx app/routes/admin.$.tsx
 import { adminPage } from "bknd/adapter/remix";
 import "bknd/dist/styles.css";
 
 export default adminPage({
-   config: { basepath: "/admin" }
+   config: {
+      basepath: "/admin",
+      logo_return_path: "/../",
+      color_scheme: "system"
+   }
 });
 ```
 
 ## Example usage of the API
 Since the API has already been constructed in the root layout, you can now use it in any page:
-```tsx
-// app/routes/_index.tsx
-import type { LoaderFunctionArgs } from "@remix-run/server-runtime";
+```tsx app/routes/_index.tsx
 import { useLoaderData } from "@remix-run/react";
+import type { LoaderFunctionArgs } from "@remix-run/server-runtime";
+import { getApi } from "~/bknd";
 
-export const loader = async ({ context: { api } }: LoaderFunctionArgs) => {
+export const loader = async (args: LoaderFunctionArgs) => {
+   // use authentication from request
+   const api = await getApi(args);
    const { data } = await api.data.readMany("todos");
    return { data, user: api.getUser() };
 };
