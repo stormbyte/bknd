@@ -1,7 +1,8 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { Links, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData } from "@remix-run/react";
-import { withApi } from "bknd/adapter/remix";
-import { type Api, ClientProvider } from "bknd/client";
+import { ClientProvider } from "bknd/client";
+import "./tailwind.css";
+import { getApi } from "~/bknd";
 
 export function Layout({ children }: { children: React.ReactNode }) {
    return (
@@ -21,17 +22,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
    );
 }
 
-declare module "@remix-run/server-runtime" {
-   export interface AppLoadContext {
-      api: Api;
-   }
-}
-
-export const loader = withApi(async (args: LoaderFunctionArgs, api: Api) => {
+export const loader = async (args: LoaderFunctionArgs) => {
+   const api = await getApi(args);
    return {
       user: api.getUser()
    };
-});
+};
 
 export default function App() {
    const data = useLoaderData<typeof loader>();
@@ -40,7 +36,7 @@ export default function App() {
    // that you're authed using cookie
    return (
       <ClientProvider user={data.user}>
-         <Outlet />
+         <Outlet context={data} />
       </ClientProvider>
    );
 }
