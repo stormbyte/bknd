@@ -111,6 +111,7 @@ describe("EventManager", async () => {
       emgr.onEvent(ReturnEvent, async () => "1", "sync");
       emgr.onEvent(ReturnEvent, async () => "0", "sync");
 
+      // @todo: fix this
       // @ts-expect-error must be string
       emgr.onEvent(ReturnEvent, async () => 0, "sync");
 

@@ -34,4 +34,21 @@ describe("media/mime-types", () => {
          }
       }
    });
+
+   test("isMimeType", () => {
+      expect(tiny.isMimeType("image/jpeg")).toBe(true);
+      expect(tiny.isMimeType("image/jpeg", ["image/png"])).toBe(true);
+      expect(tiny.isMimeType("image/png", ["image/png"])).toBe(false);
+      expect(tiny.isMimeType("image/png")).toBe(true);
+      expect(tiny.isMimeType("whatever")).toBe(false);
+      expect(tiny.isMimeType("text/tab-separated-values")).toBe(true);
+   });
+
+   test("extension", () => {
+      expect(tiny.extension("image/png")).toBe("png");
+      expect(tiny.extension("image/jpeg")).toBe("jpeg");
+      expect(tiny.extension("application/zip")).toBe("zip");
+      expect(tiny.extension("text/tab-separated-values")).toBe("tsv");
+      expect(tiny.extension("application/zip")).toBe("zip");
+   });
 });

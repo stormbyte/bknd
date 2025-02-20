@@ -33,6 +33,7 @@ let routesShown = false;
 export default {
    async fetch(request: Request) {
       if (!app || recreate) {
+         console.log("[DB]", credentials);
          app = App.create({
             connection: credentials,
             initialConfig

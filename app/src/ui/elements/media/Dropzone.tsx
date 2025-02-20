@@ -279,12 +279,14 @@ export function Dropzone({
                   const response = JSON.parse(xhr.responseText);
 
                   console.log("Response:", file, response);
-                  console.log("New state", response.state);
-                  replaceFileState(file.path, {
+                  const newState = {
                      ...response.state,
                      progress: 1,
                      state: "uploaded"
-                  });
+                  };
+
+                  replaceFileState(file.path, newState);
+                  resolve({ ...file, ...newState });
                } catch (e) {
                   setFileState(file.path, "uploaded", 1);
                   console.error("Error parsing response", e);
@@ -496,9 +498,9 @@ const Preview: React.FC<PreviewProps> = ({ file, handleUpload, handleDelete }) =
             />
          </div>
          <div className="flex flex-col px-1.5 py-1">
-            <p className="truncate">{file.name}</p>
+            <p className="truncate select-text">{file.name}</p>
             <div className="flex flex-row justify-between text-sm font-mono opacity-50 text-nowrap gap-2">
-               <span className="truncate">{file.type}</span>
+               <span className="truncate select-text">{file.type}</span>
                <span>{(file.size / 1024).toFixed(1)} KB</span>
             </div>
          </div>
