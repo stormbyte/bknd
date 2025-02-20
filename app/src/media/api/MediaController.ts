@@ -72,11 +72,8 @@ export class MediaController extends Controller {
 
       // upload file
       // @todo: add required type for "upload endpoints"
-      hono.post("/upload/:filename", async (c) => {
-         const { filename } = c.req.param();
-         if (!filename) {
-            throw new Error("No file name provided");
-         }
+      hono.post("/upload/:filename?", async (c) => {
+         const reqname = c.req.param("filename");
 
          const body = await getFileFromContext(c);
          if (!body) {
@@ -89,7 +86,9 @@ export class MediaController extends Controller {
             );
          }
 
+         const filename = reqname ?? getRandomizedFilename(body as File);
          const res = await this.getStorage().uploadFile(body, filename);
+
          return c.json(res, HttpStatus.CREATED);
       });
 
@@ -191,8 +190,8 @@ export class MediaController extends Controller {
                );
             }
 
-            const file_name = getRandomizedFilename(file as File);
-            const info = await this.getStorage().uploadFile(file, file_name, true);
+            const filename = getRandomizedFilename(file as File);
+            const info = await this.getStorage().uploadFile(file, filename, true);
 
             const mutator = this.media.em.mutator(media_entity);
             mutator.__unstable_toggleSystemEntityCreation(false);
