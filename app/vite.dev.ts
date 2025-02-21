@@ -29,11 +29,10 @@ if (example) {
 
 let app: App;
 const recreate = import.meta.env.VITE_APP_DISABLE_FRESH !== "1";
-let routesShown = false;
+let firstStart = true;
 export default {
    async fetch(request: Request) {
       if (!app || recreate) {
-         console.log("[DB]", credentials);
          app = App.create({
             connection: credentials,
             initialConfig
@@ -49,8 +48,9 @@ export default {
          await app.build();
 
          // log routes
-         if (!routesShown) {
-            routesShown = true;
+         if (firstStart) {
+            console.log("[DB]", credentials);
+            firstStart = false;
             console.log("\n\n[APP ROUTES]");
             showRoutes(app.server);
             console.log("-------\n\n");
