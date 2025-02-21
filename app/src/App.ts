@@ -1,4 +1,3 @@
-import { Api, type ApiOptions } from "Api";
 import type { CreateUserPayload } from "auth/AppAuth";
 import { $console } from "core";
 import { Event } from "core/events";
@@ -14,6 +13,9 @@ import {
 import * as SystemPermissions from "modules/permissions";
 import { AdminController, type AdminControllerOptions } from "modules/server/AdminController";
 import { SystemController } from "modules/server/SystemController";
+
+// biome-ignore
+import { Api, type ApiOptions } from "Api";
 
 export type AppPlugin = (app: App) => Promise<void> | void;
 
