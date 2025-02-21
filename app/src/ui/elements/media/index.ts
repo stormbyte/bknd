@@ -12,6 +12,7 @@ export { useDropzone as useMediaDropzone };
 export type {
    PreviewComponentProps,
    FileState,
+   FileStateWithData,
    DropzoneProps,
    DropzoneRenderProps
 } from "./Dropzone";
