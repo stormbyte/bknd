@@ -33,6 +33,6 @@
       "bknd": ["./src/*"]
     }
   },
-  "include": ["./src/**/*.ts", "./src/**/*.tsx"],
+  "include": ["./src/**/*.ts", "./src/**/*.tsx", "vite.dev.ts", "build.ts"],
   "exclude": ["node_modules", "dist", "dist/types", "**/*.d.ts"]
 }
