@@ -119,7 +119,10 @@ export class Storage implements EmitsEvents {
          }
       };
       if (!noEmit) {
-         await this.emgr.emit(new StorageEvents.FileUploadedEvent(eventData));
+         const result = await this.emgr.emit(new StorageEvents.FileUploadedEvent(eventData));
+         if (result.returned) {
+            return result.params;
+         }
       }
 
       return eventData;

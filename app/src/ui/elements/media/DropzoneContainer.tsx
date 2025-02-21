@@ -10,7 +10,7 @@ import { mediaItemsToFileStates } from "./helper";
 
 export type DropzoneContainerProps = {
    children?: ReactNode;
-   initialItems?: MediaFieldSchema[];
+   initialItems?: MediaFieldSchema[] | false;
    entity?: {
       name: string;
       id: number;
@@ -18,6 +18,7 @@ export type DropzoneContainerProps = {
    };
    media?: Pick<TAppMediaConfig, "entity_name" | "storage">;
    query?: RepoQueryIn;
+   randomFilename?: boolean;
 } & Omit<Partial<DropzoneProps>, "children" | "initialItems">;
 
 const DropzoneContainerContext = createContext<DropzoneRenderProps>(undefined!);
@@ -28,6 +29,7 @@ export function DropzoneContainer({
    entity,
    query,
    children,
+   randomFilename,
    ...props
 }: DropzoneContainerProps) {
    const id = useId();
@@ -57,12 +59,12 @@ export function DropzoneContainer({
               ...query
            });
 
-   const $q = useApiQuery(selectApi, { enabled: !initialItems });
+   const $q = useApiQuery(selectApi, { enabled: initialItems !== false && !initialItems });
 
    const getUploadInfo = useEvent((file) => {
       const url = entity
          ? api.media.getEntityUploadUrl(entity.name, entity.id, entity.field)
-         : api.media.getFileUploadUrl(file);
+         : api.media.getFileUploadUrl(randomFilename ? undefined : file);
 
       return {
          url,
@@ -79,7 +81,7 @@ export function DropzoneContainer({
       return api.media.deleteFile(file.path);
    });
 
-   const actualItems = initialItems ?? (($q.data || []) as MediaFieldSchema[]);
+   const actualItems = (initialItems || $q.data || []) as MediaFieldSchema[];
    const _initialItems = mediaItemsToFileStates(actualItems, { baseUrl });
 
    const key = id + JSON.stringify(_initialItems);

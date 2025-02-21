@@ -1,5 +1,5 @@
+import { Api, type ApiOptions } from "Api";
 import type { CreateUserPayload } from "auth/AppAuth";
-import { Api, type ApiOptions } from "bknd/client";
 import { $console } from "core";
 import { Event } from "core/events";
 import { Connection, type LibSqlCredentials, LibsqlConnection } from "data";

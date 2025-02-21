@@ -1,3 +1,4 @@
+import type { DB } from "core";
 import {
    type ComponentPropsWithRef,
    type ComponentPropsWithoutRef,
@@ -22,6 +23,8 @@ export type FileState = {
    state: "pending" | "uploading" | "uploaded" | "failed" | "initial" | "deleting";
    progress: number;
 };
+
+export type FileStateWithData = FileState & { data: DB["media"] };
 
 export type DropzoneRenderProps = {
    wrapperRef: RefObject<HTMLDivElement>;
@@ -50,7 +53,7 @@ export type DropzoneProps = {
    autoUpload?: boolean;
    onRejected?: (files: FileWithPath[]) => void;
    onDeleted?: (file: FileState) => void;
-   onUploaded?: (files: FileState[]) => void;
+   onUploaded?: (files: FileStateWithData[]) => void;
    placeholder?: {
       show?: boolean;
       text?: string;
@@ -172,15 +175,16 @@ export function Dropzone({
                setUploading(false);
                return;
             } else {
+               const uploaded: FileStateWithData[] = [];
                for (const file of pendingFiles) {
                   try {
-                     await uploadFileProgress(file);
+                     uploaded.push(await uploadFileProgress(file));
                   } catch (e) {
                      handleUploadError(e);
                   }
                }
                setUploading(false);
-               onUploaded?.(files);
+               onUploaded?.(uploaded);
             }
          })();
       }
@@ -220,8 +224,8 @@ export function Dropzone({
       setFiles((prev) => prev.filter((f) => f.path !== path));
    }
 
-   function uploadFileProgress(file: FileState) {
-      return new Promise<void>((resolve, reject) => {
+   function uploadFileProgress(file: FileState): Promise<FileStateWithData> {
+      return new Promise((resolve, reject) => {
          if (!file.body) {
             console.error("File has no body");
             reject();
@@ -279,17 +283,19 @@ export function Dropzone({
                   const response = JSON.parse(xhr.responseText);
 
                   console.log("Response:", file, response);
-                  console.log("New state", response.state);
-                  replaceFileState(file.path, {
+                  const newState = {
                      ...response.state,
                      progress: 1,
                      state: "uploaded"
-                  });
+                  };
+
+                  replaceFileState(file.path, newState);
+                  resolve({ ...response, ...file, ...newState });
                } catch (e) {
                   setFileState(file.path, "uploaded", 1);
                   console.error("Error parsing response", e);
+                  reject(e);
                }
-               resolve();
             } else {
                setFileState(file.path, "failed", 1);
                console.error("Upload failed with status: ", xhr.status, xhr.statusText);
@@ -327,8 +333,8 @@ export function Dropzone({
    }
 
    async function uploadFile(file: FileState) {
-      await uploadFileProgress(file);
-      onUploaded?.([file]);
+      const result = await uploadFileProgress(file);
+      onUploaded?.([result]);
    }
 
    const openFileInput = () => inputRef.current?.click();
@@ -496,9 +502,9 @@ const Preview: React.FC<PreviewProps> = ({ file, handleUpload, handleDelete }) =
             />
          </div>
          <div className="flex flex-col px-1.5 py-1">
-            <p className="truncate">{file.name}</p>
+            <p className="truncate select-text">{file.name}</p>
             <div className="flex flex-row justify-between text-sm font-mono opacity-50 text-nowrap gap-2">
-               <span className="truncate">{file.type}</span>
+               <span className="truncate select-text">{file.type}</span>
                <span>{(file.size / 1024).toFixed(1)} KB</span>
             </div>
          </div>

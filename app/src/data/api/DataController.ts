@@ -220,7 +220,7 @@ export class DataController extends Controller {
                   return c.notFound();
                }
 
-               const where = c.req.json() as any;
+               const where = (await c.req.json()) as any;
                const result = await this.em.repository(entity).count(where);
                return c.json({ entity, count: result.count });
             }
