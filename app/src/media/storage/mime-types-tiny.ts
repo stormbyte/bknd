@@ -77,6 +77,17 @@ export function guess(f: string): string {
 }
 
 export function isMimeType(mime: any, exclude: string[] = []) {
+   if (exclude.includes(mime)) return false;
+
+   // try quick first
+   if (
+      Object.entries(Q)
+         .flatMap(([t, e]) => e.map((x) => `${t}/${x}`))
+         .includes(mime)
+   ) {
+      return true;
+   }
+
    for (const [k, v] of M.entries()) {
       if (v === mime && !exclude.includes(k)) {
          return true;
@@ -86,6 +97,14 @@ export function isMimeType(mime: any, exclude: string[] = []) {
 }
 
 export function extension(mime: string) {
+   for (const [t, e] of Object.entries(Q)) {
+      for (const _e of e) {
+         if (mime === `${t}/${_e}`) {
+            return _e;
+         }
+      }
+   }
+
    for (const [k, v] of M.entries()) {
       if (v === mime) {
          return k;

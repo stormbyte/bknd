@@ -124,8 +124,9 @@ export class AppMedia extends Module<typeof mediaConfigSchema> {
             const mutator = em.mutator(media);
             mutator.__unstable_toggleSystemEntityCreation(false);
             const payload = this.uploadedEventDataToMediaPayload(e.params);
-            await mutator.insertOne(payload);
+            const { data } = await mutator.insertOne(payload);
             mutator.__unstable_toggleSystemEntityCreation(true);
+            return { data };
          },
          { mode: "sync", id: "add-data-media" }
       );
