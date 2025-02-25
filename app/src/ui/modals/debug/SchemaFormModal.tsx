@@ -61,7 +61,7 @@ export function SchemaFormModal({
    return (
       <>
          {error && <Alert.Exception message={error} />}
-         <div className="pt-3 pb-3 px-3 gap-4 flex flex-col">
+         <div className="pt-3 pb-3 px-4 gap-4 flex flex-col">
             <JsonSchemaForm
                tagName="form"
                ref={formRef}
@@ -84,10 +84,10 @@ export function SchemaFormModal({
 
 SchemaFormModal.defaultTitle = "JSON Schema Form Modal";
 SchemaFormModal.modalProps = {
+   size: "md",
    classNames: {
-      size: "md",
       root: "bknd-admin",
-      header: "!bg-primary/5 border-b border-b-muted !py-3 px-5 !h-auto !min-h-px",
+      header: "!bg-lightest !py-3 px-5 !h-auto !min-h-px",
       content: "rounded-lg select-none",
       title: "!font-bold !text-md",
       body: "!p-0"

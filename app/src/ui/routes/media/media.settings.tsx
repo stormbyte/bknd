@@ -18,7 +18,6 @@ import {
    Subscribe,
    useFormError
 } from "ui/components/form/json-schema-form";
-import { Media } from "ui/elements";
 import { useBrowserTitle } from "ui/hooks/use-browser-title";
 import * as AppShell from "ui/layouts/AppShell/AppShell";
 
@@ -87,7 +86,7 @@ function MediaSettingsInternal() {
                   </div>
                </div>
                <AppShell.Separator />
-               <div className="flex flex-col gap-3 p-3">
+               <div className="flex flex-col gap-3 p-3 relative">
                   <Overlay />
                   <AnyOf.Root path="adapter">
                      <Adapters />
@@ -177,7 +176,7 @@ const Overlay = () => (
    <Subscribe selector={(state) => ({ enabled: state.data.enabled })}>
       {({ enabled }) =>
          !enabled && (
-            <div className="absolute w-full h-full z-50 bg-background opacity-70 pointer-events-none" />
+            <div className="absolute w-full h-full z-50 inset-0 bg-background opacity-90" />
          )
       }
    </Subscribe>

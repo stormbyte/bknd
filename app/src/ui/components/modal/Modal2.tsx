@@ -53,7 +53,7 @@ export const Modal2 = forwardRef<Modal2Ref, Modal2Props>(
 
 export const ModalTitle = ({ path, onClose }: { path: string[]; onClose: () => void }) => {
    return (
-      <div className="py-3 px-5 font-bold bg-primary/5 flex flex-row justify-between items-center sticky top-0 left-0 right-0 z-10 border-b border-b-muted">
+      <div className="py-3 px-5 font-bold bg-lightest flex flex-row justify-between items-center sticky top-0 left-0 right-0 z-10 border-none">
          <div className="flex flex-row gap-1">
             {path.map((p, i) => {
                const last = i + 1 === path.length;

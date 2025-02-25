@@ -47,8 +47,7 @@ export function AuthRoot({ children }) {
                      <AppShell.SidebarLink as={Link} href={routes.auth.strategies()} disabled>
                         Strategies
                      </AppShell.SidebarLink>
-                     {/*<AppShell.SidebarLink as={Link} href={routes.auth.settings()}>*/}
-                     <AppShell.SidebarLink as={Link} href={app.getSettingsPath(["auth"])}>
+                     <AppShell.SidebarLink as={Link} href={routes.auth.settings()}>
                         Settings
                      </AppShell.SidebarLink>
                   </nav>

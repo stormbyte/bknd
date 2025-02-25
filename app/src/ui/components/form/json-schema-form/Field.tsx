@@ -3,20 +3,16 @@ import type { ChangeEvent, ComponentPropsWithoutRef } from "react";
 import * as Formy from "ui/components/form/Formy";
 import { useEvent } from "ui/hooks/use-event";
 import { ArrayField } from "./ArrayField";
-import { FieldWrapper } from "./FieldWrapper";
+import { FieldWrapper, type FieldwrapperProps } from "./FieldWrapper";
 import { useDerivedFieldContext, useFormValue } from "./Form";
 import { ObjectField } from "./ObjectField";
 import { coerce, isType, isTypeSchema } from "./utils";
 
 export type FieldProps = {
-   name: string;
-   schema?: JsonSchema;
    onChange?: (e: ChangeEvent<any>) => void;
-   label?: string | false;
-   hidden?: boolean;
-};
+} & Omit<FieldwrapperProps, "children">;
 
-export const Field = ({ name, schema: _schema, onChange, label: _label, hidden }: FieldProps) => {
+export const Field = ({ name, schema: _schema, onChange, ...props }: FieldProps) => {
    const { path, setValue, required, ...ctx } = useDerivedFieldContext(name, _schema);
    const schema = _schema ?? ctx.schema;
    if (!isTypeSchema(schema))
@@ -46,7 +42,7 @@ export const Field = ({ name, schema: _schema, onChange, label: _label, hidden }
    });
 
    return (
-      <FieldWrapper name={name} label={_label} required={required} schema={schema} hidden={hidden}>
+      <FieldWrapper name={name} required={required} schema={schema} {...props}>
          <FieldComponent
             schema={schema}
             name={name}

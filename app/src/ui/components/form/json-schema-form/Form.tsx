@@ -324,9 +324,6 @@ export function useDerivedFieldContext<Data = any, Reduced = undefined>(
             const prefixedName = prefixPath(path, root);
             const prefixedPointer = pathToPointer(prefixedName);
             const value = getPath(state.data, prefixedName);
-            /*const errors = state.errors.filter((error) =>
-               error.data.pointer.startsWith(prefixedPointer)
-            );*/
             const fieldSchema =
                pointer === "#/"
                   ? (schema as LibJsonSchema)

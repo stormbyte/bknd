@@ -3,7 +3,7 @@ import { AuthRoot } from "./_auth.root";
 import { AuthIndex } from "./auth.index";
 import { AuthRolesList } from "./auth.roles";
 import { AuthRolesEdit } from "./auth.roles.edit.$role";
-import { AuthSettingsList } from "./auth.settings";
+import { AuthSettings } from "./auth.settings";
 import { AuthStrategiesList } from "./auth.strategies";
 import { AuthUsersList } from "./auth.users";
 
@@ -15,7 +15,7 @@ export default function AuthRoutes() {
          <Route path="/roles" component={AuthRolesList} />
          <Route path="/roles/edit/:role" component={AuthRolesEdit} />
          <Route path="/strategies" component={AuthStrategiesList} />
-         <Route path="/settings" component={AuthSettingsList} />
+         <Route path="/settings" component={AuthSettings} />
       </AuthRoot>
    );
 }

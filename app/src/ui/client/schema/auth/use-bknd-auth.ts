@@ -1,9 +1,16 @@
+import type { AppAuthSchema } from "auth/auth-schema";
 import { useBknd } from "ui/client/bknd";
 
 export function useBkndAuth() {
    const { config, schema, actions: bkndActions } = useBknd();
 
    const actions = {
+      config: {
+         set: async (data: Partial<AppAuthSchema>) => {
+            console.log("--set", data);
+            return await bkndActions.set("auth", data, true);
+         }
+      },
       roles: {
          add: async (name: string, data: any = {}) => {
             console.log("add role", name, data);
