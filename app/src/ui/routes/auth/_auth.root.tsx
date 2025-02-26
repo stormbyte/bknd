@@ -1,23 +1,23 @@
 import { IconFingerprint } from "@tabler/icons-react";
 import { TbSettings } from "react-icons/tb";
-import { useBknd } from "ui/client/bknd";
+import { useBkndAuth } from "ui/client/schema/auth/use-bknd-auth";
 import { IconButton } from "ui/components/buttons/IconButton";
 import { Empty } from "ui/components/display/Empty";
+import { Icon } from "ui/components/display/Icon";
 import { Link } from "ui/components/wouter/Link";
 import { useBrowserTitle } from "ui/hooks/use-browser-title";
 import * as AppShell from "ui/layouts/AppShell/AppShell";
-import { routes, useNavigate } from "ui/lib/routes";
+import { routes } from "ui/lib/routes";
 
 export function AuthRoot({ children }) {
-   const { app, config } = useBknd();
-   const users_entity = config.auth.entity_name;
+   const { config, $auth } = useBkndAuth();
 
    return (
       <>
          <AppShell.Sidebar>
             <AppShell.SectionHeader
                right={
-                  <Link href={app.getSettingsPath(["auth"])}>
+                  <Link href={$auth.routes.settings}>
                      <IconButton Icon={TbSettings} />
                   </Link>
                }
@@ -32,22 +32,42 @@ export function AuthRoot({ children }) {
                      </AppShell.SidebarLink>
                      <AppShell.SidebarLink
                         as={Link}
-                        href={app.getAbsolutePath("/data/" + routes.data.entity.list(users_entity))}
-                        disabled={!config.auth.enabled}
+                        href={$auth.routes.listUsers}
+                        disabled={!config.enabled}
+                        className="justify-between"
                      >
                         Users
+                        {!config.enabled && <AuthWarning title="Auth is not enabled." />}
                      </AppShell.SidebarLink>
                      <AppShell.SidebarLink
                         as={Link}
                         href={routes.auth.roles.list()}
-                        disabled={!config.auth.enabled}
+                        disabled={!config.enabled}
+                        className="justify-between"
                      >
                         Roles & Permissions
+                        {!config.enabled ? (
+                           <AuthWarning title="Auth is not enabled." />
+                        ) : $auth.roles.none ? (
+                           <AuthWarning title="No roles defined." />
+                        ) : !$auth.roles.has_admin ? (
+                           <AuthWarning title="No admin role defined." />
+                        ) : null}
                      </AppShell.SidebarLink>
-                     <AppShell.SidebarLink as={Link} href={routes.auth.strategies()}>
+                     <AppShell.SidebarLink
+                        as={Link}
+                        href={routes.auth.strategies()}
+                        disabled={!config.enabled}
+                        className="justify-between"
+                     >
                         Strategies
+                        {!config.enabled && <AuthWarning title="Auth is not enabled." />}
                      </AppShell.SidebarLink>
-                     <AppShell.SidebarLink as={Link} href={routes.auth.settings()}>
+                     <AppShell.SidebarLink
+                        as={Link}
+                        href={routes.auth.settings()}
+                        className="justify-between"
+                     >
                         Settings
                      </AppShell.SidebarLink>
                   </nav>
@@ -58,6 +78,10 @@ export function AuthRoot({ children }) {
       </>
    );
 }
+
+const AuthWarning = ({ title }) => (
+   <Icon.Warning title={title} className="size-5 pointer-events-auto" />
+);
 
 export function AuthEmpty() {
    useBrowserTitle(["Auth"]);

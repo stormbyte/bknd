@@ -12,6 +12,7 @@ import { coerce, isType, isTypeSchema } from "./utils";
 export type FieldProps = {
    onChange?: (e: ChangeEvent<any>) => void;
    placeholder?: string;
+   disabled?: boolean;
 } & Omit<FieldwrapperProps, "children" | "schema">;
 
 export const Field = (props: FieldProps) => {
@@ -49,7 +50,7 @@ const FieldImpl = ({ name, onChange, placeholder, required: _required, ...props 
       return <ArrayField path={name} />;
    }
 
-   const disabled = schema.readOnly ?? "const" in schema ?? false;
+   const disabled = props.disabled ?? schema.readOnly ?? "const" in schema ?? false;
 
    const handleChange = useEvent((e: ChangeEvent<HTMLInputElement>) => {
       const value = coerce(e.target.value, schema as any, { required });

@@ -209,7 +209,8 @@ export const Switch = forwardRef<
       <RadixSwitch.Root
          className={clsx(
             "relative cursor-pointer rounded-full bg-muted border-2 border-transparent outline-none ring-1 dark:ring-primary/10 ring-primary/20 data-[state=checked]:ring-primary/60 data-[state=checked]:bg-primary/60 appearance-none transition-colors hover:bg-muted/80",
-            SwitchSizes[props.size ?? "md"].root
+            SwitchSizes[props.size ?? "md"].root,
+            props.disabled && "opacity-50 !cursor-not-allowed"
          )}
          onCheckedChange={(bool) => {
             console.log("setting", bool);

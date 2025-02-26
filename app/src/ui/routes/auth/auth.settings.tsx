@@ -15,7 +15,6 @@ import {
 } from "ui/components/form/json-schema-form";
 import { useBrowserTitle } from "ui/hooks/use-browser-title";
 import * as AppShell from "ui/layouts/AppShell/AppShell";
-import { Breadcrumbs2 } from "ui/layouts/AppShell/Breadcrumbs2";
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
 
@@ -52,9 +51,8 @@ const formConfig = {
 };
 
 function AuthSettingsInternal() {
-   const { config, schema: _schema, actions } = useBkndAuth();
+   const { config, schema: _schema, actions, $auth } = useBkndAuth();
    const schema = JSON.parse(JSON.stringify(_schema));
-   const hasRoles = Object.keys(config.roles ?? {}).length > 0;
 
    schema.properties.jwt.required = ["alg"];
 
@@ -105,11 +103,12 @@ function AuthSettingsInternal() {
                      label={
                         <div className="flex flex-row gap-2 items-center">
                            <span>Guard Enabled</span>
-                           {!hasRoles && (
-                              <Icon.Warning title="No roles defined. Enabling the guard will block all requests." />
+                           {!$auth.roles.has_admin && (
+                              <Icon.Warning title="No admin roles defined. Enabling the guard will likely block all requests." />
                            )}
                         </div>
                      }
+                     disabled={$auth.roles.none}
                      description="When enabled, enforces permissions on all routes. Make sure to create roles first."
                      descriptionPlacement="top"
                   />

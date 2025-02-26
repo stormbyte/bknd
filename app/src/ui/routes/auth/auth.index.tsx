@@ -21,7 +21,7 @@ export function AuthIndex() {
 
    const usersLink = app.getAbsolutePath("/data/" + routes.data.entity.list(users_entity));
    const rolesLink = routes.auth.roles.list();
-   const strategiesLink = app.getSettingsPath(["auth", "strategies"]);
+   const strategiesLink = routes.auth.strategies();
 
    return (
       <>
@@ -50,7 +50,7 @@ export function AuthIndex() {
                      value={!enabled ? 0 : rolesTotal}
                      actions={[
                         { label: "View all", href: rolesLink },
-                        { label: "Add new", variant: "default", href: rolesLink }
+                        { label: "Manage", variant: "default", href: rolesLink }
                      ]}
                   />
                   <KpiCard
@@ -58,7 +58,7 @@ export function AuthIndex() {
                      value={!enabled ? 0 : strategiesTotal}
                      actions={[
                         { label: "View all", href: strategiesLink },
-                        { label: "Add new", variant: "default", href: strategiesLink }
+                        { label: "Manage", variant: "default", href: strategiesLink }
                      ]}
                   />
                </div>
