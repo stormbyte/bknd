@@ -5,7 +5,7 @@ import {
    IconChevronUp,
    IconCirclesRelation,
    IconSettings,
-   IconUser
+   IconUser,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { TbDots } from "react-icons/tb";
@@ -23,7 +23,7 @@ const Item = ({
    toggle,
    ActiveIcon = IconChevronUp,
    children,
-   renderHeaderRight
+   renderHeaderRight,
 }: {
    title: string;
    open: boolean;
@@ -38,12 +38,12 @@ const Item = ({
          "flex flex-col flex-animate overflow-hidden",
          open
             ? "flex-open border-b border-b-muted"
-            : "flex-initial cursor-pointer hover:bg-primary/5"
+            : "flex-initial cursor-pointer hover:bg-primary/5",
       )}
    >
       <div
          className={twMerge(
-            "flex flex-row border-muted border-b h-14 py-4 pr-4 pl-2 items-center gap-2"
+            "flex flex-row border-muted border-b h-14 py-4 pr-4 pl-2 items-center gap-2",
          )}
          onClick={toggle}
       >
@@ -55,7 +55,7 @@ const Item = ({
       <div
          className={twMerge(
             "overflow-y-scroll transition-all",
-            open ? " flex-grow" : "h-0 opacity-0"
+            open ? " flex-grow" : "h-0 opacity-0",
          )}
       >
          <div className="flex flex-col gap-5 p-4 ">{children}</div>
@@ -77,8 +77,8 @@ export default function AppShellAccordionsTest() {
                   <Dropdown
                      items={[
                         {
-                           label: "Settings"
-                        }
+                           label: "Settings",
+                        },
                      ]}
                      position="bottom-end"
                   >

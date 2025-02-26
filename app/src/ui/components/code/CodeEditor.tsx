@@ -23,7 +23,7 @@ export default function CodeEditor({
       ? {
            ...(typeof basicSetup === "object" ? basicSetup : {}),
            highlightActiveLine: false,
-           highlightActiveLineGutter: false
+           highlightActiveLineGutter: false,
         }
       : basicSetup;
 

@@ -7,7 +7,7 @@ import {
    type MutatorResponse,
    type RepoQuery,
    type RepositoryResponse,
-   querySchema
+   querySchema,
 } from "data";
 import type { Handler } from "hono/types";
 import type { ModuleBuildContext } from "modules";
@@ -18,7 +18,7 @@ import type { AppDataConfig } from "../data-schema";
 export class DataController extends Controller {
    constructor(
       private readonly ctx: ModuleBuildContext,
-      private readonly config: AppDataConfig
+      private readonly config: AppDataConfig,
    ) {
       super();
    }
@@ -32,7 +32,7 @@ export class DataController extends Controller {
    }
 
    repoResult<T extends RepositoryResponse<any> = RepositoryResponse>(
-      res: T
+      res: T,
    ): Pick<T, "meta" | "data"> {
       let meta: Partial<RepositoryResponse["meta"]> = {};
 
@@ -48,7 +48,7 @@ export class DataController extends Controller {
       //return objectCleanEmpty(template) as any;
       // filter empty
       return Object.fromEntries(
-         Object.entries(template).filter(([_, v]) => typeof v !== "undefined" && v !== null)
+         Object.entries(template).filter(([_, v]) => typeof v !== "undefined" && v !== null),
       ) as any;
    }
 
@@ -91,7 +91,7 @@ export class DataController extends Controller {
          handler("data info", (c) => {
             // sample implementation
             return c.json(this.em.toJSON());
-         })
+         }),
       );
 
       // sync endpoint
@@ -103,7 +103,7 @@ export class DataController extends Controller {
          //console.log("tables", tables);
          const changes = await this.em.schema().sync({
             force,
-            drop
+            drop,
          });
          return c.json({ tables: tables.map((t) => t.name), changes });
       });
@@ -118,14 +118,14 @@ export class DataController extends Controller {
             this.em.entities.map((e) => [
                e.name,
                {
-                  $ref: `${this.config.basepath}/schemas/${e.name}`
-               }
-            ])
+                  $ref: `${this.config.basepath}/schemas/${e.name}`,
+               },
+            ]),
          );
          return c.json({
             $schema: "https://json-schema.org/draft/2020-12/schema",
             $id,
-            properties: schemas
+            properties: schemas,
          });
       });
 
@@ -137,8 +137,8 @@ export class DataController extends Controller {
             "param",
             Type.Object({
                entity: Type.String(),
-               context: Type.Optional(StringEnum(["create", "update"]))
-            })
+               context: Type.Optional(StringEnum(["create", "update"])),
+            }),
          ),
          async (c) => {
             //console.log("request", c.req.raw);
@@ -157,9 +157,9 @@ export class DataController extends Controller {
                $id,
                title: _entity.label,
                $comment: _entity.config.description,
-               ...schema
+               ...schema,
             });
-         }
+         },
       );
 
       // entity endpoints
@@ -178,7 +178,7 @@ export class DataController extends Controller {
          const $rels = (r: any) =>
             r.map((r: any) => ({
                entity: r.other(_entity).entity.name,
-               ref: r.other(_entity).reference
+               ref: r.other(_entity).reference,
             }));
 
          return c.json({
@@ -188,8 +188,8 @@ export class DataController extends Controller {
                all: $rels(this.em.relations.relationsOf(_entity)),
                listable: $rels(this.em.relations.listableRelationsOf(_entity)),
                source: $rels(this.em.relations.sourceRelationsOf(_entity)),
-               target: $rels(this.em.relations.targetRelationsOf(_entity))
-            }
+               target: $rels(this.em.relations.targetRelationsOf(_entity)),
+            },
          });
       });
 
@@ -222,7 +222,7 @@ export class DataController extends Controller {
             const where = (await c.req.json()) as any;
             const result = await this.em.repository(entity).count(where);
             return c.json({ entity, count: result.count });
-         }
+         },
       );
 
       // fn: exists
@@ -239,7 +239,7 @@ export class DataController extends Controller {
             const where = c.req.json() as any;
             const result = await this.em.repository(entity).exists(where);
             return c.json({ entity, exists: result.exists });
-         }
+         },
       );
 
       /**
@@ -263,7 +263,7 @@ export class DataController extends Controller {
             const result = await this.em.repository(entity).findMany(options);
 
             return c.json(this.repoResult(result), { status: result.data ? 200 : 404 });
-         }
+         },
       );
 
       // read one
@@ -274,8 +274,8 @@ export class DataController extends Controller {
             "param",
             Type.Object({
                entity: Type.String(),
-               id: tbNumber
-            })
+               id: tbNumber,
+            }),
          ),
          tb("query", querySchema),
          async (c) => {
@@ -287,7 +287,7 @@ export class DataController extends Controller {
             const result = await this.em.repository(entity).findId(Number(id), options);
 
             return c.json(this.repoResult(result), { status: result.data ? 200 : 404 });
-         }
+         },
       );
 
       // read many by reference
@@ -299,8 +299,8 @@ export class DataController extends Controller {
             Type.Object({
                entity: Type.String(),
                id: tbNumber,
-               reference: Type.String()
-            })
+               reference: Type.String(),
+            }),
          ),
          tb("query", querySchema),
          async (c) => {
@@ -315,7 +315,7 @@ export class DataController extends Controller {
                .findManyByReference(Number(id), reference, options);
 
             return c.json(this.repoResult(result), { status: result.data ? 200 : 404 });
-         }
+         },
       );
 
       // func query
@@ -334,7 +334,7 @@ export class DataController extends Controller {
             const result = await this.em.repository(entity).findMany(options);
 
             return c.json(this.repoResult(result), { status: result.data ? 200 : 404 });
-         }
+         },
       );
 
       /**
@@ -354,7 +354,7 @@ export class DataController extends Controller {
             const result = await this.em.mutator(entity).insertOne(body);
 
             return c.json(this.mutatorResult(result), 201);
-         }
+         },
       );
 
       // update many
@@ -366,8 +366,8 @@ export class DataController extends Controller {
             "json",
             Type.Object({
                update: Type.Object({}),
-               where: querySchema.properties.where
-            })
+               where: querySchema.properties.where,
+            }),
          ),
          async (c) => {
             const { entity } = c.req.param();
@@ -381,7 +381,7 @@ export class DataController extends Controller {
             const result = await this.em.mutator(entity).updateWhere(update, where);
 
             return c.json(this.mutatorResult(result));
-         }
+         },
       );
 
       // update one
@@ -398,7 +398,7 @@ export class DataController extends Controller {
             const result = await this.em.mutator(entity).updateOne(Number(id), body);
 
             return c.json(this.mutatorResult(result));
-         }
+         },
       );
 
       // delete one
@@ -414,7 +414,7 @@ export class DataController extends Controller {
             const result = await this.em.mutator(entity).deleteOne(Number(id));
 
             return c.json(this.mutatorResult(result));
-         }
+         },
       );
 
       // delete many
@@ -432,7 +432,7 @@ export class DataController extends Controller {
             const result = await this.em.mutator(entity).deleteWhere(where);
 
             return c.json(this.mutatorResult(result));
-         }
+         },
       );
 
       return hono;

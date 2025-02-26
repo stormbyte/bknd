@@ -11,7 +11,7 @@ import {
    TbBrandInstagram,
    TbBrandOauth,
    TbBrandX,
-   TbSettings
+   TbSettings,
 } from "react-icons/tb";
 import { twMerge } from "tailwind-merge";
 import { useBknd } from "ui/client/bknd";
@@ -28,7 +28,7 @@ import {
    Subscribe,
    useDerivedFieldContext,
    useFormError,
-   useFormValue
+   useFormValue,
 } from "ui/components/form/json-schema-form";
 import { useBrowserTitle } from "ui/hooks/use-browser-title";
 import * as AppShell from "../../layouts/AppShell/AppShell";
@@ -46,7 +46,7 @@ export function AuthStrategiesList(props) {
 
 const formOptions = {
    keepEmpty: true,
-   debug: isDebug()
+   debug: isDebug(),
 };
 
 function AuthStrategiesListInternal() {
@@ -57,8 +57,8 @@ function AuthStrategiesListInternal() {
       // @ts-ignore
       $auth.schema.properties.strategies.additionalProperties.anyOf.map((s) => [
          s.properties.type.const,
-         s
-      ])
+         s,
+      ]),
    );
 
    async function handleSubmit(data: any) {
@@ -72,7 +72,7 @@ function AuthStrategiesListInternal() {
             selector={(state) => ({
                dirty: state.dirty,
                errors: state.errors.length > 0,
-               submitting: state.submitting
+               submitting: state.submitting,
             })}
          >
             {({ dirty, errors, submitting }) => (
@@ -127,8 +127,8 @@ const Strategy = ({ type, name, unavailable }: StrategyProps) => {
       // @ts-ignore
       $auth.schema.properties.strategies.additionalProperties.anyOf.map((s) => [
          s.properties.type.const,
-         s
-      ])
+         s,
+      ]),
    );
    const schema = schemas[type];
    const [open, setOpen] = useState(false);
@@ -141,7 +141,7 @@ const Strategy = ({ type, name, unavailable }: StrategyProps) => {
             className={twMerge(
                "flex flex-col border border-muted rounded bg-background",
                unavailable && "opacity-20 pointer-events-none cursor-not-allowed",
-               errors.length > 0 && "border-red-500"
+               errors.length > 0 && "border-red-500",
             )}
          >
             <div className="flex flex-row justify-between p-3 gap-3 items-center">
@@ -165,7 +165,7 @@ const Strategy = ({ type, name, unavailable }: StrategyProps) => {
             {open && (
                <div
                   className={twMerge(
-                     "flex flex-col border-t border-t-muted px-4 pt-3 pb-4 bg-lightest/50 gap-4"
+                     "flex flex-col border-t border-t-muted px-4 pt-3 pb-4 bg-lightest/50 gap-4",
                   )}
                >
                   <StrategyForm type={type} />
@@ -216,7 +216,7 @@ const OAUTH_BRANDS = {
    x: TbBrandX,
    instagram: TbBrandInstagram,
    apple: TbBrandAppleFilled,
-   discord: TbBrandDiscordFilled
+   discord: TbBrandDiscordFilled,
 };
 
 const StrategyForm = ({ type }: Pick<StrategyProps, "type">) => {

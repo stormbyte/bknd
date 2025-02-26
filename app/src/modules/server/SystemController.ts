@@ -9,7 +9,7 @@ import {
    datetimeStringLocal,
    datetimeStringUTC,
    getTimezone,
-   getTimezoneOffset
+   getTimezoneOffset,
 } from "core/utils";
 import { getRuntimeKey } from "core/utils";
 import type { Context, Hono } from "hono";
@@ -19,7 +19,7 @@ import {
    MODULE_NAMES,
    type ModuleConfigs,
    type ModuleKey,
-   getDefaultConfig
+   getDefaultConfig,
 } from "modules/ModuleManager";
 import * as SystemPermissions from "modules/permissions";
 import { generateOpenAPI } from "modules/server/openapi";
@@ -64,8 +64,8 @@ export class SystemController extends Controller {
          tb(
             "query",
             Type.Object({
-               secrets: Type.Optional(booleanLike)
-            })
+               secrets: Type.Optional(booleanLike),
+            }),
          ),
          async (c) => {
             // @todo: allow secrets if authenticated user is admin
@@ -81,11 +81,11 @@ export class SystemController extends Controller {
                   ? {
                        version: this.app.version(),
                        module,
-                       config: config[module]
+                       config: config[module],
                     }
-                  : config
+                  : config,
             );
-         }
+         },
       );
 
       async function handleConfigUpdateResponse(c: Context<any>, cb: () => Promise<ConfigUpdate>) {
@@ -97,7 +97,7 @@ export class SystemController extends Controller {
             if (e instanceof TypeInvalidError) {
                return c.json(
                   { success: false, type: "type-invalid", errors: e.errors },
-                  { status: 400 }
+                  { status: 400 },
                );
             }
             if (e instanceof Error) {
@@ -114,8 +114,8 @@ export class SystemController extends Controller {
          tb(
             "query",
             Type.Object({
-               force: Type.Optional(booleanLike)
-            })
+               force: Type.Optional(booleanLike),
+            }),
          ),
          async (c) => {
             const module = c.req.param("module") as any;
@@ -129,7 +129,7 @@ export class SystemController extends Controller {
                   // force overwrite defined keys
                   const newConfig = {
                      ...this.app.module[module].config,
-                     ...value
+                     ...value,
                   };
                   await this.app.mutateConfig(module).set(newConfig);
                } else {
@@ -138,10 +138,10 @@ export class SystemController extends Controller {
                return {
                   success: true,
                   module,
-                  config: this.app.module[module].config
+                  config: this.app.module[module].config,
                };
             });
-         }
+         },
       );
 
       hono.post("/add/:module/:path", permission(SystemPermissions.configWrite), async (c) => {
@@ -160,7 +160,7 @@ export class SystemController extends Controller {
             return {
                success: true,
                module,
-               config: this.app.module[module].config
+               config: this.app.module[module].config,
             };
          });
       });
@@ -176,7 +176,7 @@ export class SystemController extends Controller {
             return {
                success: true,
                module,
-               config: this.app.module[module].config
+               config: this.app.module[module].config,
             };
          });
       });
@@ -192,7 +192,7 @@ export class SystemController extends Controller {
             return {
                success: true,
                module,
-               config: this.app.module[module].config
+               config: this.app.module[module].config,
             };
          });
       });
@@ -207,7 +207,7 @@ export class SystemController extends Controller {
             return {
                success: true,
                module,
-               config: this.app.module[module].config
+               config: this.app.module[module].config,
             };
          });
       });
@@ -228,8 +228,8 @@ export class SystemController extends Controller {
             "query",
             Type.Object({
                config: Type.Optional(booleanLike),
-               secrets: Type.Optional(booleanLike)
-            })
+               secrets: Type.Optional(booleanLike),
+            }),
          ),
          async (c) => {
             const module = c.req.param("module") as ModuleKey | undefined;
@@ -245,7 +245,7 @@ export class SystemController extends Controller {
                   module,
                   version,
                   schema: schema[module],
-                  config: config ? this.app.module[module].toJSON(secrets) : undefined
+                  config: config ? this.app.module[module].toJSON(secrets) : undefined,
                });
             }
 
@@ -254,9 +254,9 @@ export class SystemController extends Controller {
                version,
                schema,
                config: config ? this.app.toJSON(secrets) : undefined,
-               permissions: this.app.modules.ctx().guard.getPermissionNames()
+               permissions: this.app.modules.ctx().guard.getPermissionNames(),
             });
-         }
+         },
       );
 
       hono.post(
@@ -264,8 +264,8 @@ export class SystemController extends Controller {
          tb(
             "query",
             Type.Object({
-               sync: Type.Optional(booleanLike)
-            })
+               sync: Type.Optional(booleanLike),
+            }),
          ),
          async (c) => {
             const { sync } = c.req.valid("query") as Record<string, boolean>;
@@ -273,7 +273,7 @@ export class SystemController extends Controller {
 
             await this.app.build({ sync });
             return c.json({ success: true, options: { sync } });
-         }
+         },
       );
 
       hono.get("/ping", (c) => c.json({ pong: true }));
@@ -286,9 +286,9 @@ export class SystemController extends Controller {
                name: getTimezone(),
                offset: getTimezoneOffset(),
                local: datetimeStringLocal(),
-               utc: datetimeStringUTC()
-            }
-         })
+               utc: datetimeStringUTC(),
+            },
+         }),
       );
 
       hono.get("/openapi.json", async (c) => {

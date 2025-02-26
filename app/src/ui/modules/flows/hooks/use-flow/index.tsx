@@ -41,7 +41,7 @@ export type TFlowState = {
 export const flowStateAtom = atom<TFlowState>({
    dirty: false,
    name: undefined,
-   flow: undefined
+   flow: undefined,
 });
 
 const FlowCanvasContext = createContext<FlowContextType>(undefined!);
@@ -65,7 +65,7 @@ export function FlowCanvasProvider({ children, name }: { children: any; name?: s
          setName: async (name: string) => {
             console.log("set name", name);
             setFlowState((state) => ({ ...state, name, dirty: true }));
-         }
+         },
       },
       trigger: {
          update: async (trigger: TAppFlowTriggerSchema | any) => {
@@ -75,7 +75,7 @@ export function FlowCanvasProvider({ children, name }: { children: any; name?: s
                return { ...state, dirty: true, flow: { ...flow, trigger } };
             });
             //return s.actions.patch("flows", `flows.flows.${name}`, { trigger });
-         }
+         },
       },
       task: {
          create: async (name: string, defaults: object = {}) => {
@@ -95,12 +95,12 @@ export function FlowCanvasProvider({ children, name }: { children: any; name?: s
                return {
                   ...state,
                   dirty: true,
-                  flow: { ...flow, tasks: { ...flow.tasks, [name]: task } }
+                  flow: { ...flow, tasks: { ...flow.tasks, [name]: task } },
                };
             });
             //return s.actions.patch("flows", `flows.flows.${name}.tasks.${name}`, task);
-         }
-      }
+         },
+      },
    };
 
    return (
@@ -120,7 +120,7 @@ export function useFlowCanvasState() {
 
 export function useFlowSelector<Reduced = TFlowState>(
    selector: (state: TFlowState) => Reduced,
-   equalityFn: (a: any, b: any) => boolean = isEqual
+   equalityFn: (a: any, b: any) => boolean = isEqual,
 ) {
    const selected = selectAtom(flowStateAtom, useCallback(selector, []), equalityFn);
    return useAtom(selected)[0];
@@ -133,8 +133,8 @@ export function flowToNodes(flow: TAppFlowSchema, name: string): Node<TFlowNodeD
          data: { label: name, type: flow.trigger.type },
          type: "trigger",
          dragHandle: ".drag-handle",
-         position: { x: 0, y: 0 }
-      }
+         position: { x: 0, y: 0 },
+      },
    ];
 
    let i = 1;
@@ -150,7 +150,7 @@ export function flowToNodes(flow: TAppFlowSchema, name: string): Node<TFlowNodeD
          type: "task",
          dragHandle: ".drag-handle",
          // @todo: this is currently static
-         position: { x: 450 * i + (i - 1) * 64, y: 0 }
+         position: { x: 450 * i + (i - 1) * 64, y: 0 },
       });
       i++;
    }
@@ -178,14 +178,14 @@ export function flowToEdges(flow: TAppFlowSchema) {
                  target: `task-${tasks[0]?.[0]}`,
                  //type: "smoothstep",
                  style: {
-                    strokeWidth: 2
+                    strokeWidth: 2,
                  },
                  markerEnd: {
                     type: MarkerType.ArrowClosed,
                     width: 10,
-                    height: 10
-                 }
-              }
+                    height: 10,
+                 },
+              },
            ]
          : [];
 
@@ -195,13 +195,13 @@ export function flowToEdges(flow: TAppFlowSchema) {
          source: "task-" + connection.source,
          target: "task-" + connection.target,
          style: {
-            strokeWidth: 2
+            strokeWidth: 2,
          },
          markerEnd: {
             type: MarkerType.ArrowClosed,
             width: 10,
-            height: 10
-         }
+            height: 10,
+         },
       });
    }
 

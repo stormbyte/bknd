@@ -22,10 +22,10 @@ const searchSchema = Type.Composite(
       Type.Pick(querySchema, ["select", "where", "sort"]),
       Type.Object({
          page: Type.Optional(Type.Number({ default: 1 })),
-         perPage: Type.Optional(Type.Number({ default: 10 }))
-      })
+         perPage: Type.Optional(Type.Number({ default: 10 })),
+      }),
    ],
-   { additionalProperties: false }
+   { additionalProperties: false },
 );
 
 const PER_PAGE_OPTIONS = [5, 10, 25];
@@ -41,7 +41,7 @@ export function DataEntityList({ params }) {
    const [navigate] = useNavigate();
    const search = useSearch(searchSchema, {
       select: entity.getSelect(undefined, "table"),
-      sort: entity.getDefaultSort()
+      sort: entity.getDefaultSort(),
    });
 
    const $q = useApiQuery(
@@ -50,13 +50,13 @@ export function DataEntityList({ params }) {
             select: search.value.select,
             limit: search.value.perPage,
             offset: (search.value.page - 1) * search.value.perPage,
-            sort: `${search.value.sort.dir === "asc" ? "" : "-"}${search.value.sort.by}`
+            sort: `${search.value.sort.dir === "asc" ? "" : "-"}${search.value.sort.by}`,
          }),
       {
          enabled: !!entity,
          revalidateOnFocus: true,
-         keepPreviousData: true
-      }
+         keepPreviousData: true,
+      },
    );
    const data = $q.data?.data;
    const meta = $q.data?.body.meta;
@@ -94,19 +94,19 @@ export function DataEntityList({ params }) {
                      items={[
                         {
                            label: "Settings",
-                           onClick: () => navigate(routes.data.schema.entity(entity.name))
+                           onClick: () => navigate(routes.data.schema.entity(entity.name)),
                         },
                         {
                            label: "Data Schema",
-                           onClick: () => navigate(routes.data.schema.root())
+                           onClick: () => navigate(routes.data.schema.root()),
                         },
                         {
                            label: "Advanced Settings",
                            onClick: () =>
                               navigate(routes.settings.path(["data", "entities", entity.name]), {
-                                 absolute: true
-                              })
-                        }
+                                 absolute: true,
+                              }),
+                        },
                      ]}
                      position="bottom-end"
                   >
@@ -158,7 +158,7 @@ function EntityCreateButton({ entity }: { entity: Entity }) {
    if (entity.type === "system") {
       const system = {
          users: b.app.config.auth.entity_name,
-         media: b.app.config.media.entity_name
+         media: b.app.config.media.entity_name,
       };
       if (system.users === entity.name) {
          return (

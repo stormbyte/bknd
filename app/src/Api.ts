@@ -153,7 +153,7 @@ export class Api {
       return {
          token: this.token,
          user: this.user,
-         verified: this.verified
+         verified: this.verified,
       };
    }
 
@@ -198,7 +198,7 @@ export class Api {
          token: this.token,
          headers: this.options.headers,
          token_transport: this.token_transport,
-         verbose: this.options.verbose
+         verbose: this.options.verbose,
       });
    }
 
@@ -211,9 +211,9 @@ export class Api {
       this.auth = new AuthApi(
          {
             ...baseParams,
-            onTokenUpdate: (token) => this.updateToken(token, true)
+            onTokenUpdate: (token) => this.updateToken(token, true),
          },
-         fetcher
+         fetcher,
       );
       this.media = new MediaApi(baseParams, fetcher);
    }

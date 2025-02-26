@@ -39,7 +39,7 @@ const Root = ({ path = "", children }: AnyOfFieldRootProps) => {
       lib,
       pointer,
       value: { matchedIndex, schemas },
-      schema
+      schema,
    } = useDerivedFieldContext(path, (ctx) => {
       const [matchedIndex, schemas = []] = getMultiSchemaMatched(ctx.schema, ctx.value);
       return { matchedIndex, schemas };
@@ -58,7 +58,7 @@ const Root = ({ path = "", children }: AnyOfFieldRootProps) => {
       const options = schemas.map((s, i) => s.title ?? `Option ${i + 1}`);
       const selectSchema = {
          type: "string",
-         enum: options
+         enum: options,
       } satisfies JsonSchema;
 
       const selectedSchema = selected !== null ? (schemas[selected] as JsonSchema) : undefined;
@@ -69,7 +69,7 @@ const Root = ({ path = "", children }: AnyOfFieldRootProps) => {
          selectedSchema,
          schema,
          schemas,
-         selected
+         selected,
       };
    }, [selected]);
 
@@ -80,7 +80,7 @@ const Root = ({ path = "", children }: AnyOfFieldRootProps) => {
             ...context,
             select,
             path,
-            errors
+            errors,
          }}
       >
          {children}
@@ -130,7 +130,7 @@ export const AnyOf = {
    Root,
    Select,
    Field,
-   useContext: useAnyOfContext
+   useContext: useAnyOfContext,
 };
 
 export const AnyOfField = (props: Omit<AnyOfFieldRootProps, "children">) => {

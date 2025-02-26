@@ -31,7 +31,7 @@ import {
    type PolymorphicRelationConfig,
    type TEntityType,
    TextField,
-   type TextFieldConfig
+   type TextFieldConfig,
 } from "../index";
 
 type Options<Config = any> = {
@@ -56,44 +56,44 @@ const FieldMap = {
    media: (o: Options) =>
       new MediaField(o.field_name, { ...o.config, entity: o.entity.name, required: o.is_required }),
    medium: (o: Options) =>
-      new MediaField(o.field_name, { ...o.config, entity: o.entity.name, required: o.is_required })
+      new MediaField(o.field_name, { ...o.config, entity: o.entity.name, required: o.is_required }),
 } as const;
 type TFieldType = keyof typeof FieldMap;
 
 export function text(
-   config?: Omit<TextFieldConfig, "required">
+   config?: Omit<TextFieldConfig, "required">,
 ): TextField<false> & { required: () => TextField<true> } {
    return new FieldPrototype("text", config, false) as any;
 }
 export function number(
-   config?: Omit<NumberFieldConfig, "required">
+   config?: Omit<NumberFieldConfig, "required">,
 ): NumberField<false> & { required: () => NumberField<true> } {
    return new FieldPrototype("number", config, false) as any;
 }
 export function date(
-   config?: Omit<DateFieldConfig, "required" | "type">
+   config?: Omit<DateFieldConfig, "required" | "type">,
 ): DateField<false> & { required: () => DateField<true> } {
    return new FieldPrototype("date", { ...config, type: "date" }, false) as any;
 }
 export function datetime(
-   config?: Omit<DateFieldConfig, "required" | "type">
+   config?: Omit<DateFieldConfig, "required" | "type">,
 ): DateField<false> & { required: () => DateField<true> } {
    return new FieldPrototype("date", { ...config, type: "datetime" }, false) as any;
 }
 export function week(
-   config?: Omit<DateFieldConfig, "required" | "type">
+   config?: Omit<DateFieldConfig, "required" | "type">,
 ): DateField<false> & { required: () => DateField<true> } {
    return new FieldPrototype("date", { ...config, type: "week" }, false) as any;
 }
 export function boolean(
-   config?: Omit<BooleanFieldConfig, "required">
+   config?: Omit<BooleanFieldConfig, "required">,
 ): BooleanField<false> & { required: () => BooleanField<true> } {
    return new FieldPrototype("boolean", config, false) as any;
 }
 export function enumm<TypeOverride = string>(
    config?: Omit<EnumFieldConfig, "required" | "options"> & {
       enum: string[] | { label: string; value: string }[];
-   }
+   },
 ): EnumField<false, TypeOverride> & {
    required: () => EnumField<true, TypeOverride>;
 } {
@@ -101,18 +101,18 @@ export function enumm<TypeOverride = string>(
    const actual_config = {
       options: {
          type,
-         values: config?.enum ?? []
-      }
+         values: config?.enum ?? [],
+      },
    };
    return new FieldPrototype("enumm", actual_config, false) as any;
 }
 export function json<TypeOverride = object>(
-   config?: Omit<JsonFieldConfig, "required">
+   config?: Omit<JsonFieldConfig, "required">,
 ): JsonField<false, TypeOverride> & { required: () => JsonField<true, TypeOverride> } {
    return new FieldPrototype("json", config, false) as any;
 }
 export function jsonSchema<TypeOverride = object>(
-   config?: Omit<JsonSchemaFieldConfig, "required">
+   config?: Omit<JsonSchemaFieldConfig, "required">,
 ): JsonField<false, TypeOverride> & { required: () => JsonSchemaField<true, TypeOverride> } {
    return new FieldPrototype("jsonSchema", config, false) as any;
 }
@@ -120,7 +120,7 @@ export function media(config?: Omit<MediaFieldConfig, "entity">): MediaField<fal
    return new FieldPrototype("media", config, false) as any;
 }
 export function medium(
-   config?: Omit<MediaFieldConfig, "required" | "entity" | "max_items">
+   config?: Omit<MediaFieldConfig, "required" | "entity" | "max_items">,
 ): MediaField<false, MediaItem> {
    return new FieldPrototype("media", { ...config, max_items: 1 }, false) as any;
 }
@@ -135,7 +135,7 @@ export class FieldPrototype {
    constructor(
       public type: TFieldType,
       public config: any,
-      public is_required: boolean
+      public is_required: boolean,
    ) {}
 
    required() {
@@ -163,7 +163,7 @@ export class FieldPrototype {
             entity: { name: "unknown", fields: {} },
             field_name,
             config: this.config,
-            is_required: this.is_required
+            is_required: this.is_required,
          }) as unknown as Field;
       } catch (e) {
          throw new Error(`Faild to construct field "${this.type}": ${e}`);
@@ -175,12 +175,12 @@ export class FieldPrototype {
 
 export function entity<
    EntityName extends string,
-   Fields extends Record<string, Field<any, any, any>>
+   Fields extends Record<string, Field<any, any, any>>,
 >(
    name: EntityName,
    fields: Fields,
    config?: EntityConfig,
-   type?: TEntityType
+   type?: TEntityType,
 ): Entity<EntityName, Fields> {
    const _fields: Field[] = [];
    for (const [field_name, field] of Object.entries(fields)) {
@@ -189,7 +189,7 @@ export function entity<
          entity: { name, fields },
          field_name,
          config: f.config,
-         is_required: f.is_required
+         is_required: f.is_required,
       };
       _fields.push(f.getField(o));
    }
@@ -207,7 +207,7 @@ export function relation<Local extends Entity>(local: Local) {
       manyToMany: <Foreign extends Entity>(
          foreign: Foreign,
          config?: ManyToManyRelationConfig,
-         additionalFields?: Record<string, Field<any, any, any>>
+         additionalFields?: Record<string, Field<any, any, any>>,
       ) => {
          const add_fields: Field[] = [];
          if (additionalFields) {
@@ -221,7 +221,7 @@ export function relation<Local extends Entity>(local: Local) {
                   entity: { name: entity_name, fields },
                   field_name,
                   config: f.config,
-                  is_required: f.is_required
+                  is_required: f.is_required,
                };
                _fields.push(f.getField(o));
             }
@@ -232,16 +232,16 @@ export function relation<Local extends Entity>(local: Local) {
       },
       polyToOne: <Foreign extends Entity>(
          foreign: Foreign,
-         config?: Omit<PolymorphicRelationConfig, "targetCardinality">
+         config?: Omit<PolymorphicRelationConfig, "targetCardinality">,
       ) => {
          return new PolymorphicRelation(local, foreign, { ...config, targetCardinality: 1 });
       },
       polyToMany: <Foreign extends Entity>(
          foreign: Foreign,
-         config?: PolymorphicRelationConfig
+         config?: PolymorphicRelationConfig,
       ) => {
          return new PolymorphicRelation(local, foreign, config);
-      }
+      },
    };
 }
 
@@ -256,7 +256,7 @@ export function index<E extends Entity>(entity: E) {
             return field;
          });
          return new EntityIndex(entity, _fields, unique);
-      }
+      },
    };
 }
 
@@ -266,7 +266,7 @@ class EntityManagerPrototype<Entities extends Record<string, Entity>> extends En
    constructor(
       public __entities: Entities,
       relations: EntityRelation[] = [],
-      indices: EntityIndex[] = []
+      indices: EntityIndex[] = [],
    ) {
       super(Object.values(__entities), new DummyConnection(), relations, indices);
    }
@@ -279,7 +279,7 @@ type Chained<R extends Record<string, (...args: any[]) => any>> = {
 };
 type ChainedFn<
    Fn extends (...args: any[]) => Record<string, (...args: any[]) => any>,
-   Return extends ReturnType<Fn> = ReturnType<Fn>
+   Return extends ReturnType<Fn> = ReturnType<Fn>,
 > = (e: Entity) => {
    [K in keyof Return]: (...args: Parameters<Return[K]>) => Chained<Return>;
 };
@@ -288,8 +288,8 @@ export function em<Entities extends Record<string, Entity>>(
    entities: Entities,
    schema?: (
       fns: { relation: ChainedFn<typeof relation>; index: ChainedFn<typeof index> },
-      entities: Entities
-   ) => void
+      entities: Entities,
+   ) => void,
 ) {
    const relations: EntityRelation[] = [];
    const indices: EntityIndex[] = [];
@@ -301,7 +301,7 @@ export function em<Entities extends Record<string, Entity>>(
                relations.push(target[prop](...args));
                return relationProxy(e);
             };
-         }
+         },
       }) as any;
    };
 
@@ -312,7 +312,7 @@ export function em<Entities extends Record<string, Entity>>(
                indices.push(target[prop](...args));
                return indexProxy(e);
             };
-         }
+         },
       }) as any;
    };
 
@@ -327,7 +327,7 @@ export function em<Entities extends Record<string, Entity>>(
       relations,
       indices,
       toJSON: () =>
-         e.toJSON() as unknown as Pick<ModuleConfigs["data"], "entities" | "relations" | "indices">
+         e.toJSON() as unknown as Pick<ModuleConfigs["data"], "entities" | "relations" | "indices">,
    };
 }
 
@@ -367,7 +367,7 @@ type OptionalUndefined<
       ? undefined extends T[Props]
          ? Props
          : never
-      : never
+      : never,
 > = Merge<
    {
       [K in OptionsProps]?: T[K];

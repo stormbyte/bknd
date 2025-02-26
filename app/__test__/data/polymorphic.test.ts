@@ -23,23 +23,23 @@ describe("Polymorphic", async () => {
          source: "categories",
          target: "media",
          config: {
-            mappedBy: "image"
-         }
+            mappedBy: "image",
+         },
       });
       // media should not see categories
       expect(em.relationsOf(media.name).map((r) => r.toJSON())).toEqual([]);
 
       // it's important that media cannot access categories
       expect(em.relations.targetRelationsOf(categories).map((r) => r.source.entity.name)).toEqual(
-         []
+         [],
       );
       expect(em.relations.targetRelationsOf(media).map((r) => r.source.entity.name)).toEqual([]);
 
       expect(em.relations.sourceRelationsOf(categories).map((r) => r.target.entity.name)).toEqual([
-         "media"
+         "media",
       ]);
       expect(em.relations.sourceRelationsOf(categories).map((r) => r.target.reference)).toEqual([
-         "image"
+         "image",
       ]);
       expect(em.relations.sourceRelationsOf(media).map((r) => r.target.entity.name)).toEqual([]);
 
@@ -48,7 +48,7 @@ describe("Polymorphic", async () => {
          "id",
          "path",
          "reference",
-         "entity_id"
+         "entity_id",
       ]);
       expect(media.getSelect()).toEqual(["id", "path"]);
    });
@@ -60,7 +60,7 @@ describe("Polymorphic", async () => {
       const entities = [media, categories];
       const single = new PolymorphicRelation(categories, media, {
          mappedBy: "single",
-         targetCardinality: 1
+         targetCardinality: 1,
       });
       const multiple = new PolymorphicRelation(categories, media, { mappedBy: "multiple" });
 
@@ -71,17 +71,17 @@ describe("Polymorphic", async () => {
 
       // it's important that media cannot access categories
       expect(em.relations.targetRelationsOf(categories).map((r) => r.source.entity.name)).toEqual(
-         []
+         [],
       );
       expect(em.relations.targetRelationsOf(media).map((r) => r.source.entity.name)).toEqual([]);
 
       expect(em.relations.sourceRelationsOf(categories).map((r) => r.target.entity.name)).toEqual([
          "media",
-         "media"
+         "media",
       ]);
       expect(em.relations.sourceRelationsOf(categories).map((r) => r.target.reference)).toEqual([
          "single",
-         "multiple"
+         "multiple",
       ]);
       expect(em.relations.sourceRelationsOf(media).map((r) => r.target.entity.name)).toEqual([]);
 
@@ -90,7 +90,7 @@ describe("Polymorphic", async () => {
          "id",
          "path",
          "reference",
-         "entity_id"
+         "entity_id",
       ]);
    });
 });

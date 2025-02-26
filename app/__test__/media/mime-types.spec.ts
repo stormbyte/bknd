@@ -28,7 +28,7 @@ describe("media/mime-types", () => {
                   exts,
                   ext,
                   expected: ex,
-                  actual: large.guessMimeType("." + ext)
+                  actual: large.guessMimeType("." + ext),
                });
                throw new Error(`Failed for ${ext}`);
             }
@@ -49,13 +49,13 @@ describe("media/mime-types", () => {
          ["image/gif", true],
          ["whatever", false],
          ["text/tab-separated-values", true],
-         ["application/zip", true]
+         ["application/zip", true],
       ];
 
       for (const [mime, expected, exclude] of tests) {
          expect(
             tiny.isMimeType(mime, exclude as any),
-            `isMimeType(): ${mime} should be ${expected}`
+            `isMimeType(): ${mime} should be ${expected}`,
          ).toBe(expected as any);
       }
    });
@@ -68,7 +68,7 @@ describe("media/mime-types", () => {
          ["image/jpeg", "jpeg"],
          ["application/zip", "zip"],
          ["text/tab-separated-values", "tsv"],
-         ["application/zip", "zip"]
+         ["application/zip", "zip"],
       ];
 
       for (const [mime, ext] of tests) {
@@ -85,13 +85,13 @@ describe("media/mime-types", () => {
          ["image.heic", "heic"],
          ["image.jpeg", "jpeg"],
          ["-473Wx593H-466453554-black-MODEL.jpg", "jpg"],
-         ["-473Wx593H-466453554-black-MODEL.avif", "avif"]
+         ["-473Wx593H-466453554-black-MODEL.avif", "avif"],
       ];
 
       for (const [filename, ext] of tests) {
          expect(
             getRandomizedFilename(filename).split(".").pop(),
-            `getRandomizedFilename(): ${filename} should end with ${ext}`
+            `getRandomizedFilename(): ${filename} should end with ${ext}`,
          ).toBe(ext);
       }
    });

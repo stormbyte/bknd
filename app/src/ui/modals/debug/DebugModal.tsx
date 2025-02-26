@@ -25,7 +25,7 @@ export function DebugModal({ innerProps }: ContextModalProps<DebugProps>) {
          value: item,
          expand: 10,
          showCopy: true,
-         ...jsonViewerProps
+         ...jsonViewerProps,
       };
    });
 
@@ -58,7 +58,7 @@ export function DebugModal({ innerProps }: ContextModalProps<DebugProps>) {
                // @ts-expect-error
                ...tabs[Object.keys(tabs)[0]],
                // @ts-expect-error
-               title: tabs[Object.keys(tabs)[0]].label
+               title: tabs[Object.keys(tabs)[0]].label,
             })
          )}
       </div>
@@ -70,6 +70,6 @@ DebugModal.modalProps = {
    withCloseButton: false,
    size: "lg",
    classNames: {
-      body: "!p-0"
-   }
+      body: "!p-0",
+   },
 } satisfies Omit<ModalProps, "opened" | "onClose">;

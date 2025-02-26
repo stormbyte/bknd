@@ -6,7 +6,7 @@ import {
    ManyToOneRelation,
    OneToOneRelation,
    PolymorphicRelation,
-   RelationField
+   RelationField,
 } from "../../src/data/relations";
 import { getDummyConnection } from "./helper";
 
@@ -22,7 +22,7 @@ describe("Relations", async () => {
       const r1 = new RelationField("users_id", {
          reference: "users",
          target: "users",
-         target_field: "id"
+         target_field: "id",
       });
 
       const sql1 = schema
@@ -31,14 +31,14 @@ describe("Relations", async () => {
          .compile().sql;
 
       expect(sql1).toBe(
-         'create table "posts" ("users_id" integer references "users" ("id") on delete set null)'
+         'create table "posts" ("users_id" integer references "users" ("id") on delete set null)',
       );
 
       //const r2 = new RelationField(new Entity("users"), "author");
       const r2 = new RelationField("author_id", {
          reference: "author",
          target: "users",
-         target_field: "id"
+         target_field: "id",
       });
 
       const sql2 = schema
@@ -47,7 +47,7 @@ describe("Relations", async () => {
          .compile().sql;
 
       expect(sql2).toBe(
-         'create table "posts" ("author_id" integer references "users" ("id") on delete set null)'
+         'create table "posts" ("author_id" integer references "users" ("id") on delete set null)',
       );
    });
 
@@ -57,7 +57,7 @@ describe("Relations", async () => {
          reference: "users",
          target: "users",
          target_field: "id",
-         required: true
+         required: true,
       });
       expect(r1.isRequired()).toBeTrue();
    });
@@ -66,8 +66,8 @@ describe("Relations", async () => {
       const users = new Entity("users", [new TextField("username")]);
       const posts = new Entity("posts", [
          new TextField("title", {
-            maxLength: 2
-         })
+            maxLength: 2,
+         }),
       ]);
 
       const entities = [users, posts];
@@ -122,7 +122,7 @@ describe("Relations", async () => {
          .selectFrom(users.name)
          .select((eb) => postAuthorRel.buildWith(users, "posts")(eb).as("posts"));
       expect(selectPostsFromUsers.compile().sql).toBe(
-         'select (select from "posts" as "posts" where "posts"."author_id" = "users"."id") as "posts" from "users"'
+         'select (select from "posts" as "posts" where "posts"."author_id" = "users"."id") as "posts" from "users"',
       );
       expect(postAuthorRel!.getField()).toBeInstanceOf(RelationField);
       const userObj = { id: 1, username: "test" };
@@ -142,7 +142,7 @@ describe("Relations", async () => {
          .select((eb) => postAuthorRel.buildWith(posts, "author")(eb).as("author"));
 
       expect(selectUsersFromPosts.compile().sql).toBe(
-         'select (select from "users" as "author" where "author"."id" = "posts"."author_id" limit ?) as "author" from "posts"'
+         'select (select from "users" as "author" where "author"."id" = "posts"."author_id" limit ?) as "author" from "posts"',
       );
       expect(postAuthorRel.getField()).toBeInstanceOf(RelationField);
       const postObj = { id: 1, title: "test" };
@@ -158,7 +158,7 @@ describe("Relations", async () => {
          $detach: false,
          primary: undefined,
          cardinality: undefined,
-         relation_type: "n:1"
+         relation_type: "n:1",
       });
 
       expect(postAuthorRel!.helper(posts.name)!.getMutationInfo()).toEqual({
@@ -170,7 +170,7 @@ describe("Relations", async () => {
          $detach: false,
          primary: "id",
          cardinality: 1,
-         relation_type: "n:1"
+         relation_type: "n:1",
       });
 
       /*console.log("ManyToOne (source=posts, target=users)");
@@ -225,7 +225,7 @@ describe("Relations", async () => {
          $detach: false,
          primary: "id",
          cardinality: 1,
-         relation_type: "1:1"
+         relation_type: "1:1",
       });
       expect(userSettingRel!.helper(settings.name)!.getMutationInfo()).toEqual({
          reference: "users",
@@ -236,7 +236,7 @@ describe("Relations", async () => {
          $detach: false,
          primary: undefined,
          cardinality: 1,
-         relation_type: "1:1"
+         relation_type: "1:1",
       });
 
       /*console.log("");
@@ -312,14 +312,14 @@ describe("Relations", async () => {
          .selectFrom(posts.name)
          .select((eb) => postCategoriesRel.buildWith(posts)(eb).select("id").as("categories"));
       expect(selectCategoriesFromPosts.compile().sql).toBe(
-         'select (select "id" from "categories" inner join "posts_categories" on "categories"."id" = "posts_categories"."categories_id" where "posts"."id" = "posts_categories"."posts_id" limit ?) as "categories" from "posts"'
+         'select (select "id" from "categories" inner join "posts_categories" on "categories"."id" = "posts_categories"."categories_id" where "posts"."id" = "posts_categories"."posts_id" limit ?) as "categories" from "posts"',
       );
 
       const selectPostsFromCategories = kysely
          .selectFrom(categories.name)
          .select((eb) => postCategoriesRel.buildWith(categories)(eb).select("id").as("posts"));
       expect(selectPostsFromCategories.compile().sql).toBe(
-         'select (select "id" from "posts" inner join "posts_categories" on "posts"."id" = "posts_categories"."posts_id" where "categories"."id" = "posts_categories"."categories_id" limit ?) as "posts" from "categories"'
+         'select (select "id" from "posts" inner join "posts_categories" on "posts"."id" = "posts_categories"."posts_id" where "categories"."id" = "posts_categories"."categories_id" limit ?) as "posts" from "categories"',
       );
 
       // mutation info
@@ -332,7 +332,7 @@ describe("Relations", async () => {
          $detach: true,
          primary: "id",
          cardinality: undefined,
-         relation_type: "m:n"
+         relation_type: "m:n",
       });
       expect(relations[0].helper(categories.name)!.getMutationInfo()).toEqual({
          reference: "posts",
@@ -343,7 +343,7 @@ describe("Relations", async () => {
          $detach: false,
          primary: undefined,
          cardinality: undefined,
-         relation_type: "m:n"
+         relation_type: "m:n",
       });
 
       /*console.log("");

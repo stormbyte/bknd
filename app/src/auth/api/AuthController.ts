@@ -58,7 +58,7 @@ export class AuthController extends Controller {
                try {
                   const body = await this.auth.authenticator.getBody(c);
                   const valid = parse(create.schema, body, {
-                     skipMark: true
+                     skipMark: true,
                   });
                   const processed = (await create.preprocess?.(valid)) ?? valid;
 
@@ -67,7 +67,7 @@ export class AuthController extends Controller {
                   mutator.__unstable_toggleSystemEntityCreation(false);
                   const { data: created } = await mutator.insertOne({
                      ...processed,
-                     strategy: name
+                     strategy: name,
                   });
                   mutator.__unstable_toggleSystemEntityCreation(true);
 
@@ -75,21 +75,21 @@ export class AuthController extends Controller {
                      success: true,
                      action: "create",
                      strategy: name,
-                     data: created as unknown as SafeUser
+                     data: created as unknown as SafeUser,
                   } as AuthActionResponse);
                } catch (e) {
                   if (e instanceof TypeInvalidError) {
                      return c.json(
                         {
                            success: false,
-                           errors: e.errors
+                           errors: e.errors,
                         },
-                        400
+                        400,
                      );
                   }
                   throw e;
                }
-            }
+            },
          );
          hono.get("create/schema.json", async (c) => {
             return c.json(create.schema);
@@ -147,12 +147,12 @@ export class AuthController extends Controller {
                   strategies: transformObject(strategies ?? {}, (strategy, name) => {
                      return this.auth.isStrategyEnabled(name) ? strategy : undefined;
                   }),
-                  basepath
+                  basepath,
                });
             }
 
             return c.json({ strategies, basepath });
-         }
+         },
       );
 
       return hono.all("*", (c) => c.notFound());

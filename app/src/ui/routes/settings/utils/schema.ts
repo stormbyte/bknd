@@ -5,11 +5,11 @@ import { cloneDeep, omit, pick } from "lodash-es";
 export function extractSchema<
    Schema extends TObject,
    Keys extends keyof Schema["properties"],
-   Config extends Static<Schema>
+   Config extends Static<Schema>,
 >(
    schema: Schema,
    config: Config,
-   keys: Keys[]
+   keys: Keys[],
 ): [
    JSONSchema7,
    Partial<Config>,
@@ -19,7 +19,7 @@ export function extractSchema<
          config: Config[K];
          schema: Schema["properties"][K];
       };
-   }
+   },
 ] {
    if (!schema.properties) {
       return [{ ...schema }, config, {} as any];
@@ -28,7 +28,7 @@ export function extractSchema<
    const newSchema = cloneDeep(schema);
    const updated = {
       ...newSchema,
-      properties: omit(newSchema.properties, keys)
+      properties: omit(newSchema.properties, keys),
    };
    if (updated.required) {
       updated.required = updated.required.filter((key) => !keys.includes(key as any));
@@ -40,7 +40,7 @@ export function extractSchema<
          // @ts-ignore
          config: config[key],
          // @ts-ignore
-         schema: newSchema.properties[key]
+         schema: newSchema.properties[key],
       };
    }
 

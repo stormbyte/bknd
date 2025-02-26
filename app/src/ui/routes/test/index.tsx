@@ -52,7 +52,7 @@ const tests = {
    JsonSchemaFormReactTest,
    JsonSchemaForm3,
    FormyTest,
-   HtmlFormTest
+   HtmlFormTest,
 } as const;
 
 export default function TestRoutes() {

@@ -5,7 +5,7 @@ import { Connection } from "../connection/Connection";
 import {
    EntityNotDefinedException,
    TransformRetrieveFailedException,
-   UnableToConnectException
+   UnableToConnectException,
 } from "../errors";
 import { MutatorEvents, RepositoryEvents } from "../events";
 import type { Field } from "../fields/Field";
@@ -18,7 +18,7 @@ import { type EntityData, Mutator, Repository } from "./index";
 
 type EntitySchema<
    TBD extends object = DefaultDB,
-   E extends Entity | keyof TBD | string = string
+   E extends Entity | keyof TBD | string = string,
 > = E extends Entity<infer Name>
    ? Name extends keyof TBD
       ? Name
@@ -42,7 +42,7 @@ export class EntityManager<TBD extends object = DefaultDB> {
       connection: Connection,
       relations: EntityRelation[] = [],
       indices: EntityIndex[] = [],
-      emgr?: EventManager<any>
+      emgr?: EventManager<any>,
    ) {
       // add entities & relations
       entities.forEach((entity) => this.addEntity(entity));
@@ -114,11 +114,11 @@ export class EntityManager<TBD extends object = DefaultDB> {
 
    entity<Silent extends true | false = false>(
       e: Entity | keyof TBD | string,
-      silent?: Silent
+      silent?: Silent,
    ): Silent extends true ? Entity | undefined : Entity {
       // make sure to always retrieve by name
       const entity = this.entities.find((entity) =>
-         e instanceof Entity ? entity.name === e.name : entity.name === e
+         e instanceof Entity ? entity.name === e.name : entity.name === e,
       );
 
       if (!entity) {
@@ -177,7 +177,7 @@ export class EntityManager<TBD extends object = DefaultDB> {
       if (found) {
          throw new Error(
             `Relation "${relation.type}" between "${relation.source.entity.name}" ` +
-               `and "${relation.target.entity.name}" already exists`
+               `and "${relation.target.entity.name}" already exists`,
          );
       }
 
@@ -206,7 +206,7 @@ export class EntityManager<TBD extends object = DefaultDB> {
    }
 
    repository<E extends Entity | keyof TBD | string>(
-      entity: E
+      entity: E,
    ): Repository<TBD, EntitySchema<TBD, E>> {
       return this.repo(entity);
    }
@@ -277,7 +277,7 @@ export class EntityManager<TBD extends object = DefaultDB> {
                row[key] = field.transformRetrieve(value as any);
             } catch (e: any) {
                throw new TransformRetrieveFailedException(
-                  `"${field.type}" field "${key}" on entity "${entity.name}": ${e.message}`
+                  `"${field.type}" field "${key}" on entity "${entity.name}": ${e.message}`,
                );
             }
          }
@@ -293,7 +293,7 @@ export class EntityManager<TBD extends object = DefaultDB> {
          entities: Object.fromEntries(this.entities.map((e) => [e.name, e.toJSON()])),
          relations: Object.fromEntries(this.relations.all.map((r) => [r.getName(), r.toJSON()])),
          //relations: this.relations.all.map((r) => r.toJSON()),
-         indices: Object.fromEntries(this.indices.map((i) => [i.name, i.toJSON()]))
+         indices: Object.fromEntries(this.indices.map((i) => [i.name, i.toJSON()])),
       };
    }
 }

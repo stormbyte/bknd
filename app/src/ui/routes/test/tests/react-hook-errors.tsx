@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 
 const schema = Type.Object({
    example: Type.Optional(Type.String()),
-   exampleRequired: Type.String({ minLength: 2 })
+   exampleRequired: Type.String({ minLength: 2 }),
 });
 
 export default function ReactHookErrors() {
@@ -13,9 +13,9 @@ export default function ReactHookErrors() {
       register,
       handleSubmit,
       watch,
-      formState: { errors }
+      formState: { errors },
    } = useForm({
-      resolver: typeboxResolver(schema)
+      resolver: typeboxResolver(schema),
    });
    const onSubmit = (data) => console.log(data);
 

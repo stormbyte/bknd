@@ -6,12 +6,12 @@ import {
    type Static,
    StringIdentifier,
    objectCleanEmpty,
-   ucFirstAllSnakeToPascalWithSpaces
+   ucFirstAllSnakeToPascalWithSpaces,
 } from "core/utils";
 import { Entity } from "data";
 import {
    type TAppDataEntityFields,
-   fieldsSchemaObject as originalFieldsSchemaObject
+   fieldsSchemaObject as originalFieldsSchemaObject,
 } from "data/data-schema";
 import { omit } from "lodash-es";
 import { forwardRef, memo, useEffect, useImperativeHandle } from "react";
@@ -34,12 +34,12 @@ const fieldsSchema = Type.Union(Object.values(fieldsSchemaObject));
 const fieldSchema = Type.Object({
    name: StringIdentifier,
    new: Type.Optional(Type.Boolean({ const: true })),
-   field: fieldsSchema
+   field: fieldsSchema,
 });
 type TFieldSchema = Static<typeof fieldSchema>;
 
 const schema = Type.Object({
-   fields: Type.Array(fieldSchema)
+   fields: Type.Array(fieldSchema),
 });
 type TFieldsFormSchema = Static<typeof schema>;
 
@@ -70,7 +70,7 @@ export const EntityFieldsForm = forwardRef<EntityFieldsFormRef, EntityFieldsForm
    function EntityFieldsForm({ fields: _fields, sortable, additionalFieldTypes, ...props }, ref) {
       const entityFields = Object.entries(_fields).map(([name, field]) => ({
          name,
-         field
+         field,
       }));
 
       const {
@@ -81,22 +81,22 @@ export const EntityFieldsForm = forwardRef<EntityFieldsFormRef, EntityFieldsForm
          register,
          setValue,
          setError,
-         reset
+         reset,
       } = useForm({
          mode: "all",
          resolver: typeboxResolver(schema),
          defaultValues: {
-            fields: entityFields
-         } as TFieldsFormSchema
+            fields: entityFields,
+         } as TFieldsFormSchema,
       });
       const { fields, append, remove, move } = useFieldArray({
          control,
-         name: "fields"
+         name: "fields",
       });
 
       function toCleanValues(formData: TFieldsFormSchema): TAppDataEntityFields {
          return Object.fromEntries(
-            formData.fields.map((field) => [field.name, objectCleanEmpty(field.field)])
+            formData.fields.map((field) => [field.name, objectCleanEmpty(field.field)]),
          );
       }
 
@@ -116,7 +116,7 @@ export const EntityFieldsForm = forwardRef<EntityFieldsFormRef, EntityFieldsForm
          getData: () => {
             return toCleanValues(getValues());
          },
-         isValid: () => isValid
+         isValid: () => isValid,
       }));
 
       function handleAppend(_type: keyof typeof fieldsSchemaObject) {
@@ -125,8 +125,8 @@ export const EntityFieldsForm = forwardRef<EntityFieldsFormRef, EntityFieldsForm
             new: true,
             field: {
                type: _type,
-               config: {}
-            }
+               config: {},
+            },
          };
          append(newField);
       }
@@ -137,7 +137,7 @@ export const EntityFieldsForm = forwardRef<EntityFieldsFormRef, EntityFieldsForm
          setValue,
          getValues,
          control,
-         setError
+         setError,
       };
       return (
          <>
@@ -197,20 +197,20 @@ export const EntityFieldsForm = forwardRef<EntityFieldsFormRef, EntityFieldsForm
             </div>
          </>
       );
-   }
+   },
 );
 
 const SelectType = ({
    onSelect,
    additionalFieldTypes = [],
-   onSelected
+   onSelected,
 }: {
    onSelect: (type: string) => void;
    additionalFieldTypes?: (TFieldSpec & { onClick?: () => void })[];
    onSelected?: () => void;
 }) => {
    const types: (TFieldSpec & { onClick?: () => void })[] = fieldSpecs.filter(
-      (s) => s.addable !== false
+      (s) => s.addable !== false,
    );
 
    if (additionalFieldTypes) {
@@ -266,7 +266,7 @@ function EntityField({
    form: { watch, register, setValue, getValues, control, setError },
    remove,
    errors,
-   dnd
+   dnd,
 }: {
    field: FieldArrayWithId<TFieldsFormSchema, "fields", "id">;
    index: number;
@@ -307,7 +307,7 @@ function EntityField({
          className={twMerge(
             "flex flex-col border border-muted rounded bg-background mb-2",
             opened && "mb-6",
-            hasErrors && "border-red-500 "
+            hasErrors && "border-red-500 ",
          )}
          {...dndProps}
       >
@@ -331,7 +331,7 @@ function EntityField({
                      classNames={{
                         root: "w-full h-full",
                         wrapper: "font-mono h-full",
-                        input: "pt-px !h-full"
+                        input: "pt-px !h-full",
                      }}
                      {...register(`fields.${index}.name`)}
                      disabled={!field.new}
@@ -416,7 +416,7 @@ function EntityField({
                            onChange={(value) => {
                               setValue(`${prefix}.config`, {
                                  ...getValues([`fields.${index}.config`])[0],
-                                 ...value
+                                 ...value,
                               });
                            }}
                         />

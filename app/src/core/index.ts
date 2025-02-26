@@ -9,7 +9,7 @@ export {
    SimpleRenderer,
    type TemplateObject,
    type TemplateTypes,
-   type SimpleRendererOptions
+   type SimpleRendererOptions,
 } from "./template/SimpleRenderer";
 export { SchemaObject } from "./object/SchemaObject";
 export { DebugLogger } from "./utils/DebugLogger";
@@ -22,7 +22,7 @@ export {
    isPrimitive,
    type TExpression,
    type BooleanLike,
-   isBooleanLike
+   isBooleanLike,
 } from "./object/query/query";
 export { Registry, type Constructor } from "./registry/Registry";
 

@@ -7,11 +7,11 @@ const first = getNamedTask(
       //throw new Error("Error");
       return {
          inner: {
-            result: 2
-         }
+            result: 2,
+         },
       };
    },
-   1000
+   1000,
 );
 const second = getNamedTask("second (if match)");
 const third = getNamedTask("third (if error)");

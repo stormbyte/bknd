@@ -6,7 +6,7 @@ import {
    memo,
    useEffect,
    useRef,
-   useState
+   useState,
 } from "react";
 import { TbDots } from "react-icons/tb";
 import { twMerge } from "tailwind-merge";
@@ -84,7 +84,7 @@ export function Dropzone({
    onRejected,
    onDeleted,
    onUploaded,
-   children
+   children,
 }: DropzoneProps) {
    const [files, setFiles] = useState<FileState[]>(initialItems);
    const [uploading, setUploading] = useState<boolean>(false);
@@ -116,7 +116,7 @@ export function Dropzone({
       const specs = items.map((item) => ({
          kind: "kind" in item ? item.kind : "file",
          type: item.type,
-         size: "size" in item ? item.size : 0
+         size: "size" in item ? item.size : 0,
       }));
 
       return specs.every((spec) => {
@@ -164,7 +164,7 @@ export function Dropzone({
                   size: f.size,
                   type: f.type,
                   state: "pending",
-                  progress: 0
+                  progress: 0,
                }));
 
             return flow === "start" ? [...filteredFiles, ..._prev] : [..._prev, ...filteredFiles];
@@ -185,7 +185,7 @@ export function Dropzone({
       },
       onLeave: () => {
          setIsOverAccepted(false);
-      }
+      },
    });
 
    useEffect(() => {
@@ -223,11 +223,11 @@ export function Dropzone({
                return {
                   ...f,
                   state,
-                  progress: progress ?? f.progress
+                  progress: progress ?? f.progress,
                };
             }
             return f;
-         })
+         }),
       );
    }
 
@@ -237,11 +237,11 @@ export function Dropzone({
             if (f.path === prevPath) {
                return {
                   ...f,
-                  ...newState
+                  ...newState,
                };
             }
             return f;
-         })
+         }),
       );
    }
 
@@ -293,7 +293,7 @@ export function Dropzone({
                console.log(`Progress: ${percentComplete.toFixed(2)}%`);
             } else {
                console.log(
-                  "Unable to compute progress information since the total size is unknown"
+                  "Unable to compute progress information since the total size is unknown",
                );
             }
          });
@@ -311,7 +311,7 @@ export function Dropzone({
                   const newState = {
                      ...response.state,
                      progress: 1,
-                     state: "uploaded"
+                     state: "uploaded",
                   };
 
                   replaceFileState(file.path, newState);
@@ -364,7 +364,7 @@ export function Dropzone({
 
    const openFileInput = () => inputRef.current?.click();
    const showPlaceholder = Boolean(
-      placeholder?.show === true || !maxItems || (maxItems && files.length < maxItems)
+      placeholder?.show === true || !maxItems || (maxItems && files.length < maxItems),
    );
 
    const renderProps: DropzoneRenderProps = {
@@ -373,25 +373,25 @@ export function Dropzone({
          ref: inputRef,
          type: "file",
          multiple: !maxItems || maxItems > 1,
-         onChange: handleFileInputChange
+         onChange: handleFileInputChange,
       },
       state: {
          files,
          isOver,
          isOverAccepted,
-         showPlaceholder
+         showPlaceholder,
       },
       actions: {
          uploadFile,
          deleteFile,
-         openFileInput
+         openFileInput,
       },
       dropzoneProps: {
          maxItems,
          placeholder,
          autoUpload,
-         flow
-      }
+         flow,
+      },
    };
 
    return children ? children(renderProps) : <DropzoneInner {...renderProps} />;
@@ -402,7 +402,7 @@ const DropzoneInner = ({
    inputProps,
    state: { files, isOver, isOverAccepted, showPlaceholder },
    actions: { uploadFile, deleteFile, openFileInput },
-   dropzoneProps: { placeholder, flow }
+   dropzoneProps: { placeholder, flow },
 }: DropzoneRenderProps) => {
    const Placeholder = showPlaceholder && (
       <UploadPlaceholder onClick={openFileInput} text={placeholder?.text} />
@@ -422,7 +422,7 @@ const DropzoneInner = ({
          className={twMerge(
             "dropzone w-full h-full align-start flex flex-col select-none",
             isOver && isOverAccepted && "bg-green-200/10",
-            isOver && !isOverAccepted && "bg-red-200/40 cursor-not-allowed"
+            isOver && !isOverAccepted && "bg-red-200/40 cursor-not-allowed",
          )}
       >
          <div className="hidden">
@@ -478,7 +478,7 @@ const Wrapper = ({ file, fallback, ...props }: PreviewComponentProps) => {
 };
 export const PreviewWrapperMemoized = memo(
    Wrapper,
-   (prev, next) => prev.file.path === next.file.path
+   (prev, next) => prev.file.path === next.file.path,
 );
 
 type PreviewProps = {
@@ -490,12 +490,12 @@ const Preview: React.FC<PreviewProps> = ({ file, handleUpload, handleDelete }) =
    const dropdownItems = [
       ["initial", "uploaded"].includes(file.state) && {
          label: "Delete",
-         onClick: () => handleDelete(file)
+         onClick: () => handleDelete(file),
       },
       ["initial", "pending"].includes(file.state) && {
          label: "Upload",
-         onClick: () => handleUpload(file)
-      }
+         onClick: () => handleUpload(file),
+      },
    ];
 
    return (
@@ -503,7 +503,7 @@ const Preview: React.FC<PreviewProps> = ({ file, handleUpload, handleDelete }) =
          className={twMerge(
             "w-[49%] md:w-60 flex flex-col border border-muted relative",
             file.state === "failed" && "border-red-500 bg-red-200/20",
-            file.state === "deleting" && "opacity-70"
+            file.state === "deleting" && "opacity-70",
          )}
       >
          <div className="absolute top-2 right-2">

@@ -5,7 +5,7 @@ import {
    Type,
    parse,
    snakeToPascalWithSpaces,
-   transformObject
+   transformObject,
 } from "core/utils";
 import { type Field, PrimaryField, type TActionContext, type TRenderContext } from "../fields";
 
@@ -16,11 +16,11 @@ export const entityConfigSchema = Type.Object(
       name_singular: Type.Optional(Type.String()),
       description: Type.Optional(Type.String()),
       sort_field: Type.Optional(Type.String({ default: config.data.default_primary_field })),
-      sort_dir: Type.Optional(StringEnum(["asc", "desc"], { default: "asc" }))
+      sort_dir: Type.Optional(StringEnum(["asc", "desc"], { default: "asc" })),
    },
    {
-      additionalProperties: false
-   }
+      additionalProperties: false,
+   },
 );
 
 export type EntityConfig = Static<typeof entityConfigSchema>;
@@ -42,7 +42,7 @@ export type TEntityType = (typeof entityTypes)[number];
  */
 export class Entity<
    EntityName extends string = string,
-   Fields extends Record<string, Field<any, any, any>> = Record<string, Field<any, any, any>>
+   Fields extends Record<string, Field<any, any, any>> = Record<string, Field<any, any, any>>,
 > {
    readonly #_name!: EntityName;
    readonly #_fields!: Fields; // only for types
@@ -99,14 +99,14 @@ export class Entity<
    getDefaultSort() {
       return {
          by: this.config.sort_field ?? "id",
-         dir: this.config.sort_dir ?? "asc"
+         dir: this.config.sort_dir ?? "asc",
       };
    }
 
    getAliasedSelectFrom(
       select: string[],
       _alias?: string,
-      context?: TActionContext | TRenderContext
+      context?: TActionContext | TRenderContext,
    ): string[] {
       const alias = _alias ?? this.name;
       return this.getFields()
@@ -114,7 +114,7 @@ export class Entity<
             (field) =>
                !field.isVirtual() &&
                !field.isHidden(context ?? "read") &&
-               select.includes(field.name)
+               select.includes(field.name),
          )
          .map((field) => (alias ? `${alias}.${field.name} as ${field.name}` : field.name));
    }
@@ -206,7 +206,7 @@ export class Entity<
       options?: {
          explain?: boolean;
          ignoreUnknown?: boolean;
-      }
+      },
    ): boolean {
       if (typeof data !== "object") {
          if (options?.explain) {
@@ -224,7 +224,7 @@ export class Entity<
          if (unknown_keys.length > 0) {
             if (options?.explain) {
                throw new Error(
-                  `Entity "${this.name}" data must only contain known keys, unknown: "${unknown_keys}"`
+                  `Entity "${this.name}" data must only contain known keys, unknown: "${unknown_keys}"`,
                );
             }
          }
@@ -265,10 +265,10 @@ export class Entity<
                $comment: field.config.description,
                $field: field.type,
                readOnly: !fillable ? true : undefined,
-               ...field.toJsonSchema()
+               ...field.toJsonSchema(),
             };
          }),
-         { additionalProperties: false }
+         { additionalProperties: false },
       );
 
       return options?.clean ? JSON.parse(JSON.stringify(schema)) : schema;
@@ -280,7 +280,7 @@ export class Entity<
          type: this.type,
          //fields: transformObject(this.fields, (field) => field.toJSON()),
          fields: Object.fromEntries(this.fields.map((field) => [field.name, field.toJSON()])),
-         config: this.config
+         config: this.config,
       };
    }
 }

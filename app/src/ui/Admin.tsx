@@ -21,7 +21,7 @@ export type BkndAdminProps = {
 export default function Admin({
    baseUrl: baseUrlOverride,
    withProvider = false,
-   config
+   config,
 }: BkndAdminProps) {
    const Component = (
       <BkndProvider adminOverride={config} fallback={<Skeleton theme={config?.color_scheme} />}>

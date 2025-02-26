@@ -7,7 +7,7 @@ import * as Formy from "ui/components/form/Formy";
 import {
    useFormContext,
    useFormError,
-   useFormValue
+   useFormValue,
 } from "ui/components/form/json-schema-form/Form";
 import { Popover } from "ui/components/overlay/Popover";
 import { getLabel } from "./utils";
@@ -79,7 +79,7 @@ export function FieldWrapper({
                {Children.count(children) === 1 && isValidElement(children)
                   ? cloneElement(children, {
                        // @ts-ignore
-                       list: examples.length > 0 ? examplesId : undefined
+                       list: examples.length > 0 ? examplesId : undefined,
                     })
                   : children}
                {examples.length > 0 && (
@@ -100,7 +100,7 @@ export function FieldWrapper({
 const FieldDebug = ({
    name,
    schema,
-   required
+   required,
 }: Pick<FieldwrapperProps, "name" | "schema" | "required">) => {
    const { options } = useFormContext();
    if (!options?.debug) return null;
@@ -111,7 +111,7 @@ const FieldDebug = ({
       <div className="absolute top-0 right-0">
          <Popover
             overlayProps={{
-               className: "max-w-none"
+               className: "max-w-none",
             }}
             position="bottom-end"
             target={({ toggle }) => (
@@ -122,7 +122,7 @@ const FieldDebug = ({
                      value,
                      required,
                      schema,
-                     errors
+                     errors,
                   }}
                   expand={6}
                />

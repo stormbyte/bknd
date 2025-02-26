@@ -10,7 +10,7 @@ export class MemoryCache<Data = any> implements ICachePool<Data> {
 
    supports = () => ({
       metadata: true,
-      clear: true
+      clear: true,
    });
 
    async get(key: string): Promise<MemoryCacheItem<Data>> {
@@ -61,7 +61,7 @@ export class MemoryCache<Data = any> implements ICachePool<Data> {
    async put(
       key: string,
       value: Data,
-      options: { expiresAt?: Date; ttl?: number; metadata?: Record<string, string> } = {}
+      options: { expiresAt?: Date; ttl?: number; metadata?: Record<string, string> } = {},
    ): Promise<boolean> {
       const item = await this.get(key);
       item.set(value, options.metadata || {});

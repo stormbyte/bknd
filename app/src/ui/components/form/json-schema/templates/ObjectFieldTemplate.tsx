@@ -8,7 +8,7 @@ import {
    descriptionId,
    getTemplate,
    getUiOptions,
-   titleId
+   titleId,
 } from "@rjsf/utils";
 
 /** The `ObjectFieldTemplate` is the template to use to render all the inner properties of an object along with the
@@ -20,7 +20,7 @@ import {
 export default function ObjectFieldTemplate<
    T = any,
    S extends StrictRJSFSchema = RJSFSchema,
-   F extends FormContextType = any
+   F extends FormContextType = any,
 >(props: ObjectFieldTemplateProps<T, S, F>) {
    const {
       description,
@@ -34,18 +34,18 @@ export default function ObjectFieldTemplate<
       required,
       schema,
       title,
-      uiSchema
+      uiSchema,
    } = props;
    const options = getUiOptions<T, S, F>(uiSchema);
    const TitleFieldTemplate = getTemplate<"TitleFieldTemplate", T, S, F>(
       "TitleFieldTemplate",
       registry,
-      options
+      options,
    );
    const DescriptionFieldTemplate = getTemplate<"DescriptionFieldTemplate", T, S, F>(
       "DescriptionFieldTemplate",
       registry,
-      options
+      options,
    );
 
    /* if (properties.length === 0) {
@@ -59,7 +59,7 @@ export default function ObjectFieldTemplate<
 
    // Button templates are not overridden in the uiSchema
    const {
-      ButtonTemplates: { AddButton }
+      ButtonTemplates: { AddButton },
    } = registry.templates;
 
    return (

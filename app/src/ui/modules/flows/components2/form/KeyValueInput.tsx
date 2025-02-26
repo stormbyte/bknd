@@ -29,7 +29,7 @@ export const KeyValueInput: React.FC<KeyValueInputProps> = ({
    onChange,
    error,
    classNames,
-   mode = "object"
+   mode = "object",
 }) => {
    const [items, setItems] = useState(initialValue ? toItems(initialValue) : [ITEM]);
 

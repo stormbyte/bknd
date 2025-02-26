@@ -18,12 +18,12 @@ export function getSchemaActions({ api, setSchema, reloadSchema }: SchemaActions
       action: string,
       module: Module,
       res: ResponseObject<ConfigUpdateResponse<Module>>,
-      path?: string
+      path?: string,
    ): Promise<boolean> {
       const base: Partial<NotificationData> = {
          id: "schema-" + [action, module, path].join("-"),
          position: "top-right",
-         autoClose: 3000
+         autoClose: 3000,
       };
 
       if (res.success === true) {
@@ -35,8 +35,8 @@ export function getSchemaActions({ api, setSchema, reloadSchema }: SchemaActions
                   ...prev,
                   config: {
                      ...prev.config,
-                     [module]: res.config
-                  }
+                     [module]: res.config,
+                  },
                };
             });
          }
@@ -45,7 +45,7 @@ export function getSchemaActions({ api, setSchema, reloadSchema }: SchemaActions
             ...base,
             title: `Config updated: ${ucFirst(module)}`,
             color: "blue",
-            message: `Operation ${action.toUpperCase()} at ${module}${path ? "." + path : ""}`
+            message: `Operation ${action.toUpperCase()} at ${module}${path ? "." + path : ""}`,
          });
       } else {
          notifications.show({
@@ -54,7 +54,7 @@ export function getSchemaActions({ api, setSchema, reloadSchema }: SchemaActions
             color: "red",
             withCloseButton: true,
             autoClose: false,
-            message: res.error ?? "Failed to complete config update"
+            message: res.error ?? "Failed to complete config update",
          });
       }
 
@@ -66,7 +66,7 @@ export function getSchemaActions({ api, setSchema, reloadSchema }: SchemaActions
       set: async <Module extends keyof ModuleConfigs>(
          module: keyof ModuleConfigs,
          value: ModuleConfigs[Module],
-         force?: boolean
+         force?: boolean,
       ) => {
          const res = await api.system.setConfig(module, value, force);
          return await handleConfigUpdate("set", module, res);
@@ -74,7 +74,7 @@ export function getSchemaActions({ api, setSchema, reloadSchema }: SchemaActions
       patch: async <Module extends keyof ModuleConfigs>(
          module: Module,
          path: string,
-         value: any
+         value: any,
       ): Promise<boolean> => {
          const res = await api.system.patchConfig(module, path, value);
          return await handleConfigUpdate("patch", module, res, path);
@@ -82,7 +82,7 @@ export function getSchemaActions({ api, setSchema, reloadSchema }: SchemaActions
       overwrite: async <Module extends keyof ModuleConfigs>(
          module: Module,
          path: string,
-         value: any
+         value: any,
       ) => {
          const res = await api.system.overwriteConfig(module, path, value);
          return await handleConfigUpdate("overwrite", module, res, path);
@@ -94,6 +94,6 @@ export function getSchemaActions({ api, setSchema, reloadSchema }: SchemaActions
       remove: async <Module extends keyof ModuleConfigs>(module: Module, path: string) => {
          const res = await api.system.removeConfig(module, path);
          return await handleConfigUpdate("remove", module, res, path);
-      }
+      },
    };
 }

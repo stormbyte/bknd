@@ -23,7 +23,7 @@ const subjects = {
          relativeDistPath: getRelativeDistPath(),
          cwd: process.cwd(),
          dir: path.dirname(url.fileURLToPath(import.meta.url)),
-         resolvedPkg: path.resolve(getRootPath(), "package.json")
+         resolvedPkg: path.resolve(getRootPath(), "package.json"),
       });
    },
    routes: async () => {
@@ -32,7 +32,7 @@ const subjects = {
       const app = createApp({ connection: credentials });
       await app.build();
       showRoutes(app.server);
-   }
+   },
 };
 
 async function action(subject: string) {

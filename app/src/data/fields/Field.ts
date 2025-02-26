@@ -5,7 +5,7 @@ import {
    Type,
    TypeInvalidError,
    parse,
-   snakeToPascalWithSpaces
+   snakeToPascalWithSpaces,
 } from "core/utils";
 import type { ColumnBuilderCallback, ColumnDataType, ColumnDefinitionBuilder } from "kysely";
 import type { HTMLInputTypeAttribute, InputHTMLAttributes } from "react";
@@ -38,32 +38,32 @@ export const baseFieldConfigSchema = Type.Object(
          Type.Union(
             [
                Type.Boolean({ title: "Boolean", default: DEFAULT_FILLABLE }),
-               Type.Array(StringEnum(ActionContext), { title: "Context", uniqueItems: true })
+               Type.Array(StringEnum(ActionContext), { title: "Context", uniqueItems: true }),
             ],
             {
-               default: DEFAULT_FILLABLE
-            }
-         )
+               default: DEFAULT_FILLABLE,
+            },
+         ),
       ),
       hidden: Type.Optional(
          Type.Union(
             [
                Type.Boolean({ title: "Boolean", default: DEFAULT_HIDDEN }),
                // @todo: tmp workaround
-               Type.Array(StringEnum(TmpContext), { title: "Context", uniqueItems: true })
+               Type.Array(StringEnum(TmpContext), { title: "Context", uniqueItems: true }),
             ],
             {
-               default: DEFAULT_HIDDEN
-            }
-         )
+               default: DEFAULT_HIDDEN,
+            },
+         ),
       ),
       // if field is virtual, it will not call transformPersist & transformRetrieve
       virtual: Type.Optional(Type.Boolean()),
-      default_value: Type.Optional(Type.Any())
+      default_value: Type.Optional(Type.Any()),
    },
    {
-      additionalProperties: false
-   }
+      additionalProperties: false,
+   },
 );
 export type BaseFieldConfig = Static<typeof baseFieldConfigSchema>;
 
@@ -72,7 +72,7 @@ export type SchemaResponse = [string, ColumnDataType, ColumnBuilderCallback] | u
 export abstract class Field<
    Config extends BaseFieldConfig = BaseFieldConfig,
    Type = any,
-   Required extends true | false = false
+   Required extends true | false = false,
 > {
    _required!: Required;
    _type!: Type;
@@ -108,7 +108,7 @@ export abstract class Field<
 
    protected useSchemaHelper(
       type: ColumnDataType,
-      builder?: (col: ColumnDefinitionBuilder) => ColumnDefinitionBuilder
+      builder?: (col: ColumnDefinitionBuilder) => ColumnDefinitionBuilder,
    ): SchemaResponse {
       return [
          this.name,
@@ -116,7 +116,7 @@ export abstract class Field<
          (col: ColumnDefinitionBuilder) => {
             if (builder) return builder(col);
             return col;
-         }
+         },
       ];
    }
 
@@ -189,7 +189,7 @@ export abstract class Field<
    getHtmlConfig(): { element: HTMLInputTypeAttribute | string; props?: InputHTMLAttributes<any> } {
       return {
          element: "input",
-         props: { type: "text" }
+         props: { type: "text" },
       };
    }
 
@@ -217,7 +217,7 @@ export abstract class Field<
    async transformPersist(
       value: unknown,
       em: EntityManager<any>,
-      context: TActionContext
+      context: TActionContext,
    ): Promise<any> {
       if (this.nullish(value)) {
          if (this.isRequired() && !this.hasDefault()) {
@@ -245,7 +245,7 @@ export abstract class Field<
       return {
          // @todo: current workaround because of fixed string type
          type: this.type as any,
-         config: this.config
+         config: this.config,
       };
    }
 }

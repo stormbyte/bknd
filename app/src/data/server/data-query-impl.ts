@@ -6,7 +6,7 @@ import {
    StringEnum,
    Type,
    Value,
-   isObject
+   isObject,
 } from "core/utils";
 import { WhereBuilder, type WhereQuery } from "../entities";
 
@@ -23,9 +23,9 @@ const sort = Type.Transform(
    Type.Union(
       [Type.String(), Type.Object({ by: Type.String(), dir: StringEnum(["asc", "desc"]) })],
       {
-         default: sort_default
-      }
-   )
+         default: sort_default,
+      },
+   ),
 )
    .Decode((value): { by: string; dir: "asc" | "desc" } => {
       if (typeof value === "string") {
@@ -43,7 +43,7 @@ const sort = Type.Transform(
    .Encode((value) => value);
 
 const stringArray = Type.Transform(
-   Type.Union([Type.String(), Type.Array(Type.String())], { default: [] })
+   Type.Union([Type.String(), Type.Array(Type.String())], { default: [] }),
 )
    .Decode((value) => {
       if (Array.isArray(value)) {
@@ -56,7 +56,7 @@ const stringArray = Type.Transform(
    .Encode((value) => (Array.isArray(value) ? value : [value]));
 
 export const whereSchema = Type.Transform(
-   Type.Union([Type.String(), Type.Object({})], { default: {} })
+   Type.Union([Type.String(), Type.Object({})], { default: {} }),
 )
    .Decode((value) => {
       const q = typeof value === "string" ? JSON.parse(value) : value;
@@ -73,7 +73,7 @@ export type RepoWithSchema = Record<
 
 export const withSchema = <TSelf extends TThis>(Self: TSelf) =>
    Type.Transform(
-      Type.Union([Type.String(), Type.Array(Type.String()), Type.Record(Type.String(), Self)])
+      Type.Union([Type.String(), Type.Array(Type.String()), Type.Record(Type.String(), Self)]),
    )
       .Decode((value) => {
          // images
@@ -130,15 +130,15 @@ export const querySchema = Type.Recursive(
                select: stringArray,
                with: withSchema(Self),
                join: stringArray,
-               where: whereSchema
+               where: whereSchema,
             },
             {
                // @todo: determine if unknown is allowed, it's ignore anyway
-               additionalProperties: false
-            }
-         )
+               additionalProperties: false,
+            },
+         ),
       ),
-   { $id: "query-schema" }
+   { $id: "query-schema" },
 );
 
 export type RepoQueryIn = {

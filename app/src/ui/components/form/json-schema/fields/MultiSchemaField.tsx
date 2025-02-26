@@ -12,7 +12,7 @@ import {
    getDiscriminatorFieldFromSchema,
    getUiOptions,
    getWidget,
-   mergeSchemas
+   mergeSchemas,
 } from "@rjsf/utils";
 import { get, isEmpty, omit } from "lodash-es";
 import { Component } from "react";
@@ -35,7 +35,7 @@ type AnyOfFieldState<S extends StrictRJSFSchema = RJSFSchema> = {
 class MultiSchemaField<
    T = any,
    S extends StrictRJSFSchema = RJSFSchema,
-   F extends FormContextType = any
+   F extends FormContextType = any,
 > extends Component<FieldProps<T, S, F>, AnyOfFieldState<S>> {
    /** Constructs an `AnyOfField` with the given `props` to initialize the initially selected option in state
     *
@@ -47,7 +47,7 @@ class MultiSchemaField<
       const {
          formData,
          options,
-         registry: { schemaUtils }
+         registry: { schemaUtils },
       } = this.props;
       // cache the retrieved options in state in case they have $refs to save doing it later
       //console.log("multi schema", { formData, options, props });
@@ -55,7 +55,7 @@ class MultiSchemaField<
 
       this.state = {
          retrievedOptions,
-         selectedOption: this.getMatchingOption(0, formData, retrievedOptions)
+         selectedOption: this.getMatchingOption(0, formData, retrievedOptions),
       };
    }
 
@@ -67,18 +67,18 @@ class MultiSchemaField<
     */
    override componentDidUpdate(
       prevProps: Readonly<FieldProps<T, S, F>>,
-      prevState: Readonly<AnyOfFieldState>
+      prevState: Readonly<AnyOfFieldState>,
    ) {
       const { formData, options, idSchema } = this.props;
       const { selectedOption } = this.state;
       let newState = this.state;
       if (!deepEquals(prevProps.options, options)) {
          const {
-            registry: { schemaUtils }
+            registry: { schemaUtils },
          } = this.props;
          // re-cache the retrieved options in state in case they have $refs to save doing it later
          const retrievedOptions = options.map((opt: S) =>
-            schemaUtils.retrieveSchema(opt, formData)
+            schemaUtils.retrieveSchema(opt, formData),
          );
          newState = { selectedOption, retrievedOptions };
       }
@@ -104,7 +104,7 @@ class MultiSchemaField<
    getMatchingOption(selectedOption: number, formData: T | undefined, options: S[]) {
       const {
          schema,
-         registry: { schemaUtils }
+         registry: { schemaUtils },
       } = this.props;
 
       const discriminator = getDiscriminatorFieldFromSchema<S>(schema);
@@ -112,7 +112,7 @@ class MultiSchemaField<
          formData,
          options,
          selectedOption,
-         discriminator
+         discriminator,
       );
       return option;
    }
@@ -143,7 +143,7 @@ class MultiSchemaField<
          newFormData = schemaUtils.getDefaultFormState(
             newOption,
             newFormData,
-            "excludeObjectChildren"
+            "excludeObjectChildren",
          ) as T;
       }
       onChange(newFormData, undefined, this.getFieldId());
@@ -169,7 +169,7 @@ class MultiSchemaField<
          registry,
          schema,
          uiSchema,
-         readonly
+         readonly,
       } = this.props;
 
       const { widgets, fields, translateString, globalUiOptions, schemaUtils } = registry;
@@ -241,7 +241,7 @@ class MultiSchemaField<
          return {
             label:
                uiTitle || translateString(translateEnum, translateParams.concat(String(index + 1))),
-            value: index
+            value: index,
          };
       });
 
@@ -255,8 +255,8 @@ class MultiSchemaField<
                ...optionUiSchema,
                "ui:options": {
                   ...optionUiSchema?.["ui:options"],
-                  hideLabel: true
-               }
+                  hideLabel: true,
+               },
             }}
          />
       );
@@ -265,7 +265,7 @@ class MultiSchemaField<
          <div
             className={twMerge(
                "panel multischema flex",
-               flexDirection === "row" ? "flex-row gap-3" : "flex-col gap-2"
+               flexDirection === "row" ? "flex-row gap-3" : "flex-col gap-2",
             )}
          >
             <div className="flex flex-row gap-2 items-center panel-select">

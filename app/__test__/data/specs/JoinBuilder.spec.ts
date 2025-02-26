@@ -12,7 +12,7 @@ describe("[data] JoinBuilder", async () => {
       const em = new EntityManager([users], dummyConnection);
 
       expect(() =>
-         JoinBuilder.addClause(em, em.connection.kysely.selectFrom("users"), users, ["posts"])
+         JoinBuilder.addClause(em, em.connection.kysely.selectFrom("users"), users, ["posts"]),
       ).toThrow('Relation "posts" not found');
    });
 
@@ -23,7 +23,7 @@ describe("[data] JoinBuilder", async () => {
       const em = new EntityManager([users, posts], dummyConnection, relations);
 
       const qb = JoinBuilder.addClause(em, em.connection.kysely.selectFrom("users"), users, [
-         "posts"
+         "posts",
       ]);
 
       const res = qb.compile();
@@ -34,7 +34,7 @@ describe("[data] JoinBuilder", async () => {
       );*/
 
       const qb2 = JoinBuilder.addClause(em, em.connection.kysely.selectFrom("posts"), posts, [
-         "author"
+         "author",
       ]);
 
       const res2 = qb2.compile();

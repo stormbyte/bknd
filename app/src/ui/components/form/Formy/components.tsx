@@ -10,7 +10,7 @@ import {
    useEffect,
    useImperativeHandle,
    useRef,
-   useState
+   useState,
 } from "react";
 import { TbCalendar, TbChevronDown, TbInfoCircle } from "react-icons/tb";
 import { twMerge } from "tailwind-merge";
@@ -32,7 +32,7 @@ export const Group = <E extends ElementType = "div">({
             as === "fieldset" && "border border-primary/10 p-3 rounded-md",
             as === "fieldset" && error && "border-red-500",
             error && "text-red-500",
-            props.className
+            props.className,
          )}
       />
    );
@@ -93,7 +93,7 @@ export const Input = forwardRef<HTMLInputElement, React.ComponentProps<"input">>
             disabledOrReadonly && "bg-muted/50 text-primary/50",
             !disabledOrReadonly &&
                "focus:bg-muted focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:border-transparent transition-all",
-            props.className
+            props.className,
          )}
       />
    );
@@ -108,11 +108,11 @@ export const Textarea = forwardRef<HTMLTextAreaElement, React.ComponentProps<"te
             ref={ref}
             className={twMerge(
                "bg-muted/40 min-h-11 rounded-md py-2.5 px-4 focus:bg-muted outline-none focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:border-transparent transition-all disabled:bg-muted/50 disabled:text-primary/50",
-               props.className
+               props.className,
             )}
          />
       );
-   }
+   },
 );
 
 export const DateInput = forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
@@ -145,7 +145,7 @@ export const DateInput = forwardRef<HTMLInputElement, React.ComponentProps<"inpu
             />
          </div>
       );
-   }
+   },
 );
 
 export const BooleanInput = forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
@@ -174,23 +174,23 @@ export const BooleanInput = forwardRef<HTMLInputElement, React.ComponentProps<"i
             />
          </div>
       );
-   }
+   },
 );
 
 export type SwitchValue = boolean | 1 | 0 | "true" | "false" | "on" | "off";
 const SwitchSizes = {
    xs: {
       root: "h-5 w-8",
-      thumb: "data-[state=checked]:left-[calc(100%-1rem)]"
+      thumb: "data-[state=checked]:left-[calc(100%-1rem)]",
    },
    sm: {
       root: "h-6 w-10",
-      thumb: "data-[state=checked]:left-[calc(100%-1.25rem)]"
+      thumb: "data-[state=checked]:left-[calc(100%-1.25rem)]",
    },
    md: {
       root: "h-7 w-12",
-      thumb: "data-[state=checked]:left-[calc(100%-1.5rem)]"
-   }
+      thumb: "data-[state=checked]:left-[calc(100%-1.5rem)]",
+   },
 };
 
 export const Switch = forwardRef<
@@ -210,7 +210,7 @@ export const Switch = forwardRef<
          className={clsx(
             "relative cursor-pointer rounded-full bg-muted border-2 border-transparent outline-none ring-1 dark:ring-primary/10 ring-primary/20 data-[state=checked]:ring-primary/60 data-[state=checked]:bg-primary/60 appearance-none transition-colors hover:bg-muted/80",
             SwitchSizes[props.size ?? "md"].root,
-            props.disabled && "opacity-50 !cursor-not-allowed"
+            props.disabled && "opacity-50 !cursor-not-allowed",
          )}
          onCheckedChange={(bool) => {
             console.log("setting", bool);
@@ -229,7 +229,7 @@ export const Switch = forwardRef<
          <RadixSwitch.Thumb
             className={clsx(
                "absolute top-0 left-0 h-full aspect-square rounded-full bg-primary/30 data-[state=checked]:bg-background transition-[left,right] duration-100 border border-muted",
-               SwitchSizes[props.size ?? "md"].thumb
+               SwitchSizes[props.size ?? "md"].thumb,
             )}
          />
       </RadixSwitch.Root>
@@ -250,7 +250,7 @@ export const Select = forwardRef<
             "bg-muted/40 focus:bg-muted rounded-md py-2.5 px-4 outline-none focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:border-transparent transition-all disabled:bg-muted/50 disabled:text-primary/50",
             "appearance-none h-11 w-full",
             !props.multiple && "border-r-8 border-r-transparent",
-            props.className
+            props.className,
          )}
       >
          {options ? (

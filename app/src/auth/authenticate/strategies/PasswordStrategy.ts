@@ -9,7 +9,7 @@ type LoginSchema = { username: string; password: string } | { email: string; pas
 type RegisterSchema = { email: string; password: string; [key: string]: any };
 
 const schema = Type.Object({
-   hashing: StringEnum(["plain", "sha256" /*, "bcrypt"*/] as const, { default: "sha256" })
+   hashing: StringEnum(["plain", "sha256" /*, "bcrypt"*/] as const, { default: "sha256" }),
 });
 
 export type PasswordStrategyOptions = Static<typeof schema>;
@@ -49,7 +49,7 @@ export class PasswordStrategy implements Strategy {
 
       return {
          ...input,
-         password: await this.hash(input.password)
+         password: await this.hash(input.password),
       };
    }
 
@@ -62,8 +62,8 @@ export class PasswordStrategy implements Strategy {
             tb(
                "query",
                Type.Object({
-                  redirect: Type.Optional(Type.String())
-               })
+                  redirect: Type.Optional(Type.String()),
+               }),
             ),
             async (c) => {
                const body = await authenticator.getBody(c);
@@ -75,22 +75,22 @@ export class PasswordStrategy implements Strategy {
                      "login",
                      this,
                      payload.password,
-                     payload
+                     payload,
                   );
 
                   return await authenticator.respond(c, data, redirect);
                } catch (e) {
                   return await authenticator.respond(c, e);
                }
-            }
+            },
          )
          .post(
             "/register",
             tb(
                "query",
                Type.Object({
-                  redirect: Type.Optional(Type.String())
-               })
+                  redirect: Type.Optional(Type.String()),
+               }),
             ),
             async (c) => {
                const body = await authenticator.getBody(c);
@@ -101,11 +101,11 @@ export class PasswordStrategy implements Strategy {
                   "register",
                   this,
                   payload.password,
-                  payload
+                  payload,
                );
 
                return await authenticator.respond(c, data, redirect);
-            }
+            },
          );
    }
 
@@ -114,19 +114,19 @@ export class PasswordStrategy implements Strategy {
          create: createStrategyAction(
             Type.Object({
                email: Type.String({
-                  pattern: "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$"
+                  pattern: "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$",
                }),
                password: Type.String({
-                  minLength: 8 // @todo: this should be configurable
-               })
+                  minLength: 8, // @todo: this should be configurable
+               }),
             }),
             async ({ password, ...input }) => {
                return {
                   ...input,
-                  strategy_value: await this.hash(password)
+                  strategy_value: await this.hash(password),
                };
-            }
-         )
+            },
+         ),
       };
    }
 

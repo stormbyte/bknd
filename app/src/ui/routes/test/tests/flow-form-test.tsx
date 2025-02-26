@@ -6,7 +6,7 @@ export default function FlowFormTest() {
    const [data, setData] = useState(null);
    const task = new FetchTask("Fetch Something", {
       url: "https://jsonplaceholder.typicode.com/todos/1",
-      method: "{{ input.mode }}"
+      method: "{{ input.mode }}",
    });
 
    return (

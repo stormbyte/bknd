@@ -47,14 +47,14 @@ function NodeComponent(props: NodeProps<Node<TAppDataEntity & { label: string }>
 
 const handleStyle = {
    background: "transparent",
-   border: "none"
+   border: "none",
 };
 const TableRow = ({
    field,
    table,
    index,
    onHover,
-   last
+   last,
 }: {
    field: TableField;
    table: string;
@@ -71,7 +71,7 @@ const TableRow = ({
          className={twMerge(
             "flex flex-row w-full justify-between font-mono py-1.5 px-2.5 border-b border-primary/15 border-l border-r cursor-auto",
             last && "rounded-bl-lg rounded-br-lg",
-            "hover:bg-primary/5"
+            "hover:bg-primary/5",
          )}
       >
          {handles && (
@@ -108,7 +108,7 @@ const TableRow = ({
 
 export const HEIGHTS = {
    header: 30,
-   row: 32.5
+   row: 32.5,
 };
 
 export const EntityTableNode = {
@@ -118,7 +118,7 @@ export const EntityTableNode = {
       const field_count = Object.keys(fields).length;
       return {
          width: 320,
-         height: HEIGHTS.header + HEIGHTS.row * field_count
+         height: HEIGHTS.header + HEIGHTS.row * field_count,
       };
-   }
+   },
 };

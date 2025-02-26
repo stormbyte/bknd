@@ -5,8 +5,8 @@ export type { JsonSchemaFormProps, JsonSchemaFormRef };
 
 const Module = lazy(() =>
    import("./JsonSchemaForm").then((m) => ({
-      default: m.JsonSchemaForm
-   }))
+      default: m.JsonSchemaForm,
+   })),
 );
 
 export const JsonSchemaForm = forwardRef<JsonSchemaFormRef, JsonSchemaFormProps>((props, ref) => {

@@ -19,11 +19,11 @@ const baseOptions: Partial<Omit<esbuild.BuildOptions, "plugins">> & { plugins?: 
    format: "esm",
    drop: ["console", "debugger"],
    loader: {
-      ".svg": "dataurl"
+      ".svg": "dataurl",
    },
    define: {
-      __isDev: "0"
-   }
+      __isDev: "0",
+   },
 };
 
 // @ts-ignore
@@ -40,7 +40,7 @@ const builds: Record<string, BuildFn> = {
          "src/core/index.ts",
          "src/core/utils/index.ts",
          "src/ui/index.ts",
-         "src/ui/main.css"
+         "src/ui/main.css",
       ],
       outdir: "dist",
       outExtension: { ".js": format === "esm" ? ".js" : ".cjs" },
@@ -49,7 +49,7 @@ const builds: Record<string, BuildFn> = {
       bundle: true,
       plugins: [postcss()],
       //target: "es2022",
-      format
+      format,
    }),
    /*components: (format = "esm") => ({
       ...baseOptions,
@@ -84,11 +84,11 @@ const builds: Record<string, BuildFn> = {
       format,
       loader: {
          ".svg": "dataurl",
-         ".js": "jsx"
+         ".js": "jsx",
       },
       define: {
          __isDev: "0",
-         "process.env.NODE_ENV": '"production"'
+         "process.env.NODE_ENV": '"production"',
       },
       chunkNames: "chunks/[name]-[hash]",
       plugins: [
@@ -100,7 +100,7 @@ const builds: Record<string, BuildFn> = {
                return {
                   name,
                   path: output,
-                  mime: guessMimeType(name)
+                  mime: guessMimeType(name),
                };
             };
             for (const { output, meta } of info) {
@@ -113,9 +113,9 @@ const builds: Record<string, BuildFn> = {
             const manifest_file = "dist/static/manifest.json";
             await Bun.write(manifest_file, JSON.stringify(manifest, null, 2));
             console.log(`Manifest written to ${manifest_file}`, manifest);
-         })
-      ]
-   })
+         }),
+      ],
+   }),
 };
 
 function adapter(adapter: string, overrides: Partial<esbuild.BuildOptions> = {}): BuildOptions {
@@ -135,12 +135,12 @@ function adapter(adapter: string, overrides: Partial<esbuild.BuildOptions> = {})
          "react*",
          "next*",
          "libsql",
-         "@libsql*"
+         "@libsql*",
       ],
       splitting: false,
       treeShaking: true,
       bundle: true,
-      ...overrides
+      ...overrides,
    };
 }
 const adapters = [
@@ -152,7 +152,7 @@ const adapters = [
    adapter("remix", { format: "cjs" }),
    adapter("bun"),
    adapter("node", { platform: "node", format: "esm" }),
-   adapter("node", { platform: "node", format: "cjs" })
+   adapter("node", { platform: "node", format: "cjs" }),
 ];
 
 const collect = [
@@ -161,7 +161,7 @@ const collect = [
    //builds.components(),
    builds.backend("cjs"),
    //builds.components("cjs"),
-   ...adapters
+   ...adapters,
 ];
 
 if (watch) {
@@ -172,7 +172,7 @@ if (watch) {
    } = {
       timeout: undefined,
       cleanup: undefined,
-      building: undefined
+      building: undefined,
    };
 
    async function rebuildTypes() {
@@ -190,9 +190,9 @@ if (watch) {
                   onExit: () => {
                      _state.building = undefined;
                      console.log("Types rebuilt");
-                  }
+                  },
                });
-            }
+            },
          });
       }, 1000);
    }
@@ -209,9 +209,9 @@ if (watch) {
                      console.log(`rebuilt ${name} with ${result.errors.length} errors`);
                      rebuildTypes();
                   });
-               }
-            }
-         ]
+               },
+            },
+         ],
       });
       ctx.watch();
    }
@@ -235,9 +235,9 @@ if (watch) {
                         const from = String(i).padStart(String(count).length);
                         console.log(`[${from}/${count}] built ${name} with ${errors} errors`);
                      });
-                  }
-               }
-            ]
+                  },
+               },
+            ],
          });
       }
 
@@ -249,7 +249,7 @@ if (watch) {
       Bun.spawn(["bun", "build:types"], {
          onExit: () => {
             console.log("Types rebuilt");
-         }
+         },
       });
    }
 

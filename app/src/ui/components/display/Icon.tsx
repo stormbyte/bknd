@@ -14,5 +14,5 @@ const Warning = ({ className, ...props }: IconProps) => (
 );
 
 export const Icon = {
-   Warning
+   Warning,
 };

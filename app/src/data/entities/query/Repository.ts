@@ -11,7 +11,7 @@ import {
    type EntityData,
    type EntityManager,
    WhereBuilder,
-   WithBuilder
+   WithBuilder,
 } from "../index";
 import { JoinBuilder } from "./JoinBuilder";
 
@@ -79,7 +79,7 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
       const validated = {
          ...cloneDeep(defaultQuerySchema),
          sort: entity.getDefaultSort(),
-         select: entity.getSelect()
+         select: entity.getSelect(),
       };
 
       if (!options) return validated;
@@ -101,10 +101,10 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
 
          if (invalid.length > 0) {
             throw new InvalidSearchParamsException(
-               `Invalid select field(s): ${invalid.join(", ")}`
+               `Invalid select field(s): ${invalid.join(", ")}`,
             ).context({
                entity: entity.name,
-               valid: validated.select
+               valid: validated.select,
             });
          }
 
@@ -122,7 +122,7 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
             const related = this.em.relationOf(entity.name, entry);
             if (!related) {
                throw new InvalidSearchParamsException(
-                  `JOIN: "${entry}" is not a relation of "${entity.name}"`
+                  `JOIN: "${entry}" is not a relation of "${entity.name}"`,
                );
             }
 
@@ -155,7 +155,7 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
 
          if (invalid.length > 0) {
             throw new InvalidSearchParamsException(
-               `Invalid where field(s): ${invalid.join(", ")}`
+               `Invalid where field(s): ${invalid.join(", ")}`,
             ).context({ aliases, entity: entity.name });
          }
 
@@ -189,7 +189,7 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
          const [_count, _total, result] = await this.em.connection.batchQuery([
             countQuery,
             totalQuery,
-            qb
+            qb,
          ]);
          //$console.log("result", { _count, _total });
 
@@ -207,8 +207,8 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
                count: _count[0]?.count ?? 0, // @todo: better graceful method
                items: result.length,
                time,
-               query: { sql: compiled.sql, parameters: compiled.parameters }
-            }
+               query: { sql: compiled.sql, parameters: compiled.parameters },
+            },
          };
       } catch (e) {
          if (e instanceof Error) {
@@ -221,10 +221,10 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
 
    protected async single(
       qb: RepositoryQB,
-      options: RepoQuery
+      options: RepoQuery,
    ): Promise<RepositoryResponse<EntityData>> {
       await this.emgr.emit(
-         new Repository.Events.RepositoryFindOneBefore({ entity: this.entity, options })
+         new Repository.Events.RepositoryFindOneBefore({ entity: this.entity, options }),
       );
 
       const { data, ...response } = await this.performQuery(qb);
@@ -233,8 +233,8 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
          new Repository.Events.RepositoryFindOneAfter({
             entity: this.entity,
             options,
-            data: data[0]!
-         })
+            data: data[0]!,
+         }),
       );
 
       return { ...response, data: data[0]! };
@@ -248,7 +248,7 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
          ignore?: (keyof RepoQuery)[];
          alias?: string;
          defaults?: Pick<RepoQuery, "limit" | "offset">;
-      }
+      },
    ) {
       const entity = this.entity;
       let qb = _qb ?? (this.conn.selectFrom(entity.name) as RepositoryQB);
@@ -262,7 +262,7 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
       const defaults = {
          limit: 10,
          offset: 0,
-         ...config?.defaults
+         ...config?.defaults,
       };
 
       if (!ignore.includes("select") && options.select) {
@@ -295,7 +295,7 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
 
    private buildQuery(
       _options?: Partial<RepoQuery>,
-      ignore: (keyof RepoQuery)[] = []
+      ignore: (keyof RepoQuery)[] = [],
    ): { qb: RepositoryQB; options: RepoQuery } {
       const entity = this.entity;
       const options = this.getValidOptions(_options);
@@ -305,23 +305,23 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
             ignore,
             alias: entity.name,
             // already done
-            validate: false
+            validate: false,
          }),
-         options
+         options,
       };
    }
 
    async findId(
       id: PrimaryFieldType,
-      _options?: Partial<Omit<RepoQuery, "where" | "limit" | "offset">>
+      _options?: Partial<Omit<RepoQuery, "where" | "limit" | "offset">>,
    ): Promise<RepositoryResponse<TBD[TB] | undefined>> {
       const { qb, options } = this.buildQuery(
          {
             ..._options,
             where: { [this.entity.getPrimaryField().name]: id },
-            limit: 1
+            limit: 1,
          },
-         ["offset", "sort"]
+         ["offset", "sort"],
       );
 
       return this.single(qb, options) as any;
@@ -329,12 +329,12 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
 
    async findOne(
       where: RepoQuery["where"],
-      _options?: Partial<Omit<RepoQuery, "where" | "limit" | "offset">>
+      _options?: Partial<Omit<RepoQuery, "where" | "limit" | "offset">>,
    ): Promise<RepositoryResponse<TBD[TB] | undefined>> {
       const { qb, options } = this.buildQuery({
          ..._options,
          where,
-         limit: 1
+         limit: 1,
       });
 
       return this.single(qb, options) as any;
@@ -344,7 +344,7 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
       const { qb, options } = this.buildQuery(_options);
 
       await this.emgr.emit(
-         new Repository.Events.RepositoryFindManyBefore({ entity: this.entity, options })
+         new Repository.Events.RepositoryFindManyBefore({ entity: this.entity, options }),
       );
 
       const res = await this.performQuery(qb);
@@ -353,8 +353,8 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
          new Repository.Events.RepositoryFindManyAfter({
             entity: this.entity,
             options,
-            data: res.data
-         })
+            data: res.data,
+         }),
       );
 
       return res as any;
@@ -364,7 +364,7 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
    async findManyByReference(
       id: PrimaryFieldType,
       reference: string,
-      _options?: Partial<Omit<RepoQuery, "limit" | "offset">>
+      _options?: Partial<Omit<RepoQuery, "limit" | "offset">>,
    ): Promise<RepositoryResponse<EntityData>> {
       const entity = this.entity;
       const listable_relations = this.em.relations.listableRelationsOf(entity);
@@ -372,7 +372,7 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
 
       if (!relation) {
          throw new Error(
-            `Relation "${reference}" not found or not listable on entity "${entity.name}"`
+            `Relation "${reference}" not found or not listable on entity "${entity.name}"`,
          );
       }
 
@@ -380,7 +380,7 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
       const refQueryOptions = relation.getReferenceQuery(newEntity, id as number, reference);
       if (!("where" in refQueryOptions) || Object.keys(refQueryOptions.where as any).length === 0) {
          throw new Error(
-            `Invalid reference query for "${reference}" on entity "${newEntity.name}"`
+            `Invalid reference query for "${reference}" on entity "${newEntity.name}"`,
          );
       }
 
@@ -389,8 +389,8 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
          ...refQueryOptions,
          where: {
             ...refQueryOptions.where,
-            ..._options?.where
-         }
+            ..._options?.where,
+         },
       };
 
       return this.cloneFor(newEntity).findMany(findManyOptions);
@@ -415,7 +415,7 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
          sql: compiled.sql,
          parameters: [...compiled.parameters],
          result,
-         count: result[0]?.count ?? 0
+         count: result[0]?.count ?? 0,
       };
    }
 
@@ -441,7 +441,7 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
          sql: compiled.sql,
          parameters: [...compiled.parameters],
          result,
-         exists: result[0]!.count > 0
+         exists: result[0]!.count > 0,
       };
    }
 }

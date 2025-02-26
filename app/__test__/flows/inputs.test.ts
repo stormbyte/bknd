@@ -23,10 +23,10 @@ class OutputParamTask extends Task<typeof OutputParamTask.schema> {
    static override schema = Type.Object({
       number: dynamic(
          Type.Number({
-            title: "Output number"
+            title: "Output number",
          }),
-         Number.parseInt
-      )
+         Number.parseInt,
+      ),
    });
 
    async execute(inputs: InputsMap) {
@@ -75,7 +75,7 @@ describe("Flow task inputs", async () => {
    test("output/input", async () => {
       const task = new OutputParamTask("task1", { number: 111 });
       const task2 = new OutputParamTask("task2", {
-         number: "{{ task1.output }}"
+         number: "{{ task1.output }}",
       });
 
       const flow = new Flow("test", [task, task2]);
@@ -94,10 +94,10 @@ describe("Flow task inputs", async () => {
 
    test("input from flow", async () => {
       const task = new OutputParamTask("task1", {
-         number: "{{flow.output.someFancyParam}}"
+         number: "{{flow.output.someFancyParam}}",
       });
       const task2 = new OutputParamTask("task2", {
-         number: "{{task1.output}}"
+         number: "{{task1.output}}",
       });
 
       const flow = new Flow("test", [task, task2]);
@@ -126,7 +126,7 @@ describe("Flow task inputs", async () => {
       const emgr = new EventManager({ EventTriggerClass });
 
       const task = new OutputParamTask("event", {
-         number: "{{flow.output.number}}"
+         number: "{{flow.output.number}}",
       });
       const flow = new Flow(
          "test",
@@ -134,8 +134,8 @@ describe("Flow task inputs", async () => {
          [],
          new EventTrigger({
             event: "test-event",
-            mode: "sync"
-         })
+            mode: "sync",
+         }),
       );
       flow.setRespondingTask(task);
       flow.trigger.register(flow, emgr);
@@ -155,8 +155,8 @@ describe("Flow task inputs", async () => {
          new HttpTrigger({
             path: "/test",
             method: "GET",
-            mode: "sync"
-         })
+            mode: "sync",
+         }),
       );
       flow.setRespondingTask(task);
 

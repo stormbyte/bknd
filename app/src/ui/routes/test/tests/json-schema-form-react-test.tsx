@@ -13,7 +13,7 @@ const validator = new TypeboxValidator();
 
 const schema = Type.Object({
    name: Type.String(),
-   age: Type.Optional(Type.Number())
+   age: Type.Optional(Type.Number()),
 });
 
 export default function JsonSchemaFormReactTest() {

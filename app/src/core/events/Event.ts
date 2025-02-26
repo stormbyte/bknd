@@ -20,7 +20,7 @@ export abstract class Event<Params = any, Returning = void> {
 
    protected clone<This extends Event<Params, Returning> = Event<Params, Returning>>(
       this: This,
-      params: Params
+      params: Params,
    ): This {
       const cloned = new (this.constructor as any)(params);
       cloned.returned = true;
@@ -50,7 +50,7 @@ export class InvalidEventReturn extends Error {
 export class EventReturnedWithoutValidation extends Error {
    constructor(
       event: EventClass,
-      public data: any
+      public data: any,
    ) {
       // @ts-expect-error slug is static
       super(`Event "${event.constructor.slug}" returned without validation`);

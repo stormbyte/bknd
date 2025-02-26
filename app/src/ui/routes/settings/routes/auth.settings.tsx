@@ -8,37 +8,37 @@ const uiSchema = {
    jwt: {
       basepath: {
          "ui:options": {
-            label: false
-         }
+            label: false,
+         },
       },
       fields: {
          "ui:options": {
-            orderable: false
-         }
-      }
+            orderable: false,
+         },
+      },
    },
    strategies: {
       additionalProperties: {
          "ui:widget": "select",
          type: {
-            "ui:widget": "hidden"
-         }
+            "ui:widget": "hidden",
+         },
       },
       type: {
-         "ui:widget": "hidden"
-      }
+         "ui:widget": "hidden",
+      },
    },
    roles: {
       "ui:options": {
-         orderable: false
+         orderable: false,
       },
       permissions: {
          items: {
-            "ui:widget": "checkboxes"
+            "ui:widget": "checkboxes",
          },
-         "ui:widget": "checkboxes"
-      }
-   }
+         "ui:widget": "checkboxes",
+      },
+   },
 };
 
 export const AuthSettings = ({ schema: _unsafe_copy, config }) => {
@@ -122,7 +122,7 @@ export const AuthSettings = ({ schema: _unsafe_copy, config }) => {
                            }
                            return;
                         },
-                        reloadOnSave: true
+                        reloadOnSave: true,
                      }}
                      properties={{
                         strategies: {
@@ -131,8 +131,8 @@ export const AuthSettings = ({ schema: _unsafe_copy, config }) => {
                               return Object.values(
                                  transformObject(strategies, (s, name) => ({
                                     key: name,
-                                    type: s.type
-                                 }))
+                                    type: s.type,
+                                 })),
                               );
                            },
                            new: {
@@ -142,16 +142,16 @@ export const AuthSettings = ({ schema: _unsafe_copy, config }) => {
                                  return data.type === "password"
                                     ? "password"
                                     : data.config.name?.toLowerCase() || "";
-                              }
-                           }
+                              },
+                           },
                         },
                         roles: {
                            extract: true,
                            new: {
                               schema: roleSchema,
-                              uiSchema: uiSchema.roles
-                           }
-                        }
+                              uiSchema: uiSchema.roles,
+                           },
+                        },
                      }}
                      prefix={`${prefix}/auth`}
                      path={["auth"]}

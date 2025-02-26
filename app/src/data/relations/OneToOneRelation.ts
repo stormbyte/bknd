@@ -22,7 +22,7 @@ export class OneToOneRelation extends ManyToOneRelation {
          mappedBy,
          inversedBy,
          sourceCardinality: 1,
-         required
+         required,
       });
    }
 
@@ -41,7 +41,7 @@ export class OneToOneRelation extends ManyToOneRelation {
    override async $set(
       em: EntityManager<any>,
       key: string,
-      value: object
+      value: object,
    ): Promise<MutationInstructionResponse> {
       throw new Error("$set is not allowed");
    }
@@ -49,7 +49,7 @@ export class OneToOneRelation extends ManyToOneRelation {
    override async $create(
       em: EntityManager<any>,
       key: string,
-      value: unknown
+      value: unknown,
    ): Promise<void | MutationInstructionResponse> {
       if (value === null || typeof value !== "object") {
          throw new Error(`Invalid value for relation field "${key}" given, expected object.`);

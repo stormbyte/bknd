@@ -9,7 +9,7 @@ import { type Api, useApi } from "ui/client";
 export class UseEntityApiError<Payload = any> extends Error {
    constructor(
       public response: ResponseObject<Payload>,
-      fallback?: string
+      fallback?: string,
    ) {
       let message = fallback;
       if ("error" in response) {
@@ -26,10 +26,10 @@ export class UseEntityApiError<Payload = any> extends Error {
 export const useEntity = <
    Entity extends keyof DB | string,
    Id extends PrimaryFieldType | undefined = undefined,
-   Data = Entity extends keyof DB ? DB[Entity] : EntityData
+   Data = Entity extends keyof DB ? DB[Entity] : EntityData,
 >(
    entity: Entity,
-   id?: Id
+   id?: Id,
 ) => {
    const api = useApi().data;
 
@@ -71,7 +71,7 @@ export const useEntity = <
             throw new UseEntityApiError(res, `Failed to delete entity "${entity}"`);
          }
          return res;
-      }
+      },
    };
 };
 
@@ -80,7 +80,7 @@ export function makeKey(
    api: ModuleApi,
    entity: string,
    id?: PrimaryFieldType,
-   query?: RepoQueryIn
+   query?: RepoQueryIn,
 ) {
    return (
       "/" +
@@ -93,12 +93,12 @@ export function makeKey(
 
 export const useEntityQuery = <
    Entity extends keyof DB | string,
-   Id extends PrimaryFieldType | undefined = undefined
+   Id extends PrimaryFieldType | undefined = undefined,
 >(
    entity: Entity,
    id?: Id,
    query?: RepoQueryIn,
-   options?: SWRConfiguration & { enabled?: boolean; revalidateOnMutate?: boolean }
+   options?: SWRConfiguration & { enabled?: boolean; revalidateOnMutate?: boolean },
 ) => {
    const api = useApi().data;
    const key = makeKey(api, entity as string, id, query);
@@ -109,13 +109,13 @@ export const useEntityQuery = <
    const swr = useSWR<T>(options?.enabled === false ? null : key, fetcher as any, {
       revalidateOnFocus: false,
       keepPreviousData: true,
-      ...options
+      ...options,
    });
 
    const mutateAll = async () => {
       const entityKey = makeKey(api, entity as string);
       return mutate((key) => typeof key === "string" && key.startsWith(entityKey), undefined, {
-         revalidate: true
+         revalidate: true,
       });
    };
 
@@ -138,13 +138,13 @@ export const useEntityQuery = <
       mutate: mutateAll,
       mutateRaw: swr.mutate,
       api,
-      key
+      key,
    };
 };
 
 export async function mutateEntityCache<
    Entity extends keyof DB | string,
-   Data = Entity extends keyof DB ? Omit<DB[Entity], "id"> : EntityData
+   Data = Entity extends keyof DB ? Omit<DB[Entity], "id"> : EntityData,
 >(api: Api["data"], entity: Entity, id: PrimaryFieldType, partialData: Partial<Data>) {
    function update(prev: any, partialNext: any) {
       if (
@@ -171,23 +171,23 @@ export async function mutateEntityCache<
          return update(data, partialData);
       },
       {
-         revalidate: false
-      }
+         revalidate: false,
+      },
    );
 }
 
 export const useEntityMutate = <
    Entity extends keyof DB | string,
    Id extends PrimaryFieldType | undefined = undefined,
-   Data = Entity extends keyof DB ? Omit<DB[Entity], "id"> : EntityData
+   Data = Entity extends keyof DB ? Omit<DB[Entity], "id"> : EntityData,
 >(
    entity: Entity,
    id?: Id,
-   options?: SWRConfiguration
+   options?: SWRConfiguration,
 ) => {
    const { data, ...$q } = useEntityQuery<Entity, Id>(entity, id, undefined, {
       ...options,
-      enabled: false
+      enabled: false,
    });
 
    const _mutate = id
@@ -198,6 +198,6 @@ export const useEntityMutate = <
       ...$q,
       mutate: _mutate as unknown as Id extends undefined
          ? (id: PrimaryFieldType, data: Partial<Data>) => Promise<void>
-         : (data: Partial<Data>) => Promise<void>
+         : (data: Partial<Data>) => Promise<void>,
    };
 };

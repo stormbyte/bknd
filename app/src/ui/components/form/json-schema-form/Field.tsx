@@ -92,7 +92,9 @@ export const FieldComponent = ({
       // allow override
       value: typeof _props.value !== "undefined" ? _props.value : value,
       placeholder:
-         (_props.placeholder ?? typeof schema.default !== "undefined") ? String(schema.default) : ""
+         (_props.placeholder ?? typeof schema.default !== "undefined")
+            ? String(schema.default)
+            : "",
    };
 
    if (schema.enum) {
@@ -103,7 +105,7 @@ export const FieldComponent = ({
       const additional = {
          min: schema.minimum,
          max: schema.maximum,
-         step: schema.multipleOf
+         step: schema.multipleOf,
       };
 
       return (
@@ -133,7 +135,7 @@ export const FieldComponent = ({
                const date = new Date(e.target.value);
                props.onChange?.({
                   // @ts-ignore
-                  target: { value: date.toISOString() }
+                  target: { value: date.toISOString() },
                });
             }}
          />
@@ -147,7 +149,7 @@ export const FieldComponent = ({
    const additional = {
       maxLength: schema.maxLength,
       minLength: schema.minLength,
-      pattern: schema.pattern
+      pattern: schema.pattern,
    } as any;
 
    if (schema.format) {

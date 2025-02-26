@@ -11,7 +11,7 @@ import {
    type FieldProps,
    Form,
    FormDebug,
-   Subscribe
+   Subscribe,
 } from "ui/components/form/json-schema-form";
 import { useBrowserTitle } from "ui/hooks/use-browser-title";
 import * as AppShell from "ui/layouts/AppShell/AppShell";
@@ -21,17 +21,17 @@ import { combine } from "zustand/middleware";
 const useAuthSettingsStore = create(
    combine(
       {
-         advanced: [] as string[]
+         advanced: [] as string[],
       },
       (set) => ({
          toggleAdvanced: (which: string) =>
             set((state) => ({
                advanced: state.advanced.includes(which)
                   ? state.advanced.filter((w) => w !== which)
-                  : [...state.advanced, which]
-            }))
-      })
-   )
+                  : [...state.advanced, which],
+            })),
+      }),
+   ),
 );
 
 export function AuthSettings(props) {
@@ -47,7 +47,7 @@ export function AuthSettings(props) {
 
 const formConfig = {
    ignoreKeys: ["roles", "strategies"],
-   options: { keepEmpty: true, debug: isDebug() }
+   options: { keepEmpty: true, debug: isDebug() },
 };
 
 function AuthSettingsInternal() {
@@ -66,7 +66,7 @@ function AuthSettingsInternal() {
             selector={(state) => ({
                dirty: state.dirty,
                errors: state.errors.length > 0,
-               submitting: state.submitting
+               submitting: state.submitting,
             })}
          >
             {({ dirty, errors, submitting }) => (

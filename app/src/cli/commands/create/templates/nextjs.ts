@@ -9,7 +9,7 @@ export const nextjs = {
    description: "A basic bknd Next.js starter",
    path: "gh:bknd-io/bknd/examples/nextjs",
    scripts: {
-      install: "npm install --force"
+      install: "npm install --force",
    },
    ref: true,
    preinstall: async (ctx) => {
@@ -20,10 +20,10 @@ export const nextjs = {
             dependencies: {
                ...pkg.dependencies,
                react: undefined,
-               "react-dom": undefined
-            }
+               "react-dom": undefined,
+            },
          }),
-         { dir: ctx.dir }
+         { dir: ctx.dir },
       );
-   }
+   },
 } as const satisfies Template;

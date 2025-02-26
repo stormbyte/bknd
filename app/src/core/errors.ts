@@ -19,7 +19,7 @@ export class Exception extends Error {
       return {
          error: this.message,
          type: this.name,
-         context: this._context
+         context: this._context,
       };
    }
 }
@@ -28,7 +28,7 @@ export class BkndError extends Error {
    constructor(
       message: string,
       public details?: Record<string, any>,
-      public type?: string
+      public type?: string,
    ) {
       super(message);
    }
@@ -41,7 +41,7 @@ export class BkndError extends Error {
       return {
          type: this.type ?? "unknown",
          message: this.message,
-         details: this.details
+         details: this.details,
       };
    }
 }

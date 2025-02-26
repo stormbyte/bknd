@@ -4,7 +4,7 @@ import {
    getDefaultStore,
    useAtom,
    useAtomValue,
-   useSetAtom
+   useSetAtom,
 } from "jotai";
 import { selectAtom } from "jotai/utils";
 import { Draft2019, type JsonError, type JsonSchema as LibJsonSchema } from "json-schema-library";
@@ -20,7 +20,7 @@ import {
    useContext,
    useEffect,
    useMemo,
-   useRef
+   useRef,
 } from "react";
 import { JsonViewer } from "ui/components/code/JsonViewer";
 import { useEvent } from "ui/hooks/use-event";
@@ -32,7 +32,7 @@ import {
    omitSchema,
    pathToPointer,
    prefixPath,
-   prefixPointer
+   prefixPointer,
 } from "./utils";
 
 export type JSONSchema = Exclude<$JSONSchema, boolean>;
@@ -67,7 +67,7 @@ FormContext.displayName = "FormContext";
 
 export function Form<
    const Schema extends JSONSchema,
-   const Data = Schema extends JSONSchema ? FromSchema<Schema> : any
+   const Data = Schema extends JSONSchema ? FromSchema<Schema> : any,
 >({
    schema: _schema,
    initialValues: _initialValues,
@@ -101,7 +101,7 @@ export function Form<
          dirty: false,
          submitting: false,
          errors: [] as JsonError[],
-         data: initialValues
+         data: initialValues,
       });
    }, [initialValues]);
    const setFormState = useSetAtom(_formStateAtom);
@@ -188,9 +188,9 @@ export function Form<
          lib,
          options,
          root: "",
-         path: ""
+         path: "",
       }),
-      [schema, initialValues]
+      [schema, initialValues],
    ) as any;
 
    return (
@@ -236,7 +236,7 @@ export function FormContextOverride({
    const context = {
       ...ctx,
       ...overrides,
-      ...additional
+      ...additional,
    };
    console.log("context", context);
 
@@ -256,12 +256,12 @@ export function useFormValue(name: string, opts?: { strict?: boolean }) {
             const pointer = pathToPointer(prefixedName);
             return {
                value: getPath(state.data, prefixedName),
-               errors: state.errors.filter((error) => error.data.pointer.startsWith(pointer))
+               errors: state.errors.filter((error) => error.data.pointer.startsWith(pointer)),
             };
          },
-         [name]
+         [name],
       ),
-      isEqual
+      isEqual,
    );
    return useAtom(selected)[0];
 }
@@ -280,16 +280,16 @@ export function useFormError(name: string, opt?: { strict?: boolean; debug?: boo
                   : error.data.pointer.startsWith(pointer);
             });
          },
-         [name]
+         [name],
       ),
-      isEqual
+      isEqual,
    );
    return useAtom(selected)[0];
 }
 
 export function useFormStateSelector<Data = any, Reduced = Data>(
    selector: (state: FormState<Data>) => Reduced,
-   deps: any[] = []
+   deps: any[] = [],
 ): Reduced {
    const { _formStateAtom } = useFormContext();
    const selected = selectAtom(_formStateAtom, useCallback(selector, deps), isEqual);
@@ -309,7 +309,7 @@ export function useDerivedFieldContext<Data = any, Reduced = undefined>(
       },
       Reduced
    >,
-   _schema?: JSONSchema
+   _schema?: JSONSchema,
 ): FormContext<Data> & {
    value: Reduced;
    pointer: string;
@@ -338,29 +338,29 @@ export function useDerivedFieldContext<Data = any, Reduced = undefined>(
                root,
                schema: fieldSchema as LibJsonSchema,
                pointer,
-               required
+               required,
             };
             const derived = deriveFn?.({ ...context, _formStateAtom, lib, value });
 
             return {
                ...context,
-               value: derived
+               value: derived,
             };
          },
-         [path, schema ?? {}, root]
+         [path, schema ?? {}, root],
       ),
-      isEqual
+      isEqual,
    );
    return {
       ...useAtomValue(selected),
       _formStateAtom,
-      lib
+      lib,
    } as any;
 }
 
 export function Subscribe<Data = any, Refined = Data>({
    children,
-   selector
+   selector,
 }: {
    children: (state: Refined) => ReactNode;
    selector?: SelectorFn<FormState<Data>, Refined>;

@@ -7,13 +7,13 @@ import { Link } from "ui/components/wouter/Link";
 const sizes = {
    small: "px-2 py-1.5 rounded-md gap-1 text-sm",
    default: "px-3 py-2.5 rounded-md gap-1.5",
-   large: "px-4 py-3 rounded-md gap-2.5 text-lg"
+   large: "px-4 py-3 rounded-md gap-2.5 text-lg",
 };
 
 const iconSizes = {
    small: 12,
    default: 16,
-   large: 20
+   large: 20,
 };
 
 const styles = {
@@ -23,7 +23,7 @@ const styles = {
    outline: "border border-primary/20 bg-transparent hover:bg-primary/5 link text-primary/80",
    red: "dark:bg-red-950 dark:hover:bg-red-900 bg-red-100 hover:bg-red-200 link text-primary/70",
    subtlered:
-      "dark:text-red-950 text-red-700 dark:hover:bg-red-900 bg-transparent hover:bg-red-50 link"
+      "dark:text-red-950 text-red-700 dark:hover:bg-red-900 bg-transparent hover:bg-red-50 link",
 };
 
 export type BaseProps = {
@@ -54,7 +54,7 @@ const Base = ({
       "flex flex-row flex-nowrap items-center font-semibold disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed transition-[opacity,background-color,color,border-color]",
       sizes[size ?? "default"],
       styles[variant ?? "default"],
-      props.className
+      props.className,
    ),
    children: (
       <>
@@ -66,7 +66,7 @@ const Base = ({
          )}
          {IconRight && <IconRight size={iconSize} {...iconProps} />}
       </>
-   )
+   ),
 });
 
 export type ButtonProps = React.ComponentPropsWithoutRef<"button"> & BaseProps;

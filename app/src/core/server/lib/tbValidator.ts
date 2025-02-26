@@ -5,7 +5,7 @@ import { validator } from "hono/validator";
 
 type Hook<T, E extends Env, P extends string> = (
    result: { success: true; data: T } | { success: false; errors: ValueError[] },
-   c: Context<E, P>
+   c: Context<E, P>,
 ) => Response | Promise<Response> | void;
 
 export function tbValidator<
@@ -13,7 +13,7 @@ export function tbValidator<
    Target extends keyof ValidationTargets,
    E extends Env,
    P extends string,
-   V extends { in: { [K in Target]: StaticDecode<T> }; out: { [K in Target]: StaticDecode<T> } }
+   V extends { in: { [K in Target]: StaticDecode<T> }; out: { [K in Target]: StaticDecode<T> } },
 >(target: Target, schema: T, hook?: Hook<StaticDecode<T>, E, P>): MiddlewareHandler<E, P, V> {
    // Compile the provided schema once rather than per validation. This could be optimized further using a shared schema
    // compilation pool similar to the Fastify implementation.

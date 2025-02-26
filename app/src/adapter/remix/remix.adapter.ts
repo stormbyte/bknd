@@ -28,7 +28,7 @@ export async function getApp(config: RemixBkndConfig, args?: RemixContext) {
 }
 
 export function serve<Args extends RemixContext = RemixContext>(
-   config: RemixBkndConfig<Args> = {}
+   config: RemixBkndConfig<Args> = {},
 ) {
    return async (args: Args) => {
       app = await createFrameworkApp(config, args);

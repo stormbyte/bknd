@@ -16,7 +16,7 @@ import {
    FormDebug,
    ObjectField,
    Subscribe,
-   useFormError
+   useFormError,
 } from "ui/components/form/json-schema-form";
 import { useBrowserTitle } from "ui/hooks/use-browser-title";
 import * as AppShell from "ui/layouts/AppShell/AppShell";
@@ -34,7 +34,7 @@ export function MediaSettings(props) {
 
 const formConfig = {
    ignoreKeys: ["entity_name", "basepath"],
-   options: { debug: isDebug(), keepEmpty: true }
+   options: { debug: isDebug(), keepEmpty: true },
 };
 
 function MediaSettingsInternal() {
@@ -57,7 +57,7 @@ function MediaSettingsInternal() {
                selector={(state) => ({
                   dirty: state.dirty,
                   errors: state.errors.length > 0,
-                  submitting: state.submitting
+                  submitting: state.submitting,
                })}
             >
                {({ dirty, errors, submitting }) => (
@@ -116,7 +116,7 @@ const Icons = {
    s3: IconBrandAws,
    cloudinary: IconCloud,
    local: IconServer,
-   r2: IconBrandCloudflare
+   r2: IconBrandCloudflare,
 };
 
 const AdapterIcon = ({ type }: { type: string }) => {
@@ -142,7 +142,7 @@ function Adapters() {
                   variant={ctx.selected === i ? "primary" : "outline"}
                   className={twMerge(
                      "flex flex-row items-center justify-center gap-3 border",
-                     ctx.selected === i && "border-primary"
+                     ctx.selected === i && "border-primary",
                   )}
                >
                   <div>

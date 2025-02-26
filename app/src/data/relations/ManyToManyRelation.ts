@@ -21,19 +21,19 @@ export class ManyToManyRelation extends EntityRelation<typeof ManyToManyRelation
          EntityRelation.schema,
          Type.Object({
             connectionTable: Type.Optional(Type.String()),
-            connectionTableMappedName: Type.Optional(Type.String())
-         })
+            connectionTableMappedName: Type.Optional(Type.String()),
+         }),
       ],
       {
-         additionalProperties: false
-      }
+         additionalProperties: false,
+      },
    );
 
    constructor(
       source: Entity,
       target: Entity,
       config?: ManyToManyRelationConfig,
-      additionalFields?: Field[]
+      additionalFields?: Field[],
    ) {
       const connectionTable =
          config?.connectionTable || ManyToManyRelation.defaultConnectionTable(source, target);
@@ -67,12 +67,12 @@ export class ManyToManyRelation extends EntityRelation<typeof ManyToManyRelation
    getField(entity: Entity): RelationField {
       const conn = this.connectionEntity;
       const selfField = conn.fields.find(
-         (f) => f instanceof RelationField && f.target() === entity.name
+         (f) => f instanceof RelationField && f.target() === entity.name,
       )!;
 
       if (!selfField || !(selfField instanceof RelationField)) {
          throw new Error(
-            `Connection entity "${conn.name}" does not have a relation to "${entity.name}"`
+            `Connection entity "${conn.name}" does not have a relation to "${entity.name}"`,
          );
       }
 
@@ -87,7 +87,7 @@ export class ManyToManyRelation extends EntityRelation<typeof ManyToManyRelation
       const join = [
          conn.name,
          `${other.entity.name}.${other.entity.getPrimaryField().name}`,
-         `${conn.name}.${otherField.name}`
+         `${conn.name}.${otherField.name}`,
       ] as const;
 
       const entityRef = `${entity.name}.${entity.getPrimaryField().name}`;
@@ -100,7 +100,7 @@ export class ManyToManyRelation extends EntityRelation<typeof ManyToManyRelation
          join,
          entityRef,
          otherRef,
-         groupBy
+         groupBy,
       };
    }
 
@@ -109,9 +109,9 @@ export class ManyToManyRelation extends EntityRelation<typeof ManyToManyRelation
 
       return {
          where: {
-            [otherRef]: id
+            [otherRef]: id,
          },
-         join: [other.reference]
+         join: [other.reference],
       };
    }
 
@@ -136,7 +136,7 @@ export class ManyToManyRelation extends EntityRelation<typeof ManyToManyRelation
       const limit = 5;
       const { other, join, entityRef, otherRef } = this.getQueryInfo(entity);
       const additionalFields = this.connectionEntity.fields.filter(
-         (f) => !(f instanceof RelationField || f instanceof PrimaryField)
+         (f) => !(f instanceof RelationField || f instanceof PrimaryField),
       );
 
       return (eb: ExpressionBuilder<any, any>) =>
@@ -149,9 +149,9 @@ export class ManyToManyRelation extends EntityRelation<typeof ManyToManyRelation
                   select.push(
                      jsonBuildObject(
                         Object.fromEntries(
-                           additionalFields.map((f) => [f.name, eb2.ref(`${conn}.${f.name}`)])
-                        )
-                     ).as(this.connectionTableMappedName)
+                           additionalFields.map((f) => [f.name, eb2.ref(`${conn}.${f.name}`)]),
+                        ),
+                     ).as(this.connectionTableMappedName),
                   );
                }
 
@@ -186,7 +186,7 @@ export class ManyToManyRelation extends EntityRelation<typeof ManyToManyRelation
    override getName(): string {
       return [
          super.getName(),
-         [this.connectionEntity.name, this.connectionTableMappedName].filter(Boolean)
+         [this.connectionEntity.name, this.connectionTableMappedName].filter(Boolean),
       ].join("_");
    }
 }

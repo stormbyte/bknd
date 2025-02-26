@@ -9,7 +9,7 @@ import {
    StringEnum,
    Type,
    registerCustomTypeboxKinds,
-   transformObject
+   transformObject,
 } from "core/utils";
 import { TriggerMap } from "flows";
 import type { TAppFlowTriggerSchema } from "flows/AppFlows";
@@ -33,18 +33,18 @@ const schema = Type.Object({
             Type.Object(
                {
                   type: Const(name),
-                  config: trigger.cls.schema
+                  config: trigger.cls.schema,
                },
-               { title: String(name), additionalProperties: false }
-            )
-         )
-      )
-   )
+               { title: String(name), additionalProperties: false },
+            ),
+         ),
+      ),
+   ),
 });
 
 export const TriggerNode = (props: NodeProps<Node<TAppFlowTriggerSchema & { label: string }>>) => {
    const {
-      data: { label, ...trigger }
+      data: { label, ...trigger },
    } = props;
    //console.log("TriggerNode");
    const state = useFlowSelector((s) => s.flow!.trigger!);
@@ -57,11 +57,11 @@ export const TriggerNode = (props: NodeProps<Node<TAppFlowTriggerSchema & { labe
       getValues,
       formState: { isValid, errors },
       watch,
-      control
+      control,
    } = useForm({
       resolver: typeboxResolver(schema),
       defaultValues: { trigger: state } as Static<typeof schema>,
-      mode: "onChange"
+      mode: "onChange",
    });
    const data = watch("trigger");
 
@@ -91,7 +91,7 @@ export const TriggerNode = (props: NodeProps<Node<TAppFlowTriggerSchema & { labe
                   data={[
                      { label: "Manual", value: "manual" },
                      { label: "HTTP", value: "http" },
-                     { label: "Event", value: "event", disabled: true }
+                     { label: "Event", value: "event", disabled: true },
                   ]}
                   name="trigger.type"
                   control={control}
@@ -101,7 +101,7 @@ export const TriggerNode = (props: NodeProps<Node<TAppFlowTriggerSchema & { labe
                   defaultValue="async"
                   data={[
                      { label: "Async", value: "async" },
-                     { label: "Sync", value: "sync" }
+                     { label: "Sync", value: "sync" },
                   ]}
                   name="trigger.config.mode"
                   control={control}
@@ -148,7 +148,7 @@ const Http = ({ form }) => {
                data={[
                   { label: "JSON", value: "json" },
                   { label: "HTML", value: "html" },
-                  { label: "Text", value: "text" }
+                  { label: "Text", value: "text" },
                ]}
                name="trigger.config.response_type"
                control={form.control}
@@ -162,11 +162,11 @@ const TriggerNodeTabs = ({ data, ...props }) => [
    {
       id: "json",
       label: "JSON",
-      content: () => <JsonViewer json={data} expand={2} className="" />
+      content: () => <JsonViewer json={data} expand={2} className="" />,
    },
    {
       id: "test",
       label: "test",
-      content: () => <div>test</div>
-   }
+      content: () => <div>test</div>,
+   },
 ];

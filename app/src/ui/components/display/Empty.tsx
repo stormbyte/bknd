@@ -15,7 +15,7 @@ export const Empty: React.FC<EmptyProps> = ({
    description = "Check back later my friend.",
    primary,
    secondary,
-   className
+   className,
 }) => (
    <div className={twMerge("flex flex-col h-full w-full justify-center items-center", className)}>
       <div className="flex flex-col gap-3 items-center max-w-80">

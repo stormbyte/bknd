@@ -11,7 +11,7 @@ class ExecTask extends Task {
    constructor(
       name: string,
       params: any,
-      private fn: () => any
+      private fn: () => any,
    ) {
       super(name, params);
    }
@@ -54,8 +54,8 @@ export function getNamedTask(name: string, _func?: () => Promise<any>, delay?: n
    return new ExecTask(
       name,
       {
-         delay
+         delay,
       },
-      func
+      func,
    );
 }

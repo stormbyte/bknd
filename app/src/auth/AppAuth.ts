@@ -4,7 +4,7 @@ import {
    Authenticator,
    type ProfileExchange,
    Role,
-   type Strategy
+   type Strategy,
 } from "auth";
 import type { PasswordStrategy } from "auth/authenticate/strategies";
 import { type DB, Exception, type PrimaryFieldType } from "core";
@@ -68,15 +68,15 @@ export class AppAuth extends Module<typeof authConfigSchema> {
          } catch (e) {
             throw new Error(
                `Could not build strategy ${String(
-                  name
-               )} with config ${JSON.stringify(strategy.config)}`
+                  name,
+               )} with config ${JSON.stringify(strategy.config)}`,
             );
          }
       });
 
       this._authenticator = new Authenticator(strategies, this.resolveUser.bind(this), {
          jwt: this.config.jwt,
-         cookie: this.config.cookie
+         cookie: this.config.cookie,
       });
 
       this.registerEntities();
@@ -117,7 +117,7 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       action: AuthAction,
       strategy: Strategy,
       identifier: string,
-      profile: ProfileExchange
+      profile: ProfileExchange,
    ): Promise<any> {
       if (!this.config.allow_register && action === "register") {
          throw new Exception("Registration is not allowed", 403);
@@ -127,7 +127,7 @@ export class AppAuth extends Module<typeof authConfigSchema> {
          .getFillableFields("create")
          .map((f) => f.name);
       const filteredProfile = Object.fromEntries(
-         Object.entries(profile).filter(([key]) => fields.includes(key))
+         Object.entries(profile).filter(([key]) => fields.includes(key)),
       );
 
       switch (action) {
@@ -190,7 +190,7 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       const payload: any = {
          ...profile,
          strategy: strategy.getName(),
-         strategy_value: identifier
+         strategy_value: identifier,
       };
 
       const mutator = this.em.mutator(users);
@@ -240,13 +240,13 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       email: text().required(),
       strategy: text({
          fillable: ["create"],
-         hidden: ["update", "form"]
+         hidden: ["update", "form"],
       }).required(),
       strategy_value: text({
          fillable: ["create"],
-         hidden: ["read", "table", "update", "form"]
+         hidden: ["read", "table", "update", "form"],
       }).required(),
-      role: text()
+      role: text(),
    };
 
    registerEntities() {
@@ -254,12 +254,12 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       this.ensureSchema(
          em(
             {
-               [users.name as "users"]: users
+               [users.name as "users"]: users,
             },
             ({ index }, { users }) => {
                index(users).on(["email"], true).on(["strategy"]).on(["strategy_value"]);
-            }
-         )
+            },
+         ),
       );
 
       try {
@@ -288,7 +288,7 @@ export class AppAuth extends Module<typeof authConfigSchema> {
          ...(additional as any),
          email,
          strategy,
-         strategy_value
+         strategy_value,
       });
       mutator.__unstable_toggleSystemEntityCreation(true);
       return created;
@@ -307,8 +307,8 @@ export class AppAuth extends Module<typeof authConfigSchema> {
          strategies: transformObject(strategies, (strategy) => ({
             enabled: this.isStrategyEnabled(strategy),
             type: strategy.getType(),
-            config: strategy.toJSON(secrets)
-         }))
+            config: strategy.toJSON(secrets),
+         })),
       };
    }
 }

@@ -9,7 +9,7 @@ describe("object-query", () => {
 
    test("validates", async () => {
       const converted = convert({
-         name: { $eq: "ch" }
+         name: { $eq: "ch" },
       });
       validate(converted, { name: "Michael" });
    });
@@ -31,7 +31,7 @@ describe("object-query", () => {
          [{ val: { $notnull: 1 } }, { val: null }, false],
          [{ val: { $regex: ".*" } }, { val: "test" }, true],
          [{ val: { $regex: /^t.*/ } }, { val: "test" }, true],
-         [{ val: { $regex: /^b.*/ } }, { val: "test" }, false]
+         [{ val: { $regex: /^b.*/ } }, { val: "test" }, false],
       ];
 
       for (const [query, object, expected] of tests) {
@@ -55,10 +55,10 @@ describe("object-query", () => {
          [
             { $or: { val1: { $eq: "foo" }, val2: { $eq: "bar" } } },
             { val1: "foo", val2: "bar" },
-            true
+            true,
          ],
          [{ val1: { $eq: 1 }, $or: { val1: { $eq: 2 } } }, { val1: 1 }, true],
-         [{ val1: { $eq: 1 }, $or: { val1: { $eq: 2 } } }, { val1: 3 }, false]
+         [{ val1: { $eq: 1 }, $or: { val1: { $eq: 2 } } }, { val1: 3 }, false],
       ];
 
       for (const [query, object, expected] of tests) {

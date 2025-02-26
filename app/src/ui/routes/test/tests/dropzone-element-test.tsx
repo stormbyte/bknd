@@ -57,7 +57,7 @@ function CustomUserAvatarDropzone() {
       wrapperRef,
       inputProps,
       state: { files, isOver, isOverAccepted, showPlaceholder },
-      actions: { openFileInput }
+      actions: { openFileInput },
    } = Media.useDropzone();
    const file = files[0];
 

@@ -12,7 +12,7 @@ export {
    type AuthUserResolver,
    Authenticator,
    authenticatorConfig,
-   jwtConfig
+   jwtConfig,
 } from "./authenticate/Authenticator";
 
 export { AppAuth, type UserFieldSchema } from "./AppAuth";

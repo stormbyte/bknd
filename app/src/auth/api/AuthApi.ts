@@ -10,13 +10,13 @@ export type AuthApiOptions = BaseModuleApiOptions & {
 export class AuthApi extends ModuleApi<AuthApiOptions> {
    protected override getDefaultOptions(): Partial<AuthApiOptions> {
       return {
-         basepath: "/api/auth"
+         basepath: "/api/auth",
       };
    }
 
    async login(strategy: string, input: any) {
       const res = await this.post<AuthResponse>([strategy, "login"], input, {
-         credentials: "include"
+         credentials: "include",
       });
 
       if (res.ok && res.body.token) {
@@ -27,7 +27,7 @@ export class AuthApi extends ModuleApi<AuthApiOptions> {
 
    async register(strategy: string, input: any) {
       const res = await this.post<AuthResponse>([strategy, "register"], input, {
-         credentials: "include"
+         credentials: "include",
       });
 
       if (res.ok && res.body.token) {

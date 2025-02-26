@@ -10,15 +10,15 @@ const example = import.meta.env.VITE_EXAMPLE;
 
 const credentials = example
    ? {
-        url: `file:.configs/${example}.db`
+        url: `file:.configs/${example}.db`,
      }
    : import.meta.env.VITE_DB_URL
      ? {
           url: import.meta.env.VITE_DB_URL!,
-          authToken: import.meta.env.VITE_DB_TOKEN!
+          authToken: import.meta.env.VITE_DB_TOKEN!,
        }
      : {
-          url: ":memory:"
+          url: ":memory:",
        };
 
 let initialConfig: any = undefined;
@@ -35,7 +35,7 @@ export default {
       if (!app || recreate) {
          app = App.create({
             connection: credentials,
-            initialConfig
+            initialConfig,
          });
          app.emgr.onEvent(
             App.Events.AppBuiltEvent,
@@ -43,7 +43,7 @@ export default {
                app.registerAdminController({ forceDev: true });
                app.module.server.client.get("/assets/*", serveStatic({ root: "./" }));
             },
-            "sync"
+            "sync",
          );
          await app.build();
 
@@ -58,5 +58,5 @@ export default {
       }
 
       return app.fetch(request);
-   }
+   },
 };

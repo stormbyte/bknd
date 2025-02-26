@@ -15,11 +15,11 @@ const oauthSchemaCustom = Type.Object(
          {
             client_id: Type.String(),
             client_secret: Type.String(),
-            token_endpoint_auth_method: StringEnum(["client_secret_basic"])
+            token_endpoint_auth_method: StringEnum(["client_secret_basic"]),
          },
          {
-            additionalProperties: false
-         }
+            additionalProperties: false,
+         },
       ),
       as: Type.Object(
          {
@@ -29,15 +29,15 @@ const oauthSchemaCustom = Type.Object(
             scope_separator: Type.Optional(Type.String({ default: " " })),
             authorization_endpoint: Type.Optional(UrlString),
             token_endpoint: Type.Optional(UrlString),
-            userinfo_endpoint: Type.Optional(UrlString)
+            userinfo_endpoint: Type.Optional(UrlString),
          },
          {
-            additionalProperties: false
-         }
-      )
+            additionalProperties: false,
+         },
+      ),
       // @todo: profile mapping
    },
-   { title: "Custom OAuth", additionalProperties: false }
+   { title: "Custom OAuth", additionalProperties: false },
 );
 
 type OAuthConfigCustom = Static<typeof oauthSchemaCustom>;
@@ -57,7 +57,7 @@ export type IssuerConfig<UserInfo = any> = {
    profile: (
       info: UserInfo,
       config: Omit<IssuerConfig, "profile">,
-      tokenResponse: any
+      tokenResponse: any,
    ) => Promise<UserProfile>;
 };
 

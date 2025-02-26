@@ -9,37 +9,37 @@ export const routes = {
       entity: {
          list: (entity: string) => `/entity/${entity}`,
          create: (entity: string) => `/entity/${entity}/create`,
-         edit: (entity: string, id: PrimaryFieldType) => `/entity/${entity}/edit/${id}`
+         edit: (entity: string, id: PrimaryFieldType) => `/entity/${entity}/edit/${id}`,
       },
       schema: {
          root: () => "/schema",
-         entity: (entity: string) => `/schema/entity/${entity}`
-      }
+         entity: (entity: string) => `/schema/entity/${entity}`,
+      },
    },
    auth: {
       root: () => "/auth",
       users: {
          list: () => "/users",
-         edit: (id: PrimaryFieldType) => `/users/edit/${id}`
+         edit: (id: PrimaryFieldType) => `/users/edit/${id}`,
       },
       roles: {
          list: () => "/roles",
-         edit: (role: string) => `/roles/edit/${role}`
+         edit: (role: string) => `/roles/edit/${role}`,
       },
       settings: () => "/settings",
-      strategies: () => "/strategies"
+      strategies: () => "/strategies",
    },
    flows: {
       root: () => "/flows",
       flows: {
          list: () => "/",
-         edit: (id: PrimaryFieldType) => `/flow/${id}`
-      }
+         edit: (id: PrimaryFieldType) => `/flow/${id}`,
+      },
    },
    settings: {
       root: () => "/settings",
-      path: (path: string[]) => `/settings/${path.join("/")}`
-   }
+      path: (path: string[]) => `/settings/${path.join("/")}`,
+   },
 };
 
 export function withQuery(url: string, query: object) {
@@ -70,7 +70,7 @@ export function useNavigate() {
                  transition?: boolean;
               }
             | { reload: true }
-            | { target: string }
+            | { target: string },
       ) => {
          const wrap = (fn: () => void) => {
             fn();
@@ -97,11 +97,11 @@ export function useNavigate() {
             const _url = options?.absolute ? `~/${basepath}${url}`.replace(/\/+/g, "/") : url;
             navigate(options?.query ? withQuery(_url, options?.query) : _url, {
                replace: options?.replace,
-               state: options?.state
+               state: options?.state,
             });
          });
       },
-      location
+      location,
    ] as const;
 }
 
@@ -110,7 +110,7 @@ export function useGoBack(
    options?: {
       native?: boolean;
       absolute?: boolean;
-   }
+   },
 ) {
    const { app } = useBknd();
    const basepath = app.getAdminConfig().basepath;
@@ -153,6 +153,6 @@ export function useGoBack(
    return {
       same,
       canGoBack,
-      goBack
+      goBack,
    };
 }

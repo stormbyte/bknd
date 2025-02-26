@@ -49,12 +49,12 @@ export class Storage implements EmitsEvents {
    constructor(
       adapter: StorageAdapter,
       config: Partial<StorageConfig> = {},
-      emgr?: EventManager<any>
+      emgr?: EventManager<any>,
    ) {
       this.#adapter = adapter;
       this.config = {
          ...config,
-         body_max_size: config.body_max_size
+         body_max_size: config.body_max_size,
       };
 
       this.emgr = emgr ?? new EventManager();
@@ -78,7 +78,7 @@ export class Storage implements EmitsEvents {
    async uploadFile(
       file: FileBody,
       name: string,
-      noEmit?: boolean
+      noEmit?: boolean,
    ): Promise<FileUploadedEventData> {
       const result = await this.#adapter.putObject(name, file);
       if (typeof result === "undefined") {
@@ -89,9 +89,9 @@ export class Storage implements EmitsEvents {
          name,
          meta: {
             size: 0,
-            type: "application/octet-stream"
+            type: "application/octet-stream",
          },
-         etag: typeof result === "string" ? result : ""
+         etag: typeof result === "string" ? result : "",
       };
 
       if (typeof result === "object") {
@@ -115,8 +115,8 @@ export class Storage implements EmitsEvents {
          ...info,
          state: {
             name: info.name,
-            path: info.name
-         }
+            path: info.name,
+         },
       };
       if (!noEmit) {
          const result = await this.emgr.emit(new StorageEvents.FileUploadedEvent(eventData));

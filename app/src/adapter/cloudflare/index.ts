@@ -10,7 +10,7 @@ export {
    getBindings,
    type BindingTypeMap,
    type GetBindingType,
-   type BindingMap
+   type BindingMap,
 } from "./bindings";
 
 export function d1(config: D1ConnectionConfig) {

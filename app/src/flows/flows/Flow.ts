@@ -163,7 +163,7 @@ export class Flow {
          tasks: Object.fromEntries(this.tasks.map((t) => [t.name, t.toJSON()])),
          connections: Object.fromEntries(this.connections.map((c) => [c.id, c.toJSON()])),
          start_task: this.startTask?.name,
-         responding_task: this.respondingTask?.name
+         responding_task: this.respondingTask?.name,
       };
    }
 
@@ -192,7 +192,7 @@ export class Flow {
             tasks[obj.source],
             tasks[obj.target],
             { ...obj.config, condition },
-            id as string
+            id as string,
          );
       });
 

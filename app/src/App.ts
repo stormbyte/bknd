@@ -8,7 +8,7 @@ import {
    type ModuleBuildContext,
    ModuleManager,
    type ModuleManagerOptions,
-   type Modules
+   type Modules,
 } from "modules/ModuleManager";
 import * as SystemPermissions from "modules/permissions";
 import { AdminController, type AdminControllerOptions } from "modules/server/AdminController";
@@ -61,7 +61,7 @@ export class App {
    constructor(
       private connection: Connection,
       _initialConfig?: InitialModuleConfigs,
-      private options?: AppOptions
+      private options?: AppOptions,
    ) {
       this.plugins = options?.plugins ?? [];
       this.modules = new ModuleManager(connection, {
@@ -91,7 +91,7 @@ export class App {
                c.set("app", this);
                await next();
             });
-         }
+         },
       });
       this.modules.ctx().emgr.registerEvents(AppEvents);
    }
@@ -148,8 +148,8 @@ export class App {
          {
             get: (_, module: keyof Modules) => {
                return this.modules.get(module);
-            }
-         }
+            },
+         },
       ) as Modules;
    }
 
@@ -203,7 +203,7 @@ export function createApp(config: CreateAppConfig = {}) {
       } else if (typeof config.connection === "object") {
          if ("type" in config.connection) {
             $console.warn(
-               "Using deprecated connection type 'libsql', use the 'config' object directly."
+               "Using deprecated connection type 'libsql', use the 'config' object directly.",
             );
             connection = new LibsqlConnection(config.connection.config);
          } else {

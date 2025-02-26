@@ -69,6 +69,6 @@ export const useAuth = (options?: { baseUrl?: string }): UseAuth => {
       register,
       logout,
       setToken,
-      verify
+      verify,
    };
 };

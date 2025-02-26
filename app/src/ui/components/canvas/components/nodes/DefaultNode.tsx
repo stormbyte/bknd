@@ -14,7 +14,7 @@ export function DefaultNode({ selected, children, className, ...props }: TDefaul
          className={twMerge(
             "relative w-80 shadow-lg rounded-lg bg-background",
             selected && "outline outline-blue-500/25",
-            className
+            className,
          )}
       >
          {children}
@@ -31,7 +31,7 @@ const Header: React.FC<TDefaultNodeHeaderProps> = ({ className, label, children,
       {...props}
       className={twMerge(
          "flex flex-row bg-primary/15 justify-center items-center rounded-tl-lg rounded-tr-lg py-1 px-2 drag-handle",
-         className
+         className,
       )}
    >
       {children ? (

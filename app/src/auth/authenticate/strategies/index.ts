@@ -9,5 +9,5 @@ export {
    type PasswordStrategyOptions,
    OAuthStrategy,
    OAuthCallbackException,
-   CustomOAuthStrategy
+   CustomOAuthStrategy,
 };

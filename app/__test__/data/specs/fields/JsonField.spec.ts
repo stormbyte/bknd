@@ -7,7 +7,7 @@ describe("[data] JsonField", async () => {
    runBaseFieldTests(JsonField, {
       defaultValue: { a: 1 },
       sampleValues: ["string", { test: 1 }, 1],
-      schemaType: "text"
+      schemaType: "text",
    });
 
    test("transformPersist (no config)", async () => {

@@ -9,7 +9,7 @@ import {
    type Field,
    FieldPrototype,
    make,
-   type em as prototypeEm
+   type em as prototypeEm,
 } from "data";
 import { Entity } from "data";
 import type { Hono } from "hono";
@@ -33,7 +33,7 @@ export abstract class Module<Schema extends TSchema = TSchema, ConfigSchema = St
 
    constructor(
       initial?: Partial<Static<Schema>>,
-      protected _ctx?: ModuleBuildContext
+      protected _ctx?: ModuleBuildContext,
    ) {
       this._schema = new SchemaObject(this.getSchema(), initial, {
          forceParse: this.useForceParse(),
@@ -42,13 +42,13 @@ export abstract class Module<Schema extends TSchema = TSchema, ConfigSchema = St
          },
          restrictPaths: this.getRestrictedPaths(),
          overwritePaths: this.getOverwritePaths(),
-         onBeforeUpdate: this.onBeforeUpdate.bind(this)
+         onBeforeUpdate: this.onBeforeUpdate.bind(this),
       });
    }
 
    static ctx_flags = {
       sync_required: false,
-      ctx_reload_required: false
+      ctx_reload_required: false,
    } as {
       // signal that a sync is required at the end of build
       sync_required: boolean;
@@ -124,7 +124,7 @@ export abstract class Module<Schema extends TSchema = TSchema, ConfigSchema = St
          forceParse: this.useForceParse(),
          restrictPaths: this.getRestrictedPaths(),
          overwritePaths: this.getOverwritePaths(),
-         onBeforeUpdate: this.onBeforeUpdate.bind(this)
+         onBeforeUpdate: this.onBeforeUpdate.bind(this),
       });
    }
 
@@ -169,7 +169,7 @@ export abstract class Module<Schema extends TSchema = TSchema, ConfigSchema = St
 
       // replace entity (mainly to keep the ensured type)
       this.ctx.em.__replaceEntity(
-         new Entity(instance.name, instance.fields, instance.config, entity.type)
+         new Entity(instance.name, instance.fields, instance.config, entity.type),
       );
    }
 
@@ -190,7 +190,7 @@ export abstract class Module<Schema extends TSchema = TSchema, ConfigSchema = St
    protected setEntityFieldConfigs(
       parent: Field,
       child: Field,
-      props: string[] = ["hidden", "fillable", "required"]
+      props: string[] = ["hidden", "fillable", "required"],
    ) {
       let changes = 0;
       for (const prop of props) {
@@ -205,7 +205,7 @@ export abstract class Module<Schema extends TSchema = TSchema, ConfigSchema = St
    protected replaceEntityField(
       _entity: string | Entity,
       field: Field | string,
-      _newField: Field | FieldPrototype
+      _newField: Field | FieldPrototype,
    ) {
       const entity = this.ctx.em.entity(_entity);
       const name = typeof field === "string" ? field : field.name;

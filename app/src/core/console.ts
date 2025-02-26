@@ -26,7 +26,7 @@ const originalConsoles = {
    warn: console.warn,
    info: console.info,
    log: console.log,
-   debug: console.debug
+   debug: console.debug,
 } as typeof console;
 
 function __tty(type: any, args: any[]) {
@@ -34,25 +34,25 @@ function __tty(type: any, args: any[]) {
    const styles = {
       error: {
          prefix: colors.red,
-         args: colors.red
+         args: colors.red,
       },
       warn: {
          prefix: colors.yellow,
-         args: colors.yellow
+         args: colors.yellow,
       },
       info: {
-         prefix: colors.cyan
+         prefix: colors.cyan,
       },
       log: {
-         prefix: colors.dim
+         prefix: colors.dim,
       },
       debug: {
-         prefix: colors.yellow
-      }
+         prefix: colors.yellow,
+      },
    } as const;
    const prefix = styles[type].prefix(`[${type.toUpperCase()}]`);
    const _args = args.map((a) =>
-      "args" in styles[type] && has && typeof a === "string" ? styles[type].args(a) : a
+      "args" in styles[type] && has && typeof a === "string" ? styles[type].args(a) : a,
    );
    return originalConsoles[type](prefix, colors.gray(datetimeStringLocal()), ..._args);
 }
@@ -78,13 +78,13 @@ export const $console = new Proxy(
             return (...args: any[]) => __tty(prop, args);
          }
          return () => null;
-      }
-   }
+      },
+   },
 ) as typeof console;
 
 export async function withDisabledConsole<R>(
    fn: () => Promise<R>,
-   sev?: TConsoleSeverity[]
+   sev?: TConsoleSeverity[],
 ): Promise<R> {
    disableConsole(sev);
    try {

@@ -12,13 +12,13 @@ import {
    type TSchema,
    type TString,
    Type,
-   TypeRegistry
+   TypeRegistry,
 } from "@sinclair/typebox";
 import {
    DefaultErrorFunction,
    Errors,
    SetErrorFunction,
-   type ValueErrorIterator
+   type ValueErrorIterator,
 } from "@sinclair/typebox/errors";
 import { Check, Default, Value, type ValueError } from "@sinclair/typebox/value";
 
@@ -45,7 +45,7 @@ export class TypeInvalidError extends Error {
    constructor(
       public schema: TSchema,
       public data: unknown,
-      message?: string
+      message?: string,
    ) {
       //console.warn("errored schema", JSON.stringify(schema, null, 2));
       super(message ?? `Invalid: ${JSON.stringify(data)}`);
@@ -66,7 +66,7 @@ export class TypeInvalidError extends Error {
          message: this.message,
          schema: this.schema,
          data: this.data,
-         errors: this.errors
+         errors: this.errors,
       };
    }
 }
@@ -95,7 +95,7 @@ export function mark(obj: any, validated = true) {
 export function parse<Schema extends TSchema = TSchema>(
    schema: Schema,
    data: RecursivePartial<Static<Schema>>,
-   options?: ParseOptions
+   options?: ParseOptions,
 ): Static<Schema> {
    if (!options?.forceParse && typeof data === "object" && validationSymbol in data) {
       if (options?.useDefaults === false) {
@@ -124,7 +124,7 @@ export function parse<Schema extends TSchema = TSchema>(
 
 export function parseDecode<Schema extends TSchema = TSchema>(
    schema: Schema,
-   data: RecursivePartial<StaticDecode<Schema>>
+   data: RecursivePartial<StaticDecode<Schema>>,
 ): StaticDecode<Schema> {
    //console.log("parseDecode", schema, data);
    const parsed = Default(schema, data);
@@ -140,7 +140,7 @@ export function parseDecode<Schema extends TSchema = TSchema>(
 export function strictParse<Schema extends TSchema = TSchema>(
    schema: Schema,
    data: Static<Schema>,
-   options?: ParseOptions
+   options?: ParseOptions,
 ): Static<Schema> {
    return parse(schema, data as any, options);
 }
@@ -157,7 +157,7 @@ export const StringEnum = <const T extends readonly string[]>(values: T, options
       [Kind]: "StringEnum",
       type: "string",
       enum: values,
-      ...options
+      ...options,
    });
 
 // key value record compatible with RJSF and typebox inference
@@ -175,7 +175,7 @@ export const Const = <T extends TLiteralValue = TLiteralValue>(value: T, options
 export const StringIdentifier = Type.String({
    pattern: "^[a-zA-Z_][a-zA-Z0-9_]*$",
    minLength: 2,
-   maxLength: 150
+   maxLength: 150,
 });
 
 SetErrorFunction((error) => {
@@ -202,5 +202,5 @@ export {
    Value,
    Default,
    Errors,
-   Check
+   Check,
 };

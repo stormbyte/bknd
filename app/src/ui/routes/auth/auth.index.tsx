@@ -12,11 +12,11 @@ import { routes, useNavigate } from "ui/lib/routes";
 export function AuthIndex() {
    const { app } = useBknd();
    const {
-      config: { roles, strategies, entity_name, enabled }
+      config: { roles, strategies, entity_name, enabled },
    } = useBkndAuth();
    const users_entity = entity_name;
    const $q = useApiQuery((api) => api.data.count(users_entity), {
-      enabled
+      enabled,
    });
    const usersTotal = $q.data?.count ?? 0;
    const rolesTotal = Object.keys(roles ?? {}).length ?? 0;
@@ -57,9 +57,9 @@ export function AuthIndex() {
                      actions={[
                         {
                            label: "View all",
-                           href: usersLink
+                           href: usersLink,
                         },
-                        { label: "Add new", variant: "default", href: usersLink }
+                        { label: "Add new", variant: "default", href: usersLink },
                      ]}
                   />
                   <KpiCard
@@ -67,7 +67,7 @@ export function AuthIndex() {
                      value={!enabled ? 0 : rolesTotal}
                      actions={[
                         { label: "View all", href: rolesLink },
-                        { label: "Manage", variant: "default", href: rolesLink }
+                        { label: "Manage", variant: "default", href: rolesLink },
                      ]}
                   />
                   <KpiCard
@@ -75,7 +75,7 @@ export function AuthIndex() {
                      value={!enabled ? 0 : strategiesTotal}
                      actions={[
                         { label: "View all", href: strategiesLink },
-                        { label: "Manage", variant: "default", href: strategiesLink }
+                        { label: "Manage", variant: "default", href: strategiesLink },
                      ]}
                   />
                </div>
@@ -120,7 +120,7 @@ const Item = ({ title, done = false, to }: { title: string; done?: boolean; to?:
                <p
                   className={clsx(
                      "font-medium text-primary/80 leading-none",
-                     done ? "line-through" : ""
+                     done ? "line-through" : "",
                   )}
                >
                   {title}

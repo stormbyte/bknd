@@ -44,7 +44,7 @@ export function exec(command: string, opts?: { silent?: boolean; env?: Record<st
    const stdio = opts?.silent ? "pipe" : "inherit";
    const output = execSync(command, {
       stdio: ["inherit", stdio, stdio],
-      env: { ...process.env, ...opts?.env }
+      env: { ...process.env, ...opts?.env },
    });
    if (!opts?.silent) {
       return;
@@ -54,20 +54,20 @@ export function exec(command: string, opts?: { silent?: boolean; env?: Record<st
 
 export function execAsync(
    command: string,
-   opts?: { silent?: boolean; env?: Record<string, string> }
+   opts?: { silent?: boolean; env?: Record<string, string> },
 ) {
    return new Promise((resolve, reject) => {
       nodeExec(
          command,
          {
-            env: { ...process.env, ...opts?.env }
+            env: { ...process.env, ...opts?.env },
          },
          (err, stdout, stderr) => {
             if (err) {
                return reject(err);
             }
             resolve(stdout);
-         }
+         },
       );
    });
 }

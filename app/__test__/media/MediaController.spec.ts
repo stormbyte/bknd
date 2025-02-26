@@ -22,13 +22,13 @@ async function makeApp(mediaOverride: Partial<TAppMediaConfig> = {}) {
                adapter: {
                   type: "local",
                   config: {
-                     path: assetsTmpPath
-                  }
-               }
+                     path: assetsTmpPath,
+                  },
+               },
             },
-            mediaOverride
-         )
-      }
+            mediaOverride,
+         ),
+      },
    });
 
    await app.build();
@@ -50,7 +50,7 @@ describe("MediaController", () => {
       const name = makeName("png");
       const res = await app.server.request("/api/media/upload/" + name, {
          method: "POST",
-         body: file
+         body: file,
       });
       const result = (await res.json()) as any;
       console.log(result);
@@ -71,7 +71,7 @@ describe("MediaController", () => {
 
       const res = await app.server.request("/api/media/upload/" + name, {
          method: "POST",
-         body: form
+         body: form,
       });
       const result = (await res.json()) as any;
       expect(result.name).toBe(name);
@@ -88,7 +88,7 @@ describe("MediaController", () => {
       const name = makeName("png");
       const res = await app.server.request("/api/media/upload/" + name, {
          method: "POST",
-         body: file
+         body: file,
       });
 
       expect(res.status).toBe(413);

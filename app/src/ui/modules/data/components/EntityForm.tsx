@@ -6,7 +6,7 @@ import {
    type Field,
    JsonField,
    JsonSchemaField,
-   RelationField
+   RelationField,
 } from "data";
 import { MediaField } from "media/MediaField";
 import { type ComponentProps, Suspense } from "react";
@@ -37,7 +37,7 @@ export function EntityForm({
    Form,
    data,
    className,
-   action
+   action,
 }: EntityFormProps) {
    const fields = entity.getFillableFields(action, true);
    console.log("data", { data, fields });
@@ -120,7 +120,7 @@ export function EntityForm({
 
 type EntityFormFieldProps<
    T extends keyof JSX.IntrinsicElements = "input",
-   F extends Field = Field
+   F extends Field = Field,
 > = ComponentProps<T> & {
    fieldApi: FieldApi<any, any>;
    field: F;
@@ -203,7 +203,7 @@ function EntityMediaFormField({
    field,
    entity,
    entityId,
-   disabled
+   disabled,
 }: {
    formApi: FormApi<any>;
    field: MediaField;
@@ -232,7 +232,7 @@ function EntityMediaFormField({
             entity={{
                name: entity.name,
                id: entityId,
-               field: field.name
+               field: field.name,
             }}
          />
       </Formy.Group>

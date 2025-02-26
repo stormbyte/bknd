@@ -22,14 +22,14 @@ function systemRoutes(config: ModuleConfigs): { paths: OAS.Document["paths"] } {
                   content: {
                      "application/json": {
                         schema: Type.Object({
-                           pong: Type.Boolean({ default: true })
-                        })
-                     }
-                  }
-               }
+                           pong: Type.Boolean({ default: true }),
+                        }),
+                     },
+                  },
+               },
             },
-            tags
-         }
+            tags,
+         },
       },
       "/config": {
          get: {
@@ -45,14 +45,14 @@ function systemRoutes(config: ModuleConfigs): { paths: OAS.Document["paths"] } {
                            data: Type.Object({}),
                            auth: Type.Object({}),
                            flows: Type.Object({}),
-                           media: Type.Object({})
-                        })
-                     }
-                  }
-               }
+                           media: Type.Object({}),
+                        }),
+                     },
+                  },
+               },
             },
-            tags
-         }
+            tags,
+         },
       },
       "/schema": {
          get: {
@@ -69,16 +69,16 @@ function systemRoutes(config: ModuleConfigs): { paths: OAS.Document["paths"] } {
                               data: Type.Object({}),
                               auth: Type.Object({}),
                               flows: Type.Object({}),
-                              media: Type.Object({})
-                           })
-                        })
-                     }
-                  }
-               }
+                              media: Type.Object({}),
+                           }),
+                        }),
+                     },
+                  },
+               },
             },
-            tags
-         }
-      }
+            tags,
+         },
+      },
    };
 
    return { paths: prefixPaths(paths, "/api/system") };
@@ -87,42 +87,42 @@ function systemRoutes(config: ModuleConfigs): { paths: OAS.Document["paths"] } {
 function dataRoutes(config: ModuleConfigs): { paths: OAS.Document["paths"] } {
    const schemas = {
       entityData: Type.Object({
-         id: Type.Number() as any
-      })
+         id: Type.Number() as any,
+      }),
    };
    const repoManyResponses: OAS.ResponsesObject = {
       "200": {
          description: "List of entities",
          content: {
             "application/json": {
-               schema: Type.Array(schemas.entityData)
-            }
-         }
-      }
+               schema: Type.Array(schemas.entityData),
+            },
+         },
+      },
    };
    const repoSingleResponses: OAS.ResponsesObject = {
       "200": {
          description: "Entity",
          content: {
             "application/json": {
-               schema: schemas.entityData
-            }
-         }
-      }
+               schema: schemas.entityData,
+            },
+         },
+      },
    };
    const params = {
       entity: {
          name: "entity",
          in: "path",
          required: true,
-         schema: Type.String()
+         schema: Type.String(),
       },
       entityId: {
          name: "id",
          in: "path",
          required: true,
-         schema: Type.Number() as any
-      }
+         schema: Type.Number() as any,
+      },
    };
 
    const tags = ["data"];
@@ -132,7 +132,7 @@ function dataRoutes(config: ModuleConfigs): { paths: OAS.Document["paths"] } {
             summary: "List entities",
             parameters: [params.entity],
             responses: repoManyResponses,
-            tags
+            tags,
          },
          post: {
             summary: "Create entity",
@@ -140,20 +140,20 @@ function dataRoutes(config: ModuleConfigs): { paths: OAS.Document["paths"] } {
             requestBody: {
                content: {
                   "application/json": {
-                     schema: Type.Object({})
-                  }
-               }
+                     schema: Type.Object({}),
+                  },
+               },
             },
             responses: repoSingleResponses,
-            tags
-         }
+            tags,
+         },
       },
       "/entity/{entity}/{id}": {
          get: {
             summary: "Get entity",
             parameters: [params.entity, params.entityId],
             responses: repoSingleResponses,
-            tags
+            tags,
          },
          patch: {
             summary: "Update entity",
@@ -161,24 +161,24 @@ function dataRoutes(config: ModuleConfigs): { paths: OAS.Document["paths"] } {
             requestBody: {
                content: {
                   "application/json": {
-                     schema: Type.Object({})
-                  }
-               }
+                     schema: Type.Object({}),
+                  },
+               },
             },
             responses: repoSingleResponses,
-            tags
+            tags,
          },
          delete: {
             summary: "Delete entity",
             parameters: [params.entity, params.entityId],
             responses: {
                "200": {
-                  description: "Entity deleted"
-               }
+                  description: "Entity deleted",
+               },
             },
-            tags
-         }
-      }
+            tags,
+         },
+      },
    };
 
    return { paths: prefixPaths(paths, config.data.basepath!) };
@@ -189,8 +189,8 @@ function authRoutes(config: ModuleConfigs): { paths: OAS.Document["paths"] } {
       user: Type.Object({
          id: Type.String(),
          email: Type.String(),
-         name: Type.String()
-      })
+         name: Type.String(),
+      }),
    };
 
    const tags = ["auth"];
@@ -203,10 +203,10 @@ function authRoutes(config: ModuleConfigs): { paths: OAS.Document["paths"] } {
                   "application/json": {
                      schema: Type.Object({
                         email: Type.String(),
-                        password: Type.String()
-                     })
-                  }
-               }
+                        password: Type.String(),
+                     }),
+                  },
+               },
             },
             responses: {
                "200": {
@@ -214,14 +214,14 @@ function authRoutes(config: ModuleConfigs): { paths: OAS.Document["paths"] } {
                   content: {
                      "application/json": {
                         schema: Type.Object({
-                           user: schemas.user
-                        })
-                     }
-                  }
-               }
+                           user: schemas.user,
+                        }),
+                     },
+                  },
+               },
             },
-            tags
-         }
+            tags,
+         },
       },
       "/password/register": {
          post: {
@@ -231,10 +231,10 @@ function authRoutes(config: ModuleConfigs): { paths: OAS.Document["paths"] } {
                   "application/json": {
                      schema: Type.Object({
                         email: Type.String(),
-                        password: Type.String()
-                     })
-                  }
-               }
+                        password: Type.String(),
+                     }),
+                  },
+               },
             },
             responses: {
                "200": {
@@ -242,14 +242,14 @@ function authRoutes(config: ModuleConfigs): { paths: OAS.Document["paths"] } {
                   content: {
                      "application/json": {
                         schema: Type.Object({
-                           user: schemas.user
-                        })
-                     }
-                  }
-               }
+                           user: schemas.user,
+                        }),
+                     },
+                  },
+               },
             },
-            tags
-         }
+            tags,
+         },
       },
       "/me": {
          get: {
@@ -260,14 +260,14 @@ function authRoutes(config: ModuleConfigs): { paths: OAS.Document["paths"] } {
                   content: {
                      "application/json": {
                         schema: Type.Object({
-                           user: schemas.user
-                        })
-                     }
-                  }
-               }
+                           user: schemas.user,
+                        }),
+                     },
+                  },
+               },
             },
-            tags
-         }
+            tags,
+         },
       },
       "/strategies": {
          get: {
@@ -278,15 +278,15 @@ function authRoutes(config: ModuleConfigs): { paths: OAS.Document["paths"] } {
                   content: {
                      "application/json": {
                         schema: Type.Object({
-                           strategies: Type.Object({})
-                        })
-                     }
-                  }
-               }
+                           strategies: Type.Object({}),
+                        }),
+                     },
+                  },
+               },
             },
-            tags
-         }
-      }
+            tags,
+         },
+      },
    };
 
    return { paths: prefixPaths(paths, config.auth.basepath!) };
@@ -301,12 +301,12 @@ export function generateOpenAPI(config: ModuleConfigs): OAS.Document {
       openapi: "3.1.0",
       info: {
          title: "bknd API",
-         version: "0.0.0"
+         version: "0.0.0",
       },
       paths: {
          ...system.paths,
          ...data.paths,
-         ...auth.paths
-      }
+         ...auth.paths,
+      },
    };
 }

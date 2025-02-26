@@ -31,16 +31,16 @@ export const AuthRoleForm = forwardRef<
       watch,
       control,
       reset,
-      getValues
+      getValues,
    } = useForm({
       resolver: typeboxResolver(schema),
-      defaultValues: role
+      defaultValues: role,
    });
 
    useImperativeHandle(ref, () => ({
       reset,
       getData: () => getValues(),
-      isValid: () => isValid
+      isValid: () => isValid,
    }));
 
    return (
@@ -82,14 +82,14 @@ export const AuthRoleForm = forwardRef<
 
 const Permissions = ({
    control,
-   permissions
+   permissions,
 }: Omit<UseControllerProps, "name"> & { permissions: string[] }) => {
    const {
       field: { value, onChange: fieldOnChange, ...field },
-      fieldState
+      fieldState,
    } = useController<Static<typeof schema>, "permissions">({
       name: "permissions",
-      control
+      control,
    });
    const data = value ?? [];
 
@@ -108,7 +108,7 @@ const Permissions = ({
          acc[group].push(permission);
          return acc;
       },
-      {} as Record<string, string[]>
+      {} as Record<string, string[]>,
    );
 
    console.log("grouped", grouped);

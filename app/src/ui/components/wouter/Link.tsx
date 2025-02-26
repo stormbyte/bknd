@@ -38,7 +38,7 @@ const useLocationFromRouter = (router) => {
    // (This is achieved via `useEvent`.)
    return [
       unescape(relativePath(router.base, location)),
-      useEvent((to, navOpts) => navigate(absolutePath(to, router.base), navOpts))
+      useEvent((to, navOpts) => navigate(absolutePath(to, router.base), navOpts)),
    ];
 };
 
@@ -64,7 +64,7 @@ export function Link({
    const href = router
       .hrefs(
          _href[0] === "~" ? _href.slice(1) : router.base + _href,
-         router // pass router as a second argument for convinience
+         router, // pass router as a second argument for convinience
       )
       .replace("//", "/");
    const absPath = absolutePath(path, router.base).replace("//", "/");

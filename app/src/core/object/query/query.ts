@@ -13,7 +13,7 @@ export class Expression<Key, Expect = unknown, CTX = any> {
    constructor(
       public key: Key,
       public valid: (v: Expect) => boolean,
-      public validate: (e: any, a: any, ctx: CTX) => any
+      public validate: (e: any, a: any, ctx: CTX) => any,
    ) {}
 }
 export type TExpression<Key, Expect = unknown, CTX = any> = Expression<Key, Expect, CTX>;
@@ -21,7 +21,7 @@ export type TExpression<Key, Expect = unknown, CTX = any> = Expression<Key, Expe
 export function exp<const Key, const Expect, CTX = any>(
    key: Key,
    valid: (v: Expect) => boolean,
-   validate: (e: Expect, a: unknown, ctx: CTX) => any
+   validate: (e: Expect, a: unknown, ctx: CTX) => any,
 ): Expression<Key, Expect, CTX> {
    return new Expression(key, valid, validate);
 }
@@ -38,7 +38,7 @@ type ExpressionCondition<Exps extends Expressions> = {
 
 function getExpression<Exps extends Expressions>(
    expressions: Exps,
-   key: string
+   key: string,
 ): Expression<any, any> {
    const exp = expressions.find((e) => e.key === key);
    if (!exp) throw new Error(`Expression does not exist: "${key}"`);
@@ -61,7 +61,7 @@ export type FilterQuery<Exps extends Expressions> =
 function _convert<Exps extends Expressions>(
    $query: FilterQuery<Exps>,
    expressions: Exps,
-   path: string[] = []
+   path: string[] = [],
 ): FilterQuery<Exps> {
    //console.log("-----------------");
    const ExpressionConditionKeys = expressions.map((e) => e.key);
@@ -98,7 +98,7 @@ function _convert<Exps extends Expressions>(
       } else if (typeof value === "object") {
          // when object is given, check if all keys are expressions
          const invalid = Object.keys(value).filter(
-            (f) => !ExpressionConditionKeys.includes(f as any)
+            (f) => !ExpressionConditionKeys.includes(f as any),
          );
          if (invalid.length === 0) {
             newQuery[key] = {};
@@ -109,7 +109,7 @@ function _convert<Exps extends Expressions>(
             }
          } else {
             throw new Error(
-               `Invalid key(s) at "${key}": ${invalid.join(", ")}. Expected expressions.`
+               `Invalid key(s) at "${key}": ${invalid.join(", ")}. Expected expressions.`,
             );
          }
       }
@@ -128,7 +128,7 @@ type BuildOptions = {
 function _build<Exps extends Expressions>(
    _query: FilterQuery<Exps>,
    expressions: Exps,
-   options: BuildOptions
+   options: BuildOptions,
 ): ValidationResults {
    const $query = options.convert ? _convert<Exps>(_query, expressions) : _query;
 
@@ -137,7 +137,7 @@ function _build<Exps extends Expressions>(
    const result: ValidationResults = {
       $and: [],
       $or: [],
-      keys: new Set<string>()
+      keys: new Set<string>(),
    };
 
    const { $or, ...$and } = $query;
@@ -187,7 +187,7 @@ function _build<Exps extends Expressions>(
 function _validate(results: ValidationResults): boolean {
    const matches: { $and?: boolean; $or?: boolean } = {
       $and: undefined,
-      $or: undefined
+      $or: undefined,
    };
 
    matches.$and = results.$and.every((r) => Boolean(r));
@@ -204,6 +204,6 @@ export function makeValidator<Exps extends Expressions>(expressions: Exps) {
       validate: (query: FilterQuery<Exps>, options: BuildOptions) => {
          const fns = _build(query, expressions, options);
          return _validate(fns);
-      }
+      },
    };
 }

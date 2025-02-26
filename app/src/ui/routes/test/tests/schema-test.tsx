@@ -23,50 +23,50 @@ const uiSchema = {
       jwt: {
          basepath: {
             "ui:options": {
-               label: false
-            }
+               label: false,
+            },
          },
          fields: {
             "ui:options": {
                label: false,
-               orderable: false
-            }
-         }
+               orderable: false,
+            },
+         },
       },
       strategies: {
          additionalProperties: {
             "ui:widget": "select",
             type: {
-               "ui:widget": "hidden"
-            }
+               "ui:widget": "hidden",
+            },
          },
          type: {
-            "ui:widget": "hidden"
-         }
-      }
+            "ui:widget": "hidden",
+         },
+      },
    },
    server: {
       cors: {
          allow_methods: {
-            "ui:widget": "checkboxes"
+            "ui:widget": "checkboxes",
          },
          allow_headers: {
             "ui:options": {
-               orderable: false
-            }
-         }
-      }
+               orderable: false,
+            },
+         },
+      },
    },
    media: {
       adapter: {
          "ui:options": {
-            label: false
+            label: false,
          },
          type: {
-            "ui:widget": "hidden"
-         }
-      }
-   }
+            "ui:widget": "hidden",
+         },
+      },
+   },
 };
 
 export default function SchemaTest() {
@@ -81,7 +81,7 @@ export default function SchemaTest() {
       key: tab,
       schema: schema[tab],
       uiSchema: uiSchema[tab] || {},
-      config: app.config[tab]
+      config: app.config[tab],
    };
    console.log("current", current);
 

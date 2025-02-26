@@ -6,7 +6,7 @@ import {
    IconExternalLink,
    IconPhoto,
    IconPlus,
-   IconSettings
+   IconSettings,
 } from "@tabler/icons-react";
 import type { Entity, TEntityType } from "data";
 import { TbDatabasePlus } from "react-icons/tb";
@@ -26,7 +26,7 @@ export function DataRoot({ children }) {
    const entityList: Record<TEntityType, Entity[]> = {
       regular: [],
       generated: [],
-      system: []
+      system: [],
    } as const;
    const [navigate] = useNavigate();
    const context = window.location.href.match(/\/schema/) ? "schema" : "data";
@@ -65,7 +65,7 @@ export function DataRoot({ children }) {
                      <SegmentedControl
                         data={[
                            { value: "data", label: "Data" },
-                           { value: "schema", label: "Schema" }
+                           { value: "schema", label: "Schema" },
                         ]}
                         value={context}
                         onChange={handleSegmentChange}
@@ -103,7 +103,7 @@ const EntityLinkList = ({
    entities,
    title,
    context,
-   suggestCreate = false
+   suggestCreate = false,
 }: { entities: Entity[]; title?: string; context: "data" | "schema"; suggestCreate?: boolean }) => {
    const { $data } = useBkndData();
    if (entities.length === 0) {
@@ -113,7 +113,7 @@ const EntityLinkList = ({
             description="Create your first entity to get started."
             secondary={{
                children: "Create entity",
-               onClick: () => $data.modals.createEntity()
+               onClick: () => $data.modals.createEntity(),
             }}
          />
       ) : null;
@@ -123,7 +123,7 @@ const EntityLinkList = ({
       <nav
          className={twMerge(
             "flex flex-col flex-1 gap-1 px-3",
-            title && "border-t border-primary/10 pt-2"
+            title && "border-t border-primary/10 pt-2",
          )}
       >
          {title && <div className="text-sm text-primary/50 ml-3.5 mb-1">{title}</div>}
@@ -148,7 +148,7 @@ const EntityLinkList = ({
 const EntityContextMenu = ({
    entity,
    children,
-   enabled = true
+   enabled = true,
 }: { entity: Entity; children: DropdownClickableChild; enabled?: boolean }) => {
    if (!enabled) return children;
    const [navigate] = useNavigate();
@@ -162,41 +162,41 @@ const EntityContextMenu = ({
       <Dropdown
          className="flex flex-col w-full"
          dropdownWrapperProps={{
-            className: "min-w-fit"
+            className: "min-w-fit",
          }}
          title={entity.label + " Actions"}
          items={[
             href && {
                icon: IconExternalLink,
                label: "Open in tab",
-               onClick: () => navigate(href, { target: "_blank" })
+               onClick: () => navigate(href, { target: "_blank" }),
             },
             separator,
             !$data.system(entity.name).any && {
                icon: IconPlus,
                label: "Create new",
-               onClick: () => navigate(routes.data.entity.create(entity.name))
+               onClick: () => navigate(routes.data.entity.create(entity.name)),
             },
             {
                icon: IconDatabase,
                label: "List entries",
-               onClick: () => navigate(routes.data.entity.list(entity.name))
+               onClick: () => navigate(routes.data.entity.list(entity.name)),
             },
             separator,
             {
                icon: IconAlignJustified,
                label: "Manage fields",
-               onClick: () => navigate(routes.data.schema.entity(entity.name))
+               onClick: () => navigate(routes.data.schema.entity(entity.name)),
             },
             {
                icon: IconCirclesRelation,
                label: "Add relation",
-               onClick: () => $data.modals.createRelation(entity.name)
+               onClick: () => $data.modals.createRelation(entity.name),
             },
             !$data.system(entity.name).media && {
                icon: IconPhoto,
                label: "Add media",
-               onClick: () => $data.modals.createMedia(entity.name)
+               onClick: () => $data.modals.createMedia(entity.name),
             },
             separator,
             {
@@ -204,9 +204,9 @@ const EntityContextMenu = ({
                label: "Advanced",
                onClick: () =>
                   navigate(routes.settings.path(["data", "entities", entity.name]), {
-                     absolute: true
-                  })
-            }
+                     absolute: true,
+                  }),
+            },
          ]}
          openEvent="onContextMenu"
          position="bottom-start"
@@ -232,11 +232,11 @@ export function DataEmpty() {
          description="Please select an entity from the left sidebar or create a new one to continue."
          secondary={{
             children: "Go to schema",
-            onClick: handleButtonClick
+            onClick: handleButtonClick,
          }}
          primary={{
             children: "Create entity",
-            onClick: $data.modals.createEntity
+            onClick: $data.modals.createEntity,
          }}
       />
    );

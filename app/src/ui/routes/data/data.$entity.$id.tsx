@@ -38,13 +38,13 @@ export function DataEntityUpdate({ params }) {
       entity.name,
       entityId,
       {
-         with: local_relation_refs
+         with: local_relation_refs,
       },
       {
          keepPreviousData: false,
          revalidateOnFocus: false,
-         shouldRetryOnError: false
-      }
+         shouldRetryOnError: false,
+      },
    );
 
    function goBack() {
@@ -85,7 +85,7 @@ export function DataEntityUpdate({ params }) {
       action: "update",
       entity,
       initialData: $q.data?.toJSON(),
-      onSubmitted
+      onSubmitted,
    });
 
    if (!data && !$q.isLoading) {
@@ -117,24 +117,24 @@ export function DataEntityUpdate({ params }) {
                                     entity: entity.toJSON(),
                                     schema: entity.toSchema({ clean: true }),
                                     form: Form.state.values,
-                                    state: Form.state
-                                 }
+                                    state: Form.state,
+                                 },
                               });
-                           }
+                           },
                         },
                         {
                            label: "Settings",
                            onClick: () =>
                               navigate(routes.settings.path(["data", "entities", entity.name]), {
-                                 absolute: true
-                              })
+                                 absolute: true,
+                              }),
                         },
                         {
                            label: "Delete",
                            onClick: handleDelete,
                            destructive: true,
-                           disabled: fieldsDisabled
-                        }
+                           disabled: fieldsDisabled,
+                        },
                      ]}
                   >
                      <IconButton Icon={TbDots} />
@@ -160,7 +160,7 @@ export function DataEntityUpdate({ params }) {
             <Breadcrumbs2
                path={[
                   { label: entity.label, href: routes.data.entity.list(entity.name) },
-                  { label: `Edit #${entityId}` }
+                  { label: `Edit #${entityId}` },
                ]}
             />
          </AppShell.SectionHeader>
@@ -191,7 +191,7 @@ export function DataEntityUpdate({ params }) {
 function EntityDetailRelations({
    id,
    entity,
-   relations
+   relations,
 }: {
    id: number;
    entity: Entity;
@@ -199,7 +199,7 @@ function EntityDetailRelations({
 }) {
    const [selected, setSelected] = useState<EntityRelation>(
       // @ts-ignore
-      relations.length > 0 ? relations[0] : undefined
+      relations.length > 0 ? relations[0] : undefined,
    );
 
    function handleClick(relation: EntityRelation) {
@@ -225,7 +225,7 @@ function EntityDetailRelations({
                   label: ucFirst(other.reference),
                   onClick: () => handleClick(relation),
                   active: selected?.other(entity).reference === other.reference,
-                  badge: relation.type()
+                  badge: relation.type(),
                };
             })}
          />
@@ -239,7 +239,7 @@ function EntityDetailRelations({
 function EntityDetailInner({
    id,
    entity,
-   relation
+   relation,
 }: {
    id: number;
    entity: Entity;
@@ -251,11 +251,11 @@ function EntityDetailInner({
    const search = {
       select: other.entity.getSelect(undefined, "table"),
       limit: 10,
-      offset: 0
+      offset: 0,
    };
    // @todo: add custom key for invalidation
    const $q = useApiQuery((api) =>
-      api.data.readManyByReference(entity.name, id, other.reference, search)
+      api.data.readManyByReference(entity.name, id, other.reference, search),
    );
 
    function handleClickRow(row: Record<string, any>) {
@@ -268,7 +268,7 @@ function EntityDetailInner({
          const ref = relation.getReferenceQuery(other.entity, id, other.reference);
          handleClickNew = () => {
             navigate(routes.data.entity.create(other.entity.name), {
-               query: ref.where
+               query: ref.where,
             });
             //navigate(routes.data.entity.create(other.entity.name) + `?${query}`);
          };

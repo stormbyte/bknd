@@ -14,7 +14,7 @@ export function useBkndAuth() {
                return true;
             }
             return false;
-         }
+         },
       },
       roles: {
          add: async (name: string, data: any = {}) => {
@@ -31,8 +31,8 @@ export function useBkndAuth() {
                return await bkndActions.remove("auth", `roles.${name}`);
             }
             return false;
-         }
-      }
+         },
+      },
    };
 
    const minimum_permissions = [
@@ -40,7 +40,7 @@ export function useBkndAuth() {
       "system.access.api",
       "system.config.read",
       "system.config.read.secrets",
-      "system.build"
+      "system.build",
    ];
    const $auth = {
       roles: {
@@ -49,19 +49,21 @@ export function useBkndAuth() {
          has_admin: Object.entries(config.auth.roles ?? {}).some(
             ([name, role]) =>
                role.implicit_allow ||
-               minimum_permissions.every((p) => role.permissions?.includes(p))
-         )
+               minimum_permissions.every((p) => role.permissions?.includes(p)),
+         ),
       },
       routes: {
          settings: app.getSettingsPath(["auth"]),
-         listUsers: app.getAbsolutePath("/data/" + routes.data.entity.list(config.auth.entity_name))
-      }
+         listUsers: app.getAbsolutePath(
+            "/data/" + routes.data.entity.list(config.auth.entity_name),
+         ),
+      },
    };
 
    return {
       $auth,
       config: config.auth,
       schema: schema.auth,
-      actions
+      actions,
    };
 }

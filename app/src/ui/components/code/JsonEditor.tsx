@@ -10,7 +10,7 @@ export function JsonEditor({ editable, className, ...props }: CodeEditorProps) {
             className={twMerge(
                "flex w-full border border-muted",
                !editable && "opacity-70",
-               className
+               className,
             )}
             editable={editable}
             _extensions={{ json: true }}

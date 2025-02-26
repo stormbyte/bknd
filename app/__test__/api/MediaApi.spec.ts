@@ -18,8 +18,8 @@ const mockedBackend = new Hono()
       return new Response(file, {
          headers: {
             "Content-Type": file.type,
-            "Content-Length": file.size.toString()
-         }
+            "Content-Length": file.size.toString(),
+         },
       });
    });
 
@@ -30,7 +30,7 @@ describe("MediaApi", () => {
       // @ts-ignore tests
       const api = new MediaApi({
          host,
-         basepath
+         basepath,
       });
       expect(api.getFileUploadUrl({ path: "path" })).toBe(`${host}${basepath}/upload/path`);
    });
@@ -38,7 +38,7 @@ describe("MediaApi", () => {
    it("should have correct upload headers", () => {
       // @ts-ignore tests
       const api = new MediaApi({
-         token: "token"
+         token: "token",
       });
       expect(api.getUploadHeaders().get("Authorization")).toBe("Bearer token");
    });
@@ -139,7 +139,7 @@ describe("MediaApi", () => {
          const response = (await mockedBackend.request(url)) as Response;
          await matches(
             await api.upload(response.body!, { filename: "readable.png" }),
-            "readable.png"
+            "readable.png",
          );
       }
    });

@@ -6,5 +6,5 @@ export const fields = {
    AnyOfField: MultiSchemaField,
    OneOfField: MultiSchemaField,
    JsonField,
-   LiquidJsField
+   LiquidJsField,
 };

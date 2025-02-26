@@ -26,7 +26,7 @@ export const SettingSchemaModal = forwardRef<SettingsSchemaModalRef, SettingSche
       useImperativeHandle(ref, () => ({
          open,
          close,
-         isOpen: opened
+         isOpen: opened,
       }));
 
       if (!tab) return null;
@@ -69,5 +69,5 @@ export const SettingSchemaModal = forwardRef<SettingsSchemaModalRef, SettingSche
             </div>
          </Modal>
       );
-   }
+   },
 );

@@ -20,17 +20,17 @@ describe.skipIf(true)("StorageS3Adapter", async () => {
          new StorageS3Adapter({
             access_key: R2_ACCESS_KEY as string,
             secret_access_key: R2_SECRET_ACCESS_KEY as string,
-            url: R2_URL as string
-         })
+            url: R2_URL as string,
+         }),
       ],
       [
          "s3",
          new StorageS3Adapter({
             access_key: AWS_ACCESS_KEY as string,
             secret_access_key: AWS_SECRET_KEY as string,
-            url: AWS_S3_URL as string
-         })
-      ]
+            url: AWS_S3_URL as string,
+         }),
+      ],
    ] as const;
 
    const _conf = {
@@ -41,8 +41,8 @@ describe.skipIf(true)("StorageS3Adapter", async () => {
          "objectExists",
          "getObject",
          "deleteObject",
-         "getObjectMeta"
-      ]
+         "getObjectMeta",
+      ],
    };
 
    const file = Bun.file(`${import.meta.dir}/icon.png`);
@@ -86,7 +86,7 @@ describe.skipIf(true)("StorageS3Adapter", async () => {
       test.skipIf(disabled("getObjectMeta"))("gets object meta", async () => {
          expect(await adapter.getObjectMeta(filename)).toEqual({
             type: file.type, // image/png
-            size: file.size
+            size: file.size,
          });
       });
 

@@ -83,7 +83,7 @@ export class JsonField<Required extends true | false = false, TypeOverride = obj
    override async transformPersist(
       _value: any,
       em: EntityManager<any>,
-      context: TActionContext
+      context: TActionContext,
    ): Promise<string | undefined> {
       const value = await super.transformPersist(_value, em, context);
       //console.log("value", value);
@@ -91,7 +91,7 @@ export class JsonField<Required extends true | false = false, TypeOverride = obj
 
       if (!this.isSerializable(value)) {
          throw new TransformPersistFailedException(
-            `Field "${this.name}" must be serializable to JSON.`
+            `Field "${this.name}" must be serializable to JSON.`,
          );
       }
 

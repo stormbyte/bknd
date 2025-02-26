@@ -19,7 +19,7 @@ export function FlowsList() {
       trigger: flow.trigger.type,
       mode: flow.trigger.config.mode,
       tasks: Object.keys(flow.tasks).length,
-      start_task: flow.startTask?.name
+      start_task: flow.startTask?.name,
    }));
 
    function handleClick(row) {

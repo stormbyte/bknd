@@ -26,7 +26,7 @@ export function createApi({ req }: GetServerSidePropsContext) {
    const request = nodeRequestToRequest(req);
    return new Api({
       host: new URL(request.url).origin,
-      headers: request.headers
+      headers: request.headers,
    });
 }
 
@@ -40,7 +40,7 @@ export function withApi<T>(handler: (ctx: GetServerSidePropsContext & { api: Api
 
 function getCleanRequest(
    req: Request,
-   { cleanSearch = ["route"] }: Pick<NextjsBkndConfig, "cleanSearch">
+   { cleanSearch = ["route"] }: Pick<NextjsBkndConfig, "cleanSearch">,
 ) {
    const url = new URL(req.url);
    cleanSearch?.forEach((k) => url.searchParams.delete(k));
@@ -48,7 +48,7 @@ function getCleanRequest(
    return new Request(url.toString(), {
       method: req.method,
       headers: req.headers,
-      body: req.body
+      body: req.body,
    });
 }
 

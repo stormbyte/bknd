@@ -54,14 +54,14 @@ function AuthRolesEditInternal({ params }) {
                            label: "Advanced Settings",
                            onClick: () =>
                               navigate(routes.settings.path(["auth", "roles", roleName]), {
-                                 absolute: true
-                              })
+                                 absolute: true,
+                              }),
                         },
                         {
                            label: "Delete",
                            onClick: handleDelete,
-                           destructive: true
-                        }
+                           destructive: true,
+                        },
                      ]}
                      position="bottom-end"
                   >
@@ -77,7 +77,7 @@ function AuthRolesEditInternal({ params }) {
             <Breadcrumbs2
                path={[
                   { label: "Roles & Permissions", href: routes.auth.roles.list() },
-                  { label: roleName }
+                  { label: roleName },
                ]}
             />
          </AppShell.SectionHeader>

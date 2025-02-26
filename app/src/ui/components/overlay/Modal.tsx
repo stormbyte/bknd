@@ -17,7 +17,7 @@ export function Modal({
    onClose = () => null,
    allowBackdropClose = true,
    className,
-   stickToTop
+   stickToTop,
 }: ModalProps) {
    const clickoutsideRef = useClickOutside(() => {
       if (allowBackdropClose) onClose();
@@ -29,13 +29,13 @@ export function Modal({
             <div
                className={twMerge(
                   "w-full h-full fixed bottom-0 top-0 right-0 left-0 bg-background/60 flex justify-center backdrop-blur-sm z-10",
-                  stickToTop ? "items-start" : "items-center"
+                  stickToTop ? "items-start" : "items-center",
                )}
             >
                <div
                   className={twMerge(
                      "z-20 flex flex-col bg-background rounded-lg shadow-lg",
-                     className
+                     className,
                   )}
                   ref={clickoutsideRef}
                >

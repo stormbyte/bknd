@@ -16,7 +16,7 @@ describe("Core Utils", async () => {
          expect(result).toEqual([
             { key: "a", value: 1 },
             { key: "b", value: 2 },
-            { key: "c", value: 3 }
+            { key: "c", value: 3 },
          ]);
       });
 
@@ -51,7 +51,7 @@ describe("Core Utils", async () => {
          const obj = utils.headersToObject(headers);
          expect(obj).toEqual({
             "content-type": "application/json",
-            authorization: "Bearer 123"
+            authorization: "Bearer 123",
          });
       });
 
@@ -82,7 +82,7 @@ describe("Core Utils", async () => {
             file: new File([""], "file.txt"),
             stream: new ReadableStream(),
             arrayBuffer: new ArrayBuffer(10),
-            arrayBufferView: new Uint8Array(new ArrayBuffer(10))
+            arrayBufferView: new Uint8Array(new ArrayBuffer(10)),
          };
 
          const fns = [
@@ -90,7 +90,7 @@ describe("Core Utils", async () => {
             [utils.isBlob, "blob", ["stream", "arrayBuffer", "arrayBufferView"]],
             [utils.isFile, "file", ["stream", "arrayBuffer", "arrayBufferView"]],
             [utils.isArrayBuffer, "arrayBuffer"],
-            [utils.isArrayBufferView, "arrayBufferView"]
+            [utils.isArrayBufferView, "arrayBufferView"],
          ] as const;
 
          const additional = [0, 0.0, "", null, undefined, {}, []];
@@ -116,10 +116,10 @@ describe("Core Utils", async () => {
          const name = "test.json";
          const text = "attachment; filename=" + name;
          const headers = new Headers({
-            "Content-Disposition": text
+            "Content-Disposition": text,
          });
          const request = new Request("http://example.com", {
-            headers
+            headers,
          });
 
          expect(utils.getContentName(text)).toBe(name);
@@ -166,7 +166,7 @@ describe("Core Utils", async () => {
             [{ a: 1, b: 2, c: 3 }, ["b"], { a: 1, c: 3 }],
             [{ a: 1, b: 2, c: 3 }, ["c"], { a: 1, b: 2 }],
             [{ a: 1, b: 2, c: 3 }, ["a", "b"], { c: 3 }],
-            [{ a: 1, b: 2, c: 3 }, ["a", "b", "c"], {}]
+            [{ a: 1, b: 2, c: 3 }, ["a", "b", "c"], {}],
          ] as [object, string[], object][];
 
          for (const [obj, keys, expected] of objects) {
@@ -197,9 +197,9 @@ describe("Core Utils", async () => {
                new Map([["a", 1]]),
                new Map([
                   ["a", 1],
-                  ["b", 2]
+                  ["b", 2],
                ]),
-               false
+               false,
             ],
             [{ a: 1 }, { a: 1 }, true],
             [{ a: 1 }, { a: 2 }, false],
@@ -220,7 +220,7 @@ describe("Core Utils", async () => {
             [[1, 2, 3], [1, 2, 3, 4], false],
             [[{ a: 1 }], [{ a: 1 }], true],
             [[{ a: 1 }], [{ a: 2 }], false],
-            [[{ a: 1 }], [{ b: 1 }], false]
+            [[{ a: 1 }], [{ b: 1 }], false],
          ] as [any, any, boolean][];
 
          for (const [a, b, expected] of objects) {
@@ -236,7 +236,7 @@ describe("Core Utils", async () => {
             [{ a: { b: 1 } }, "a.b", 1],
             [{ a: { b: 1 } }, "a.b.c", null, null],
             [{ a: { b: 1 } }, "a.b.c", 1, 1],
-            [[[1]], "0.0", 1]
+            [[[1]], "0.0", 1],
          ] as [object, string, any, any][];
 
          for (const [obj, path, expected, defaultValue] of tests) {

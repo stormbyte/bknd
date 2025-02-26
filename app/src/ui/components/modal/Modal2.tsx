@@ -21,13 +21,13 @@ export type Modal2Props = Omit<ModalProps, "opened" | "onClose"> & {
 export const Modal2 = forwardRef<Modal2Ref, Modal2Props>(
    (
       { classNames, children, opened: initialOpened, closeOnClickOutside = false, ...props },
-      ref
+      ref,
    ) => {
       const [opened, { open, close }] = useDisclosure(initialOpened);
 
       useImperativeHandle(ref, () => ({
          open,
-         close
+         close,
       }));
 
       return (
@@ -42,13 +42,13 @@ export const Modal2 = forwardRef<Modal2Ref, Modal2Props>(
             classNames={{
                ...classNames,
                root: "bknd-admin",
-               content: "rounded-lg select-none"
+               content: "rounded-lg select-none",
             }}
          >
             {children}
          </Modal>
       );
-   }
+   },
 );
 
 export const ModalTitle = ({ path, onClose }: { path: string[]; onClose: () => void }) => {
@@ -76,7 +76,7 @@ export const ModalBody = ({ children, className }: { children?: any; className?:
    <ScrollArea.Root
       className={twMerge("flex flex-col min-h-96", className)}
       style={{
-         maxHeight: "calc(80vh)"
+         maxHeight: "calc(80vh)",
       }}
    >
       <ScrollArea.Viewport className="w-full h-full">
@@ -104,7 +104,7 @@ export const ModalFooter = ({
    prev,
    nextLabel = "Next",
    prevLabel = "Back",
-   debug
+   debug,
 }: {
    next: any;
    prev: any;
@@ -123,7 +123,7 @@ export const ModalFooter = ({
                      shadow="md"
                      opened={opened}
                      classNames={{
-                        dropdown: "!px-1 !pr-2.5 !py-2 text-sm"
+                        dropdown: "!px-1 !pr-2.5 !py-2 text-sm",
                      }}
                   >
                      <Popover.Target>

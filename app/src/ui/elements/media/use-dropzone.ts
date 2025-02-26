@@ -9,7 +9,7 @@ type DropzoneProps = {
 
 const events = {
    enter: ["dragenter", "dragover", "dragstart"] as const,
-   leave: ["dragleave", "drop"] as const
+   leave: ["dragleave", "drop"] as const,
 };
 const allEvents = [...events.enter, ...events.leave];
 
@@ -45,7 +45,7 @@ export function useDropzone({ onDropped, onOver, onLeave }: DropzoneProps) {
          onDropped?.(files as any);
          onOverCalled.current = false;
       },
-      [onDropped]
+      [onDropped],
    );
 
    const handleFileInputChange = useCallback(
@@ -53,7 +53,7 @@ export function useDropzone({ onDropped, onOver, onLeave }: DropzoneProps) {
          const files = await fromEvent(e);
          onDropped?.(files as any);
       },
-      [onDropped]
+      [onDropped],
    );
 
    useEffect(() => {

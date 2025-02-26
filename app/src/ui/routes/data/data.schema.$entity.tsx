@@ -2,7 +2,7 @@ import {
    IconAlignJustified,
    IconBolt,
    IconCirclesRelation,
-   IconSettings
+   IconSettings,
 } from "@tabler/icons-react";
 import { isDebug } from "core";
 import type { Entity } from "data";
@@ -14,7 +14,7 @@ import {
    TbDots,
    TbPhoto,
    TbPlus,
-   TbSitemap
+   TbSitemap,
 } from "react-icons/tb";
 import { useBkndData } from "ui/client/schema/data/use-bknd-data";
 import { Button } from "ui/components/buttons/Button";
@@ -56,16 +56,16 @@ export function DataSchemaEntity({ params }) {
                            label: "Data",
                            onClick: () =>
                               navigate(routes.data.root() + routes.data.entity.list(entity.name), {
-                                 absolute: true
-                              })
+                                 absolute: true,
+                              }),
                         },
                         {
                            label: "Advanced Settings",
                            onClick: () =>
                               navigate(routes.settings.path(["data", "entities", entity.name]), {
-                                 absolute: true
-                              })
-                        }
+                                 absolute: true,
+                              }),
+                        },
                      ]}
                      position="bottom-end"
                   >
@@ -76,19 +76,19 @@ export function DataSchemaEntity({ params }) {
                         {
                            icon: TbCirclesRelation,
                            label: "Add relation",
-                           onClick: () => $data.modals.createRelation(entity.name)
+                           onClick: () => $data.modals.createRelation(entity.name),
                         },
                         {
                            icon: TbPhoto,
                            label: "Add media",
-                           onClick: () => $data.modals.createMedia(entity.name)
+                           onClick: () => $data.modals.createMedia(entity.name),
                         },
                         () => <div className="h-px my-1 w-full bg-primary/5" />,
                         {
                            icon: TbDatabasePlus,
                            label: "Create Entity",
-                           onClick: () => $data.modals.createEntity()
-                        }
+                           onClick: () => $data.modals.createEntity(),
+                        },
                      ]}
                      position="bottom-end"
                   >
@@ -124,7 +124,7 @@ export function DataSchemaEntity({ params }) {
                   primary={{
                      children: "Advanced Settings",
                      onClick: () =>
-                        navigate(routes.settings.path(["data", "relations"]), { absolute: true })
+                        navigate(routes.settings.path(["data", "relations"]), { absolute: true }),
                   }}
                />
             </AppShell.SectionHeaderAccordionItem>
@@ -141,8 +141,8 @@ export function DataSchemaEntity({ params }) {
                      children: "Advanced Settings",
                      onClick: () =>
                         navigate(routes.settings.path(["data", "indices"]), {
-                           absolute: true
-                        })
+                           absolute: true,
+                        }),
                   }}
                />
             </AppShell.SectionHeaderAccordionItem>
@@ -154,7 +154,7 @@ export function DataSchemaEntity({ params }) {
 const Fields = ({
    entity,
    open,
-   toggle
+   toggle,
 }: { entity: Entity; open: boolean; toggle: () => void }) => {
    const [submitting, setSubmitting] = useState(false);
    const [updates, setUpdates] = useState(0);
@@ -209,7 +209,7 @@ const Fields = ({
                               $data.modals.createMedia(entity.name);
                               break;
                         }
-                     }
+                     },
                   }))}
             />
 
@@ -241,7 +241,7 @@ const Fields = ({
 const BasicSettings = ({
    entity,
    open,
-   toggle
+   toggle,
 }: { entity: Entity; open: boolean; toggle: () => void }) => {
    const d = useBkndData();
    const config = d.entities?.[entity.name]?.config;
@@ -249,7 +249,7 @@ const BasicSettings = ({
 
    const schema = cloneDeep(
       // @ts-ignore
-      d.schema.properties.entities.additionalProperties?.properties?.config
+      d.schema.properties.entities.additionalProperties?.properties?.config,
    );
 
    const [_schema, _config] = extractSchema(schema as any, config, ["fields"]);

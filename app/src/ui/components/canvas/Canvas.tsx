@@ -10,7 +10,7 @@ import {
    addEdge,
    useEdgesState,
    useNodesState,
-   useReactFlow
+   useReactFlow,
 } from "@xyflow/react";
 import { type ReactNode, useCallback, useEffect, useState } from "react";
 import { useBkndSystemTheme } from "ui/client/schema/system/use-bknd-system";
@@ -127,9 +127,9 @@ export function Canvas({
                data: { label: "" },
                position: screenToFlowPosition({
                   x: clientX,
-                  y: clientY
+                  y: clientY,
                }),
-               origin: [0.0, 0.0]
+               origin: [0.0, 0.0],
             });
 
             setNodes((nds) => nds.concat(newNode as any));
@@ -138,13 +138,13 @@ export function Canvas({
                   onDropNewNode({
                      id: newNode.id,
                      source: connectionState.fromNode.id,
-                     target: newNode.id
-                  })
-               )
+                     target: newNode.id,
+                  }),
+               ),
             );
          }
       },
-      [screenToFlowPosition]
+      [screenToFlowPosition],
    );
    //console.log("edges1", edges);
 
@@ -163,12 +163,12 @@ export function Canvas({
                  : ""
          }
          proOptions={{
-            hideAttribution: true
+            hideAttribution: true,
          }}
          fitView
          fitViewOptions={{
             maxZoom: 1.5,
-            ...props.fitViewOptions
+            ...props.fitViewOptions,
          }}
          nodeDragThreshold={25}
          panOnScrollSpeed={1}

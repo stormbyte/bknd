@@ -7,7 +7,7 @@ import "./styles.css";
 ReactDOM.createRoot(document.getElementById("root")!).render(
    <React.StrictMode>
       <Admin withProvider />
-   </React.StrictMode>
+   </React.StrictMode>,
 );
 
 // REGISTER ERROR OVERLAY

@@ -5,7 +5,7 @@ import { type ChangeEvent, useCallback } from "react";
 export function CheckboxWidget<
    T = any,
    S extends StrictRJSFSchema = RJSFSchema,
-   F extends FormContextType = any
+   F extends FormContextType = any,
 >({
    schema,
    uiSchema,
@@ -33,7 +33,7 @@ export function CheckboxWidget<
    });*/
    const handleChange = useCallback(
       (event: ChangeEvent<HTMLInputElement>) => onChange(event.target.checked),
-      [onChange]
+      [onChange],
    );
 
    return (

@@ -4,7 +4,7 @@ import {
    EntityManager,
    ManyToManyRelation,
    ManyToOneRelation,
-   SchemaManager
+   SchemaManager,
 } from "../../../src/data";
 import { UnableToConnectException } from "../../../src/data/errors";
 import { getDummyConnection } from "../helper";
@@ -25,7 +25,7 @@ describe("[data] EntityManager", async () => {
       expect(await em.ping()).toBe(true);
       expect(() => em.entity("...")).toThrow();
       expect(() =>
-         em.addRelation(new ManyToOneRelation(new Entity("1"), new Entity("2")))
+         em.addRelation(new ManyToOneRelation(new Entity("1"), new Entity("2"))),
       ).toThrow();
       expect(em.schema()).toBeInstanceOf(SchemaManager);
 
@@ -98,7 +98,7 @@ describe("[data] EntityManager", async () => {
       expect(userTargetRel.map((r) => r.other(users).entity.name)).toEqual(["posts", "comments"]);
       expect(postTargetRel.map((r) => r.other(posts).entity.name)).toEqual([
          "comments",
-         "categories"
+         "categories",
       ]);
       expect(commentTargetRel.map((r) => r.other(comments).entity.name)).toEqual([]);
       expect(categoriesTargetRel.map((r) => r.other(categories).entity.name)).toEqual(["posts"]);

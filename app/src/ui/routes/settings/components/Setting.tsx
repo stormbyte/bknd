@@ -21,7 +21,7 @@ import { SettingSchemaModal, type SettingsSchemaModalRef } from "./SettingSchema
 
 export type SettingProps<
    Schema extends TObject = TObject,
-   Props = Schema extends TObject<infer TProperties> ? TProperties : any
+   Props = Schema extends TObject<infer TProperties> ? TProperties : any,
 > = {
    schema: Schema;
    config: any;
@@ -51,7 +51,7 @@ export function Setting<Schema extends TObject = any>({
    prefix = "/",
    options,
    path = [],
-   properties
+   properties,
 }: SettingProps<Schema>) {
    const [submitting, setSubmitting] = useState(false);
    const { actions } = useBknd();
@@ -67,7 +67,7 @@ export function Setting<Schema extends TObject = any>({
             e.preventDefault();
             onSave();
             return false;
-         }
+         },
       ],
       [
          "e",
@@ -75,7 +75,7 @@ export function Setting<Schema extends TObject = any>({
             if (!editing) {
                onToggleEdit();
             }
-         }
+         },
       ],
       [
          "Escape",
@@ -83,8 +83,8 @@ export function Setting<Schema extends TObject = any>({
             if (editing) {
                onToggleEdit();
             }
-         }
-      ]
+         },
+      ],
    ]);
 
    const exclude = useMemo(
@@ -94,7 +94,7 @@ export function Setting<Schema extends TObject = any>({
                  .filter(([, value]) => value.hide || value.extract)
                  .map(([key]) => key)
             : [],
-      [properties]
+      [properties],
    );
 
    const goBack = useEvent((replace?: boolean) => {
@@ -178,7 +178,7 @@ export function Setting<Schema extends TObject = any>({
             description={`Configuration at path ${path.join(".")} doesn't exist.`}
             primary={{
                children: "Go back",
-               onClick: () => goBack()
+               onClick: () => goBack(),
             }}
          />
       );
@@ -197,19 +197,19 @@ export function Setting<Schema extends TObject = any>({
                            label: "Inspect local schema",
                            onClick: () => {
                               schemaLocalModalRef.current?.open();
-                           }
+                           },
                         },
                         {
                            label: "Inspect schema",
                            onClick: () => {
                               schemaModalRef.current?.open();
-                           }
+                           },
                         },
                         deleteAllowed && {
                            label: "Delete",
                            destructive: true,
-                           onClick: handleDelete
-                        }
+                           onClick: handleDelete,
+                        },
                      ]}
                      position="bottom-end"
                   >
@@ -255,7 +255,7 @@ export function Setting<Schema extends TObject = any>({
                         label: ucFirst(sub),
                         href: `${prefix}/${sub}`.replace(/\/+/g, "/"),
                         active: selectedSubKey === sub,
-                        badge: Object.keys(extracted[sub]?.config ?? {}).length
+                        badge: Object.keys(extracted[sub]?.config ?? {}).length,
                      }))}
                   />
                   <div className="flex flex-grow flex-col gap-3 p-3">
@@ -271,7 +271,7 @@ export function Setting<Schema extends TObject = any>({
                                    if (!value || typeof value !== "object") {
                                       return {
                                          key,
-                                         value
+                                         value,
                                       };
                                    }
 
@@ -281,7 +281,7 @@ export function Setting<Schema extends TObject = any>({
                                    return {
                                       key,
                                       [fistValueKey]: firstValueKeyValue,
-                                      value: _value
+                                      value: _value,
                                    };
                                 });
                            const newSetting = properties?.[key]?.new;
@@ -331,12 +331,12 @@ export function Setting<Schema extends TObject = any>({
             tabs={[
                {
                   title: "Schema",
-                  json: reducedSchema
+                  json: reducedSchema,
                },
                {
                   title: "Config",
-                  json: reducedConfig
-               }
+                  json: reducedConfig,
+               },
             ]}
          />
          <SettingSchemaModal
@@ -345,12 +345,12 @@ export function Setting<Schema extends TObject = any>({
             tabs={[
                {
                   title: "Schema",
-                  json: schema
+                  json: schema,
                },
                {
                   title: "Config",
-                  json: config
-               }
+                  json: config,
+               },
             ]}
          />
       </>

@@ -5,7 +5,7 @@ import {
    ManyToManyRelation,
    type MutationOperation,
    MutationOperations,
-   RelationField
+   RelationField,
 } from "../relations";
 
 export type MutationInstructionResponse = [string, PrimaryFieldType | null];
@@ -13,7 +13,7 @@ export type MutationInstructionResponse = [string, PrimaryFieldType | null];
 export class RelationMutator {
    constructor(
       protected entity: Entity,
-      protected em: EntityManager<any>
+      protected em: EntityManager<any>,
    ) {}
 
    /**
@@ -32,11 +32,11 @@ export class RelationMutator {
       // @todo: improve later
       if (this.entity.type === "generated") {
          const relation = this.em.relations.all.find(
-            (r) => r instanceof ManyToManyRelation && r.connectionEntity.name === this.entity.name
+            (r) => r instanceof ManyToManyRelation && r.connectionEntity.name === this.entity.name,
          );
          if (relation instanceof ManyToManyRelation) {
             references.push(
-               ...this.entity.fields.filter((f) => f.type === "relation").map((f) => f.name)
+               ...this.entity.fields.filter((f) => f.type === "relation").map((f) => f.name),
             );
          }
       }
@@ -53,7 +53,7 @@ export class RelationMutator {
    async persistRelationField(
       field: RelationField,
       key: string,
-      value: PrimaryFieldType
+      value: PrimaryFieldType,
    ): Promise<MutationInstructionResponse> {
       // allow empty if field is not required
       if (value === null && !field.isRequired()) {
@@ -68,14 +68,14 @@ export class RelationMutator {
       }
 
       const query = await this.em.repository(field.target()).exists({
-         [field.targetField()]: value
+         [field.targetField()]: value,
       });
 
       if (!query.exists) {
          const idProp = field.targetField();
          throw new Error(
             `Cannot connect "${this.entity.name}.${key}" to ` +
-               `"${field.target()}.${idProp}" = "${value}": not found.`
+               `"${field.target()}.${idProp}" = "${value}": not found.`,
          );
       }
 
@@ -85,11 +85,11 @@ export class RelationMutator {
    async persistReference(
       relation: EntityRelation,
       key: string,
-      value: unknown
+      value: unknown,
    ): Promise<void | MutationInstructionResponse> {
       if (typeof value !== "object" || value === null || typeof value === "undefined") {
          throw new Error(
-            `Invalid value for relation "${key}" given, expected object to persist reference. Like '{$set: {id: 1}}'.`
+            `Invalid value for relation "${key}" given, expected object to persist reference. Like '{$set: {id: 1}}'.`,
          );
       }
 
@@ -97,7 +97,7 @@ export class RelationMutator {
       if (!MutationOperations.includes(operation)) {
          throw new Error(
             `Invalid operation "${operation}" for relation "${key}". ` +
-               `Allowed: ${MutationOperations.join(", ")}`
+               `Allowed: ${MutationOperations.join(", ")}`,
          );
       }
 
@@ -131,7 +131,7 @@ export class RelationMutator {
 
       throw new Error(
          `Relation "${key}" failed to resolve on entity "${this.entity.name}": ` +
-            "Unable to resolve relation origin."
+            "Unable to resolve relation origin.",
       );
    }
 }

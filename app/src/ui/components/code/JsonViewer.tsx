@@ -9,7 +9,7 @@ export const JsonViewer = ({
    expand = 0,
    showSize = false,
    showCopy = false,
-   className
+   className,
 }: {
    json: object;
    title?: string;
@@ -61,7 +61,7 @@ export const JsonViewer = ({
                      "text-zinc-400 font-mono font-bold text-lg after:content-['▾'] mr-1.5",
                   expandIcon:
                      "text-zinc-400 font-mono font-bold text-lg after:content-['▸'] mr-1.5",
-                  noQuotesForStringValues: false
+                  noQuotesForStringValues: false,
                } as any
             }
          />

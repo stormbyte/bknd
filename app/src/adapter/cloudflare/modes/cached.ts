@@ -31,13 +31,13 @@ export async function getCached(config: CloudflareBkndConfig, { env, ctx, ...arg
                async ({ params: { app } }) => {
                   saveConfig(app.toJSON(true));
                },
-               "sync"
+               "sync",
             );
             await config.beforeBuild?.(app);
          },
-         adminOptions: { html: config.html }
+         adminOptions: { html: config.html },
       },
-      { env, ctx, ...args }
+      { env, ctx, ...args },
    );
 
    if (!cachedConfig) {

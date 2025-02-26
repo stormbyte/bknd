@@ -1,264 +1,265 @@
 *,
 *::before,
 *::after {
-    box-sizing: border-box;
+   box-sizing: border-box;
 }
 
 .json-form {
-    @apply flex flex-col flex-grow;
+   @apply flex flex-col flex-grow;
 
-    /* dirty fix preventing the first fieldset to wrap */
-    &.mute-root {
-        & > div > div > div > fieldset:first-child {
-            @apply border-none p-0;
-        }
-    }
+   /* dirty fix preventing the first fieldset to wrap */
+   &.mute-root {
+      & > div > div > div > fieldset:first-child {
+         @apply border-none p-0;
+      }
+   }
 
-    &:not(.fieldset-alternative) {
-        fieldset {
-            @apply flex flex-grow flex-col gap-3.5 border border-solid border-muted p-3 rounded;
+   &:not(.fieldset-alternative) {
+      fieldset {
+         @apply flex flex-grow flex-col gap-3.5 border border-solid border-muted p-3 rounded;
 
-            .title-field {
-                @apply bg-primary/10 px-3 text-sm font-medium py-1 rounded-full;
-                align-self: flex-start;
+         .title-field {
+            @apply bg-primary/10 px-3 text-sm font-medium py-1 rounded-full;
+            align-self: flex-start;
+         }
+      }
+   }
+
+   /* alternative */
+   &.fieldset-alternative {
+      fieldset {
+         @apply flex flex-grow flex-col gap-3.5;
+         &:has(> legend) {
+            @apply mt-3 border-l-4 border-solid border-muted/50 p-3 pb-0 pt-0;
+         }
+
+         .title-field {
+            @apply bg-muted/50 text-sm font-medium py-1 table ml-[-14px] pl-4 pr-3 mb-3 mt-3;
+            align-self: flex-start;
+         }
+      }
+
+      .multischema {
+         @apply mt-3;
+
+         fieldset {
+            margin-top: 0 !important;
+         }
+      }
+   }
+
+   &.hide-required-mark {
+      .control-label span.required {
+         display: none;
+      }
+   }
+
+   .form-group {
+      @apply flex flex-col gap-1;
+      &:not(.field) {
+         @apply flex-grow;
+      }
+
+      /* hide empty description if markdown is enabled */
+      .field-description:has(> span:empty) {
+         display: none;
+      }
+
+      .control-label span.required {
+         @apply ml-1 opacity-50;
+      }
+
+      &.field.has-error {
+         @apply text-red-500;
+
+         .control-label {
+            @apply font-bold;
+         }
+         .error-detail:not(:only-child) {
+            @apply font-bold list-disc pl-6;
+         }
+         .error-detail:only-child {
+            @apply font-bold;
+         }
+      }
+   }
+
+   .field-description {
+      @apply text-primary/70 text-sm;
+   }
+
+   /* input but not radio */
+   input:not([type="radio"]):not([type="checkbox"]) {
+      @apply flex bg-muted/40 h-11 rounded-md outline-none;
+      @apply py-2.5 px-4;
+      width: 100%;
+
+      &:not([disabled]):not([readonly]) {
+         @apply focus:outline-none focus:ring-2 focus:bg-muted focus:ring-zinc-500 focus:border-transparent transition-all;
+      }
+      &[disabled],
+      &[readonly] {
+         @apply bg-muted/50 text-primary/50 cursor-not-allowed;
+      }
+   }
+
+   textarea {
+      @apply flex bg-muted/40 focus:bg-muted rounded-md outline-none focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:border-transparent transition-all disabled:bg-muted/50 disabled:text-primary/50;
+      @apply py-2.5 px-4;
+      width: 100%;
+   }
+   .checkbox {
+      label,
+      label > span {
+         @apply flex flex-row gap-2;
+      }
+   }
+
+   select {
+      @apply bg-muted/40 focus:bg-muted rounded-md py-2.5 pr-4 pl-2.5 outline-none focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:border-transparent transition-all;
+      @apply disabled:bg-muted/70 disabled:text-primary/70;
+      @apply w-full border-r-8 border-r-transparent;
+
+      &:not([multiple]) {
+         @apply h-11;
+      }
+
+      &[multiple] {
+         option {
+            @apply py-1.5 px-2.5 bg-transparent;
+            &:checked {
+               @apply bg-primary/20;
             }
-        }
-    }
+         }
+      }
+   }
 
-    /* alternative */
-    &.fieldset-alternative {
-        fieldset {
-            @apply flex flex-grow flex-col gap-3.5;
-            &:has(> legend) {
-                @apply mt-3 border-l-4 border-solid border-muted/50 p-3 pb-0 pt-0;
+   .btn {
+      @apply w-5 h-5 bg-amber-500;
+   }
+
+   .field-radio-group {
+      @apply flex flex-row gap-2;
+   }
+
+   &.noborder-first-fieldset {
+      fieldset#root {
+         @apply border-none p-0;
+      }
+   }
+
+   &.horizontal {
+      .form-group {
+         @apply flex-row gap-2;
+      }
+      .form-control,
+      .panel {
+         @apply flex-grow;
+      }
+
+      .control-label {
+         @apply w-32 flex h-11 items-center;
+      }
+      input {
+         width: auto;
+      }
+
+      fieldset#root {
+         @apply gap-6;
+      }
+
+      fieldset.object-field {
+         @apply gap-2;
+      }
+
+      .additional-children {
+         .checkbox {
+            @apply w-full;
+         }
+      }
+   }
+
+   &.hide-multi-labels {
+      .control-label {
+         display: none;
+      }
+   }
+
+   .multischema {
+      .form-control {
+         @apply flex-shrink;
+      }
+   }
+
+   .panel {
+      /*@apply flex flex-col gap-2;*/
+
+      /*.control-label { display: none; }*/
+
+      & > .field-radio-group {
+         @apply flex flex-row gap-3;
+
+         .radio,
+         .radio-inline {
+            @apply text-sm border-b border-b-transparent;
+            @apply font-mono text-primary/70;
+
+            input {
+               @apply appearance-none;
             }
-
-            .title-field {
-                @apply bg-muted/50 text-sm font-medium py-1 table ml-[-14px] pl-4 pr-3 mb-3 mt-3;
-                align-self: flex-start;
+            &.checked {
+               @apply border-b-primary/70 text-primary;
             }
-        }
+         }
+      }
 
-        .multischema {
-            @apply mt-3;
-
-            fieldset {
-                margin-top: 0 !important;
-            }
-        }
-    }
-
-    &.hide-required-mark {
-        .control-label span.required {
-            display: none;
-        }
-    }
-
-    .form-group {
-        @apply flex flex-col gap-1;
-        &:not(.field) {
-            @apply flex-grow;
-        }
-
-        /* hide empty description if markdown is enabled */
-        .field-description:has(> span:empty) {
-            display: none;
-        }
-
-        .control-label span.required {
-            @apply ml-1 opacity-50;
-        }
-
-        &.field.has-error {
-            @apply text-red-500;
-
-            .control-label {
-                @apply font-bold;
-            }
-            .error-detail:not(:only-child) {
-                @apply font-bold list-disc pl-6;
-            }
-            .error-detail:only-child {
-                @apply font-bold;
-            }
-        }
-    }
-
-    .field-description {
-        @apply text-primary/70 text-sm;
-    }
-
-    /* input but not radio */
-    input:not([type="radio"]):not([type="checkbox"]) {
-        @apply flex bg-muted/40 h-11 rounded-md outline-none;
-        @apply py-2.5 px-4;
-        width: 100%;
-
-        &:not([disabled]):not([readonly]) {
-            @apply focus:outline-none focus:ring-2 focus:bg-muted focus:ring-zinc-500 focus:border-transparent transition-all;
-        }
-        &[disabled], &[readonly] {
-            @apply bg-muted/50 text-primary/50 cursor-not-allowed;
-        }
-    }
-
-    textarea {
-        @apply flex bg-muted/40 focus:bg-muted rounded-md outline-none focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:border-transparent transition-all disabled:bg-muted/50 disabled:text-primary/50;
-        @apply py-2.5 px-4;
-        width: 100%;
-    }
-    .checkbox {
-        label, label > span {
-            @apply flex flex-row gap-2;
-        }
-    }
-
-    select {
-        @apply bg-muted/40 focus:bg-muted rounded-md py-2.5 pr-4 pl-2.5 outline-none focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:border-transparent transition-all;
-        @apply disabled:bg-muted/70 disabled:text-primary/70;
-        @apply w-full border-r-8 border-r-transparent;
-
-        &:not([multiple]) {
-            @apply h-11;
-        }
-
-        &[multiple] {
-            option {
-                @apply py-1.5 px-2.5 bg-transparent;
-                &:checked {
-                    @apply bg-primary/20;
-                }
-            }
-        }
-    }
-
-    .btn {
-        @apply w-5 h-5 bg-amber-500;
-    }
-
-    .field-radio-group {
-        @apply flex flex-row gap-2;
-    }
-
-    &.noborder-first-fieldset {
-        fieldset#root {
-            @apply border-none p-0;
-        }
-    }
-
-    &.horizontal {
-        .form-group {
-            @apply flex-row gap-2;
-        }
-        .form-control, .panel {
-            @apply flex-grow;
-        }
-
-        .control-label {
-            @apply w-32 flex h-11 items-center;
-        }
-        input {
-            width: auto;
-        }
-
-        fieldset#root {
-            @apply gap-6;
-        }
-
-        fieldset.object-field {
-            @apply gap-2;
-        }
-
-        .additional-children {
-            .checkbox {
-                @apply w-full;
-            }
-        }
-    }
-
-    &.hide-multi-labels {
-        .control-label {
-            display: none;
-        }
-    }
-
-    .multischema {
-        .form-control {
-            @apply flex-shrink;
-        }
-    }
-
-    .panel {
-        /*@apply flex flex-col gap-2;*/
-
-        /*.control-label { display: none; }*/
-
-        & > .field-radio-group {
-            @apply flex flex-row gap-3;
-
-            .radio, .radio-inline {
-                @apply text-sm border-b border-b-transparent;
-                @apply font-mono text-primary/70;
-
-                input {
-                    @apply appearance-none;
-                }
-                &.checked {
-                    @apply border-b-primary/70 text-primary;
-                }
-            }
-        }
-
-        /* :not(.panel-select) .control-label {
+      /* :not(.panel-select) .control-label {
             display: none;
         } */
 
-        .panel-select select {
-            @apply py-1 pr-1 pl-1.5 text-sm;
-            @apply h-auto w-auto;
-        }
-    }
+      .panel-select select {
+         @apply py-1 pr-1 pl-1.5 text-sm;
+         @apply h-auto w-auto;
+      }
+   }
 
+   &.legacy {
+      /* first fieldset */
+      & > .form-group.field-object > div > fieldset {
+         @apply border-none p-0;
+      }
 
-
-    &.legacy {
-        /* first fieldset */
-        & > .form-group.field-object>div>fieldset {
-            @apply border-none p-0;
-        }
-
-        .row {
-            display: flex;
-            flex-direction: row;
-            gap: 1rem;
-        }
-        .col-xs-5 {
-            display: flex;
-            width: 50%;
-        }
-        .form-additional {
-            fieldset {
-                /* padding: 0;
+      .row {
+         display: flex;
+         flex-direction: row;
+         gap: 1rem;
+      }
+      .col-xs-5 {
+         display: flex;
+         width: 50%;
+      }
+      .form-additional {
+         fieldset {
+            /* padding: 0;
                 border: none; */
-
-                /* legend {
+            /* legend {
                     display: none;
                 } */
+         }
+         &.additional-start {
+            > label {
+               display: none;
             }
-            &.additional-start {
-                > label {
-                    display: none;
-                }
-                /* > label + div > fieldset:first-child {
+            /* > label + div > fieldset:first-child {
                     display: none;
                 } */
-            }
-        }
-        .field-object + .field-object {
-            @apply mt-3 pt-4 border-t border-muted;
-        }
-        .panel>.field-object>label {
-            display: none;
-        }
-    }
+         }
+      }
+      .field-object + .field-object {
+         @apply mt-3 pt-4 border-t border-muted;
+      }
+      .panel > .field-object > label {
+         display: none;
+      }
+   }
 }

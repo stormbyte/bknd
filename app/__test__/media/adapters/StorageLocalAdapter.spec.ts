@@ -5,7 +5,7 @@ import { assetsPath, assetsTmpPath } from "../../helper";
 
 describe("StorageLocalAdapter", () => {
    const adapter = new StorageLocalAdapter({
-      path: assetsTmpPath
+      path: assetsTmpPath,
    });
 
    const file = Bun.file(`${assetsPath}/image.png`);
@@ -36,7 +36,7 @@ describe("StorageLocalAdapter", () => {
    test("gets object meta", async () => {
       expect(await adapter.getObjectMeta(filename)).toEqual({
          type: file.type, // image/png
-         size: file.size
+         size: file.size,
       });
    });
 

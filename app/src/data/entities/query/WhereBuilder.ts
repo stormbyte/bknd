@@ -6,14 +6,14 @@ import {
    exp,
    isBooleanLike,
    isPrimitive,
-   makeValidator
+   makeValidator,
 } from "core";
 import type {
    DeleteQueryBuilder,
    ExpressionBuilder,
    ExpressionWrapper,
    SelectQueryBuilder,
-   UpdateQueryBuilder
+   UpdateQueryBuilder,
 } from "kysely";
 
 type Builder = ExpressionBuilder<any, any>;
@@ -34,58 +34,58 @@ const expressions = [
    exp(
       "$eq",
       (v: Primitive) => isPrimitive(v),
-      (v, k, eb: Builder) => eb(key(k), "=", v)
+      (v, k, eb: Builder) => eb(key(k), "=", v),
    ),
    exp(
       "$ne",
       (v: Primitive) => isPrimitive(v),
-      (v, k, eb: Builder) => eb(key(k), "!=", v)
+      (v, k, eb: Builder) => eb(key(k), "!=", v),
    ),
    exp(
       "$gt",
       (v: Primitive) => isPrimitive(v),
-      (v, k, eb: Builder) => eb(key(k), ">", v)
+      (v, k, eb: Builder) => eb(key(k), ">", v),
    ),
    exp(
       "$gte",
       (v: Primitive) => isPrimitive(v),
-      (v, k, eb: Builder) => eb(key(k), ">=", v)
+      (v, k, eb: Builder) => eb(key(k), ">=", v),
    ),
    exp(
       "$lt",
       (v: Primitive) => isPrimitive(v),
-      (v, k, eb: Builder) => eb(key(k), "<", v)
+      (v, k, eb: Builder) => eb(key(k), "<", v),
    ),
    exp(
       "$lte",
       (v: Primitive) => isPrimitive(v),
-      (v, k, eb: Builder) => eb(key(k), "<=", v)
+      (v, k, eb: Builder) => eb(key(k), "<=", v),
    ),
    exp(
       "$isnull",
       (v: BooleanLike) => isBooleanLike(v),
-      (v, k, eb: Builder) => eb(key(k), v ? "is" : "is not", null)
+      (v, k, eb: Builder) => eb(key(k), v ? "is" : "is not", null),
    ),
    exp(
       "$in",
       (v: any[]) => Array.isArray(v),
-      (v, k, eb: Builder) => eb(key(k), "in", v)
+      (v, k, eb: Builder) => eb(key(k), "in", v),
    ),
    exp(
       "$notin",
       (v: any[]) => Array.isArray(v),
-      (v, k, eb: Builder) => eb(key(k), "not in", v)
+      (v, k, eb: Builder) => eb(key(k), "not in", v),
    ),
    exp(
       "$between",
       (v: [number, number]) => Array.isArray(v) && v.length === 2,
-      (v, k, eb: Builder) => eb.between(key(k), v[0], v[1])
+      (v, k, eb: Builder) => eb.between(key(k), v[0], v[1]),
    ),
    exp(
       "$like",
       (v: Primitive) => isPrimitive(v),
-      (v, k, eb: Builder) => eb(key(k), "like", String(v).replace(/\*/g, "%"))
-   )
+      (v, k, eb: Builder) => eb(key(k), "like", String(v).replace(/\*/g, "%")),
+   ),
 ];
 
 export type WhereQuery = FilterQuery<typeof expressions>;
@@ -103,7 +103,7 @@ export class WhereBuilder {
          const fns = validator.build(query, {
             value_is_kv: true,
             exp_ctx: eb,
-            convert: true
+            convert: true,
          });
 
          if (fns.$or.length > 0 && fns.$and.length > 0) {
@@ -124,7 +124,7 @@ export class WhereBuilder {
       const { keys } = validator.build(query, {
          value_is_kv: true,
          exp_ctx: () => null,
-         convert: true
+         convert: true,
       });
       return Array.from(keys);
    }

@@ -9,7 +9,7 @@ import {
    FormContextOverride,
    FormDebug,
    ObjectField,
-   useFormError
+   useFormError,
 } from "ui/components/form/json-schema-form";
 import { Scrollable } from "ui/layouts/AppShell/AppShell";
 
@@ -20,16 +20,16 @@ const schema2 = {
       age: { type: "number" },
       gender: {
          type: "string",
-         enum: ["male", "female", "uni"]
+         enum: ["male", "female", "uni"],
       },
       deep: {
          type: "object",
          properties: {
-            nested: { type: "string" }
-         }
-      }
+            nested: { type: "string" },
+         },
+      },
    },
-   required: ["age"]
+   required: ["age"],
 } as const satisfies JSONSchema;
 
 const authSchema = {
@@ -38,8 +38,8 @@ const authSchema = {
       what: {
          type: "array",
          items: {
-            type: "string"
-         }
+            type: "string",
+         },
       },
       jwt: {
          type: "object",
@@ -47,16 +47,16 @@ const authSchema = {
             fields: {
                type: "array",
                items: {
-                  type: "string"
-               }
-            }
-         }
-      }
-   }
+                  type: "string",
+               },
+            },
+         },
+      },
+   },
 } as const satisfies JSONSchema;
 
 const formOptions = {
-   debug: true
+   debug: true,
 };
 
 export default function JsonSchemaForm3() {
@@ -314,7 +314,7 @@ const ss = {
       interested: { type: "boolean" },
       bla: {
          type: "string",
-         enum: ["small", "medium", "large"]
+         enum: ["small", "medium", "large"],
       },
       password: { type: "string", format: "password" },
       birthdate: { type: "string", format: "date" },
@@ -323,18 +323,18 @@ const ss = {
       tags: {
          type: "array",
          items: {
-            type: "string"
-         }
+            type: "string",
+         },
       },
       config: {
          type: "object",
          properties: {
-            min: { type: "number" }
-         }
-      }
+            min: { type: "number" },
+         },
+      },
    },
    required: ["name"],
-   additionalProperties: false
+   additionalProperties: false,
 } as const satisfies JSONSchema;
 
 function CustomMediaForm() {

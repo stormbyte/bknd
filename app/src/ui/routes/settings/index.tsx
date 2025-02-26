@@ -20,7 +20,7 @@ function SettingsSidebar() {
    const modules = Object.keys(schema).map((key) => {
       return {
          title: schema[key].title ?? ucFirst(key),
-         key
+         key,
       };
    });
 
@@ -86,25 +86,25 @@ const uiSchema = {
    server: {
       cors: {
          allow_methods: {
-            "ui:widget": "checkboxes"
+            "ui:widget": "checkboxes",
          },
          allow_headers: {
             "ui:options": {
-               orderable: false
-            }
-         }
-      }
+               orderable: false,
+            },
+         },
+      },
    },
    media: {
       adapter: {
          "ui:options": {
-            label: false
-         }
+            label: false,
+         },
          /*type: {
             "ui:widget": "hidden"
          }*/
-      }
-   }
+      },
+   },
 };
 
 const SettingRoutesRoutes = () => {
@@ -112,7 +112,7 @@ const SettingRoutesRoutes = () => {
 
    console.log("flows", {
       schema: schema.flows,
-      config: config.flows
+      config: config.flows,
    });
 
    return (

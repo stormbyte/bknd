@@ -36,7 +36,7 @@ export const auth = (options?: {
             registered: false,
             resolved: false,
             skip: false,
-            user: undefined
+            user: undefined,
          });
       }
 
@@ -77,7 +77,7 @@ export const permission = (
    options?: {
       onGranted?: (c: Context<ServerEnv>) => Promise<Response | void | undefined>;
       onDenied?: (c: Context<ServerEnv>) => Promise<Response | void | undefined>;
-   }
+   },
 ) =>
    // @ts-ignore
    createMiddleware<ServerEnv>(async (c, next) => {

@@ -4,16 +4,16 @@ import { Flow, LogTask, RenderTask, SubFlowTask } from "../../src/flows";
 describe("SubFlowTask", async () => {
    test("Simple Subflow", async () => {
       const subTask = new RenderTask("render", {
-         render: "subflow"
+         render: "subflow",
       });
       const subflow = new Flow("subflow", [subTask]);
 
       const task = new LogTask("log");
       const task2 = new SubFlowTask("sub", {
-         flow: subflow
+         flow: subflow,
       });
       const task3 = new RenderTask("render2", {
-         render: "Subflow output: {{ sub.output }}"
+         render: "Subflow output: {{ sub.output }}",
       });
 
       const flow = new Flow("test", [task, task2, task3], []);
@@ -30,7 +30,7 @@ describe("SubFlowTask", async () => {
 
    test("Simple loop", async () => {
       const subTask = new RenderTask("render", {
-         render: "run {{ flow.output }}"
+         render: "run {{ flow.output }}",
       });
       const subflow = new Flow("subflow", [subTask]);
 
@@ -38,10 +38,10 @@ describe("SubFlowTask", async () => {
       const task2 = new SubFlowTask("sub", {
          flow: subflow,
          loop: true,
-         input: [1, 2, 3]
+         input: [1, 2, 3],
       });
       const task3 = new RenderTask("render2", {
-         render: `Subflow output: {{ sub.output | join: ", " }}`
+         render: `Subflow output: {{ sub.output | join: ", " }}`,
       });
 
       const flow = new Flow("test", [task, task2, task3], []);
@@ -61,7 +61,7 @@ describe("SubFlowTask", async () => {
 
    test("Simple loop from flow input", async () => {
       const subTask = new RenderTask("render", {
-         render: "run {{ flow.output }}"
+         render: "run {{ flow.output }}",
       });
 
       const subflow = new Flow("subflow", [subTask]);
@@ -70,10 +70,10 @@ describe("SubFlowTask", async () => {
       const task2 = new SubFlowTask("sub", {
          flow: subflow,
          loop: true,
-         input: "{{ flow.output | json }}"
+         input: "{{ flow.output | json }}",
       });
       const task3 = new RenderTask("render2", {
-         render: `Subflow output: {{ sub.output | join: ", " }}`
+         render: `Subflow output: {{ sub.output | join: ", " }}`,
       });
 
       const flow = new Flow("test", [task, task2, task3], []);

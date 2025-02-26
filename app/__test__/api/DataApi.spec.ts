@@ -26,7 +26,7 @@ describe("DataApi", () => {
 
    it("returns result", async () => {
       const schema = proto.em({
-         posts: proto.entity("posts", { title: proto.text() })
+         posts: proto.entity("posts", { title: proto.text() }),
       });
       const em = schemaToEm(schema);
       await em.schema().sync({ force: true });
@@ -60,7 +60,7 @@ describe("DataApi", () => {
             select: ["title"],
             limit: 100000,
             offset: 0,
-            sort: "id"
+            sort: "id",
          });
          expect(req.request.method).toBe("POST");
          const res = await req;

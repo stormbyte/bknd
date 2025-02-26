@@ -10,7 +10,7 @@ import {
    entity,
    json,
    number,
-   text
+   text,
 } from "../data/prototype";
 import { MediaController } from "./api/MediaController";
 import { ADAPTERS, buildMediaSchema, type mediaConfigSchema, registry } from "./media-schema";
@@ -52,12 +52,12 @@ export class AppMedia extends Module<typeof mediaConfigSchema> {
          this.ensureSchema(
             em({ [media.name as "media"]: media }, ({ index }, { media }) => {
                index(media).on(["path"], true).on(["reference"]).on(["entity_id"]);
-            })
+            }),
          );
       } catch (e) {
          console.error(e);
          throw new Error(
-            `Could not build adapter with config ${JSON.stringify(this.config.adapter)}`
+            `Could not build adapter with config ${JSON.stringify(this.config.adapter)}`,
          );
       }
    }
@@ -81,7 +81,7 @@ export class AppMedia extends Module<typeof mediaConfigSchema> {
          mime_type: info.meta.type,
          size: info.meta.size,
          etag: info.etag,
-         modified_at: new Date()
+         modified_at: new Date(),
       };
    }
 
@@ -95,7 +95,7 @@ export class AppMedia extends Module<typeof mediaConfigSchema> {
       modified_at: datetime(),
       reference: text(),
       entity_id: number(),
-      metadata: json()
+      metadata: json(),
    };
 
    getMediaEntity(forceCreate?: boolean): Entity<"media", typeof AppMedia.mediaFields> {
@@ -128,7 +128,7 @@ export class AppMedia extends Module<typeof mediaConfigSchema> {
             mutator.__unstable_toggleSystemEntityCreation(true);
             return { data };
          },
-         { mode: "sync", id: "add-data-media" }
+         { mode: "sync", id: "add-data-media" },
       );
 
       // when file is deleted, sync with media entity
@@ -144,7 +144,7 @@ export class AppMedia extends Module<typeof mediaConfigSchema> {
 
             console.log("App:storage:file deleted", e);
          },
-         { mode: "sync", id: "delete-data-media" }
+         { mode: "sync", id: "delete-data-media" },
       );
    }
 
@@ -161,7 +161,7 @@ export class AppMedia extends Module<typeof mediaConfigSchema> {
 
       return {
          ...this.config,
-         adapter: this.storage.getAdapter().toJSON(secrets)
+         adapter: this.storage.getAdapter().toJSON(secrets),
       };
    }
 }

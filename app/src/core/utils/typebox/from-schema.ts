@@ -56,6 +56,7 @@ const IsSArray = (value: unknown): value is SArray =>
    !Type.ValueGuard.IsArray(value.items) &&
    Type.ValueGuard.IsObject(value.items);
 const IsSConst = (value: unknown): value is SConst =>
+   // biome-ignore lint/complexity/useLiteralKeys: <explanation>
    Type.ValueGuard.IsObject(value) && Type.ValueGuard.IsObject(value["const"]);
 const IsSString = (value: unknown): value is SString =>
    Type.ValueGuard.IsObject(value) && IsExact(value.type, "string");
@@ -68,7 +69,7 @@ const IsSBoolean = (value: unknown): value is SBoolean =>
 const IsSNull = (value: unknown): value is SBoolean =>
    Type.ValueGuard.IsObject(value) && IsExact(value.type, "null");
 const IsSProperties = (value: unknown): value is SProperties => Type.ValueGuard.IsObject(value);
-// prettier-ignore
+// biome-ignore format: keep
 const IsSObject = (value: unknown): value is SObject => Type.ValueGuard.IsObject(value) && IsExact(value.type, 'object') && IsSProperties(value.properties) && (value.required === undefined || Type.ValueGuard.IsArray(value.required) && value.required.every((value: unknown) => Type.ValueGuard.IsString(value)))
 type SValue = string | number | boolean;
 type SEnum = Readonly<{ enum: readonly SValue[] }>;
@@ -88,8 +89,9 @@ type SNull = Readonly<{ type: "null" }>;
 // ------------------------------------------------------------------
 // FromRest
 // ------------------------------------------------------------------
-// prettier-ignore
+// biome-ignore format: keep
 type TFromRest<T extends readonly unknown[], Acc extends Type.TSchema[] = []> = (
+  // biome-ignore lint/complexity/noUselessTypeConstraint: <explanation>
   T extends readonly [infer L extends unknown, ...infer R extends unknown[]]
     ? TFromSchema<L> extends infer S extends Type.TSchema
       ? TFromRest<R, [...Acc, S]>
@@ -102,7 +104,7 @@ function FromRest<T extends readonly unknown[]>(T: T): TFromRest<T> {
 // ------------------------------------------------------------------
 // FromEnumRest
 // ------------------------------------------------------------------
-// prettier-ignore
+// biome-ignore format: keep
 type TFromEnumRest<T extends readonly SValue[], Acc extends Type.TSchema[] = []> = (
   T extends readonly [infer L extends SValue, ...infer R extends SValue[]]
     ? TFromEnumRest<R, [...Acc, Type.TLiteral<L>]>
@@ -114,7 +116,7 @@ function FromEnumRest<T extends readonly SValue[]>(T: T): TFromEnumRest<T> {
 // ------------------------------------------------------------------
 // AllOf
 // ------------------------------------------------------------------
-// prettier-ignore
+// biome-ignore format: keep
 type TFromAllOf<T extends SAllOf> = (
   TFromRest<T['allOf']> extends infer Rest extends Type.TSchema[]
     ? Type.TIntersectEvaluated<Rest>
@@ -126,7 +128,7 @@ function FromAllOf<T extends SAllOf>(T: T): TFromAllOf<T> {
 // ------------------------------------------------------------------
 // AnyOf
 // ------------------------------------------------------------------
-// prettier-ignore
+// biome-ignore format: keep
 type TFromAnyOf<T extends SAnyOf> = (
   TFromRest<T['anyOf']> extends infer Rest extends Type.TSchema[]
     ? Type.TUnionEvaluated<Rest>
@@ -138,7 +140,7 @@ function FromAnyOf<T extends SAnyOf>(T: T): TFromAnyOf<T> {
 // ------------------------------------------------------------------
 // OneOf
 // ------------------------------------------------------------------
-// prettier-ignore
+// biome-ignore format: keep
 type TFromOneOf<T extends SOneOf> = (
   TFromRest<T['oneOf']> extends infer Rest extends Type.TSchema[]
     ? Type.TUnionEvaluated<Rest>
@@ -150,7 +152,7 @@ function FromOneOf<T extends SOneOf>(T: T): TFromOneOf<T> {
 // ------------------------------------------------------------------
 // Enum
 // ------------------------------------------------------------------
-// prettier-ignore
+// biome-ignore format: keep
 type TFromEnum<T extends SEnum> = (
   TFromEnumRest<T['enum']> extends infer Elements extends Type.TSchema[]
     ? Type.TUnionEvaluated<Elements>
@@ -162,33 +164,33 @@ function FromEnum<T extends SEnum>(T: T): TFromEnum<T> {
 // ------------------------------------------------------------------
 // Tuple
 // ------------------------------------------------------------------
-// prettier-ignore
+// biome-ignore format: keep
 type TFromTuple<T extends STuple> = (
   TFromRest<T['items']> extends infer Elements extends Type.TSchema[]
     ? Type.TTuple<Elements>
     : Type.TTuple<[]>
 )
-// prettier-ignore
+// biome-ignore format: keep
 function FromTuple<T extends STuple>(T: T): TFromTuple<T> {
   return Type.Tuple(FromRest(T.items), T) as never
 }
 // ------------------------------------------------------------------
 // Array
 // ------------------------------------------------------------------
-// prettier-ignore
+// biome-ignore format: keep
 type TFromArray<T extends SArray> = (
   TFromSchema<T['items']> extends infer Items extends Type.TSchema
     ? Type.TArray<Items>
     : Type.TArray<Type.TUnknown>
 )
-// prettier-ignore
+// biome-ignore format: keep
 function FromArray<T extends SArray>(T: T): TFromArray<T> {
   return Type.Array(FromSchema(T.items), T) as never
 }
 // ------------------------------------------------------------------
 // Const
 // ------------------------------------------------------------------
-// prettier-ignore
+// biome-ignore format: keep
 type TFromConst<T extends SConst> = (
   Type.Ensure<Type.TLiteral<T['const']>>
 )
@@ -202,13 +204,13 @@ type TFromPropertiesIsOptional<
    K extends PropertyKey,
    R extends string | unknown,
 > = unknown extends R ? true : K extends R ? false : true;
-// prettier-ignore
+// biome-ignore format: keep
 type TFromProperties<T extends SProperties, R extends string | unknown> = Type.Evaluate<{
   -readonly [K in keyof T]: TFromPropertiesIsOptional<K, R> extends true
     ? Type.TOptional<TFromSchema<T[K]>>
     : TFromSchema<T[K]>
 }>
-// prettier-ignore
+// biome-ignore format: keep
 type TFromObject<T extends SObject> = (
   TFromProperties<T['properties'], Exclude<T['required'], undefined>[number]> extends infer Properties extends Type.TProperties
     ? Type.TObject<Properties>
@@ -217,11 +219,11 @@ type TFromObject<T extends SObject> = (
 function FromObject<T extends SObject>(T: T): TFromObject<T> {
    const properties = globalThis.Object.getOwnPropertyNames(T.properties).reduce((Acc, K) => {
       return {
+         // biome-ignore lint/performance/noAccumulatingSpread: <explanation>
          ...Acc,
-         [K]:
-            T.required && T.required.includes(K)
-               ? FromSchema(T.properties[K])
-               : Type.Optional(FromSchema(T.properties[K])),
+         [K]: T.required?.includes(K)
+            ? FromSchema(T.properties[K])
+            : Type.Optional(FromSchema(T.properties[K])),
       };
    }, {} as Type.TProperties);
    return Type.Object(properties, T) as never;
@@ -229,7 +231,7 @@ function FromObject<T extends SObject>(T: T): TFromObject<T> {
 // ------------------------------------------------------------------
 // FromSchema
 // ------------------------------------------------------------------
-// prettier-ignore
+// biome-ignore format: keep
 export type TFromSchema<T> = (
   T extends SAllOf ? TFromAllOf<T> :
   T extends SAnyOf ? TFromAnyOf<T> :
@@ -248,7 +250,7 @@ export type TFromSchema<T> = (
 )
 /** Parses a TypeBox type from raw JsonSchema */
 export function FromSchema<T>(T: T): TFromSchema<T> {
-   // prettier-ignore
+   // biome-ignore format: keep
    return (
     IsSAllOf(T) ? FromAllOf(T) :
     IsSAnyOf(T) ? FromAnyOf(T) :

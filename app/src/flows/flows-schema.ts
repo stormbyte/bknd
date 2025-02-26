@@ -2,7 +2,7 @@ import { Const, type Static, StringRecord, Type, transformObject } from "core/ut
 import { TaskMap, TriggerMap } from "flows";
 
 export const TASKS = {
-   ...TaskMap
+   ...TaskMap,
 } as const;
 
 export const TRIGGERS = TriggerMap;
@@ -11,9 +11,9 @@ const taskSchemaObject = transformObject(TASKS, (task, name) => {
    return Type.Object(
       {
          type: Const(name),
-         params: task.cls.schema
+         params: task.cls.schema,
       },
-      { title: String(name), additionalProperties: false }
+      { title: String(name), additionalProperties: false },
    );
 });
 const taskSchema = Type.Union(Object.values(taskSchemaObject));
@@ -23,9 +23,9 @@ const triggerSchemaObject = transformObject(TRIGGERS, (trigger, name) => {
    return Type.Object(
       {
          type: Const(name),
-         config: trigger.cls.schema
+         config: trigger.cls.schema,
       },
-      { title: String(name), additionalProperties: false }
+      { title: String(name), additionalProperties: false },
    );
 });
 
@@ -38,22 +38,22 @@ const connectionSchema = Type.Object({
             Type.Union([
                Type.Object(
                   { type: Const("success") },
-                  { additionalProperties: false, title: "success" }
+                  { additionalProperties: false, title: "success" },
                ),
                Type.Object(
                   { type: Const("error") },
-                  { additionalProperties: false, title: "error" }
+                  { additionalProperties: false, title: "error" },
                ),
                Type.Object(
                   { type: Const("matches"), path: Type.String(), value: Type.String() },
-                  { additionalProperties: false, title: "matches" }
-               )
-            ])
+                  { additionalProperties: false, title: "matches" },
+               ),
+            ]),
          ),
-         max_retries: Type.Optional(Type.Number())
+         max_retries: Type.Optional(Type.Number()),
       },
-      { default: {}, additionalProperties: false }
-   )
+      { default: {}, additionalProperties: false },
+   ),
 });
 
 // @todo: rework to have fixed ids per task and connections (and preferrably arrays)
@@ -64,21 +64,21 @@ export const flowSchema = Type.Object(
       tasks: Type.Optional(StringRecord(Type.Union(Object.values(taskSchemaObject)))),
       connections: Type.Optional(StringRecord(connectionSchema)),
       start_task: Type.Optional(Type.String()),
-      responding_task: Type.Optional(Type.String())
+      responding_task: Type.Optional(Type.String()),
    },
    {
-      additionalProperties: false
-   }
+      additionalProperties: false,
+   },
 );
 export type TAppFlowSchema = Static<typeof flowSchema>;
 
 export const flowsConfigSchema = Type.Object(
    {
       basepath: Type.String({ default: "/api/flows" }),
-      flows: StringRecord(flowSchema, { default: {} })
+      flows: StringRecord(flowSchema, { default: {} }),
    },
    {
       default: {},
-      additionalProperties: false
-   }
+      additionalProperties: false,
+   },
 );

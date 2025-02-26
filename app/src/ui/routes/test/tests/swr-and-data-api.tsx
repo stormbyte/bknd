@@ -16,7 +16,7 @@ export default function SwrAndDataApi() {
 function QueryMutateDataApi() {
    const { mutate } = useEntityMutate("comments");
    const { data, ...r } = useEntityQuery("comments", undefined, {
-      limit: 2
+      limit: 2,
    });
 
    return (
@@ -48,7 +48,7 @@ function QueryMutateDataApi() {
 function QueryDataApi() {
    const { data, update, ...r } = useEntityQuery("comments", undefined, {
       sort: { by: "id", dir: "asc" },
-      limit: 3
+      limit: 3,
    });
 
    return (

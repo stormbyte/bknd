@@ -7,7 +7,7 @@ import {
    ModalFooter,
    type TCreateModalSchema,
    type TSchemaAction,
-   useStepContext
+   useStepContext,
 } from "./CreateModal";
 import Templates from "./templates/register";
 
@@ -70,7 +70,7 @@ export function StepSelect() {
          <ModalFooter
             next={{
                onClick: selected && nextStep(selected),
-               disabled: !selected
+               disabled: !selected,
             }}
             prev={{ onClick: stepBack }}
             prevLabel="Cancel"
@@ -87,7 +87,7 @@ const RadioCard = ({
    onClick,
    selected,
    compact = false,
-   disabled = false
+   disabled = false,
 }: {
    Icon: IconType;
    title: string;
@@ -104,7 +104,7 @@ const RadioCard = ({
             "flex gap-3 border border-primary/10 rounded cursor-pointer",
             compact ? "flex-row p-4 items-center" : "flex-col p-5",
             selected ? "bg-primary/10 border-primary/50" : "hover:bg-primary/5",
-            disabled && "opacity-50"
+            disabled && "opacity-50",
          )}
       >
          <Icon className="size-10" />

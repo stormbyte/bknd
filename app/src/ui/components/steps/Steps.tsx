@@ -4,7 +4,7 @@ import {
    type SetStateAction,
    createContext,
    useContext,
-   useState
+   useState,
 } from "react";
 
 export type TStepsProps = {
@@ -30,7 +30,7 @@ export function Steps({ children, initialPath = [], initialState = {}, lastBack 
    const [state, setState] = useState<any>(initialState);
    const [path, setPath] = useState<string[]>(initialPath);
    const steps: any[] = Children.toArray(children).filter(
-      (child: any) => child.props.disabled !== true
+      (child: any) => child.props.disabled !== true,
    );
 
    function stepBack() {

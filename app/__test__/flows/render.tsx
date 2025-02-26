@@ -10,7 +10,7 @@ const flows = {
    back,
    fanout,
    parallel,
-   simpleFetch
+   simpleFetch,
 };
 
 const arg = process.argv[2];
@@ -32,7 +32,7 @@ const colors = [
    "#F78F1E", // Saffron
    "#BD10E0", // Vivid Purple
    "#50E3C2", // Turquoise
-   "#9013FE" // Grape
+   "#9013FE", // Grape
 ];
 
 const colorsCache: Record<string, string> = {};
@@ -82,7 +82,7 @@ function TerminalFlow({ flow }: { flow: Flow }) {
                   }
 
                   return t;
-               })
+               }),
             );
          }
       });
@@ -92,7 +92,7 @@ function TerminalFlow({ flow }: { flow: Flow }) {
          console.log("done", response ? response : "(no response)");
          console.log(
             "Executed tasks:",
-            execution.logs.map((l) => l.task.name)
+            execution.logs.map((l) => l.task.name),
          );
          console.log("Executed count:", execution.logs.length);
       });
