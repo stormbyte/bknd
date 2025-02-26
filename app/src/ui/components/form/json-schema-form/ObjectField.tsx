@@ -1,9 +1,8 @@
-import type { JSONSchema } from "json-schema-to-ts";
 import { isTypeSchema } from "ui/components/form/json-schema-form/utils";
 import { AnyOfField } from "./AnyOfField";
 import { Field } from "./Field";
 import { FieldWrapper, type FieldwrapperProps } from "./FieldWrapper";
-import { useDerivedFieldContext } from "./Form";
+import { type JSONSchema, useDerivedFieldContext } from "./Form";
 
 export type ObjectFieldProps = {
    path?: string;
@@ -12,7 +11,7 @@ export type ObjectFieldProps = {
 };
 
 export const ObjectField = ({ path = "", label: _label, wrapperProps = {} }: ObjectFieldProps) => {
-   const { schema } = useDerivedFieldContext(path);
+   const { schema, ...ctx } = useDerivedFieldContext(path);
    if (!isTypeSchema(schema)) return `ObjectField "${path}": no schema`;
    const properties = Object.entries(schema.properties ?? {}) as [string, JSONSchema][];
 

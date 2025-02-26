@@ -14,7 +14,7 @@ import { getLabel } from "./utils";
 
 export type FieldwrapperProps = {
    name: string;
-   label?: string | false;
+   label?: string | ReactNode | false;
    required?: boolean;
    schema?: JsonSchema;
    debug?: object | boolean;

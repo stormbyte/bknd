@@ -476,11 +476,8 @@ export class OAuthStrategy implements Strategy {
       const config = secrets ? this.config : filterKeys(this.config, ["secret", "client_id"]);
 
       return {
-         type: this.getType(),
-         config: {
-            type: this.getIssuerConfig().type,
-            ...config
-         }
+         type: this.getIssuerConfig().type,
+         ...config
       };
    }
 }

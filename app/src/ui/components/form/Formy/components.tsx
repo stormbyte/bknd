@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { getBrowser } from "core/utils";
 import type { Field } from "data";
 import { Switch as RadixSwitch } from "radix-ui";
@@ -177,6 +178,21 @@ export const BooleanInput = forwardRef<HTMLInputElement, React.ComponentProps<"i
 );
 
 export type SwitchValue = boolean | 1 | 0 | "true" | "false" | "on" | "off";
+const SwitchSizes = {
+   xs: {
+      root: "h-5 w-8",
+      thumb: "data-[state=checked]:left-[calc(100%-1rem)]"
+   },
+   sm: {
+      root: "h-6 w-10",
+      thumb: "data-[state=checked]:left-[calc(100%-1.25rem)]"
+   },
+   md: {
+      root: "h-7 w-12",
+      thumb: "data-[state=checked]:left-[calc(100%-1.5rem)]"
+   }
+};
+
 export const Switch = forwardRef<
    HTMLButtonElement,
    Pick<
@@ -184,14 +200,19 @@ export const Switch = forwardRef<
       "name" | "required" | "disabled" | "checked" | "defaultChecked" | "id" | "type"
    > & {
       value?: SwitchValue;
+      size?: keyof typeof SwitchSizes;
       onChange?: (e: { target: { value: boolean } }) => void;
       onCheckedChange?: (checked: boolean) => void;
    }
 >(({ type, required, ...props }, ref) => {
    return (
       <RadixSwitch.Root
-         className="relative h-7 w-12 cursor-pointer rounded-full bg-muted border-2 border-transparent outline-none data-[state=checked]:bg-primary/75 appearance-none transition-colors hover:bg-muted/80"
+         className={clsx(
+            "relative cursor-pointer rounded-full bg-muted border-2 border-transparent outline-none ring-1 dark:ring-primary/10 ring-primary/20 data-[state=checked]:ring-primary/60 data-[state=checked]:bg-primary/60 appearance-none transition-colors hover:bg-muted/80",
+            SwitchSizes[props.size ?? "md"].root
+         )}
          onCheckedChange={(bool) => {
+            console.log("setting", bool);
             props.onChange?.({ target: { value: bool } });
          }}
          {...(props as any)}
@@ -204,7 +225,12 @@ export const Switch = forwardRef<
          }
          ref={ref}
       >
-         <RadixSwitch.Thumb className="absolute top-0 left-0 h-full aspect-square rounded-full bg-background transition-[left,right] duration-100 border border-muted data-[state=checked]:left-[calc(100%-1.5rem)]" />
+         <RadixSwitch.Thumb
+            className={clsx(
+               "absolute top-0 left-0 h-full aspect-square rounded-full bg-primary/30 data-[state=checked]:bg-background transition-[left,right] duration-100 border border-muted",
+               SwitchSizes[props.size ?? "md"].thumb
+            )}
+         />
       </RadixSwitch.Root>
    );
 });

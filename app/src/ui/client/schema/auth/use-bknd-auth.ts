@@ -8,7 +8,11 @@ export function useBkndAuth() {
       config: {
          set: async (data: Partial<AppAuthSchema>) => {
             console.log("--set", data);
-            return await bkndActions.set("auth", data, true);
+            if (await bkndActions.set("auth", data, true)) {
+               await bkndActions.reload();
+               return true;
+            }
+            return false;
          }
       },
       roles: {

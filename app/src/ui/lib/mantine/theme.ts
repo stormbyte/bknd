@@ -8,6 +8,7 @@ import {
    SegmentedControl,
    Select,
    Switch,
+   Tabs,
    TagsInput,
    TextInput,
    Textarea,
@@ -102,6 +103,11 @@ export function createMantineTheme(scheme: "light" | "dark"): {
                   root: `bknd-admin ${scheme} ${props.className ?? ""}`,
                   content: "!bg-background !rounded-lg !select-none",
                   overlay: "!backdrop-blur-sm"
+               })
+            }),
+            Tabs: Tabs.extend({
+               classNames: (theme, props) => ({
+                  tab: "data-[active=true]:border-primary"
                })
             }),
             Menu: Menu.extend({

@@ -1,10 +1,18 @@
 import clsx from "clsx";
-import { TbChevronDown, TbChevronUp } from "react-icons/tb";
+import { isDebug } from "core";
+import { TbAlertCircle, TbChevronDown, TbChevronUp } from "react-icons/tb";
 import { useBknd } from "ui/client/BkndProvider";
 import { useBkndAuth } from "ui/client/schema/auth/use-bknd-auth";
 import { Button } from "ui/components/buttons/Button";
+import { Icon } from "ui/components/display/Icon";
 import { Message } from "ui/components/display/Message";
-import { Field, type FieldProps, Form, Subscribe } from "ui/components/form/json-schema-form";
+import {
+   Field,
+   type FieldProps,
+   Form,
+   FormDebug,
+   Subscribe
+} from "ui/components/form/json-schema-form";
 import { useBrowserTitle } from "ui/hooks/use-browser-title";
 import * as AppShell from "ui/layouts/AppShell/AppShell";
 import { Breadcrumbs2 } from "ui/layouts/AppShell/Breadcrumbs2";
@@ -40,12 +48,13 @@ export function AuthSettings(props) {
 
 const formConfig = {
    ignoreKeys: ["roles", "strategies"],
-   options: { keepEmpty: true }
+   options: { keepEmpty: true, debug: isDebug() }
 };
 
 function AuthSettingsInternal() {
    const { config, schema: _schema, actions } = useBkndAuth();
    const schema = JSON.parse(JSON.stringify(_schema));
+   const hasRoles = Object.keys(config.roles ?? {}).length > 0;
 
    schema.properties.jwt.required = ["alg"];
 
@@ -64,7 +73,7 @@ function AuthSettingsInternal() {
          >
             {({ dirty, errors, submitting }) => (
                <AppShell.SectionHeader
-                  className="pl-3"
+                  className="pl-4"
                   right={
                      <Button
                         variant="primary"
@@ -75,28 +84,32 @@ function AuthSettingsInternal() {
                      </Button>
                   }
                >
-                  <div className="flex flex-row gap-4 items-center">
-                     <Breadcrumbs2
-                        path={[{ label: "Auth", href: "/" }, { label: "Settings" }]}
-                        backTo="/"
-                     />
-                  </div>
+                  Settings
                </AppShell.SectionHeader>
             )}
          </Subscribe>
          <AppShell.Scrollable>
-            <Section className="pt-4">
-               <AuthField
-                  name="enabled"
-                  label="Authentication Enabled"
-                  description="Only after enabling authentication, all settings below will take effect."
-                  descriptionPlacement="top"
-               />
-               <div className="flex flex-col gap-6 relative">
+            <Section className="pt-4 pl-0 pb-0">
+               <div className="pl-4">
+                  <AuthField
+                     name="enabled"
+                     label="Authentication Enabled"
+                     description="Only after enabling authentication, all settings below will take effect."
+                     descriptionPlacement="top"
+                  />
+               </div>
+               <div className="flex flex-col gap-6 relative pl-4 pb-2">
                   <Overlay />
                   <AuthField
                      name="guard.enabled"
-                     label="Guard Enabled"
+                     label={
+                        <div className="flex flex-row gap-2 items-center">
+                           <span>Guard Enabled</span>
+                           {!hasRoles && (
+                              <Icon.Warning title="No roles defined. Enabling the guard will block all requests." />
+                           )}
+                        </div>
+                     }
                      description="When enabled, enforces permissions on all routes. Make sure to create roles first."
                      descriptionPlacement="top"
                   />
@@ -139,7 +152,7 @@ function AuthSettingsInternal() {
                   <ToggleAdvanced which="cookie" />
                </Section>
             </div>
-            {/* <FormDebug /> */}
+            <FormDebug />
          </AppShell.Scrollable>
       </Form>
    );

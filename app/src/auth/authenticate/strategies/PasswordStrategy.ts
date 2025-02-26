@@ -147,9 +147,6 @@ export class PasswordStrategy implements Strategy {
    }
 
    toJSON(secrets?: boolean) {
-      return {
-         type: this.getType(),
-         config: secrets ? this.options : undefined
-      };
+      return secrets ? this.options : undefined;
    }
 }

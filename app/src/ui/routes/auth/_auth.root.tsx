@@ -44,7 +44,7 @@ export function AuthRoot({ children }) {
                      >
                         Roles & Permissions
                      </AppShell.SidebarLink>
-                     <AppShell.SidebarLink as={Link} href={routes.auth.strategies()} disabled>
+                     <AppShell.SidebarLink as={Link} href={routes.auth.strategies()}>
                         Strategies
                      </AppShell.SidebarLink>
                      <AppShell.SidebarLink as={Link} href={routes.auth.settings()}>

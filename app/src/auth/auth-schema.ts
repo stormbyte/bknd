@@ -21,6 +21,7 @@ export const STRATEGIES = Strategies;
 const strategiesSchemaObject = objectTransform(STRATEGIES, (strategy, name) => {
    return Type.Object(
       {
+         enabled: Type.Optional(Type.Boolean({ default: true })),
          type: Type.Const(name, { default: name, readOnly: true }),
          config: strategy.schema
       },
@@ -61,6 +62,7 @@ export const authConfigSchema = Type.Object(
             default: {
                password: {
                   type: "password",
+                  enabled: true,
                   config: {
                      hashing: "sha256"
                   }

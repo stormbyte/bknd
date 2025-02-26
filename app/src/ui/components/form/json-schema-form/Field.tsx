@@ -30,8 +30,9 @@ const fieldErrorBoundary =
       </Pre>
    );
 
-const FieldImpl = ({ name, onChange, placeholder, ...props }: FieldProps) => {
-   const { path, setValue, required, schema, ...ctx } = useDerivedFieldContext(name);
+const FieldImpl = ({ name, onChange, placeholder, required: _required, ...props }: FieldProps) => {
+   const { path, setValue, schema, ...ctx } = useDerivedFieldContext(name);
+   const required = typeof _required === "boolean" ? _required : ctx.required;
    //console.log("Field", { name, path, schema });
    if (!isTypeSchema(schema))
       return (
