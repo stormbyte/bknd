@@ -10,7 +10,6 @@ import { getLabel, getMultiSchemaMatched } from "./utils";
 
 export type AnyOfFieldRootProps = {
    path?: string;
-   schema?: JsonSchema;
    children: ReactNode;
 };
 
@@ -34,14 +33,14 @@ export const useAnyOfContext = () => {
 
 const selectedAtom = atom<number | null>(null);
 
-const Root = ({ path = "", schema: _schema, children }: AnyOfFieldRootProps) => {
+const Root = ({ path = "", children }: AnyOfFieldRootProps) => {
    const {
       setValue,
       lib,
       pointer,
       value: { matchedIndex, schemas },
       schema
-   } = useDerivedFieldContext(path, _schema, (ctx) => {
+   } = useDerivedFieldContext(path, (ctx) => {
       const [matchedIndex, schemas = []] = getMultiSchemaMatched(ctx.schema, ctx.value);
       return { matchedIndex, schemas };
    });
@@ -115,7 +114,7 @@ const Select = () => {
 };
 
 // @todo: add local validation for AnyOf fields
-const Field = ({ name, label, schema, ...props }: Partial<FormFieldProps>) => {
+const Field = ({ name, label, ...props }: Partial<FormFieldProps>) => {
    const { selected, selectedSchema, path, errors } = useAnyOfContext();
    if (selected === null) return null;
    return (

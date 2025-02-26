@@ -8,6 +8,7 @@ import {
    SegmentedControl,
    Select,
    Switch,
+   Tabs,
    TagsInput,
    TextInput,
    Textarea,
@@ -29,7 +30,7 @@ export function createMantineTheme(scheme: "light" | "dark"): {
    };
 
    const input =
-      "bg-muted/40 border-transparent disabled:bg-muted/50 disabled:text-primary/50 focus:border-zinc-500";
+      "!bg-muted/40 border-transparent disabled:bg-muted/50 disabled:text-primary/50 focus:border-zinc-500";
 
    return {
       theme: createTheme({
@@ -81,7 +82,6 @@ export function createMantineTheme(scheme: "light" | "dark"): {
             TextInput: TextInput.extend({
                classNames: (theme, props) => ({
                   wrapper: "leading-none",
-                  //input: "focus:border-primary/50 bg-transparent disabled:text-primary"
                   input
                })
             }),
@@ -100,9 +100,14 @@ export function createMantineTheme(scheme: "light" | "dark"): {
             Modal: Modal.extend({
                classNames: (theme, props) => ({
                   ...props.classNames,
-                  root: `bknd-admin ${scheme} ${props.className ?? ""} `,
-                  content: "bg-lightest border border-primary/10",
-                  overlay: "backdrop-blur"
+                  root: `bknd-admin ${scheme} ${props.className ?? ""}`,
+                  content: "!bg-background !rounded-lg !select-none",
+                  overlay: "!backdrop-blur-sm"
+               })
+            }),
+            Tabs: Tabs.extend({
+               classNames: (theme, props) => ({
+                  tab: "data-[active=true]:border-primary"
                })
             }),
             Menu: Menu.extend({

@@ -56,7 +56,6 @@ export class AppAuth extends Module<typeof authConfigSchema> {
 
       // register roles
       const roles = transformObject(this.config.roles ?? {}, (role, name) => {
-         //console.log("role", role, name);
          return Role.create({ name, ...role });
       });
       this.ctx.guard.setRoles(Object.values(roles));
@@ -88,6 +87,11 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       this.ctx.guard.registerPermissions(Object.values(AuthPermissions));
    }
 
+   isStrategyEnabled(strategy: Strategy | string) {
+      const name = typeof strategy === "string" ? strategy : strategy.getName();
+      return this.config.strategies?.[name]?.enabled ?? false;
+   }
+
    get controller(): AuthController {
       if (!this.isBuilt()) {
          throw new Error("Can't access controller, AppAuth not built yet");
@@ -115,12 +119,6 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       identifier: string,
       profile: ProfileExchange
    ): Promise<any> {
-      /*console.log("***** AppAuth:resolveUser", {
-         action,
-         strategy: strategy.getName(),
-         identifier,
-         profile
-      });*/
       if (!this.config.allow_register && action === "register") {
          throw new Exception("Registration is not allowed", 403);
       }
@@ -141,21 +139,10 @@ export class AppAuth extends Module<typeof authConfigSchema> {
    }
 
    private filterUserData(user: any) {
-      /*console.log(
-         "--filterUserData",
-         user,
-         this.config.jwt.fields,
-         pick(user, this.config.jwt.fields)
-      );*/
       return pick(user, this.config.jwt.fields);
    }
 
    private async login(strategy: Strategy, identifier: string, profile: ProfileExchange) {
-      /*console.log("--- trying to login", {
-         strategy: strategy.getName(),
-         identifier,
-         profile
-      });*/
       if (!("email" in profile)) {
          throw new Exception("Profile must have email");
       }
@@ -172,18 +159,14 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       if (!result.data) {
          throw new Exception("User not found", 404);
       }
-      //console.log("---login data", result.data, result);
 
       // compare strategy and identifier
-      //console.log("strategy comparison", result.data.strategy, strategy.getName());
       if (result.data.strategy !== strategy.getName()) {
          //console.log("!!! User registered with different strategy");
          throw new Exception("User registered with different strategy");
       }
 
-      //console.log("identifier comparison", result.data.strategy_value, identifier);
       if (result.data.strategy_value !== identifier) {
-         //console.log("!!! Invalid credentials");
          throw new Exception("Invalid credentials");
       }
 
@@ -285,6 +268,7 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       } catch (e) {}
 
       try {
+         // also keep disabled strategies as a choice
          const strategies = Object.keys(this.config.strategies ?? {});
          this.replaceEntityField(users, "strategy", enumm({ enum: strategies }));
       } catch (e) {}
@@ -315,9 +299,16 @@ export class AppAuth extends Module<typeof authConfigSchema> {
          return this.configDefault;
       }
 
+      const strategies = this.authenticator.getStrategies();
+
       return {
          ...this.config,
-         ...this.authenticator.toJSON(secrets)
+         ...this.authenticator.toJSON(secrets),
+         strategies: transformObject(strategies, (strategy) => ({
+            enabled: this.isStrategyEnabled(strategy),
+            type: strategy.getType(),
+            config: strategy.toJSON(secrets)
+         }))
       };
    }
 }

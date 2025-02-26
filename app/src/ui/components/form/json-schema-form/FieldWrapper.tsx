@@ -14,7 +14,7 @@ import { getLabel } from "./utils";
 
 export type FieldwrapperProps = {
    name: string;
-   label?: string | false;
+   label?: string | ReactNode | false;
    required?: boolean;
    schema?: JsonSchema;
    debug?: object | boolean;
@@ -22,6 +22,8 @@ export type FieldwrapperProps = {
    hidden?: boolean;
    children: ReactElement | ReactNode;
    errorPlacement?: "top" | "bottom";
+   description?: string;
+   descriptionPlacement?: "top" | "bottom";
 };
 
 export function FieldWrapper({
@@ -32,16 +34,24 @@ export function FieldWrapper({
    wrapper,
    hidden,
    errorPlacement = "bottom",
-   children
+   descriptionPlacement = "bottom",
+   children,
+   ...props
 }: FieldwrapperProps) {
    const errors = useFormError(name, { strict: true });
    const examples = schema?.examples || [];
    const examplesId = `${name}-examples`;
-   const description = schema?.description;
+   const description = props?.description ?? schema?.description;
    const label = typeof _label !== "undefined" ? _label : schema ? getLabel(name, schema) : name;
 
    const Errors = errors.length > 0 && (
       <Formy.ErrorMessage>{errors.map((e) => e.message).join(", ")}</Formy.ErrorMessage>
+   );
+
+   const Description = description && (
+      <Formy.Help className={descriptionPlacement === "top" ? "-mt-1 mb-1" : "mb-2"}>
+         {description}
+      </Formy.Help>
    );
 
    return (
@@ -62,6 +72,7 @@ export function FieldWrapper({
                {label} {required && <span className="font-medium opacity-30">*</span>}
             </Formy.Label>
          )}
+         {descriptionPlacement === "top" && Description}
 
          <div className="flex flex-row gap-2">
             <div className="flex flex-1 flex-col gap-3">
@@ -80,7 +91,7 @@ export function FieldWrapper({
                )}
             </div>
          </div>
-         {description && <Formy.Help>{description}</Formy.Help>}
+         {descriptionPlacement === "bottom" && Description}
          {errorPlacement === "bottom" && Errors}
       </Formy.Group>
    );

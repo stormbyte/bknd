@@ -1,5 +1,6 @@
 import { type ModalProps, Tabs } from "@mantine/core";
 import type { ContextModalProps } from "@mantine/modals";
+import clsx from "clsx";
 import { transformObject } from "core/utils";
 import type { ComponentProps } from "react";
 import { JsonViewer } from "../../components/code/JsonViewer";
@@ -29,8 +30,8 @@ export function DebugModal({ innerProps }: ContextModalProps<DebugProps>) {
    });
 
    const count = Object.keys(tabs).length;
-   function renderTab({ value, label, ...props }: (typeof tabs)[keyof typeof tabs]) {
-      return <JsonViewer json={value as any} {...props} />;
+   function renderTab({ value, label, className, ...props }: (typeof tabs)[keyof typeof tabs]) {
+      return <JsonViewer json={value as any} className={clsx("text-sm", className)} {...props} />;
    }
 
    return (

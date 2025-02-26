@@ -2,6 +2,7 @@ import { IconAlertHexagon } from "@tabler/icons-react";
 import { TbSettings } from "react-icons/tb";
 import { useBknd } from "ui/client/BkndProvider";
 import { IconButton } from "ui/components/buttons/IconButton";
+import { Icon } from "ui/components/display/Icon";
 import { Link } from "ui/components/wouter/Link";
 import { Media } from "ui/elements";
 import { useBrowserTitle } from "ui/hooks/use-browser-title";
@@ -32,7 +33,10 @@ export function MediaRoot({ children }) {
                         href={"/"}
                         className="flex flex-row justify-between"
                      >
-                        Main Bucket {mediaDisabled && <IconAlertHexagon className="size-5" />}
+                        Main Bucket{" "}
+                        {mediaDisabled && (
+                           <Icon.Warning title="Media not enabled." className="size-5" />
+                        )}
                      </AppShell.SidebarLink>
                      <AppShell.SidebarLink as={Link} href={"/settings"}>
                         Settings

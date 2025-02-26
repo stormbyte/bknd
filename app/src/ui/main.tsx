@@ -11,7 +11,8 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 );
 
 // REGISTER ERROR OVERLAY
-if (process.env.NODE_ENV !== "production") {
+const showOverlay = true;
+if (process.env.NODE_ENV !== "production" && showOverlay) {
    const showErrorOverlay = (err) => {
       // must be within function call because that's when the element is defined for sure.
       const ErrorOverlay = customElements.get("vite-error-overlay");

@@ -32,6 +32,33 @@ const schema2 = {
    required: ["age"]
 } as const satisfies JSONSchema;
 
+const authSchema = {
+   type: "object",
+   properties: {
+      what: {
+         type: "array",
+         items: {
+            type: "string"
+         }
+      },
+      jwt: {
+         type: "object",
+         properties: {
+            fields: {
+               type: "array",
+               items: {
+                  type: "string"
+               }
+            }
+         }
+      }
+   }
+} as const satisfies JSONSchema;
+
+const formOptions = {
+   debug: true
+};
+
 export default function JsonSchemaForm3() {
    const { schema: _schema, config } = useBknd();
    const schema = JSON.parse(JSON.stringify(_schema));
@@ -46,6 +73,8 @@ export default function JsonSchemaForm3() {
    return (
       <Scrollable>
          <div className="flex flex-col p-3">
+            <Form schema={_schema.auth} options={formOptions} />
+
             {/*<Form
                onChange={(data) => console.log("change", data)}
                onSubmit={(data) => console.log("submit", data)}
@@ -249,13 +278,13 @@ export default function JsonSchemaForm3() {
             </Form>*/}
 
             {/*<CustomMediaForm />*/}
-            <Form
+
+            {/*<Form
                schema={schema.media}
                initialValues={config.media as any}
                onSubmit={console.log}
                options={{ debug: true }}
-               /*validateOn="change"*/
-            />
+            />*/}
 
             {/*<Form
                schema={removeKeyRecursively(schema.media, "pattern") as any}
@@ -333,7 +362,7 @@ function CustomMediaForm() {
          <AnyOf.Root path="adapter">
             <CustomMediaFormAdapter />
          </AnyOf.Root>
-         {/*<FormDebug force />*/}
+         <FormDebug force />
       </Form>
    );
 }

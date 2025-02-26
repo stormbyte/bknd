@@ -35,7 +35,7 @@ import {
    prefixPointer
 } from "./utils";
 
-type JSONSchema = Exclude<$JSONSchema, boolean>;
+export type JSONSchema = Exclude<$JSONSchema, boolean>;
 type FormState<Data = any> = {
    dirty: boolean;
    submitting: boolean;
@@ -238,6 +238,7 @@ export function FormContextOverride({
       ...overrides,
       ...additional
    };
+   console.log("context", context);
 
    return <FormContext.Provider value={context}>{children}</FormContext.Provider>;
 }
@@ -287,10 +288,11 @@ export function useFormError(name: string, opt?: { strict?: boolean; debug?: boo
 }
 
 export function useFormStateSelector<Data = any, Reduced = Data>(
-   selector: (state: FormState<Data>) => Reduced
+   selector: (state: FormState<Data>) => Reduced,
+   deps: any[] = []
 ): Reduced {
    const { _formStateAtom } = useFormContext();
-   const selected = selectAtom(_formStateAtom, useCallback(selector, []), isEqual);
+   const selected = selectAtom(_formStateAtom, useCallback(selector, deps), isEqual);
    return useAtom(selected)[0];
 }
 
@@ -298,7 +300,6 @@ type SelectorFn<Ctx = any, Refined = any> = (state: Ctx) => Refined;
 
 export function useDerivedFieldContext<Data = any, Reduced = undefined>(
    path,
-   _schema?: LibJsonSchema,
    deriveFn?: SelectorFn<
       FormContext<Data> & {
          pointer: string;
@@ -307,7 +308,8 @@ export function useDerivedFieldContext<Data = any, Reduced = undefined>(
          path: string;
       },
       Reduced
-   >
+   >,
+   _schema?: JSONSchema
 ): FormContext<Data> & {
    value: Reduced;
    pointer: string;
@@ -324,9 +326,6 @@ export function useDerivedFieldContext<Data = any, Reduced = undefined>(
             const prefixedName = prefixPath(path, root);
             const prefixedPointer = pathToPointer(prefixedName);
             const value = getPath(state.data, prefixedName);
-            /*const errors = state.errors.filter((error) =>
-               error.data.pointer.startsWith(prefixedPointer)
-            );*/
             const fieldSchema =
                pointer === "#/"
                   ? (schema as LibJsonSchema)

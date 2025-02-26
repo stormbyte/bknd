@@ -1,111 +1,210 @@
-import { cloneDeep, omit } from "lodash-es";
-import { useEffect, useRef } from "react";
-import { useBknd } from "ui/client/bknd";
+import clsx from "clsx";
+import { isDebug } from "core";
+import { TbAlertCircle, TbChevronDown, TbChevronUp } from "react-icons/tb";
+import { useBknd } from "ui/client/BkndProvider";
 import { useBkndAuth } from "ui/client/schema/auth/use-bknd-auth";
-import { useBkndData } from "ui/client/schema/data/use-bknd-data";
 import { Button } from "ui/components/buttons/Button";
-import { Alert } from "ui/components/display/Alert";
-import { JsonSchemaForm, type JsonSchemaFormRef } from "ui/components/form/json-schema";
+import { Icon } from "ui/components/display/Icon";
+import { Message } from "ui/components/display/Message";
+import {
+   Field,
+   type FieldProps,
+   Form,
+   FormDebug,
+   Subscribe
+} from "ui/components/form/json-schema-form";
+import { useBrowserTitle } from "ui/hooks/use-browser-title";
 import * as AppShell from "ui/layouts/AppShell/AppShell";
-import { useNavigate } from "ui/lib/routes";
-import { extractSchema } from "../settings/utils/schema";
+import { create } from "zustand";
+import { combine } from "zustand/middleware";
 
-// @todo: improve the inline editing expierence, for now redirect to settings
-export function AuthSettingsList() {
-   const { app } = useBknd();
-   const [navigate] = useNavigate();
-   useEffect(() => {
-      navigate(app.getSettingsPath(["auth"]));
-   }, []);
+const useAuthSettingsStore = create(
+   combine(
+      {
+         advanced: [] as string[]
+      },
+      (set) => ({
+         toggleAdvanced: (which: string) =>
+            set((state) => ({
+               advanced: state.advanced.includes(which)
+                  ? state.advanced.filter((w) => w !== which)
+                  : [...state.advanced, which]
+            }))
+      })
+   )
+);
 
-   return null;
+export function AuthSettings(props) {
+   useBrowserTitle(["Auth", "Settings"]);
 
-   /*useBknd({ withSecrets: true });
-   return <AuthSettingsListInternal />;*/
+   const { hasSecrets } = useBknd({ withSecrets: true });
+   if (!hasSecrets) {
+      return <Message.MissingPermission what="Auth Settings" />;
+   }
+
+   return <AuthSettingsInternal {...props} />;
 }
 
-const uiSchema = {
-   jwt: {
-      fields: {
-         "ui:options": {
-            orderable: false
-         }
-      }
-   }
+const formConfig = {
+   ignoreKeys: ["roles", "strategies"],
+   options: { keepEmpty: true, debug: isDebug() }
 };
 
-function AuthSettingsListInternal() {
-   const $auth = useBkndAuth();
-   const { entities } = useBkndData();
-   const formRef = useRef<JsonSchemaFormRef>(null);
-   const config = $auth.config;
-   const schema = cloneDeep(omit($auth.schema, ["title"]));
-   const [generalSchema, generalConfig, extracted] = extractSchema(schema as any, config, [
-      "jwt",
-      "roles",
-      "guard",
-      "strategies"
-   ]);
-   try {
-      const user_entity = config.entity_name ?? "users";
-      const user_fields = Object.entries(entities[user_entity]?.fields ?? {})
-         .map(([name, field]) => (!field.config?.virtual ? name : undefined))
-         .filter(Boolean);
+function AuthSettingsInternal() {
+   const { config, schema: _schema, actions, $auth } = useBkndAuth();
+   const schema = JSON.parse(JSON.stringify(_schema));
 
-      if (user_fields) {
-         console.log("user_fields", user_fields);
-         extracted.jwt.schema.properties.fields.items.enum = user_fields;
-         extracted.jwt.schema.properties.fields.uniqueItems = true;
-         uiSchema.jwt.fields["ui:widget"] = "checkboxes";
-      } else {
-         uiSchema.jwt.fields["ui:widget"] = "hidden";
-      }
-   } catch (e) {
-      console.error(e);
-   }
+   schema.properties.jwt.required = ["alg"];
 
-   async function handleSubmit() {
-      console.log(formRef.current?.validateForm(), formRef.current?.formData());
+   async function onSubmit(data: any) {
+      await actions.config.set(data);
    }
 
    return (
-      <>
-         <AppShell.SectionHeader
-            right={
-               <Button variant="primary" onClick={handleSubmit}>
-                  Update
-               </Button>
-            }
+      <Form schema={schema} initialValues={config as any} onSubmit={onSubmit} {...formConfig}>
+         <Subscribe
+            selector={(state) => ({
+               dirty: state.dirty,
+               errors: state.errors.length > 0,
+               submitting: state.submitting
+            })}
          >
-            Settings
-         </AppShell.SectionHeader>
+            {({ dirty, errors, submitting }) => (
+               <AppShell.SectionHeader
+                  className="pl-4"
+                  right={
+                     <Button
+                        variant="primary"
+                        type="submit"
+                        disabled={!dirty || errors || submitting}
+                     >
+                        Update
+                     </Button>
+                  }
+               >
+                  Settings
+               </AppShell.SectionHeader>
+            )}
+         </Subscribe>
          <AppShell.Scrollable>
-            <Alert.Warning
-               visible={!config.enabled}
-               title="Auth not enabled"
-               message="Enable it by toggling the switch below. Please also make sure set a secure secret to sign JWT tokens."
-            />
-            <div className="flex flex-col flex-grow px-5 py-4 gap-8">
-               <div>
-                  <JsonSchemaForm
-                     schema={generalSchema}
-                     className="legacy hide-required-mark fieldset-alternative mute-root"
+            <Section className="pt-4 pl-0 pb-0">
+               <div className="pl-4">
+                  <AuthField
+                     name="enabled"
+                     label="Authentication Enabled"
+                     description="Only after enabling authentication, all settings below will take effect."
+                     descriptionPlacement="top"
                   />
                </div>
-
-               <div className="flex flex-col gap-3">
-                  <h3 className="font-bold">JWT Settings</h3>
-                  <JsonSchemaForm
-                     ref={formRef}
-                     schema={extracted.jwt.schema}
-                     uiSchema={uiSchema.jwt}
-                     className="legacy hide-required-mark fieldset-alternative mute-root"
+               <div className="flex flex-col gap-6 relative pl-4 pb-2">
+                  <Overlay />
+                  <AuthField
+                     name="guard.enabled"
+                     label={
+                        <div className="flex flex-row gap-2 items-center">
+                           <span>Guard Enabled</span>
+                           {!$auth.roles.has_admin && (
+                              <Icon.Warning title="No admin roles defined. Enabling the guard will likely block all requests." />
+                           )}
+                        </div>
+                     }
+                     disabled={$auth.roles.none}
+                     description="When enabled, enforces permissions on all routes. Make sure to create roles first."
+                     descriptionPlacement="top"
+                  />
+                  <AuthField
+                     name="allow_register"
+                     label="Allow User Registration"
+                     description="When enabled, allows users to register autonomously. New users use the default role."
+                     descriptionPlacement="top"
                   />
                </div>
+            </Section>
+            <div className="flex flex-col gap-3 relative mt-3 pb-4">
+               <Overlay />
+               <AppShell.Separator />
+               <Section title="JWT">
+                  <AuthField name="jwt.issuer" />
+                  <AuthField
+                     name="jwt.secret"
+                     description="The secret used to sign the JWT token. If not set, a random key will be generated after enabling authentication."
+                     advanced="jwt"
+                  />
+                  <AuthField name="jwt.alg" advanced="jwt" />
+                  <AuthField name="jwt.expires" advanced="jwt" />
+                  <ToggleAdvanced which="jwt" />
+               </Section>
+               <AppShell.Separator />
+               <Section title="Cookie">
+                  <AuthField name="cookie.path" advanced="cookie" />
+                  <AuthField name="cookie.sameSite" advanced="cookie" />
+                  <AuthField name="cookie.secure" advanced="cookie" />
+                  <AuthField name="cookie.expires" advanced="cookie" />
+                  <AuthField
+                     name="cookie.renew"
+                     label="Renew Cookie"
+                     description="Automatically renew users cookie on every request."
+                     descriptionPlacement="top"
+                  />
+                  <AuthField name="cookie.pathSuccess" advanced="cookie" />
+                  <AuthField name="cookie.pathLoggedOut" />
+                  <ToggleAdvanced which="cookie" />
+               </Section>
             </div>
+            <FormDebug />
          </AppShell.Scrollable>
+      </Form>
+   );
+}
+
+const ToggleAdvanced = ({ which }: { which: string }) => {
+   const { advanced, toggleAdvanced } = useAuthSettingsStore();
+   const show = advanced.includes(which);
+   return (
+      <Button
+         IconLeft={show ? TbChevronUp : TbChevronDown}
+         onClick={() => toggleAdvanced(which)}
+         variant={show ? "default" : "ghost"}
+         className="self-start"
+         size="small"
+      >
+         {show ? "Hide advanced settings" : "Show advanced settings"}
+      </Button>
+   );
+};
+
+//const Overlay = () => null;
+const Overlay = () => (
+   <Subscribe selector={(state) => ({ enabled: state.data.enabled })}>
+      {({ enabled }) =>
+         !enabled && (
+            <div className="absolute w-full h-full z-50 inset-0 bg-background opacity-90" />
+         )
+      }
+   </Subscribe>
+);
+
+function Section(props: {
+   children: React.ReactNode;
+   className?: string;
+   title?: string;
+   first?: boolean;
+}) {
+   const { children, title, className } = props;
+   return (
+      <>
+         <div className={clsx("flex flex-col gap-6 px-4", title && "pt-0", className)}>
+            {title && <h3 className="text-lg font-bold">{title}</h3>}
+            {children}
+         </div>
       </>
    );
 }
 
-function AuthJwtSettings() {}
+function AuthField(props: FieldProps & { advanced?: string }) {
+   const { advanced, ...rest } = props;
+   const showAdvanced = useAuthSettingsStore((state) => state.advanced);
+   if (advanced && !showAdvanced.includes(advanced)) return null;
+
+   return <Field {...rest} />;
+}

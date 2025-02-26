@@ -1,24 +1,40 @@
 import type { JsonSchema } from "json-schema-library";
 import type { ChangeEvent, ComponentPropsWithoutRef } from "react";
+import ErrorBoundary from "ui/components/display/ErrorBoundary";
 import * as Formy from "ui/components/form/Formy";
 import { useEvent } from "ui/hooks/use-event";
 import { ArrayField } from "./ArrayField";
-import { FieldWrapper } from "./FieldWrapper";
+import { FieldWrapper, type FieldwrapperProps } from "./FieldWrapper";
 import { useDerivedFieldContext, useFormValue } from "./Form";
 import { ObjectField } from "./ObjectField";
 import { coerce, isType, isTypeSchema } from "./utils";
 
 export type FieldProps = {
-   name: string;
-   schema?: JsonSchema;
    onChange?: (e: ChangeEvent<any>) => void;
-   label?: string | false;
-   hidden?: boolean;
+   placeholder?: string;
+   disabled?: boolean;
+} & Omit<FieldwrapperProps, "children" | "schema">;
+
+export const Field = (props: FieldProps) => {
+   return (
+      <ErrorBoundary fallback={fieldErrorBoundary(props)}>
+         <FieldImpl {...props} />
+      </ErrorBoundary>
+   );
 };
 
-export const Field = ({ name, schema: _schema, onChange, label: _label, hidden }: FieldProps) => {
-   const { path, setValue, required, ...ctx } = useDerivedFieldContext(name, _schema);
-   const schema = _schema ?? ctx.schema;
+const fieldErrorBoundary =
+   ({ name }: FieldProps) =>
+   ({ error }: { error: Error }) => (
+      <Pre>
+         Field "{name}" error: {error.message}
+      </Pre>
+   );
+
+const FieldImpl = ({ name, onChange, placeholder, required: _required, ...props }: FieldProps) => {
+   const { path, setValue, schema, ...ctx } = useDerivedFieldContext(name);
+   const required = typeof _required === "boolean" ? _required : ctx.required;
+   //console.log("Field", { name, path, schema });
    if (!isTypeSchema(schema))
       return (
          <Pre>
@@ -27,14 +43,14 @@ export const Field = ({ name, schema: _schema, onChange, label: _label, hidden }
       );
 
    if (isType(schema.type, "object")) {
-      return <ObjectField path={name} schema={schema} />;
+      return <ObjectField path={name} />;
    }
 
    if (isType(schema.type, "array")) {
-      return <ArrayField path={name} schema={schema} />;
+      return <ArrayField path={name} />;
    }
 
-   const disabled = schema.readOnly ?? "const" in schema ?? false;
+   const disabled = props.disabled ?? schema.readOnly ?? "const" in schema ?? false;
 
    const handleChange = useEvent((e: ChangeEvent<HTMLInputElement>) => {
       const value = coerce(e.target.value, schema as any, { required });
@@ -46,12 +62,13 @@ export const Field = ({ name, schema: _schema, onChange, label: _label, hidden }
    });
 
    return (
-      <FieldWrapper name={name} label={_label} required={required} schema={schema} hidden={hidden}>
+      <FieldWrapper name={name} required={required} schema={schema} {...props}>
          <FieldComponent
             schema={schema}
             name={name}
             required={required}
             disabled={disabled}
+            placeholder={placeholder}
             onChange={onChange ?? handleChange}
          />
       </FieldWrapper>
@@ -73,7 +90,9 @@ export const FieldComponent = ({
    const props = {
       ..._props,
       // allow override
-      value: typeof _props.value !== "undefined" ? _props.value : value
+      value: typeof _props.value !== "undefined" ? _props.value : value,
+      placeholder:
+         (_props.placeholder ?? typeof schema.default !== "undefined") ? String(schema.default) : ""
    };
 
    if (schema.enum) {

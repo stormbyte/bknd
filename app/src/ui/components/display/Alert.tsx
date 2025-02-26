@@ -25,8 +25,10 @@ const Base: React.FC<AlertProps> = ({
             className
          )}
       >
-         {title && <b className="mr-2">{title}:</b>}
-         {message || children}
+         <p>
+            {title && <b>{title}: </b>}
+            {message || children}
+         </p>
       </div>
    ) : null;
 

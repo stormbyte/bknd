@@ -342,8 +342,7 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
    toJSON(secrets?: boolean) {
       return {
          ...this.config,
-         jwt: secrets ? this.config.jwt : undefined,
-         strategies: transformObject(this.getStrategies(), (s) => s.toJSON(secrets))
+         jwt: secrets ? this.config.jwt : undefined
       };
    }
 }
