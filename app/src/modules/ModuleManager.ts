@@ -32,7 +32,8 @@ import { AppAuth } from "../auth/AppAuth";
 import { AppData } from "../data/AppData";
 import { AppFlows } from "../flows/AppFlows";
 import { AppMedia } from "../media/AppMedia";
-import { Module, type ModuleBuildContext, type ServerEnv } from "./Module";
+import type { ServerEnv } from "./Controller";
+import { Module, type ModuleBuildContext } from "./Module";
 
 export type { ModuleBuildContext };
 

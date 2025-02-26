@@ -1,7 +1,7 @@
 import { Exception, Permission } from "core";
 import { objectTransform } from "core/utils";
 import type { Context } from "hono";
-import type { ServerEnv } from "modules/Module";
+import type { ServerEnv } from "modules/Controller";
 import { Role } from "./Role";
 
 export type GuardUserContext = {

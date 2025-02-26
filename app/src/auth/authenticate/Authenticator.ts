@@ -13,7 +13,7 @@ import type { Context, Hono } from "hono";
 import { deleteCookie, getSignedCookie, setSignedCookie } from "hono/cookie";
 import { sign, verify } from "hono/jwt";
 import type { CookieOptions } from "hono/utils/cookie";
-import type { ServerEnv } from "modules/Module";
+import type { ServerEnv } from "modules/Controller";
 
 type Input = any; // workaround
 export type JWTPayload = Parameters<typeof sign>[0];

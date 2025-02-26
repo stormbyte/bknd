@@ -2,8 +2,7 @@ import { type AppAuth, AuthPermissions, type SafeUser, type Strategy } from "aut
 import { TypeInvalidError, parse } from "core/utils";
 import { DataPermissions } from "data";
 import type { Hono } from "hono";
-import { Controller } from "modules/Controller";
-import type { ServerEnv } from "modules/Module";
+import { Controller, type ServerEnv } from "modules/Controller";
 
 export type AuthActionResponse = {
    success: boolean;
