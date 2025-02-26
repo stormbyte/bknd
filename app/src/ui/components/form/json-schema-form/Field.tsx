@@ -1,5 +1,6 @@
 import type { JsonSchema } from "json-schema-library";
 import type { ChangeEvent, ComponentPropsWithoutRef } from "react";
+import ErrorBoundary from "ui/components/display/ErrorBoundary";
 import * as Formy from "ui/components/form/Formy";
 import { useEvent } from "ui/hooks/use-event";
 import { ArrayField } from "./ArrayField";
@@ -10,11 +11,28 @@ import { coerce, isType, isTypeSchema } from "./utils";
 
 export type FieldProps = {
    onChange?: (e: ChangeEvent<any>) => void;
-} & Omit<FieldwrapperProps, "children">;
+   placeholder?: string;
+} & Omit<FieldwrapperProps, "children" | "schema">;
 
-export const Field = ({ name, schema: _schema, onChange, ...props }: FieldProps) => {
-   const { path, setValue, required, ...ctx } = useDerivedFieldContext(name, _schema);
-   const schema = _schema ?? ctx.schema;
+export const Field = (props: FieldProps) => {
+   return (
+      <ErrorBoundary fallback={fieldErrorBoundary(props)}>
+         <FieldImpl {...props} />
+      </ErrorBoundary>
+   );
+};
+
+const fieldErrorBoundary =
+   ({ name }: FieldProps) =>
+   ({ error }: { error: Error }) => (
+      <Pre>
+         Field "{name}" error: {error.message}
+      </Pre>
+   );
+
+const FieldImpl = ({ name, onChange, placeholder, ...props }: FieldProps) => {
+   const { path, setValue, required, schema, ...ctx } = useDerivedFieldContext(name);
+   //console.log("Field", { name, path, schema });
    if (!isTypeSchema(schema))
       return (
          <Pre>
@@ -23,11 +41,11 @@ export const Field = ({ name, schema: _schema, onChange, ...props }: FieldProps)
       );
 
    if (isType(schema.type, "object")) {
-      return <ObjectField path={name} schema={schema} />;
+      return <ObjectField path={name} />;
    }
 
    if (isType(schema.type, "array")) {
-      return <ArrayField path={name} schema={schema} />;
+      return <ArrayField path={name} />;
    }
 
    const disabled = schema.readOnly ?? "const" in schema ?? false;
@@ -48,6 +66,7 @@ export const Field = ({ name, schema: _schema, onChange, ...props }: FieldProps)
             name={name}
             required={required}
             disabled={disabled}
+            placeholder={placeholder}
             onChange={onChange ?? handleChange}
          />
       </FieldWrapper>
@@ -69,7 +88,9 @@ export const FieldComponent = ({
    const props = {
       ..._props,
       // allow override
-      value: typeof _props.value !== "undefined" ? _props.value : value
+      value: typeof _props.value !== "undefined" ? _props.value : value,
+      placeholder:
+         (_props.placeholder ?? typeof schema.default !== "undefined") ? String(schema.default) : ""
    };
 
    if (schema.enum) {

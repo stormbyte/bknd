@@ -298,7 +298,6 @@ type SelectorFn<Ctx = any, Refined = any> = (state: Ctx) => Refined;
 
 export function useDerivedFieldContext<Data = any, Reduced = undefined>(
    path,
-   _schema?: LibJsonSchema,
    deriveFn?: SelectorFn<
       FormContext<Data> & {
          pointer: string;
@@ -314,8 +313,7 @@ export function useDerivedFieldContext<Data = any, Reduced = undefined>(
    required: boolean;
    path: string;
 } {
-   const { _formStateAtom, root, lib, ...ctx } = useFormContext();
-   const schema = _schema ?? ctx.schema;
+   const { _formStateAtom, root, lib, schema, ...ctx } = useFormContext();
    const selected = selectAtom(
       _formStateAtom,
       useCallback(
