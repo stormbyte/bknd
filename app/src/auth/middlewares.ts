@@ -2,7 +2,7 @@ import type { Permission } from "core";
 import { patternMatch } from "core/utils";
 import type { Context } from "hono";
 import { createMiddleware } from "hono/factory";
-import type { ServerEnv } from "modules/Module";
+import type { ServerEnv } from "modules/Controller";
 
 function getPath(reqOrCtx: Request | Context) {
    const req = reqOrCtx instanceof Request ? reqOrCtx : reqOrCtx.req.raw;

@@ -3,8 +3,7 @@ import { tbValidator as tb } from "core";
 import { Type, TypeInvalidError, parse, transformObject } from "core/utils";
 import { DataPermissions } from "data";
 import type { Hono } from "hono";
-import { Controller } from "modules/Controller";
-import type { ServerEnv } from "modules/Module";
+import { Controller, type ServerEnv } from "modules/Controller";
 
 export type AuthActionResponse = {
    success: boolean;

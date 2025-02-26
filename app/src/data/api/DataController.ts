@@ -111,56 +111,56 @@ export class DataController extends Controller {
       /**
        * Schema endpoints
        */
-      hono
-         // read entity schema
-         .get("/schema.json", permission(DataPermissions.entityRead), async (c) => {
-            const $id = `${this.config.basepath}/schema.json`;
-            const schemas = Object.fromEntries(
-               this.em.entities.map((e) => [
-                  e.name,
-                  {
-                     $ref: `${this.config.basepath}/schemas/${e.name}`
-                  }
-               ])
-            );
-            return c.json({
-               $schema: "https://json-schema.org/draft/2020-12/schema",
-               $id,
-               properties: schemas
-            });
-         })
-         // read schema
-         .get(
-            "/schemas/:entity/:context?",
-            permission(DataPermissions.entityRead),
-            tb(
-               "param",
-               Type.Object({
-                  entity: Type.String(),
-                  context: Type.Optional(StringEnum(["create", "update"]))
-               })
-            ),
-            async (c) => {
-               //console.log("request", c.req.raw);
-               const { entity, context } = c.req.param();
-               if (!this.entityExists(entity)) {
-                  console.warn("not found:", entity, definedEntities);
-                  return c.notFound();
+      // read entity schema
+      hono.get("/schema.json", permission(DataPermissions.entityRead), async (c) => {
+         const $id = `${this.config.basepath}/schema.json`;
+         const schemas = Object.fromEntries(
+            this.em.entities.map((e) => [
+               e.name,
+               {
+                  $ref: `${this.config.basepath}/schemas/${e.name}`
                }
-               const _entity = this.em.entity(entity);
-               const schema = _entity.toSchema({ context } as any);
-               const url = new URL(c.req.url);
-               const base = `${url.origin}${this.config.basepath}`;
-               const $id = `${this.config.basepath}/schemas/${entity}`;
-               return c.json({
-                  $schema: `${base}/schema.json`,
-                  $id,
-                  title: _entity.label,
-                  $comment: _entity.config.description,
-                  ...schema
-               });
-            }
+            ])
          );
+         return c.json({
+            $schema: "https://json-schema.org/draft/2020-12/schema",
+            $id,
+            properties: schemas
+         });
+      });
+
+      // read schema
+      hono.get(
+         "/schemas/:entity/:context?",
+         permission(DataPermissions.entityRead),
+         tb(
+            "param",
+            Type.Object({
+               entity: Type.String(),
+               context: Type.Optional(StringEnum(["create", "update"]))
+            })
+         ),
+         async (c) => {
+            //console.log("request", c.req.raw);
+            const { entity, context } = c.req.param();
+            if (!this.entityExists(entity)) {
+               console.warn("not found:", entity, definedEntities);
+               return this.notFound(c);
+            }
+            const _entity = this.em.entity(entity);
+            const schema = _entity.toSchema({ context } as any);
+            const url = new URL(c.req.url);
+            const base = `${url.origin}${this.config.basepath}`;
+            const $id = `${this.config.basepath}/schemas/${entity}`;
+            return c.json({
+               $schema: `${base}/schema.json`,
+               $id,
+               title: _entity.label,
+               $comment: _entity.config.description,
+               ...schema
+            });
+         }
+      );
 
       // entity endpoints
       hono.route("/entity", this.getEntityRoutes());
@@ -171,7 +171,7 @@ export class DataController extends Controller {
       hono.get("/info/:entity", async (c) => {
          const { entity } = c.req.param();
          if (!this.entityExists(entity)) {
-            return c.notFound();
+            return this.notFound(c);
          }
          const _entity = this.em.entity(entity);
          const fields = _entity.fields.map((f) => f.name);
@@ -208,203 +208,232 @@ export class DataController extends Controller {
       /**
        * Function endpoints
        */
-      hono
-         // fn: count
-         .post(
-            "/:entity/fn/count",
-            permission(DataPermissions.entityRead),
-            tb("param", Type.Object({ entity: Type.String() })),
-            async (c) => {
-               const { entity } = c.req.valid("param");
-               if (!this.entityExists(entity)) {
-                  return c.notFound();
-               }
-
-               const where = (await c.req.json()) as any;
-               const result = await this.em.repository(entity).count(where);
-               return c.json({ entity, count: result.count });
+      // fn: count
+      hono.post(
+         "/:entity/fn/count",
+         permission(DataPermissions.entityRead),
+         tb("param", Type.Object({ entity: Type.String() })),
+         async (c) => {
+            const { entity } = c.req.valid("param");
+            if (!this.entityExists(entity)) {
+               return this.notFound(c);
             }
-         )
-         // fn: exists
-         .post(
-            "/:entity/fn/exists",
-            permission(DataPermissions.entityRead),
-            tb("param", Type.Object({ entity: Type.String() })),
-            async (c) => {
-               const { entity } = c.req.valid("param");
-               if (!this.entityExists(entity)) {
-                  return c.notFound();
-               }
 
-               const where = c.req.json() as any;
-               const result = await this.em.repository(entity).exists(where);
-               return c.json({ entity, exists: result.exists });
+            const where = (await c.req.json()) as any;
+            const result = await this.em.repository(entity).count(where);
+            return c.json({ entity, count: result.count });
+         }
+      );
+
+      // fn: exists
+      hono.post(
+         "/:entity/fn/exists",
+         permission(DataPermissions.entityRead),
+         tb("param", Type.Object({ entity: Type.String() })),
+         async (c) => {
+            const { entity } = c.req.valid("param");
+            if (!this.entityExists(entity)) {
+               return this.notFound(c);
             }
-         );
+
+            const where = c.req.json() as any;
+            const result = await this.em.repository(entity).exists(where);
+            return c.json({ entity, exists: result.exists });
+         }
+      );
 
       /**
        * Read endpoints
        */
-      hono
-         // read many
-         .get(
-            "/:entity",
-            permission(DataPermissions.entityRead),
-            tb("param", Type.Object({ entity: Type.String() })),
-            tb("query", querySchema),
-            async (c) => {
-               //console.log("request", c.req.raw);
-               const { entity } = c.req.param();
-               if (!this.entityExists(entity)) {
-                  console.warn("not found:", entity, definedEntities);
-                  return c.notFound();
-               }
-               const options = c.req.valid("query") as RepoQuery;
-               //console.log("before", this.ctx.emgr.Events);
-               const result = await this.em.repository(entity).findMany(options);
-
-               return c.json(this.repoResult(result), { status: result.data ? 200 : 404 });
+      // read many
+      hono.get(
+         "/:entity",
+         permission(DataPermissions.entityRead),
+         tb("param", Type.Object({ entity: Type.String() })),
+         tb("query", querySchema),
+         async (c) => {
+            //console.log("request", c.req.raw);
+            const { entity } = c.req.param();
+            if (!this.entityExists(entity)) {
+               console.warn("not found:", entity, definedEntities);
+               return this.notFound(c);
             }
-         )
+            const options = c.req.valid("query") as RepoQuery;
+            //console.log("before", this.ctx.emgr.Events);
+            const result = await this.em.repository(entity).findMany(options);
 
-         // read one
-         .get(
-            "/:entity/:id",
-            permission(DataPermissions.entityRead),
-            tb(
-               "param",
-               Type.Object({
-                  entity: Type.String(),
-                  id: tbNumber
-               })
-            ),
-            tb("query", querySchema),
-            async (c) => {
-               const { entity, id } = c.req.param();
-               if (!this.entityExists(entity)) {
-                  return c.notFound();
-               }
-               const options = c.req.valid("query") as RepoQuery;
-               const result = await this.em.repository(entity).findId(Number(id), options);
+            return c.json(this.repoResult(result), { status: result.data ? 200 : 404 });
+         }
+      );
 
-               return c.json(this.repoResult(result), { status: result.data ? 200 : 404 });
+      // read one
+      hono.get(
+         "/:entity/:id",
+         permission(DataPermissions.entityRead),
+         tb(
+            "param",
+            Type.Object({
+               entity: Type.String(),
+               id: tbNumber
+            })
+         ),
+         tb("query", querySchema),
+         async (c) => {
+            const { entity, id } = c.req.param();
+            if (!this.entityExists(entity)) {
+               return this.notFound(c);
             }
-         )
-         // read many by reference
-         .get(
-            "/:entity/:id/:reference",
-            permission(DataPermissions.entityRead),
-            tb(
-               "param",
-               Type.Object({
-                  entity: Type.String(),
-                  id: tbNumber,
-                  reference: Type.String()
-               })
-            ),
-            tb("query", querySchema),
-            async (c) => {
-               const { entity, id, reference } = c.req.param();
-               if (!this.entityExists(entity)) {
-                  return c.notFound();
-               }
+            const options = c.req.valid("query") as RepoQuery;
+            const result = await this.em.repository(entity).findId(Number(id), options);
 
-               const options = c.req.valid("query") as RepoQuery;
-               const result = await this.em
-                  .repository(entity)
-                  .findManyByReference(Number(id), reference, options);
+            return c.json(this.repoResult(result), { status: result.data ? 200 : 404 });
+         }
+      );
 
-               return c.json(this.repoResult(result), { status: result.data ? 200 : 404 });
+      // read many by reference
+      hono.get(
+         "/:entity/:id/:reference",
+         permission(DataPermissions.entityRead),
+         tb(
+            "param",
+            Type.Object({
+               entity: Type.String(),
+               id: tbNumber,
+               reference: Type.String()
+            })
+         ),
+         tb("query", querySchema),
+         async (c) => {
+            const { entity, id, reference } = c.req.param();
+            if (!this.entityExists(entity)) {
+               return this.notFound(c);
             }
-         )
-         // func query
-         .post(
-            "/:entity/query",
-            permission(DataPermissions.entityRead),
-            tb("param", Type.Object({ entity: Type.String() })),
-            tb("json", querySchema),
-            async (c) => {
-               const { entity } = c.req.param();
-               if (!this.entityExists(entity)) {
-                  return c.notFound();
-               }
-               const options = (await c.req.valid("json")) as RepoQuery;
-               //console.log("options", options);
-               const result = await this.em.repository(entity).findMany(options);
 
-               return c.json(this.repoResult(result), { status: result.data ? 200 : 404 });
+            const options = c.req.valid("query") as RepoQuery;
+            const result = await this.em
+               .repository(entity)
+               .findManyByReference(Number(id), reference, options);
+
+            return c.json(this.repoResult(result), { status: result.data ? 200 : 404 });
+         }
+      );
+
+      // func query
+      hono.post(
+         "/:entity/query",
+         permission(DataPermissions.entityRead),
+         tb("param", Type.Object({ entity: Type.String() })),
+         tb("json", querySchema),
+         async (c) => {
+            const { entity } = c.req.param();
+            if (!this.entityExists(entity)) {
+               return this.notFound(c);
             }
-         );
+            const options = (await c.req.valid("json")) as RepoQuery;
+            //console.log("options", options);
+            const result = await this.em.repository(entity).findMany(options);
+
+            return c.json(this.repoResult(result), { status: result.data ? 200 : 404 });
+         }
+      );
 
       /**
        * Mutation endpoints
        */
       // insert one
-      hono
-         .post(
-            "/:entity",
-            permission(DataPermissions.entityCreate),
-            tb("param", Type.Object({ entity: Type.String() })),
-            async (c) => {
-               const { entity } = c.req.param();
-               if (!this.entityExists(entity)) {
-                  return c.notFound();
-               }
-               const body = (await c.req.json()) as EntityData;
-               const result = await this.em.mutator(entity).insertOne(body);
-
-               return c.json(this.mutatorResult(result), 201);
+      hono.post(
+         "/:entity",
+         permission(DataPermissions.entityCreate),
+         tb("param", Type.Object({ entity: Type.String() })),
+         async (c) => {
+            const { entity } = c.req.param();
+            if (!this.entityExists(entity)) {
+               return this.notFound(c);
             }
-         )
-         // update one
-         .patch(
-            "/:entity/:id",
-            permission(DataPermissions.entityUpdate),
-            tb("param", Type.Object({ entity: Type.String(), id: tbNumber })),
-            async (c) => {
-               const { entity, id } = c.req.param();
-               if (!this.entityExists(entity)) {
-                  return c.notFound();
-               }
-               const body = (await c.req.json()) as EntityData;
-               const result = await this.em.mutator(entity).updateOne(Number(id), body);
+            const body = (await c.req.json()) as EntityData;
+            const result = await this.em.mutator(entity).insertOne(body);
 
-               return c.json(this.mutatorResult(result));
+            return c.json(this.mutatorResult(result), 201);
+         }
+      );
+
+      // update many
+      hono.patch(
+         "/:entity",
+         permission(DataPermissions.entityUpdate),
+         tb("param", Type.Object({ entity: Type.String() })),
+         tb(
+            "json",
+            Type.Object({
+               update: Type.Object({}),
+               where: querySchema.properties.where
+            })
+         ),
+         async (c) => {
+            const { entity } = c.req.param();
+            if (!this.entityExists(entity)) {
+               return this.notFound(c);
             }
-         )
-         // delete one
-         .delete(
-            "/:entity/:id",
-            permission(DataPermissions.entityDelete),
-            tb("param", Type.Object({ entity: Type.String(), id: tbNumber })),
-            async (c) => {
-               const { entity, id } = c.req.param();
-               if (!this.entityExists(entity)) {
-                  return c.notFound();
-               }
-               const result = await this.em.mutator(entity).deleteOne(Number(id));
+            const { update, where } = (await c.req.json()) as {
+               update: EntityData;
+               where: RepoQuery["where"];
+            };
+            const result = await this.em.mutator(entity).updateWhere(update, where);
 
-               return c.json(this.mutatorResult(result));
+            return c.json(this.mutatorResult(result));
+         }
+      );
+
+      // update one
+      hono.patch(
+         "/:entity/:id",
+         permission(DataPermissions.entityUpdate),
+         tb("param", Type.Object({ entity: Type.String(), id: tbNumber })),
+         async (c) => {
+            const { entity, id } = c.req.param();
+            if (!this.entityExists(entity)) {
+               return this.notFound(c);
             }
-         )
+            const body = (await c.req.json()) as EntityData;
+            const result = await this.em.mutator(entity).updateOne(Number(id), body);
 
-         // delete many
-         .delete(
-            "/:entity",
-            permission(DataPermissions.entityDelete),
-            tb("param", Type.Object({ entity: Type.String() })),
-            tb("json", querySchema.properties.where),
-            async (c) => {
-               const { entity } = c.req.param();
-               if (!this.entityExists(entity)) {
-                  return c.notFound();
-               }
-               const where = c.req.valid("json") as RepoQuery["where"];
-               const result = await this.em.mutator(entity).deleteWhere(where);
+            return c.json(this.mutatorResult(result));
+         }
+      );
 
-               return c.json(this.mutatorResult(result));
+      // delete one
+      hono.delete(
+         "/:entity/:id",
+         permission(DataPermissions.entityDelete),
+         tb("param", Type.Object({ entity: Type.String(), id: tbNumber })),
+         async (c) => {
+            const { entity, id } = c.req.param();
+            if (!this.entityExists(entity)) {
+               return this.notFound(c);
             }
-         );
+            const result = await this.em.mutator(entity).deleteOne(Number(id));
+
+            return c.json(this.mutatorResult(result));
+         }
+      );
+
+      // delete many
+      hono.delete(
+         "/:entity",
+         permission(DataPermissions.entityDelete),
+         tb("param", Type.Object({ entity: Type.String() })),
+         tb("json", querySchema.properties.where),
+         async (c) => {
+            const { entity } = c.req.param();
+            if (!this.entityExists(entity)) {
+               return this.notFound(c);
+            }
+            const where = c.req.valid("json") as RepoQuery["where"];
+            const result = await this.em.mutator(entity).deleteWhere(where);
+
+            return c.json(this.mutatorResult(result));
+         }
+      );
 
       return hono;
    }

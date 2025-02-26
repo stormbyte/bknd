@@ -1,4 +1,3 @@
-import type { App } from "App";
 import type { Guard } from "auth";
 import { type DebugLogger, SchemaObject } from "core";
 import type { EventManager } from "core/events";
@@ -15,20 +14,7 @@ import {
 import { Entity } from "data";
 import type { Hono } from "hono";
 import { isEqual } from "lodash-es";
-
-export type ServerEnv = {
-   Variables: {
-      app: App;
-      // to prevent resolving auth multiple times
-      auth?: {
-         resolved: boolean;
-         registered: boolean;
-         skip: boolean;
-         user?: { id: any; role?: string; [key: string]: any };
-      };
-      html?: string;
-   };
-};
+import type { ServerEnv } from "modules/Controller";
 
 export type ModuleBuildContext = {
    connection: Connection;
