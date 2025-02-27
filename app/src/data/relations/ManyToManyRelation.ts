@@ -79,19 +79,21 @@ export class ManyToManyRelation extends EntityRelation<typeof ManyToManyRelation
       return selfField;
    }
 
-   private getQueryInfo(entity: Entity) {
+   protected getQueryInfo(entity: Entity) {
       const other = this.other(entity);
       const conn = this.connectionEntity;
       const entityField = this.getField(entity);
       const otherField = this.getField(other.entity);
+
+      const entityRef = `${entity.name}.${entity.getPrimaryField().name}`;
+      const selfRef = `${conn.name}.${entityField.name}`;
+      const otherRef = `${conn.name}.${otherField.name}`;
+
       const join = [
          conn.name,
          `${other.entity.name}.${other.entity.getPrimaryField().name}`,
-         `${conn.name}.${otherField.name}`,
+         otherRef,
       ] as const;
-
-      const entityRef = `${entity.name}.${entity.getPrimaryField().name}`;
-      const otherRef = `${conn.name}.${entityField.name}`;
 
       const groupBy = `${entity.name}.${entity.getPrimaryField().name}`;
 
@@ -99,6 +101,7 @@ export class ManyToManyRelation extends EntityRelation<typeof ManyToManyRelation
          other,
          join,
          entityRef,
+         selfRef,
          otherRef,
          groupBy,
       };
@@ -116,10 +119,10 @@ export class ManyToManyRelation extends EntityRelation<typeof ManyToManyRelation
    }
 
    buildJoin(entity: Entity, qb: KyselyQueryBuilder) {
-      const { other, join, entityRef, otherRef, groupBy } = this.getQueryInfo(entity);
+      const { other, join, entityRef, selfRef, groupBy } = this.getQueryInfo(entity);
 
       return qb
-         .innerJoin(other.entity.name, entityRef, otherRef)
+         .innerJoin(other.entity.name, entityRef, selfRef)
          .innerJoin(...join)
          .groupBy(groupBy);
    }
@@ -134,7 +137,7 @@ export class ManyToManyRelation extends EntityRelation<typeof ManyToManyRelation
       }
 
       const limit = 5;
-      const { other, join, entityRef, otherRef } = this.getQueryInfo(entity);
+      const { other, join, entityRef, selfRef } = this.getQueryInfo(entity);
       const additionalFields = this.connectionEntity.fields.filter(
          (f) => !(f instanceof RelationField || f instanceof PrimaryField),
       );
@@ -157,7 +160,7 @@ export class ManyToManyRelation extends EntityRelation<typeof ManyToManyRelation
 
                return select;
             })
-            .whereRef(entityRef, "=", otherRef)
+            .whereRef(entityRef, "=", selfRef)
             .innerJoin(...join)
             .limit(limit);
    }

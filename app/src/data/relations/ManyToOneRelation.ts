@@ -107,7 +107,7 @@ export class ManyToOneRelation extends EntityRelation<typeof ManyToOneRelation.s
       return field;
    }
 
-   private queryInfo(entity: Entity, reference: string) {
+   protected queryInfo(entity: Entity, reference: string) {
       const side = this.source.reference === reference ? "source" : "target";
       const self = this[side];
       const other = this[side === "source" ? "target" : "source"];

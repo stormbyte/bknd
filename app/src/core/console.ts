@@ -48,6 +48,7 @@ function __tty(type: any, args: any[]) {
       },
       debug: {
          prefix: colors.yellow,
+         args: colors.dim,
       },
    } as const;
    const prefix = styles[type].prefix(`[${type.toUpperCase()}]`);

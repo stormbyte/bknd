@@ -9,12 +9,6 @@ import { type RelationType, RelationTypes } from "./relation-types";
  */
 export type OneToOneRelationConfig = ManyToOneRelationConfig;
 
-/* export type OneToOneRelationConfig = {
-   mappedBy?: string; // author|users
-   inversedBy?: string; // posts
-   required?: boolean;
-}; */
-
 export class OneToOneRelation extends ManyToOneRelation {
    constructor(source: Entity, target: Entity, config?: OneToOneRelationConfig) {
       const { mappedBy, inversedBy, required } = config || {};

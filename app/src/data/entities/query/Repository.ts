@@ -166,13 +166,15 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
       if (options.limit) validated.limit = options.limit;
       if (options.offset) validated.offset = options.offset;
 
+      //$console.debug("Repository: options", { entity: entity.name, options, validated });
+
       return validated;
    }
 
    protected async performQuery(qb: RepositoryQB): Promise<RepositoryResponse> {
       const entity = this.entity;
       const compiled = qb.compile();
-      //$console.log("performQuery", compiled.sql, compiled.parameters);
+      //$console.debug(`Repository: query\n${compiled.sql}\n`, compiled.parameters);
 
       const start = performance.now();
       const selector = (as = "count") => this.conn.fn.countAll<number>().as(as);
