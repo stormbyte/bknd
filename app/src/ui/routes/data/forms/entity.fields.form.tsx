@@ -108,9 +108,7 @@ export const EntityFieldsForm = forwardRef<EntityFieldsFormRef, EntityFieldsForm
 
       useEffect(() => {
          if (props?.onChange) {
-            console.log("----set");
             watch((data: any) => {
-               console.log("---calling");
                props?.onChange?.(toCleanValues(data));
             });
          }

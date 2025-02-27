@@ -45,7 +45,6 @@ export function StepEntityFields() {
    const values = watch();
 
    const updateListener = useEvent((data: TAppDataEntityFields) => {
-      console.log("updateListener", data);
       setValue("fields", data as any);
    });
 

@@ -54,9 +54,9 @@ function AdminInternal() {
    );
 }
 
-const Skeleton = ({ theme }: { theme?: string }) => {
-   const actualTheme =
-      (theme ?? document.querySelector("html")?.classList.contains("light")) ? "light" : "dark";
+const Skeleton = ({ theme }: { theme?: any }) => {
+   const t = useTheme();
+   const actualTheme = theme ?? t.theme;
 
    return (
       <div id="bknd-admin" className={actualTheme + " antialiased"}>

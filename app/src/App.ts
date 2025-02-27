@@ -1,4 +1,3 @@
-import { Api, type ApiOptions } from "Api";
 import type { CreateUserPayload } from "auth/AppAuth";
 import { $console } from "core";
 import { Event } from "core/events";
@@ -188,12 +187,10 @@ export class App {
       return this.module.auth.createUser(p);
    }
 
-   async getApi(options?: LocalApiOptions) {
+   getApi(options?: LocalApiOptions) {
       const fetcher = this.server.request as typeof fetch;
       if (options && options instanceof Request) {
-         const api = new Api({ request: options, headers: options.headers, fetcher });
-         await api.verifyAuth();
-         return api;
+         return new Api({ request: options, headers: options.headers, fetcher });
       }
 
       return new Api({ host: "http://localhost", ...(options ?? {}), fetcher });
