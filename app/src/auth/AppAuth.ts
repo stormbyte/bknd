@@ -7,7 +7,7 @@ import {
    type Strategy,
 } from "auth";
 import type { PasswordStrategy } from "auth/authenticate/strategies";
-import { type DB, Exception, type PrimaryFieldType } from "core";
+import { $console, type DB, Exception, type PrimaryFieldType } from "core";
 import { type Static, secureRandomString, transformObject } from "core/utils";
 import type { Entity, EntityManager } from "data";
 import { type FieldSchema, em, entity, enumm, text } from "data/prototype";
@@ -39,6 +39,12 @@ export class AppAuth extends Module<typeof authConfigSchema> {
             console.warn("No JWT secret provided, generating a random one");
             to.jwt.secret = secureRandomString(64);
          }
+      }
+
+      // @todo: password strategy is required atm
+      if (!to.strategies?.password?.enabled) {
+         $console.warn("Password strategy cannot be disabled.");
+         to.strategies!.password!.enabled = true;
       }
 
       return to;
@@ -89,6 +95,9 @@ export class AppAuth extends Module<typeof authConfigSchema> {
 
    isStrategyEnabled(strategy: Strategy | string) {
       const name = typeof strategy === "string" ? strategy : strategy.getName();
+      // for now, password is always active
+      if (name === "password") return true;
+
       return this.config.strategies?.[name]?.enabled ?? false;
    }
 

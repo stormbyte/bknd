@@ -1,5 +1,5 @@
 import { Guard } from "auth";
-import { BkndError, DebugLogger, withDisabledConsole } from "core";
+import { $console, BkndError, DebugLogger, withDisabledConsole } from "core";
 import { EventManager } from "core/events";
 import { clone, diff } from "core/object/diff";
 import {
@@ -153,7 +153,6 @@ export class ModuleManager {
       this.modules = {} as Modules;
       this.emgr = new EventManager();
       this.logger = new DebugLogger(this.verbosity === Verbosity.log);
-      const context = this.ctx(true);
       let initial = {} as Partial<ModuleConfigs>;
 
       if (options?.initial) {
@@ -169,15 +168,29 @@ export class ModuleManager {
          }
       }
 
-      for (const key in MODULES) {
-         const moduleConfig = key in initial ? initial[key] : {};
-         const module = new MODULES[key](moduleConfig, context) as Module;
-         module.setListener(async (c) => {
-            await this.onModuleConfigUpdated(key, c);
-         });
+      this.createModules(initial);
+   }
 
-         this.modules[key] = module;
+   private createModules(initial: Partial<ModuleConfigs>) {
+      this.logger.context("createModules").log("creating modules");
+      try {
+         const context = this.ctx(true);
+
+         for (const key in MODULES) {
+            const moduleConfig = key in initial ? initial[key] : {};
+            const module = new MODULES[key](moduleConfig, context) as Module;
+            module.setListener(async (c) => {
+               await this.onModuleConfigUpdated(key, c);
+            });
+
+            this.modules[key] = module;
+         }
+         this.logger.log("modules created");
+      } catch (e) {
+         this.logger.log("failed to create modules", e);
+         throw e;
       }
+      this.logger.clear();
    }
 
    private get verbosity() {
@@ -197,7 +210,7 @@ export class ModuleManager {
       if (this.options?.onUpdated) {
          await this.options.onUpdated(key as any, config);
       } else {
-         this.buildModules();
+         await this.buildModules();
       }
    }
 
@@ -368,15 +381,27 @@ export class ModuleManager {
    }
 
    private async migrate() {
+      const state = {
+         success: false,
+         migrated: false,
+         version: {
+            before: this.version(),
+            after: this.version(),
+         },
+      };
       this.logger.context("migrate").log("migrating?", this.version(), CURRENT_VERSION);
 
       if (this.version() < CURRENT_VERSION) {
+         state.version.before = this.version();
+
          this.logger.log("there are migrations, verify version");
          // sync __bknd table
          await this.syncConfigTable();
 
          // modules must be built before migration
+         this.logger.log("building modules");
          await this.buildModules({ graceful: true });
+         this.logger.log("modules built");
 
          try {
             const state = await this.fetch();
@@ -405,17 +430,27 @@ export class ModuleManager {
          version = _version;
          configs = _configs;
 
-         this.setConfigs(configs);
-
          this._version = version;
+         state.version.after = version;
+         state.migrated = true;
+         this.ctx().flags.sync_required = true;
+
+         this.logger.log("setting configs");
+         this.createModules(configs);
+         await this.buildModules();
+
          this.logger.log("migrated to", version);
+         $console.log("Migrated config from", state.version.before, "to", state.version.after);
 
          await this.save();
       } else {
          this.logger.log("no migrations needed");
       }
 
+      state.success = true;
       this.logger.clear();
+
+      return state;
    }
 
    private setConfigs(configs: ModuleConfigs): void {
@@ -480,10 +515,16 @@ export class ModuleManager {
       }
 
       // migrate to latest if needed
-      await this.migrate();
+      this.logger.log("check migrate");
+      const migration = await this.migrate();
+      if (migration.success && migration.migrated) {
+         this.logger.log("skipping build after migration");
+      } else {
+         this.logger.log("trigger build modules");
+         await this.buildModules();
+      }
 
-      this.logger.log("building");
-      await this.buildModules();
+      this.logger.log("done");
       return this;
    }
 
@@ -496,7 +537,7 @@ export class ModuleManager {
          reloaded: false,
       };
 
-      this.logger.log("buildModules() triggered", options, this._built);
+      this.logger.context("buildModules").log("triggered", options, this._built);
       if (options?.graceful && this._built) {
          this.logger.log("skipping build (graceful)");
          return state;
@@ -536,8 +577,10 @@ export class ModuleManager {
       }
 
       // reset all falgs
+      this.logger.log("resetting flags");
       ctx.flags = Module.ctx_flags;
 
+      this.logger.clear();
       return state;
    }
 

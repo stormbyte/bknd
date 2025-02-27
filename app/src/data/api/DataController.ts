@@ -252,14 +252,12 @@ export class DataController extends Controller {
          tb("param", Type.Object({ entity: Type.String() })),
          tb("query", querySchema),
          async (c) => {
-            //console.log("request", c.req.raw);
             const { entity } = c.req.param();
             if (!this.entityExists(entity)) {
                console.warn("not found:", entity, definedEntities);
                return this.notFound(c);
             }
             const options = c.req.valid("query") as RepoQuery;
-            //console.log("before", this.ctx.emgr.Events);
             const result = await this.em.repository(entity).findMany(options);
 
             return c.json(this.repoResult(result), { status: result.data ? 200 : 404 });

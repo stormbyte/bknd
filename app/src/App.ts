@@ -33,7 +33,7 @@ export const AppEvents = { AppConfigUpdatedEvent, AppBuiltEvent, AppFirstBoot } 
 
 export type AppOptions = {
    plugins?: AppPlugin[];
-   seed?: (ctx: ModuleBuildContext) => Promise<void>;
+   seed?: (ctx: ModuleBuildContext & { app: App }) => Promise<void>;
    manager?: Omit<ModuleManagerOptions, "initial" | "onUpdated" | "seed">;
 };
 export type CreateAppConfig = {
@@ -67,7 +67,6 @@ export class App {
       this.modules = new ModuleManager(connection, {
          ...(options?.manager ?? {}),
          initial: _initialConfig,
-         seed: options?.seed,
          onUpdated: async (key, config) => {
             // if the EventManager was disabled, we assume we shouldn't
             // respond to events, such as "onUpdated".
@@ -115,15 +114,18 @@ export class App {
          await Promise.all(this.plugins.map((plugin) => plugin(this)));
       }
 
+      $console.log("App built");
       await this.emgr.emit(new AppBuiltEvent({ app: this }));
 
       // first boot is set from ModuleManager when there wasn't a config table
       if (this.trigger_first_boot) {
          this.trigger_first_boot = false;
          await this.emgr.emit(new AppFirstBoot({ app: this }));
+         await this.options?.seed?.({
+            ...this.modules.ctx(),
+            app: this,
+         });
       }
-
-      $console.log("App built");
    }
 
    mutateConfig<Module extends keyof Modules>(module: Module) {

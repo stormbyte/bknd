@@ -1,4 +1,4 @@
-import { _jsonp } from "core/utils";
+import { _jsonp, transformObject } from "core/utils";
 import { type Kysely, sql } from "kysely";
 import { set } from "lodash-es";
 
@@ -72,13 +72,25 @@ export const migrations: Migration[] = [
          };
       },
    },
-   /*{
+   {
       version: 8,
-      up: async (config, { db }) => {
-         await db.deleteFrom(TABLE_NAME).where("type", "=", "diff").execute();
-         return config;
-      }
-   }*/
+      up: async (config) => {
+         const strategies = transformObject(config.auth.strategies, (strategy) => {
+            return {
+               ...strategy,
+               enabled: true,
+            };
+         });
+
+         return {
+            ...config,
+            auth: {
+               ...config.auth,
+               strategies: strategies,
+            },
+         };
+      },
+   },
 ];
 
 export const CURRENT_VERSION = migrations[migrations.length - 1]?.version ?? 0;
