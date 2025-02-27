@@ -1,14 +1,14 @@
 import { typeboxResolver } from "@hookform/resolvers/typebox";
 import { Tabs, TextInput, Textarea, Tooltip } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { Type } from "@sinclair/typebox";
 import {
+   Default,
    type Static,
    StringIdentifier,
+   Type,
    objectCleanEmpty,
    ucFirstAllSnakeToPascalWithSpaces,
 } from "core/utils";
-import { Entity } from "data";
 import {
    type TAppDataEntityFields,
    fieldsSchemaObject as originalFieldsSchemaObject,
@@ -31,11 +31,16 @@ import { dataFieldsUiSchema } from "../../settings/routes/data.settings";
 const fieldsSchemaObject = originalFieldsSchemaObject;
 const fieldsSchema = Type.Union(Object.values(fieldsSchemaObject));
 
-const fieldSchema = Type.Object({
-   name: StringIdentifier,
-   new: Type.Optional(Type.Boolean({ const: true })),
-   field: fieldsSchema,
-});
+const fieldSchema = Type.Object(
+   {
+      name: StringIdentifier,
+      new: Type.Optional(Type.Boolean({ const: true })),
+      field: fieldsSchema,
+   },
+   {
+      additionalProperties: false,
+   },
+);
 type TFieldSchema = Static<typeof fieldSchema>;
 
 const schema = Type.Object({
@@ -63,6 +68,7 @@ export type EntityFieldsFormRef = {
    getValues: () => TFieldsFormSchema;
    getData: () => TAppDataEntityFields;
    isValid: () => boolean;
+   getErrors: () => any;
    reset: () => void;
 };
 
@@ -117,6 +123,7 @@ export const EntityFieldsForm = forwardRef<EntityFieldsFormRef, EntityFieldsForm
             return toCleanValues(getValues());
          },
          isValid: () => isValid,
+         getErrors: () => errors,
       }));
 
       function handleAppend(_type: keyof typeof fieldsSchemaObject) {
@@ -125,7 +132,7 @@ export const EntityFieldsForm = forwardRef<EntityFieldsFormRef, EntityFieldsForm
             new: true,
             field: {
                type: _type,
-               config: {},
+               config: Default(fieldsSchemaObject[_type]?.properties.config, {}) as any,
             },
          };
          append(newField);

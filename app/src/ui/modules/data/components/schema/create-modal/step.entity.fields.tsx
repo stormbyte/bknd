@@ -63,9 +63,10 @@ export function StepEntityFields() {
             };
          });
 
+         console.log("valid");
          nextStep("create")();
       } else {
-         console.warn("not valid");
+         console.warn("not valid", ref.current?.getErrors());
       }
    }
 

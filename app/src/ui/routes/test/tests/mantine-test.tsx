@@ -1,5 +1,6 @@
 import { Button, Modal, Switch, Tooltip, useMantineColorScheme } from "@mantine/core";
 import { useColorScheme, useDisclosure } from "@mantine/hooks";
+import { notifications } from "@mantine/notifications";
 import { Button as AppButton } from "../../../components/buttons/Button";
 
 export default function MantineTest() {
@@ -10,6 +11,19 @@ export default function MantineTest() {
             <Button color="blue">Mantine</Button>
             <AppButton>Button</AppButton>
             <AppButton variant="primary">Button</AppButton>
+
+            <Button
+               onClick={() => {
+                  notifications.show({
+                     title: "Notification",
+                     message: "This is a notification",
+                     autoClose: false,
+                     color: "blue",
+                  });
+               }}
+            >
+               Notification
+            </Button>
          </div>
          <MantineModal />
          <MantineTooltip />

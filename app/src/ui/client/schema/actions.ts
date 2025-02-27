@@ -26,7 +26,7 @@ export function getSchemaActions({ api, setSchema, reloadSchema }: SchemaActions
          autoClose: 3000,
       };
 
-      if (res.success === true) {
+      if (res.success) {
          console.log("update config", action, module, path, res.body);
          if (res.body.success) {
             setSchema((prev) => {

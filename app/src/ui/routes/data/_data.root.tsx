@@ -7,18 +7,20 @@ import {
    IconPhoto,
    IconPlus,
    IconSettings,
+   IconSwitchHorizontal,
 } from "@tabler/icons-react";
 import type { Entity, TEntityType } from "data";
 import { TbDatabasePlus } from "react-icons/tb";
 import { twMerge } from "tailwind-merge";
 import { useBkndData } from "ui/client/schema/data/use-bknd-data";
+import { Button } from "ui/components/buttons/Button";
 import { IconButton } from "ui/components/buttons/IconButton";
 import { Empty } from "ui/components/display/Empty";
 import { Dropdown, type DropdownClickableChild } from "ui/components/overlay/Dropdown";
-import { Link } from "ui/components/wouter/Link";
+import { Link, isLinkActive } from "ui/components/wouter/Link";
 import { useBrowserTitle } from "ui/hooks/use-browser-title";
 import * as AppShell from "ui/layouts/AppShell/AppShell";
-import { routes, useNavigate } from "ui/lib/routes";
+import { routes, useNavigate, useRouteNavigate } from "ui/lib/routes";
 
 export function DataRoot({ children }) {
    // @todo: settings routes should be centralized
@@ -106,6 +108,7 @@ const EntityLinkList = ({
    suggestCreate = false,
 }: { entities: Entity[]; title?: string; context: "data" | "schema"; suggestCreate?: boolean }) => {
    const { $data } = useBkndData();
+   const navigate = useRouteNavigate();
    if (entities.length === 0) {
       return suggestCreate ? (
          <Empty
@@ -117,6 +120,22 @@ const EntityLinkList = ({
             }}
          />
       ) : null;
+   }
+
+   function handleClick(entity: Entity) {
+      return (e) => {
+         e.stopPropagation();
+         e.preventDefault();
+
+         switch (context) {
+            case "schema":
+               navigate((r) => r.data.entity.list(entity.name));
+               break;
+            case "data":
+               navigate((r) => r.data.schema.entity(entity.name));
+               break;
+         }
+      };
    }
 
    return (
@@ -135,8 +154,22 @@ const EntityLinkList = ({
                   : routes.data.schema.entity(entity.name);
             return (
                <EntityContextMenu key={entity.name} entity={entity}>
-                  <AppShell.SidebarLink as={Link} href={href}>
+                  <AppShell.SidebarLink
+                     as={Link}
+                     href={href}
+                     className="justify-between items-center"
+                  >
                      {entity.label}
+
+                     {isLinkActive(href) && (
+                        <Button
+                           IconLeft={IconSwitchHorizontal}
+                           size="small"
+                           onClick={handleClick(entity)}
+                        >
+                           {context === "schema" ? "Data" : "Fields"}
+                        </Button>
+                     )}
                   </AppShell.SidebarLink>
                </EntityContextMenu>
             );

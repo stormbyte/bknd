@@ -225,6 +225,9 @@ const Fields = ({
                      <Button size="small" onClick={() => setRes(ref.current?.getData())}>
                         data
                      </Button>
+                     <Button size="small" onClick={() => setRes(ref.current?.getErrors())}>
+                        errors
+                     </Button>
                      <Button size="small" onClick={handleUpdate}>
                         update
                      </Button>

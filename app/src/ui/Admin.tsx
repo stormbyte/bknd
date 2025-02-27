@@ -45,7 +45,7 @@ function AdminInternal() {
 
    return (
       <MantineProvider {...createMantineTheme(theme as any)}>
-         <Notifications />
+         <Notifications position="top-right" />
          <FlashMessage />
          <BkndModalsProvider>
             <Routes />

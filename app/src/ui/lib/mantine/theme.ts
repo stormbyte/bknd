@@ -14,6 +14,7 @@ import {
    Textarea,
    createTheme,
 } from "@mantine/core";
+import { Notifications } from "@mantine/notifications";
 import { twMerge } from "tailwind-merge";
 
 // default: https://github.com/mantinedev/mantine/blob/master/packages/%40mantine/core/src/core/MantineProvider/default-theme.ts
@@ -125,6 +126,13 @@ export function createMantineTheme(scheme: "light" | "dark"): {
                   root: light ? "bg-primary/5" : "bg-lightest/60",
                   indicator: light ? "bg-background" : "bg-primary/15",
                }),
+            }),
+            Notifications: Notifications.extend({
+               classNames: (theme, props) => {
+                  return {
+                     notification: "-top-4 -right-4",
+                  };
+               },
             }),
          },
          primaryColor: "dark",

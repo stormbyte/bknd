@@ -53,6 +53,14 @@ export function withAbsolute(url: string) {
    return `~/${basepath}/${url}`.replace(/\/+/g, "/");
 }
 
+export function useRouteNavigate() {
+   const [navigate] = useNavigate();
+
+   return (fn: (r: typeof routes) => string, options?: Parameters<typeof navigate>[1]) => {
+      navigate(fn(routes), options);
+   };
+}
+
 export function useNavigate() {
    const [location, navigate] = useLocation();
    const router = useRouter();

@@ -202,7 +202,7 @@ export const SidebarLink = <E extends React.ElementType = "a">({
       <Tag
          {...otherProps}
          className={twMerge(
-            "flex flex-row px-4 py-2.5 items-center gap-2",
+            "flex flex-row px-4 items-center gap-2 h-12",
             !disabled &&
                "cursor-pointer rounded-md [&.active]:bg-primary/10 [&.active]:hover:bg-primary/15 [&.active]:font-medium hover:bg-primary/5 focus:bg-primary/5 link",
             disabled && "opacity-50 cursor-not-allowed pointer-events-none",

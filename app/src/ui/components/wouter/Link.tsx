@@ -42,6 +42,11 @@ const useLocationFromRouter = (router) => {
    ];
 };
 
+export function isLinkActive(href: string, strict?: boolean) {
+   const path = window.location.pathname;
+   return strict ? path === href : path.includes(href);
+}
+
 export function Link({
    className,
    native,
