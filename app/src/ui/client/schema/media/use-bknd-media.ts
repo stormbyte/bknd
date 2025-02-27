@@ -13,8 +13,8 @@ export function useBkndMedia() {
             }
 
             return false;
-         }
-      }
+         },
+      },
    };
    const $media = {};
 
@@ -22,6 +22,6 @@ export function useBkndMedia() {
       $media,
       config: config.media,
       schema: schema.media,
-      actions
+      actions,
    };
 }

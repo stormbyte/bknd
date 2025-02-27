@@ -7,7 +7,7 @@ import {
    LibsqlConnection,
    ManyToOneRelation,
    RepositoryEvents,
-   TextField
+   TextField,
 } from "../../../src/data";
 import { getDummyConnection } from "../helper";
 
@@ -70,13 +70,13 @@ describe("[Repository]", async () => {
          const q1 = selectQ(conn).compile();
          const res = await client.execute({
             sql: q1.sql,
-            args: q1.parameters as any
+            args: q1.parameters as any,
          });
 
          const q2 = countQ(conn).compile();
          const count = await client.execute({
             sql: q2.sql,
-            args: q2.parameters as any
+            args: q2.parameters as any,
          });
          return [res, count];
       }
@@ -93,7 +93,7 @@ describe("[Repository]", async () => {
          const exec = async (
             name: string,
             fn: (em: EntityManager<any>) => Promise<any>,
-            em: EntityManager<any>
+            em: EntityManager<any>,
          ) => {
             const res = await Perf.execute(() => fn(em), times);
             await sleep(1000);
@@ -102,7 +102,7 @@ describe("[Repository]", async () => {
                total: res.total.toFixed(2),
                avg: (res.total / times).toFixed(2),
                first: res.marks[0].time.toFixed(2),
-               last: res.marks[res.marks.length - 1].time.toFixed(2)
+               last: res.marks[res.marks.length - 1].time.toFixed(2),
             };
             console.log(info.name, info, res.marks);
             return info;
@@ -183,7 +183,7 @@ describe("[data] Repository (Events)", async () => {
    const items = new Entity("items", [new TextField("label")]);
    const categories = new Entity("categories", [new TextField("label")]);
    const em = new EntityManager([items, categories], dummyConnection, [
-      new ManyToOneRelation(categories, items)
+      new ManyToOneRelation(categories, items),
    ]);
    await em.schema().sync({ force: true });
    const events = new Map<string, any>();

@@ -9,11 +9,14 @@ import {
    type ModuleBuildContext,
    ModuleManager,
    type ModuleManagerOptions,
-   type Modules
+   type Modules,
 } from "modules/ModuleManager";
 import * as SystemPermissions from "modules/permissions";
 import { AdminController, type AdminControllerOptions } from "modules/server/AdminController";
 import { SystemController } from "modules/server/SystemController";
+
+// biome-ignore format: must be there
+import { Api, type ApiOptions } from "Api";
 
 export type AppPlugin = (app: App) => Promise<void> | void;
 
@@ -31,7 +34,7 @@ export const AppEvents = { AppConfigUpdatedEvent, AppBuiltEvent, AppFirstBoot } 
 
 export type AppOptions = {
    plugins?: AppPlugin[];
-   seed?: (ctx: ModuleBuildContext) => Promise<void>;
+   seed?: (ctx: ModuleBuildContext & { app: App }) => Promise<void>;
    manager?: Omit<ModuleManagerOptions, "initial" | "onUpdated" | "seed">;
 };
 export type CreateAppConfig = {
@@ -60,13 +63,12 @@ export class App {
    constructor(
       private connection: Connection,
       _initialConfig?: InitialModuleConfigs,
-      private options?: AppOptions
+      private options?: AppOptions,
    ) {
       this.plugins = options?.plugins ?? [];
       this.modules = new ModuleManager(connection, {
          ...(options?.manager ?? {}),
          initial: _initialConfig,
-         seed: options?.seed,
          onUpdated: async (key, config) => {
             // if the EventManager was disabled, we assume we shouldn't
             // respond to events, such as "onUpdated".
@@ -90,7 +92,7 @@ export class App {
                c.set("app", this);
                await next();
             });
-         }
+         },
       });
       this.modules.ctx().emgr.registerEvents(AppEvents);
    }
@@ -114,12 +116,17 @@ export class App {
          await Promise.all(this.plugins.map((plugin) => plugin(this)));
       }
 
+      $console.log("App built");
       await this.emgr.emit(new AppBuiltEvent({ app: this }));
 
       // first boot is set from ModuleManager when there wasn't a config table
       if (this.trigger_first_boot) {
          this.trigger_first_boot = false;
          await this.emgr.emit(new AppFirstBoot({ app: this }));
+         await this.options?.seed?.({
+            ...this.modules.ctx(),
+            app: this,
+         });
       }
    }
 
@@ -145,8 +152,8 @@ export class App {
          {
             get: (_, module: keyof Modules) => {
                return this.modules.get(module);
-            }
-         }
+            },
+         },
       ) as Modules;
    }
 
@@ -202,7 +209,7 @@ export function createApp(config: CreateAppConfig = {}) {
       } else if (typeof config.connection === "object") {
          if ("type" in config.connection) {
             $console.warn(
-               "Using deprecated connection type 'libsql', use the 'config' object directly."
+               "Using deprecated connection type 'libsql', use the 'config' object directly.",
             );
             connection = new LibsqlConnection(config.connection.config);
          } else {

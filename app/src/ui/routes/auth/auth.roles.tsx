@@ -16,8 +16,8 @@ export function AuthRolesList() {
          role: name,
          permissions: role.permissions,
          is_default: role.is_default ?? false,
-         implicit_allow: role.implicit_allow ?? false
-      }))
+         implicit_allow: role.implicit_allow ?? false,
+      })),
    );
 
    function handleClick(row) {
@@ -31,14 +31,14 @@ export function AuthRolesList() {
             schema: {
                type: "object",
                properties: {
-                  name: StringIdentifier
+                  name: StringIdentifier,
                },
-               required: ["name"]
+               required: ["name"],
             },
             uiSchema: {
                name: {
-                  "ui:title": "Role name"
-               }
+                  "ui:title": "Role name",
+               },
             },
             onSubmit: async (data) => {
                if (data.name.length > 0) {
@@ -46,11 +46,11 @@ export function AuthRolesList() {
                      navigate(routes.auth.roles.edit(data.name));
                   }
                }
-            }
+            },
          },
          {
-            title: "New Role"
-         }
+            title: "New Role",
+         },
       );
    }
 

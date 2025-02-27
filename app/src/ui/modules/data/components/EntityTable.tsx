@@ -9,7 +9,7 @@ import {
    TbChevronsRight,
    TbSelector,
    TbSquare,
-   TbSquareCheckFilled
+   TbSquareCheckFilled,
 } from "react-icons/tb";
 import { twMerge } from "tailwind-merge";
 import { Button } from "ui/components/buttons/Button";
@@ -58,7 +58,7 @@ export const EntityTable: React.FC<EntityTableProps> = ({
    perPage = 10,
    perPageOptions,
    onClickPerPage,
-   classNames
+   classNames,
 }) => {
    select = select && select.length > 0 ? select : entity.getSelect();
    total = total || data.length;
@@ -157,7 +157,7 @@ export const EntityTable: React.FC<EntityTableProps> = ({
                      <Dropdown
                         items={perPageOptions.map((perPage) => ({
                            label: String(perPage),
-                           perPage
+                           perPage,
                         }))}
                         position="top-end"
                         onClickItem={(item: any) => onClickPerPage?.(item.perPage)}
@@ -182,7 +182,7 @@ export const EntityTable: React.FC<EntityTableProps> = ({
 
 const SortIndicator = ({
    sort,
-   field
+   field,
 }: {
    sort: Pick<EntityTableProps, "sort">["sort"];
    field: string;
@@ -220,7 +220,7 @@ const TableNav: React.FC<TableNavProps> = ({ current, total, onClick }: TableNav
       { value: 1, Icon: TbChevronsLeft, disabled: current === 1 },
       { value: current - 1, Icon: TbChevronLeft, disabled: current === 1 },
       { value: current + 1, Icon: TbChevronRight, disabled: current === total },
-      { value: total, Icon: TbChevronsRight, disabled: current === total }
+      { value: total, Icon: TbChevronsRight, disabled: current === total },
    ] as const;
 
    return navMap.map((nav, key) => (

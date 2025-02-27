@@ -16,7 +16,7 @@ export type TPackageJson = Partial<{
 export async function overrideJson<File extends object = object>(
    file: string,
    fn: (pkg: File) => Promise<File> | File,
-   opts?: { dir?: string; indent?: number }
+   opts?: { dir?: string; indent?: number },
 ) {
    const pkgPath = path.resolve(opts?.dir ?? process.cwd(), file);
    const pkg = await readFile(pkgPath, "utf-8");
@@ -26,7 +26,7 @@ export async function overrideJson<File extends object = object>(
 
 export async function overridePackageJson(
    fn: (pkg: TPackageJson) => Promise<TPackageJson> | TPackageJson,
-   opts?: { dir?: string }
+   opts?: { dir?: string },
 ) {
    return await overrideJson("package.json", fn, { dir: opts?.dir });
 }
@@ -44,7 +44,7 @@ export async function getVersion(pkg: string, version: string = "latest") {
 const _deps = ["dependencies", "devDependencies", "optionalDependencies"] as const;
 export async function replacePackageJsonVersions(
    fn: (pkg: string, version: string) => Promise<string | undefined> | string | undefined,
-   opts?: { include?: (keyof typeof _deps)[]; dir?: string }
+   opts?: { include?: (keyof typeof _deps)[]; dir?: string },
 ) {
    const deps = (opts?.include ?? _deps) as string[];
    await overridePackageJson(
@@ -62,14 +62,14 @@ export async function replacePackageJsonVersions(
 
          return json;
       },
-      { dir: opts?.dir }
+      { dir: opts?.dir },
    );
 }
 
 export async function updateBkndPackages(dir?: string, map?: Record<string, string>) {
    const versions = {
       bknd: "^" + (await sysGetVersion()),
-      ...(map ?? {})
+      ...(map ?? {}),
    };
    await replacePackageJsonVersions(
       async (pkg) => {
@@ -78,6 +78,6 @@ export async function updateBkndPackages(dir?: string, map?: Record<string, stri
          }
          return;
       },
-      { dir }
+      { dir },
    );
 }

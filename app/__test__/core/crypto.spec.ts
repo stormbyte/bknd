@@ -4,7 +4,7 @@ import { checksum, hash } from "../../src/core/utils";
 describe("crypto", async () => {
    test("sha256", async () => {
       expect(await hash.sha256("test")).toBe(
-         "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+         "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
       );
    });
    test("sha1", async () => {

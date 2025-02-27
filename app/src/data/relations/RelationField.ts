@@ -12,8 +12,8 @@ export const relationFieldConfigSchema = Type.Composite([
       reference: Type.String(),
       target: Type.String(), // @todo: potentially has to be an instance!
       target_field: Type.Optional(Type.String({ default: "id" })),
-      on_delete: Type.Optional(StringEnum(CASCADES, { default: "set null" }))
-   })
+      on_delete: Type.Optional(StringEnum(CASCADES, { default: "set null" })),
+   }),
 ]);
 /*export const relationFieldConfigSchema = baseFieldConfigSchema.extend({
    reference: z.string(),
@@ -44,11 +44,11 @@ export class RelationField extends Field<RelationFieldConfig> {
    static create(
       relation: EntityRelation,
       target: EntityRelationAnchor,
-      config?: RelationFieldBaseConfig
+      config?: RelationFieldBaseConfig,
    ) {
       const name = [
          target.reference ?? target.entity.name,
-         target.entity.getPrimaryField().name
+         target.entity.getPrimaryField().name,
       ].join("_");
       //console.log('name', name);
       return new RelationField(name, {
@@ -56,7 +56,7 @@ export class RelationField extends Field<RelationFieldConfig> {
          required: relation.required,
          reference: target.reference,
          target: target.entity.name,
-         target_field: target.entity.getPrimaryField().name
+         target_field: target.entity.getPrimaryField().name,
       });
    }
 
@@ -94,8 +94,8 @@ export class RelationField extends Field<RelationFieldConfig> {
    override toJsonSchema() {
       return this.toSchemaWrapIfRequired(
          Type.Number({
-            $ref: `${this.config?.target}#/properties/${this.config?.target_field}`
-         })
+            $ref: `${this.config?.target}#/properties/${this.config?.target_field}`,
+         }),
       );
    }
 }

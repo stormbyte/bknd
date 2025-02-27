@@ -14,7 +14,7 @@ export class MutatorInsertBefore extends Event<{ entity: Entity; data: EntityDat
 
       return this.clone({
          entity,
-         data
+         data,
       });
    }
 }
@@ -40,7 +40,7 @@ export class MutatorUpdateBefore extends Event<
       return this.clone({
          ...rest,
          entity,
-         data
+         data,
       });
    }
 }
@@ -68,7 +68,7 @@ export const MutatorEvents = {
    MutatorUpdateBefore,
    MutatorUpdateAfter,
    MutatorDeleteBefore,
-   MutatorDeleteAfter
+   MutatorDeleteAfter,
 };
 
 export class RepositoryFindOneBefore extends Event<{ entity: Entity; options: RepoQuery }> {
@@ -98,5 +98,5 @@ export const RepositoryEvents = {
    RepositoryFindOneBefore,
    RepositoryFindOneAfter,
    RepositoryFindManyBefore,
-   RepositoryFindManyAfter
+   RepositoryFindManyAfter,
 };

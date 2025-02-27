@@ -16,12 +16,12 @@ export default function JsonFormTest() {
          name: {
             type: "string",
             title: "Name",
-            minLength: 3
+            minLength: 3,
          },
          variants: {
-            anyOf: [{ type: "string" }, { type: "number" }]
-         }
-      }
+            anyOf: [{ type: "string" }, { type: "number" }],
+         },
+      },
    };
    const ref = useRef<JsonSchemaFormRef>(null);
 

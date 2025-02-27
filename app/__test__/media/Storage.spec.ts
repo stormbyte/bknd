@@ -60,7 +60,7 @@ describe("Storage", async () => {
 
    test("uploads a file", async () => {
       const {
-         meta: { type, size }
+         meta: { type, size },
       } = await storage.uploadFile("hello", "world.txt");
       expect({ type, size }).toEqual({ type: "text/plain", size: 0 });
    });

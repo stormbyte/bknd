@@ -3,7 +3,7 @@ import { Button } from "ui/components/buttons/Button";
 import {
    JsonSchemaForm,
    type JsonSchemaFormProps,
-   type JsonSchemaFormRef
+   type JsonSchemaFormRef,
 } from "ui/components/form/json-schema";
 
 import type { ContextModalProps } from "@mantine/modals";
@@ -15,14 +15,14 @@ type Props = JsonSchemaFormProps & {
       data: any,
       context: {
          close: () => void;
-      }
+      },
    ) => void | Promise<void>;
 };
 
 export function SchemaFormModal({
    context,
    id,
-   innerProps: { schema, uiSchema, onSubmit, autoCloseAfterSubmit }
+   innerProps: { schema, uiSchema, onSubmit, autoCloseAfterSubmit },
 }: ContextModalProps<Props>) {
    const [valid, setValid] = useState(false);
    const formRef = useRef<JsonSchemaFormRef>(null);
@@ -49,7 +49,7 @@ export function SchemaFormModal({
       setSubmitting(true);
       await onSubmit?.(formRef.current?.formData(), {
          close: handleClose,
-         setError
+         setError,
       });
       setSubmitting(false);
 
@@ -61,7 +61,7 @@ export function SchemaFormModal({
    return (
       <>
          {error && <Alert.Exception message={error} />}
-         <div className="pt-3 pb-3 px-3 gap-4 flex flex-col">
+         <div className="pt-3 pb-3 px-4 gap-4 flex flex-col">
             <JsonSchemaForm
                tagName="form"
                ref={formRef}
@@ -84,12 +84,12 @@ export function SchemaFormModal({
 
 SchemaFormModal.defaultTitle = "JSON Schema Form Modal";
 SchemaFormModal.modalProps = {
+   size: "md",
    classNames: {
-      size: "md",
       root: "bknd-admin",
-      header: "!bg-primary/5 border-b border-b-muted !py-3 px-5 !h-auto !min-h-px",
+      header: "!bg-lightest !py-3 px-5 !h-auto !min-h-px",
       content: "rounded-lg select-none",
       title: "!font-bold !text-md",
-      body: "!p-0"
-   }
+      body: "!p-0",
+   },
 };

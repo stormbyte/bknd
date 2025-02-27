@@ -7,10 +7,10 @@ export function Context() {
       <div>
          {JSON.stringify(
             {
-               baseurl
+               baseurl,
             },
             null,
-            2
+            2,
          )}
       </div>
    );

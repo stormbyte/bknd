@@ -18,10 +18,10 @@ bknd simplifies app development by providing a fully functional backend for data
 > and therefore full backward compatibility is not guaranteed before reaching v1.0.0.
 
 ## Size
-![gzipped size of bknd](https://img.badgesize.io/https://unpkg.com/bknd@0.8.0/dist/index.js?compression=gzip&label=bknd)
-![gzipped size of bknd/client](https://img.badgesize.io/https://unpkg.com/bknd@0.8.0/dist/ui/client/index.js?compression=gzip&label=bknd/client)
-![gzipped size of bknd/elements](https://img.badgesize.io/https://unpkg.com/bknd@0.8.0/dist/ui/elements/index.js?compression=gzip&label=bknd/elements)
-![gzipped size of bknd/ui](https://img.badgesize.io/https://unpkg.com/bknd@0.8.0/dist/ui/index.js?compression=gzip&label=bknd/ui)
+![gzipped size of bknd](https://img.badgesize.io/https://unpkg.com/bknd@0.7.1/dist/index.js?compression=gzip&label=bknd)
+![gzipped size of bknd/client](https://img.badgesize.io/https://unpkg.com/bknd@0.7.1/dist/ui/client/index.js?compression=gzip&label=bknd/client)
+![gzipped size of bknd/elements](https://img.badgesize.io/https://unpkg.com/bknd@0.7.1/dist/ui/elements/index.js?compression=gzip&label=bknd/elements)
+![gzipped size of bknd/ui](https://img.badgesize.io/https://unpkg.com/bknd@0.7.1/dist/ui/index.js?compression=gzip&label=bknd/ui)
 
 The size on npm is misleading, as the `bknd` package includes the backend, the ui components as well as the whole backend bundled into the cli including static assets. 
 

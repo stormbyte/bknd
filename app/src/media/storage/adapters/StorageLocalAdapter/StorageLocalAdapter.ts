@@ -5,15 +5,15 @@ import type {
    FileListObject,
    FileMeta,
    FileUploadPayload,
-   StorageAdapter
+   StorageAdapter,
 } from "../../Storage";
 import { guess } from "../../mime-types-tiny";
 
 export const localAdapterConfig = Type.Object(
    {
-      path: Type.String({ default: "./" })
+      path: Type.String({ default: "./" }),
    },
-   { title: "Local", description: "Local file system storage" }
+   { title: "Local", description: "Local file system storage" },
 );
 export type LocalAdapterConfig = Static<typeof localAdapterConfig>;
 
@@ -42,9 +42,9 @@ export class StorageLocalAdapter implements StorageAdapter {
                return {
                   key: file,
                   last_modified: stats.mtime,
-                  size: stats.size
+                  size: stats.size,
                };
-            })
+            }),
       );
       return fileStats;
    }
@@ -95,8 +95,8 @@ export class StorageLocalAdapter implements StorageAdapter {
             status: 200,
             headers: {
                "Content-Type": mimeType || "application/octet-stream",
-               "Content-Length": content.length.toString()
-            }
+               "Content-Length": content.length.toString(),
+            },
          });
       } catch (error) {
          // Handle file reading errors
@@ -112,14 +112,14 @@ export class StorageLocalAdapter implements StorageAdapter {
       const stats = await stat(`${this.config.path}/${key}`);
       return {
          type: guess(key) || "application/octet-stream",
-         size: stats.size
+         size: stats.size,
       };
    }
 
    toJSON(secrets?: boolean) {
       return {
          type: this.getName(),
-         config: this.config
+         config: this.config,
       };
    }
 }

@@ -4,12 +4,12 @@ const expressions = [
    exp(
       "$eq",
       (v: Primitive) => isPrimitive(v),
-      (e, a) => e === a
+      (e, a) => e === a,
    ),
    exp(
       "$ne",
       (v: Primitive) => isPrimitive(v),
-      (e, a) => e !== a
+      (e, a) => e !== a,
    ),
    exp(
       "$like",
@@ -25,7 +25,7 @@ const expressions = [
             default:
                return false;
          }
-      }
+      },
    ),
    exp(
       "$regex",
@@ -39,54 +39,54 @@ const expressions = [
             return regex.test(a);
          }
          return false;
-      }
+      },
    ),
    exp(
       "$isnull",
       (v: boolean | 1 | 0) => true,
-      (e, a) => (e ? a === null : a !== null)
+      (e, a) => (e ? a === null : a !== null),
    ),
    exp(
       "$notnull",
       (v: boolean | 1 | 0) => true,
-      (e, a) => (e ? a !== null : a === null)
+      (e, a) => (e ? a !== null : a === null),
    ),
    exp(
       "$in",
       (v: (string | number)[]) => Array.isArray(v),
-      (e: any, a: any) => e.includes(a)
+      (e: any, a: any) => e.includes(a),
    ),
    exp(
       "$notin",
       (v: (string | number)[]) => Array.isArray(v),
-      (e: any, a: any) => !e.includes(a)
+      (e: any, a: any) => !e.includes(a),
    ),
    exp(
       "$gt",
       (v: number) => typeof v === "number",
-      (e: any, a: any) => a > e
+      (e: any, a: any) => a > e,
    ),
    exp(
       "$gte",
       (v: number) => typeof v === "number",
-      (e: any, a: any) => a >= e
+      (e: any, a: any) => a >= e,
    ),
    exp(
       "$lt",
       (v: number) => typeof v === "number",
-      (e: any, a: any) => a < e
+      (e: any, a: any) => a < e,
    ),
    exp(
       "$lte",
       (v: number) => typeof v === "number",
-      (e: any, a: any) => a <= e
+      (e: any, a: any) => a <= e,
    ),
    exp(
       "$between",
       (v: [number, number]) =>
          Array.isArray(v) && v.length === 2 && v.every((n) => typeof n === "number"),
-      (e: any, a: any) => e[0] <= a && a <= e[1]
-   )
+      (e: any, a: any) => e[0] <= a && a <= e[1],
+   ),
 ];
 
 export type ObjectQuery = FilterQuery<typeof expressions>;

@@ -4,7 +4,7 @@ import type { Entity, EntityData, EntityManager } from "../entities";
 import {
    type EntityRelationAnchor,
    type MutationInstructionResponse,
-   RelationHelper
+   RelationHelper,
 } from "../relations";
 import type { RepoQuery } from "../server/data-query-impl";
 import type { RelationType } from "./relation-types";
@@ -25,7 +25,7 @@ export type BaseRelationConfig = Static<typeof EntityRelation.schema>;
 
 // @todo: add generic type for relation config
 export abstract class EntityRelation<
-   Schema extends typeof EntityRelation.schema = typeof EntityRelation.schema
+   Schema extends typeof EntityRelation.schema = typeof EntityRelation.schema,
 > {
    config: Static<Schema>;
 
@@ -39,14 +39,14 @@ export abstract class EntityRelation<
    static schema = Type.Object({
       mappedBy: Type.Optional(Type.String()),
       inversedBy: Type.Optional(Type.String()),
-      required: Type.Optional(Type.Boolean())
+      required: Type.Optional(Type.Boolean()),
    });
 
    // don't make protected, App requires it to instantiatable
    constructor(
       source: EntityRelationAnchor,
       target: EntityRelationAnchor,
-      config: Partial<Static<Schema>> = {}
+      config: Partial<Static<Schema>> = {},
    ) {
       this.source = source;
       this.target = target;
@@ -67,13 +67,13 @@ export abstract class EntityRelation<
     */
    abstract buildWith(
       entity: Entity,
-      reference: string
+      reference: string,
    ): (eb: ExpressionBuilder<any, any>) => KyselyQueryBuilder;
 
    abstract buildJoin(
       entity: Entity,
       qb: KyselyQueryBuilder,
-      reference: string
+      reference: string,
    ): KyselyQueryBuilder;
 
    getReferenceQuery(entity: Entity, id: number, reference: string): Partial<RepoQuery> {
@@ -105,7 +105,7 @@ export abstract class EntityRelation<
 
       throw new Error(
          `Entity "${entity_name}" is not part of the relation ` +
-            `"${this.source.entity.name} <-> ${this.target.entity.name}"`
+            `"${this.source.entity.name} <-> ${this.target.entity.name}"`,
       );
    }
 
@@ -141,7 +141,7 @@ export abstract class EntityRelation<
          if (Array.isArray(hydrated) && hydrated.length > 1) {
             throw new Error(
                `Failed to hydrate "${anchor.entity.name}" ` +
-                  `with value: ${JSON.stringify(value)} (cardinality: 1)`
+                  `with value: ${JSON.stringify(value)} (cardinality: 1)`,
             );
          }
 
@@ -151,7 +151,7 @@ export abstract class EntityRelation<
       if (!hydrated) {
          throw new Error(
             `Failed to hydrate "${anchor.entity.name}" ` +
-               `with value: ${JSON.stringify(value)} (cardinality: -)`
+               `with value: ${JSON.stringify(value)} (cardinality: -)`,
          );
       }
 
@@ -178,7 +178,7 @@ export abstract class EntityRelation<
    async $set(
       em: EntityManager<any>,
       key: string,
-      value: unknown
+      value: unknown,
    ): Promise<void | MutationInstructionResponse> {
       throw new Error("$set is not allowed");
    }
@@ -186,7 +186,7 @@ export abstract class EntityRelation<
    async $create(
       em: EntityManager<any>,
       key: string,
-      value: unknown
+      value: unknown,
    ): Promise<void | MutationInstructionResponse> {
       throw new Error("$create is not allowed");
    }
@@ -194,7 +194,7 @@ export abstract class EntityRelation<
    async $attach(
       em: EntityManager<any>,
       key: string,
-      value: unknown
+      value: unknown,
    ): Promise<void | MutationInstructionResponse> {
       throw new Error("$attach is not allowed");
    }
@@ -202,7 +202,7 @@ export abstract class EntityRelation<
    async $detach(
       em: EntityManager<any>,
       key: string,
-      value: unknown
+      value: unknown,
    ): Promise<void | MutationInstructionResponse> {
       throw new Error("$detach is not allowed");
    }
@@ -213,7 +213,7 @@ export abstract class EntityRelation<
          this.source.entity.name,
          this.target.entity.name,
          this.config.mappedBy,
-         this.config.inversedBy
+         this.config.inversedBy,
       ].filter(Boolean);
       return parts.join("_");
    }
@@ -223,7 +223,7 @@ export abstract class EntityRelation<
          type: this.type(),
          source: this.source.entity.name,
          target: this.target.entity.name,
-         config: this.config
+         config: this.config,
       };
    }
 }

@@ -19,16 +19,16 @@ describe("AppMedia", () => {
                adapter: {
                   type: "local",
                   config: {
-                     path: "./"
-                  }
-               }
+                     path: "./",
+                  },
+               },
             },
             data: em({
                media: entity("media", {
-                  additional: text()
-               })
-            }).toJSON()
-         }
+                  additional: text(),
+               }),
+            }).toJSON(),
+         },
       });
 
       await app.build();
@@ -49,7 +49,7 @@ describe("AppMedia", () => {
          "modified_at",
          "reference",
          "entity_id",
-         "metadata"
+         "metadata",
       ]);
    });
 });

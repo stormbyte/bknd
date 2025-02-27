@@ -11,7 +11,7 @@ import {
    TbDotsVertical,
    TbSelector,
    TbSquare,
-   TbSquareCheckFilled
+   TbSquareCheckFilled,
 } from "react-icons/tb";
 import { twMerge } from "tailwind-merge";
 import { Button } from "ui/components/buttons/Button";
@@ -69,7 +69,7 @@ export function DataTable<Data extends Record<string, any> = Record<string, any>
    renderHeader,
    rowActions,
    renderValue,
-   onClickNew
+   onClickNew,
 }: DataTableProps<Data>) {
    total = total || data?.length || 0;
    page = page || 1;
@@ -105,7 +105,7 @@ export function DataTable<Data extends Record<string, any> = Record<string, any>
                                        type="button"
                                        className={twMerge(
                                           "link hover:bg-primary/5 py-1.5 rounded-md inline-flex flex-row justify-start items-center gap-1",
-                                          onClickSort ? "pl-2.5 pr-1" : "px-2.5"
+                                          onClickSort ? "pl-2.5 pr-1" : "px-2.5",
                                        )}
                                        onClick={() => onClickSort?.(property)}
                                     >
@@ -210,7 +210,7 @@ export function DataTable<Data extends Record<string, any> = Record<string, any>
                      <Dropdown
                         items={perPageOptions.map((perPage) => ({
                            label: String(perPage),
-                           perPage
+                           perPage,
                         }))}
                         position="top-end"
                         onClickItem={(item: any) => onClickPerPage?.(item.perPage)}
@@ -254,7 +254,7 @@ export const CellValue = ({ value, property }) => {
 
 const SortIndicator = ({
    sort,
-   field
+   field,
 }: {
    sort: Pick<DataTableProps<any>, "sort">["sort"];
    field: string;
@@ -292,7 +292,7 @@ const TableNav: React.FC<TableNavProps> = ({ current, total, onClick }: TableNav
       { value: 1, Icon: TbChevronsLeft, disabled: current === 1 },
       { value: current - 1, Icon: TbChevronLeft, disabled: current === 1 },
       { value: current + 1, Icon: TbChevronRight, disabled: current === total },
-      { value: total, Icon: TbChevronsRight, disabled: current === total }
+      { value: total, Icon: TbChevronsRight, disabled: current === total },
    ] as const;
 
    return navMap.map((nav, key) => (

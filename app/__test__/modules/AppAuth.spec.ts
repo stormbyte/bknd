@@ -43,10 +43,10 @@ describe("AppAuth", () => {
          {
             enabled: true,
             jwt: {
-               secret: "123456"
-            }
+               secret: "123456",
+            },
          },
-         ctx
+         ctx,
       );
 
       await auth.build();
@@ -63,12 +63,12 @@ describe("AppAuth", () => {
          const res = await app.request("/password/register", {
             method: "POST",
             headers: {
-               "Content-Type": "application/json"
+               "Content-Type": "application/json",
             },
             body: JSON.stringify({
                email: "some@body.com",
-               password: "123456"
-            })
+               password: "123456",
+            }),
          });
          enableConsoleLog();
          expect(res.status).toBe(200);
@@ -85,10 +85,10 @@ describe("AppAuth", () => {
             auth: {
                enabled: true,
                jwt: {
-                  secret: "123456"
-               }
-            }
-         }
+                  secret: "123456",
+               },
+            },
+         },
       });
 
       await app.build();
@@ -109,14 +109,14 @@ describe("AppAuth", () => {
          initialConfig: {
             auth: {
                entity_name: "users",
-               enabled: true
+               enabled: true,
             },
             data: em({
                users: entity("users", {
-                  additional: text()
-               })
-            }).toJSON()
-         }
+                  additional: text(),
+               }),
+            }).toJSON(),
+         },
       });
 
       await app.build();
@@ -132,21 +132,21 @@ describe("AppAuth", () => {
       const app = createApp({
          initialConfig: {
             auth: {
-               enabled: true
+               enabled: true,
             },
             data: em({
                users: entity("users", {
                   strategy: text({
                      fillable: true,
-                     hidden: false
+                     hidden: false,
                   }),
                   strategy_value: text({
                      fillable: true,
-                     hidden: false
-                  })
-               })
-            }).toJSON()
-         }
+                     hidden: false,
+                  }),
+               }),
+            }).toJSON(),
+         },
       });
       await app.build();
 

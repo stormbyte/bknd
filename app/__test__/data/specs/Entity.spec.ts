@@ -6,7 +6,7 @@ describe("[data] Entity", async () => {
       new TextField("name", { required: true }),
       new TextField("description"),
       new NumberField("age", { fillable: false, default_value: 18 }),
-      new TextField("hidden", { hidden: true, default_value: "secret" })
+      new TextField("hidden", { hidden: true, default_value: "secret" }),
    ]);
 
    test("getSelect", async () => {
@@ -17,7 +17,7 @@ describe("[data] Entity", async () => {
       expect(entity.getFillableFields().map((f) => f.name)).toEqual([
          "name",
          "description",
-         "hidden"
+         "hidden",
       ]);
    });
 
@@ -28,7 +28,7 @@ describe("[data] Entity", async () => {
    test("getDefaultObject", async () => {
       expect(entity.getDefaultObject()).toEqual({
          age: 18,
-         hidden: "secret"
+         hidden: "secret",
       });
    });
 

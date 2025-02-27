@@ -19,7 +19,7 @@ export default function SWRAndAPI() {
    const [text, setText] = useState("");
    const { data, ...r } = useApiQuery((api) => api.data.readOne("comments", 1), {
       refine: (data) => data.data,
-      revalidateOnFocus: true
+      revalidateOnFocus: true,
    });
    const comment = data ? data : null;
 

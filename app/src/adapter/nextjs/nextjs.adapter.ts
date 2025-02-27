@@ -34,7 +34,7 @@ function getCleanRequest(req: Request, cleanRequest: NextjsBkndConfig["cleanRequ
    return new Request(url.toString(), {
       method: req.method,
       headers: req.headers,
-      body: req.body
+      body: req.body,
    });
 }
 

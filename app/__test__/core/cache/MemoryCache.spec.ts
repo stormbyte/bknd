@@ -9,7 +9,7 @@ describe("MemoryCache", () => {
       tester: {
          test,
          beforeEach,
-         expect
-      }
+         expect,
+      },
    });
 });

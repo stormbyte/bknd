@@ -3,7 +3,7 @@ import { Adapters } from "media";
 import { registries } from "modules/registries";
 
 export const ADAPTERS = {
-   ...Adapters
+   ...Adapters,
 } as const;
 
 export const registry = registries.media;
@@ -13,13 +13,13 @@ export function buildMediaSchema() {
       return Type.Object(
          {
             type: Const(name),
-            config: adapter.schema
+            config: adapter.schema,
          },
          {
             title: adapter.schema?.title ?? name,
             description: adapter.schema?.description,
-            additionalProperties: false
-         }
+            additionalProperties: false,
+         },
       );
    });
    const adapterSchema = Type.Union(Object.values(adapterSchemaObject));
@@ -33,17 +33,17 @@ export function buildMediaSchema() {
             {
                body_max_size: Type.Optional(
                   Type.Number({
-                     description: "Max size of the body in bytes. Leave blank for unlimited."
-                  })
-               )
+                     description: "Max size of the body in bytes. Leave blank for unlimited.",
+                  }),
+               ),
             },
-            { default: {} }
+            { default: {} },
          ),
-         adapter: Type.Optional(adapterSchema)
+         adapter: Type.Optional(adapterSchema),
       },
       {
-         additionalProperties: false
-      }
+         additionalProperties: false,
+      },
    );
 }
 

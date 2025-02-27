@@ -16,7 +16,7 @@ function entitiesToNodes(entities: AppDataConfig["entities"]): Node<TAppDataEnti
          dragHandle: ".drag-handle",
          position: { x: 0, y: 0 },
          sourcePosition: Position.Right,
-         targetPosition: Position.Left
+         targetPosition: Position.Left,
       };
    });
 }
@@ -36,46 +36,46 @@ function relationsToEdges(relations: AppDataConfig["relations"]) {
          source: relation.source,
          target: relation.target,
          sourceHandle,
-         targetHandle: relation.target + ":id"
+         targetHandle: relation.target + ":id",
       };
    });
 }
 
 const nodeTypes = {
-   entity: EntityTableNode.Component
+   entity: EntityTableNode.Component,
 } as const;
 
 export function DataSchemaCanvas() {
    const {
-      config: { data }
+      config: { data },
    } = useBknd();
    const { theme } = useBkndSystemTheme();
    const nodes = entitiesToNodes(data.entities);
    const edges = relationsToEdges(data.relations).map((e) => ({
       ...e,
       style: {
-         stroke: theme === "light" ? "#ccc" : "#666"
+         stroke: theme === "light" ? "#ccc" : "#666",
       },
       type: "smoothstep",
       markerEnd: {
          type: MarkerType.Arrow,
          width: 20,
          height: 20,
-         color: theme === "light" ? "#aaa" : "#777"
-      }
+         color: theme === "light" ? "#aaa" : "#777",
+      },
    }));
 
    const nodeLayout = layoutWithDagre({
       nodes: nodes.map((n) => ({
          id: n.id,
-         ...EntityTableNode.getSize(n.data)
+         ...EntityTableNode.getSize(n.data),
       })),
       edges,
       graph: {
          rankdir: "LR",
          marginx: 50,
-         marginy: 50
-      }
+         marginy: 50,
+      },
    });
 
    nodeLayout.nodes.forEach((node) => {
@@ -95,7 +95,7 @@ export function DataSchemaCanvas() {
             maxZoom={2}
             fitViewOptions={{
                minZoom: 0.1,
-               maxZoom: 0.8
+               maxZoom: 0.8,
             }}
          >
             <Panels zoom minimap />

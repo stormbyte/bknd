@@ -6,7 +6,7 @@ import {
    StringEnum,
    StringIdentifier,
    Type,
-   transformObject
+   transformObject,
 } from "core/utils";
 import type { MediaFieldConfig } from "media/MediaField";
 import { useEffect, useState } from "react";
@@ -20,14 +20,14 @@ import {
    ModalFooter,
    type TCreateModalSchema,
    type TFieldCreate,
-   useStepContext
+   useStepContext,
 } from "../../CreateModal";
 
 const schema = Type.Object({
    entity: StringIdentifier,
    cardinality_type: StringEnum(["single", "multiple"], { default: "multiple" }),
    cardinality: Type.Optional(Type.Number({ minimum: 1 })),
-   name: StringIdentifier
+   name: StringIdentifier,
 });
 type TCreateModalMediaSchema = Static<typeof schema>;
 
@@ -38,11 +38,11 @@ export function TemplateMediaComponent() {
       handleSubmit,
       formState: { isValid, errors },
       watch,
-      control
+      control,
    } = useForm({
       mode: "onChange",
       resolver: typeboxResolver(schema),
-      defaultValues: Default(schema, state.initial ?? {}) as TCreateModalMediaSchema
+      defaultValues: Default(schema, state.initial ?? {}) as TCreateModalMediaSchema,
    });
    const [forbidden, setForbidden] = useState<boolean>(false);
 
@@ -50,7 +50,7 @@ export function TemplateMediaComponent() {
    const media_enabled = config.media.enabled ?? false;
    const media_entity = config.media.entity_name ?? "media";
    const entities = transformObject(config.data.entities ?? {}, (entity, name) =>
-      name !== media_entity ? entity : undefined
+      name !== media_entity ? entity : undefined,
    );
    const data = watch();
    const forbidden_field_names = Object.keys(config.data.entities?.[data.entity]?.fields ?? {});
@@ -66,7 +66,7 @@ export function TemplateMediaComponent() {
          setState((prev) => ({
             ...prev,
             fields: { create: [field] },
-            relations: { create: [relation] }
+            relations: { create: [relation] },
          }));
 
          nextStep("create")();
@@ -92,7 +92,7 @@ export function TemplateMediaComponent() {
                      required
                      data={Object.entries(entities).map(([name, entity]) => ({
                         value: name,
-                        label: entity.config?.name ?? name
+                        label: entity.config?.name ?? name,
                      }))}
                   />
                   <MantineRadio.Group
@@ -141,10 +141,10 @@ export function TemplateMediaComponent() {
             <ModalFooter
                next={{
                   type: "submit",
-                  disabled: !isValid || !media_enabled || forbidden
+                  disabled: !isValid || !media_enabled || forbidden,
                }}
                prev={{
-                  onClick: stepBack
+                  onClick: stepBack,
                }}
                debug={{ state, path, data }}
             />
@@ -169,9 +169,9 @@ function convert(media_entity: string, data: TCreateModalMediaSchema) {
             hidden: false,
             mime_types: [],
             virtual: true,
-            entity: data.entity
-         }
-      }
+            entity: data.entity,
+         },
+      },
    };
 
    const relation = {
@@ -180,8 +180,8 @@ function convert(media_entity: string, data: TCreateModalMediaSchema) {
       target: media_entity,
       config: {
          mappedBy: data.name,
-         targetCardinality: data.cardinality_type === "single" ? 1 : undefined
-      }
+         targetCardinality: data.cardinality_type === "single" ? 1 : undefined,
+      },
    };
 
    if (data.cardinality_type === "multiple") {

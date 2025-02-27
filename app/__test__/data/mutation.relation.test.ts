@@ -6,7 +6,7 @@ import {
    ManyToOneRelation,
    NumberField,
    SchemaManager,
-   TextField
+   TextField,
 } from "../../src/data";
 import { getDummyConnection } from "./helper";
 
@@ -21,7 +21,7 @@ describe("Mutator relation", async () => {
    const posts = new Entity("posts", [
       new TextField("title"),
       new TextField("content", { default_value: "..." }),
-      new NumberField("count", { default_value: 0 })
+      new NumberField("count", { default_value: 0 }),
    ]);
 
    const users = new Entity("users", [new TextField("username")]);
@@ -44,7 +44,7 @@ describe("Mutator relation", async () => {
       expect(em.mutator(posts).insertOne({ title: "post2", users_id: 10 })).rejects.toThrow();
 
       expect(
-         em.mutator(posts).insertOne({ title: "post2", users_id: data.id })
+         em.mutator(posts).insertOne({ title: "post2", users_id: data.id }),
       ).resolves.toBeDefined();
    });
 });

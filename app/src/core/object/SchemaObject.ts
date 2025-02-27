@@ -6,14 +6,14 @@ import {
    getFullPathKeys,
    mergeObjectWith,
    parse,
-   stripMark
+   stripMark,
 } from "../utils";
 
 export type SchemaObjectOptions<Schema extends TObject> = {
    onUpdate?: (config: Static<Schema>) => void | Promise<void>;
    onBeforeUpdate?: (
       from: Static<Schema>,
-      to: Static<Schema>
+      to: Static<Schema>,
    ) => Static<Schema> | Promise<Static<Schema>>;
    restrictPaths?: string[];
    overwritePaths?: (RegExp | string)[];
@@ -29,13 +29,13 @@ export class SchemaObject<Schema extends TObject> {
    constructor(
       private _schema: Schema,
       initial?: Partial<Static<Schema>>,
-      private options?: SchemaObjectOptions<Schema>
+      private options?: SchemaObjectOptions<Schema>,
    ) {
       this._default = Default(_schema, {} as any) as any;
       this._value = initial
          ? parse(_schema, structuredClone(initial as any), {
               forceParse: this.isForceParse(),
-              skipMark: this.isForceParse()
+              skipMark: this.isForceParse(),
            })
          : this._default;
       this._config = Object.freeze(this._value);
@@ -71,7 +71,7 @@ export class SchemaObject<Schema extends TObject> {
    async set(config: Static<Schema>, noEmit?: boolean): Promise<Static<Schema>> {
       const valid = parse(this._schema, structuredClone(config) as any, {
          forceParse: true,
-         skipMark: this.isForceParse()
+         skipMark: this.isForceParse(),
       });
       // regardless of "noEmit" – this should always be triggered
       const updatedConfig = await this.onBeforeUpdate(this._config, valid);
@@ -159,7 +159,7 @@ export class SchemaObject<Schema extends TObject> {
                        overwritePaths.some((k2) => {
                           //console.log("keep?", { k, k2 }, k2 !== k && k2.startsWith(k));
                           return k2 !== k && k2.startsWith(k);
-                       })
+                       }),
                     )
                   : overwritePaths;
             //console.log("specific", specific);

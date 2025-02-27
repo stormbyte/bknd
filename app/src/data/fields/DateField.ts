@@ -9,13 +9,13 @@ export const dateFieldConfigSchema = Type.Composite(
          type: StringEnum(["date", "datetime", "week"] as const, { default: "date" }),
          timezone: Type.Optional(Type.String()),
          min_date: Type.Optional(Type.String()),
-         max_date: Type.Optional(Type.String())
+         max_date: Type.Optional(Type.String()),
       }),
-      baseFieldConfigSchema
+      baseFieldConfigSchema,
    ],
    {
-      additionalProperties: false
-   }
+      additionalProperties: false,
+   },
 );
 
 export type DateFieldConfig = Static<typeof dateFieldConfigSchema>;
@@ -43,8 +43,8 @@ export class DateField<Required extends true | false = false> extends Field<
          ...super.getHtmlConfig(),
          element: "date",
          props: {
-            type: htmlType
-         }
+            type: htmlType,
+         },
       };
    }
 
@@ -53,7 +53,7 @@ export class DateField<Required extends true | false = false> extends Field<
       if (this.config.type === "week" && value.includes("-W")) {
          const [year, week] = value.split("-W").map((n) => Number.parseInt(n, 10)) as [
             number,
-            number
+            number,
          ];
          //console.log({ year, week });
          // @ts-ignore causes errors on build?
@@ -129,7 +129,7 @@ export class DateField<Required extends true | false = false> extends Field<
    override async transformPersist(
       _value: any,
       em: EntityManager<any>,
-      context: TActionContext
+      context: TActionContext,
    ): Promise<string | undefined> {
       const value = await super.transformPersist(_value, em, context);
       if (this.nullish(value)) return value;

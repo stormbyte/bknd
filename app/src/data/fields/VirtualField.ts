@@ -25,8 +25,8 @@ export class VirtualField extends Field<VirtualFieldConfig> {
       return this.toSchemaWrapIfRequired(
          Type.Any({
             default: this.getDefault(),
-            readOnly: true
-         })
+            readOnly: true,
+         }),
       );
    }
 }

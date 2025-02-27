@@ -65,18 +65,15 @@ export class MediaController extends Controller {
             return c.json({
                type: file?.type,
                name: file?.name,
-               size: file?.size
+               size: file?.size,
             });
          });
       }
 
       // upload file
       // @todo: add required type for "upload endpoints"
-      hono.post("/upload/:filename", async (c) => {
-         const { filename } = c.req.param();
-         if (!filename) {
-            throw new Error("No file name provided");
-         }
+      hono.post("/upload/:filename?", async (c) => {
+         const reqname = c.req.param("filename");
 
          const body = await getFileFromContext(c);
          if (!body) {
@@ -85,11 +82,13 @@ export class MediaController extends Controller {
          if (body.size > maxSize) {
             return c.json(
                { error: `Max size (${maxSize} bytes) exceeded` },
-               HttpStatus.PAYLOAD_TOO_LARGE
+               HttpStatus.PAYLOAD_TOO_LARGE,
             );
          }
 
+         const filename = reqname ?? getRandomizedFilename(body as File);
          const res = await this.getStorage().uploadFile(body, filename);
+
          return c.json(res, HttpStatus.CREATED);
       });
 
@@ -100,8 +99,8 @@ export class MediaController extends Controller {
          tb(
             "query",
             Type.Object({
-               overwrite: Type.Optional(booleanLike)
-            })
+               overwrite: Type.Optional(booleanLike),
+            }),
          ),
          async (c) => {
             const entity_name = c.req.param("entity");
@@ -125,7 +124,7 @@ export class MediaController extends Controller {
             const mediaRef = {
                scope: field_name,
                reference,
-               entity_id: entity_id
+               entity_id: entity_id,
             };
 
             // check max items
@@ -141,7 +140,7 @@ export class MediaController extends Controller {
                   if (!overwrite) {
                      return c.json(
                         { error: `Max items (${max_items}) reached` },
-                        HttpStatus.BAD_REQUEST
+                        HttpStatus.BAD_REQUEST,
                      );
                   }
 
@@ -150,7 +149,7 @@ export class MediaController extends Controller {
                   if (count > max_items) {
                      return c.json(
                         { error: `Max items (${max_items}) exceeded already with ${count} items.` },
-                        HttpStatus.UNPROCESSABLE_ENTITY
+                        HttpStatus.UNPROCESSABLE_ENTITY,
                      );
                   }
 
@@ -160,9 +159,9 @@ export class MediaController extends Controller {
                      where: mediaRef,
                      sort: {
                         by: "id",
-                        dir: "asc"
+                        dir: "asc",
                      },
-                     limit: count - max_items + 1
+                     limit: count - max_items + 1,
                   });
 
                   if (deleteRes.data && deleteRes.data.length > 0) {
@@ -176,7 +175,7 @@ export class MediaController extends Controller {
             if (!exists) {
                return c.json(
                   { error: `Entity "${entity_name}" with ID "${entity_id}" doesn't exist found` },
-                  HttpStatus.NOT_FOUND
+                  HttpStatus.NOT_FOUND,
                );
             }
 
@@ -187,18 +186,18 @@ export class MediaController extends Controller {
             if (file.size > maxSize) {
                return c.json(
                   { error: `Max size (${maxSize} bytes) exceeded` },
-                  HttpStatus.PAYLOAD_TOO_LARGE
+                  HttpStatus.PAYLOAD_TOO_LARGE,
                );
             }
 
-            const file_name = getRandomizedFilename(file as File);
-            const info = await this.getStorage().uploadFile(file, file_name, true);
+            const filename = getRandomizedFilename(file as File);
+            const info = await this.getStorage().uploadFile(file, filename, true);
 
             const mutator = this.media.em.mutator(media_entity);
             mutator.__unstable_toggleSystemEntityCreation(false);
             const result = await mutator.insertOne({
                ...this.media.uploadedEventDataToMediaPayload(info),
-               ...mediaRef
+               ...mediaRef,
             } as any);
             mutator.__unstable_toggleSystemEntityCreation(true);
 
@@ -211,7 +210,7 @@ export class MediaController extends Controller {
             }
 
             return c.json({ ok: true, result: result.data, ...info }, HttpStatus.CREATED);
-         }
+         },
       );
 
       return hono.all("*", (c) => c.notFound());

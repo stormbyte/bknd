@@ -1,3 +1,4 @@
+import { datetimeStringLocal } from "core/utils";
 import colors from "picocolors";
 
 function hasColors() {
@@ -8,10 +9,10 @@ function hasColors() {
          env = p.env || {};
       return (
          !(!!env.NO_COLOR || argv.includes("--no-color")) &&
-         // biome-ignore lint/complexity/useOptionalChain: <explanation>
          (!!env.FORCE_COLOR ||
             argv.includes("--color") ||
             p.platform === "win32" ||
+            // biome-ignore lint/complexity/useOptionalChain: <explanation>
             ((p.stdout || {}).isTTY && env.TERM !== "dumb") ||
             !!env.CI)
       );
@@ -25,7 +26,7 @@ const originalConsoles = {
    warn: console.warn,
    info: console.info,
    log: console.log,
-   debug: console.debug
+   debug: console.debug,
 } as typeof console;
 
 function __tty(type: any, args: any[]) {
@@ -33,29 +34,28 @@ function __tty(type: any, args: any[]) {
    const styles = {
       error: {
          prefix: colors.red,
-         args: colors.red
+         args: colors.red,
       },
       warn: {
          prefix: colors.yellow,
-         args: colors.yellow
+         args: colors.yellow,
       },
       info: {
-         prefix: colors.cyan
+         prefix: colors.cyan,
       },
       log: {
-         prefix: colors.gray
+         prefix: colors.dim,
       },
       debug: {
-         prefix: colors.yellow
-      }
+         prefix: colors.yellow,
+         args: colors.dim,
+      },
    } as const;
-   const prefix = styles[type].prefix(
-      `[${type.toUpperCase()}]${has ? " ".repeat(5 - type.length) : ""}`
-   );
+   const prefix = styles[type].prefix(`[${type.toUpperCase()}]`);
    const _args = args.map((a) =>
-      "args" in styles[type] && has && typeof a === "string" ? styles[type].args(a) : a
+      "args" in styles[type] && has && typeof a === "string" ? styles[type].args(a) : a,
    );
-   return originalConsoles[type](prefix, ..._args);
+   return originalConsoles[type](prefix, colors.gray(datetimeStringLocal()), ..._args);
 }
 
 export type TConsoleSeverity = keyof typeof originalConsoles;
@@ -79,13 +79,13 @@ export const $console = new Proxy(
             return (...args: any[]) => __tty(prop, args);
          }
          return () => null;
-      }
-   }
+      },
+   },
 ) as typeof console;
 
 export async function withDisabledConsole<R>(
    fn: () => Promise<R>,
-   sev?: TConsoleSeverity[]
+   sev?: TConsoleSeverity[],
 ): Promise<R> {
    disableConsole(sev);
    try {

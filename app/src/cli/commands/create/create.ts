@@ -13,18 +13,18 @@ import { type Template, templates } from "./templates";
 const config = {
    types: {
       runtime: "Runtime",
-      framework: "Framework"
+      framework: "Framework",
    },
    runtime: {
       node: "Node.js",
       bun: "Bun",
-      cloudflare: "Cloudflare"
+      cloudflare: "Cloudflare",
    },
    framework: {
       nextjs: "Next.js",
       remix: "Remix",
-      astro: "Astro"
-   }
+      astro: "Astro",
+   },
 } as const;
 
 export const create: CliCommand = (program) => {
@@ -41,7 +41,7 @@ function errorOutro() {
    $p.outro(color.red("Failed to create project."));
    console.log(
       color.yellow("Sorry that this happened. If you think this is a bug, please report it at: ") +
-         color.cyan("https://github.com/bknd-io/bknd/issues")
+         color.cyan("https://github.com/bknd-io/bknd/issues"),
    );
    console.log("");
    process.exit(1);
@@ -53,26 +53,26 @@ async function action(options: { template?: string; dir?: string; integration?: 
 
    const downloadOpts = {
       dir: options.dir || "./",
-      clean: false
+      clean: false,
    };
 
    const version = await getVersion();
    $p.intro(
-      `👋 Welcome to the ${color.bold(color.cyan("bknd"))} create wizard ${color.bold(`v${version}`)}`
+      `👋 Welcome to the ${color.bold(color.cyan("bknd"))} create wizard ${color.bold(`v${version}`)}`,
    );
 
    await $p.stream.message(
       (async function* () {
          yield* typewriter("Thanks for choosing to create a new project with bknd!", color.dim);
          await wait();
-      })()
+      })(),
    );
 
    if (!options.dir) {
       const dir = await $p.text({
          message: "Where to create your project?",
          placeholder: downloadOpts.dir,
-         initialValue: downloadOpts.dir
+         initialValue: downloadOpts.dir,
       });
       if ($p.isCancel(dir)) {
          process.exit(1);
@@ -84,7 +84,7 @@ async function action(options: { template?: string; dir?: string; integration?: 
    if (fs.existsSync(downloadOpts.dir)) {
       const clean = await $p.confirm({
          message: `Directory ${color.cyan(downloadOpts.dir)} exists. Clean it?`,
-         initialValue: false
+         initialValue: false,
       });
       if ($p.isCancel(clean)) {
          process.exit(1);
@@ -115,7 +115,7 @@ async function action(options: { template?: string; dir?: string; integration?: 
                await wait(2);
                yield* typewriter("Let's find the perfect template for you.", color.dim);
                await wait(2);
-            })()
+            })(),
          );
 
          const type = await $p.select({
@@ -123,8 +123,8 @@ async function action(options: { template?: string; dir?: string; integration?: 
             options: Object.entries(config.types).map(([value, name]) => ({
                value,
                label: name,
-               hint: Object.values(config[value]).join(", ")
-            }))
+               hint: Object.values(config[value]).join(", "),
+            })),
          });
 
          if ($p.isCancel(type)) {
@@ -135,8 +135,8 @@ async function action(options: { template?: string; dir?: string; integration?: 
             message: `Which ${color.cyan(config.types[type])} do you want to continue with?`,
             options: Object.entries(config[type]).map(([value, name]) => ({
                value,
-               label: name
-            })) as any
+               label: name,
+            })) as any,
          });
          if ($p.isCancel(_integration)) {
             process.exit(1);
@@ -157,7 +157,7 @@ async function action(options: { template?: string; dir?: string; integration?: 
       } else if (choices.length > 1) {
          const selected_template = await $p.select({
             message: "Pick a template",
-            options: choices.map((t) => ({ value: t.key, label: t.title, hint: t.description }))
+            options: choices.map((t) => ({ value: t.key, label: t.title, hint: t.description })),
          });
 
          if ($p.isCancel(selected_template)) {
@@ -196,7 +196,7 @@ async function action(options: { template?: string; dir?: string; integration?: 
       try {
          await downloadTemplate(url, {
             dir: ctx.dir,
-            force: downloadOpts.clean ? "clean" : true
+            force: downloadOpts.clean ? "clean" : true,
          });
       } catch (e) {
          if (e instanceof Error) {
@@ -221,15 +221,15 @@ async function action(options: { template?: string; dir?: string; integration?: 
    await overridePackageJson(
       (pkg) => ({
          ...pkg,
-         name: ctx.name
+         name: ctx.name,
       }),
-      { dir: ctx.dir }
+      { dir: ctx.dir },
    );
    $p.log.success(`Updated package name to ${color.cyan(ctx.name)}`);
 
    {
       const install = await $p.confirm({
-         message: "Install dependencies?"
+         message: "Install dependencies?",
       });
 
       if ($p.isCancel(install)) {
@@ -263,10 +263,10 @@ async function action(options: { template?: string; dir?: string; integration?: 
                yield* typewriter(
                   color.dim("Remember to run ") +
                      color.cyan("npm install") +
-                     color.dim(" after setup")
+                     color.dim(" after setup"),
                );
                await wait();
-            })()
+            })(),
          );
       }
    }
@@ -284,10 +284,10 @@ async function action(options: { template?: string; dir?: string; integration?: 
          yield "\n\n";
          yield* typewriter(
             `Enter your project's directory using ${color.cyan("cd " + ctx.dir)}
-If you need help, check ${color.cyan("https://docs.bknd.io")} or join our Discord!`
+If you need help, check ${color.cyan("https://docs.bknd.io")} or join our Discord!`,
          );
          await wait(2);
-      })()
+      })(),
    );
 
    $p.outro(color.green("Setup complete."));

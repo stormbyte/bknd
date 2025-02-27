@@ -18,21 +18,21 @@ export const ModalActions = ["entity", "relation", "media"] as const;
 
 export const entitySchema = Type.Composite([
    Type.Object({
-      name: StringIdentifier
+      name: StringIdentifier,
    }),
-   entitiesSchema
+   entitiesSchema,
 ]);
 
 const schemaAction = Type.Union([
    StringEnum(["entity", "relation", "media"]),
-   Type.String({ pattern: "^template-" })
+   Type.String({ pattern: "^template-" }),
 ]);
 export type TSchemaAction = Static<typeof schemaAction>;
 
 const createFieldSchema = Type.Object({
    entity: StringIdentifier,
    name: StringIdentifier,
-   field: Type.Array(fieldsSchema)
+   field: Type.Array(fieldsSchema),
 });
 export type TFieldCreate = Static<typeof createFieldSchema>;
 
@@ -42,30 +42,30 @@ const createModalSchema = Type.Object(
       initial: Type.Optional(Type.Any()),
       entities: Type.Optional(
          Type.Object({
-            create: Type.Optional(Type.Array(entitySchema))
-         })
+            create: Type.Optional(Type.Array(entitySchema)),
+         }),
       ),
       relations: Type.Optional(
          Type.Object({
-            create: Type.Optional(Type.Array(Type.Union(relationsSchema)))
-         })
+            create: Type.Optional(Type.Array(Type.Union(relationsSchema))),
+         }),
       ),
       fields: Type.Optional(
          Type.Object({
-            create: Type.Optional(Type.Array(createFieldSchema))
-         })
-      )
+            create: Type.Optional(Type.Array(createFieldSchema)),
+         }),
+      ),
    },
    {
-      additionalProperties: false
-   }
+      additionalProperties: false,
+   },
 );
 export type TCreateModalSchema = Static<typeof createModalSchema>;
 
 export function CreateModal({
    context,
    id,
-   innerProps: { initialPath = [], initialState }
+   innerProps: { initialPath = [], initialState },
 }: ContextModalProps<{ initialPath?: string[]; initialState?: TCreateModalSchema }>) {
    const [path, setPath] = useState<string[]>(initialPath);
    console.log("...", initialPath, initialState);
@@ -111,7 +111,7 @@ CreateModal.defaultTitle = undefined;
 CreateModal.modalProps = {
    withCloseButton: false,
    size: "xl",
-   padding: 0
+   padding: 0,
 } satisfies Partial<ModalProps>;
 
 export { ModalBody, ModalFooter, ModalTitle, useStepContext, relationsSchema };

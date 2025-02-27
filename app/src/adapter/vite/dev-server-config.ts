@@ -8,7 +8,7 @@ export const devServerConfig = {
       /^\/@.+$/,
       /\/components.*?\.json.*/, // @todo: improve
       /^\/(public|assets|static)\/.+/,
-      /^\/node_modules\/.*/
+      /^\/node_modules\/.*/,
    ] as any,
-   injectClientScript: false
+   injectClientScript: false,
 } as const;

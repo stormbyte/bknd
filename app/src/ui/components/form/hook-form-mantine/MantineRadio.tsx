@@ -2,7 +2,7 @@ import {
    Radio as $Radio,
    RadioGroup as $RadioGroup,
    type RadioGroupProps as $RadioGroupProps,
-   type RadioProps as $RadioProps
+   type RadioProps as $RadioProps,
 } from "@mantine/core";
 import { type FieldValues, type UseControllerProps, useController } from "react-hook-form";
 
@@ -19,13 +19,13 @@ export function MantineRadio<T extends FieldValues>({
    ...props
 }: RadioProps<T>) {
    const {
-      field: { value, onChange: fieldOnChange, ...field }
+      field: { value, onChange: fieldOnChange, ...field },
    } = useController<T>({
       name,
       control,
       defaultValue,
       rules,
-      shouldUnregister
+      shouldUnregister,
    });
 
    return (
@@ -55,13 +55,13 @@ function RadioGroup<T extends FieldValues>({
 }: RadioGroupProps<T>) {
    const {
       field: { value, onChange: fieldOnChange, ...field },
-      fieldState
+      fieldState,
    } = useController<T>({
       name,
       control,
       defaultValue,
       rules,
-      shouldUnregister
+      shouldUnregister,
    });
 
    return (

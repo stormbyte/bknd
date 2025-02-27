@@ -5,7 +5,7 @@ import { JsonField, type JsonFieldConfig, jsonFieldConfigSchema } from "./JsonFi
 import {
    JsonSchemaField,
    type JsonSchemaFieldConfig,
-   jsonSchemaFieldConfigSchema
+   jsonSchemaFieldConfigSchema,
 } from "./JsonSchemaField";
 import { NumberField, type NumberFieldConfig, numberFieldConfigSchema } from "./NumberField";
 import { PrimaryField, type PrimaryFieldConfig, primaryFieldConfigSchema } from "./PrimaryField";
@@ -35,7 +35,7 @@ export {
    type NumberFieldConfig,
    TextField,
    textFieldConfigSchema,
-   type TextFieldConfig
+   type TextFieldConfig,
 };
 
 export * from "./Field";
@@ -51,5 +51,5 @@ export const FieldClassMap = {
    date: { schema: dateFieldConfigSchema, field: DateField },
    enum: { schema: enumFieldConfigSchema, field: EnumField },
    json: { schema: jsonFieldConfigSchema, field: JsonField },
-   jsonschema: { schema: jsonSchemaFieldConfigSchema, field: JsonSchemaField }
+   jsonschema: { schema: jsonSchemaFieldConfigSchema, field: JsonSchemaField },
 } as const;

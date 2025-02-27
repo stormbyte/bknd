@@ -190,8 +190,15 @@ type PropoverTableProps = Omit<EntityTableProps, "data"> & {
    container: ResponseObject;
    query: any;
    toggle: () => void;
-}
-const PopoverTable = ({ container, entity, query, toggle, onClickRow, onClickPage }: PropoverTableProps) => {
+};
+const PopoverTable = ({
+   container,
+   entity,
+   query,
+   toggle,
+   onClickRow,
+   onClickPage,
+}: PropoverTableProps) => {
    function handleNext() {
       if (query.limit * query.page < container.meta?.count) {
          onClickPage?.(query.page + 1);

@@ -22,10 +22,10 @@ describe("Connection", async () => {
             columns: [
                {
                   name: "name",
-                  order: 0
-               }
-            ]
-         }
+                  order: 0,
+               },
+            ],
+         },
       ]);
    });
 
@@ -54,14 +54,14 @@ describe("Connection", async () => {
             columns: [
                {
                   name: "name",
-                  order: 0
+                  order: 0,
                },
                {
                   name: "desc",
-                  order: 1
-               }
-            ]
-         }
+                  order: 1,
+               },
+            ],
+         },
       ]);
    });
 
@@ -83,10 +83,10 @@ describe("Connection", async () => {
             columns: [
                {
                   name: "name",
-                  order: 0
-               }
-            ]
-         }
+                  order: 0,
+               },
+            ],
+         },
       ]);
    });
 });

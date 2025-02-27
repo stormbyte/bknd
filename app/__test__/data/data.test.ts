@@ -5,7 +5,7 @@ import {
    NumberField,
    PrimaryField,
    Repository,
-   TextField
+   TextField,
 } from "../../src/data";
 import { getDummyConnection } from "./helper";
 
@@ -18,14 +18,14 @@ describe("some tests", async () => {
 
    const users = new Entity("users", [
       new TextField("username", { required: true, default_value: "nobody" }),
-      new TextField("email", { maxLength: 3 })
+      new TextField("email", { maxLength: 3 }),
    ]);
 
    const posts = new Entity("posts", [
       new TextField("title"),
       new TextField("content"),
       new TextField("created_at"),
-      new NumberField("likes", { default_value: 0 })
+      new NumberField("likes", { default_value: 0 }),
    ]);
 
    const em = new EntityManager([users, posts], connection);
@@ -43,7 +43,7 @@ describe("some tests", async () => {
       });*/
 
       expect(query.sql).toBe(
-         'select "users"."id" as "id", "users"."username" as "username", "users"."email" as "email" from "users" where "id" = ? limit ?'
+         'select "users"."id" as "id", "users"."username" as "username", "users"."email" as "email" from "users" where "id" = ? limit ?',
       );
       expect(query.parameters).toEqual([1, 1]);
       expect(query.result).toEqual([]);
@@ -53,7 +53,7 @@ describe("some tests", async () => {
       const query = await em.repository(users).findMany();
 
       expect(query.sql).toBe(
-         'select "users"."id" as "id", "users"."username" as "username", "users"."email" as "email" from "users" order by "users"."id" asc limit ? offset ?'
+         'select "users"."id" as "id", "users"."username" as "username", "users"."email" as "email" from "users" order by "users"."id" asc limit ? offset ?',
       );
       expect(query.parameters).toEqual([10, 0]);
       expect(query.result).toEqual([]);
@@ -63,7 +63,7 @@ describe("some tests", async () => {
       const query = await em.repository(posts).findMany();
 
       expect(query.sql).toBe(
-         'select "posts"."id" as "id", "posts"."title" as "title", "posts"."content" as "content", "posts"."created_at" as "created_at", "posts"."likes" as "likes" from "posts" order by "posts"."id" asc limit ? offset ?'
+         'select "posts"."id" as "id", "posts"."title" as "title", "posts"."content" as "content", "posts"."created_at" as "created_at", "posts"."likes" as "likes" from "posts" order by "posts"."id" asc limit ? offset ?',
       );
       expect(query.parameters).toEqual([10, 0]);
       expect(query.result).toEqual([]);
@@ -74,7 +74,7 @@ describe("some tests", async () => {
          new Entity("users", [
             new TextField("username"),
             new TextField("email"),
-            new TextField("email") // not throwing, it's just being ignored
+            new TextField("email"), // not throwing, it's just being ignored
          ]);
       }).toBeDefined();
 
@@ -83,7 +83,7 @@ describe("some tests", async () => {
             new TextField("username"),
             new TextField("email"),
             // field config differs, will throw
-            new TextField("email", { required: true })
+            new TextField("email", { required: true }),
          ]);
       }).toThrow();
 
@@ -91,7 +91,7 @@ describe("some tests", async () => {
          new Entity("users", [
             new PrimaryField(),
             new TextField("username"),
-            new TextField("email")
+            new TextField("email"),
          ]);
       }).toBeDefined();
    });

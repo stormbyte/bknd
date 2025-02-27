@@ -1,10 +1,11 @@
-import { randomString } from "core/utils";
+import { isFile, randomString } from "core/utils";
+import { extension } from "media/storage/mime-types-tiny";
 
-export function getExtension(filename: string): string | undefined {
+export function getExtensionFromName(filename: string): string | undefined {
    if (!filename.includes(".")) return;
 
    const parts = filename.split(".");
-   return parts[parts.length - 1];
+   return parts[parts.length - 1]?.toLowerCase();
 }
 
 export function getRandomizedFilename(file: File, length?: number): string;
@@ -17,6 +18,12 @@ export function getRandomizedFilename(file: File | string, length = 16): string 
       throw new Error("Invalid file name");
    }
 
+   let ext = getExtensionFromName(filename);
+   if (isFile(file) && file.type) {
+      const _ext = extension(file.type);
+      if (_ext.length > 0) ext = _ext;
+   }
+
    // @todo: use uuid instead?
-   return [randomString(length), getExtension(filename)].filter(Boolean).join(".");
+   return [randomString(length), ext].filter(Boolean).join(".");
 }

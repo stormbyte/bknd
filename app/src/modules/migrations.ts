@@ -1,4 +1,4 @@
-import { _jsonp } from "core/utils";
+import { _jsonp, transformObject } from "core/utils";
 import { type Kysely, sql } from "kysely";
 import { set } from "lodash-es";
 
@@ -17,18 +17,18 @@ export const migrations: Migration[] = [
    {
       version: 1,
       //schema: true,
-      up: async (config) => config
+      up: async (config) => config,
    },
    {
       version: 2,
       up: async (config, { db }) => {
          return config;
-      }
+      },
    },
    {
       version: 3,
       //schema: true,
-      up: async (config) => config
+      up: async (config) => config,
    },
    {
       version: 4,
@@ -37,10 +37,10 @@ export const migrations: Migration[] = [
             ...config,
             auth: {
                ...config.auth,
-               basepath: "/api/auth2"
-            }
+               basepath: "/api/auth2",
+            },
          };
-      }
+      },
    },
    {
       version: 5,
@@ -49,13 +49,13 @@ export const migrations: Migration[] = [
          const cors = config.server.cors?.allow_methods ?? [];
          set(config.server, "cors.allow_methods", [...new Set([...cors, "PATCH"])]);
          return config;
-      }
+      },
    },
    {
       version: 6,
       up: async (config, { db }) => {
          return config;
-      }
+      },
    },
    {
       version: 7,
@@ -67,18 +67,30 @@ export const migrations: Migration[] = [
             ...config,
             auth: {
                ...config.auth,
-               jwt
-            }
+               jwt,
+            },
          };
-      }
-   }
-   /*{
+      },
+   },
+   {
       version: 8,
-      up: async (config, { db }) => {
-         await db.deleteFrom(TABLE_NAME).where("type", "=", "diff").execute();
-         return config;
-      }
-   }*/
+      up: async (config) => {
+         const strategies = transformObject(config.auth.strategies, (strategy) => {
+            return {
+               ...strategy,
+               enabled: true,
+            };
+         });
+
+         return {
+            ...config,
+            auth: {
+               ...config.auth,
+               strategies: strategies,
+            },
+         };
+      },
+   },
 ];
 
 export const CURRENT_VERSION = migrations[migrations.length - 1]?.version ?? 0;
@@ -88,7 +100,7 @@ export async function migrateTo(
    current: number,
    to: number,
    config: GenericConfigObject,
-   ctx: MigrationContext
+   ctx: MigrationContext,
 ): Promise<[number, GenericConfigObject]> {
    //console.log("migrating from", current, "to", CURRENT_VERSION, config);
    const todo = migrations.filter((m) => m.version > current && m.version <= to);
@@ -115,7 +127,7 @@ export async function migrateTo(
 export async function migrate(
    current: number,
    config: GenericConfigObject,
-   ctx: MigrationContext
+   ctx: MigrationContext,
 ): Promise<[number, GenericConfigObject]> {
    return migrateTo(current, CURRENT_VERSION, config, ctx);
 }

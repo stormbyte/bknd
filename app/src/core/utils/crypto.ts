@@ -20,7 +20,7 @@ export const hash = {
    sha256: async (input: string, salt?: string, pepper?: string) =>
       digest("SHA-256", input, salt, pepper),
    sha1: async (input: string, salt?: string, pepper?: string) =>
-      digest("SHA-1", input, salt, pepper)
+      digest("SHA-1", input, salt, pepper),
 };
 
 export async function checksum(s: any) {

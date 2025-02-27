@@ -8,9 +8,9 @@ describe("OAuthStrategy", async () => {
       type: "oidc",
       client: {
          client_id: process.env.OAUTH_CLIENT_ID,
-         client_secret: process.env.OAUTH_CLIENT_SECRET
+         client_secret: process.env.OAUTH_CLIENT_SECRET,
       },
-      name: "google"
+      name: "google",
    });
    const state = "---";
    const redirect_uri = "http://localhost:3000/auth/google/callback";
@@ -21,7 +21,7 @@ describe("OAuthStrategy", async () => {
 
       const request = await strategy.request({
          redirect_uri,
-         state
+         state,
       });
 
       const server = Bun.serve({
@@ -31,13 +31,13 @@ describe("OAuthStrategy", async () => {
                console.log("req", req);
                const user = await strategy.callback(url, {
                   redirect_uri,
-                  state
+                  state,
                });
 
                console.log("---user", user);
             }
             return new Response("Bun!");
-         }
+         },
       });
       console.log("request", request);
 

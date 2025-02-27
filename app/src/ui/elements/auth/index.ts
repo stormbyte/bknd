@@ -6,7 +6,7 @@ import { SocialLink } from "./SocialLink";
 export const Auth = {
    Screen: AuthScreen,
    Form: AuthForm,
-   SocialLink: SocialLink
+   SocialLink: SocialLink,
 };
 
 export { useAuthStrategies };

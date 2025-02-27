@@ -11,7 +11,7 @@ registerCustomTypeboxKinds(TypeRegistry);
 
 const TaskComponents = {
    fetch: FetchTaskForm,
-   render: RenderNode
+   render: RenderNode,
 };
 
 export const TaskNode = (
@@ -24,10 +24,10 @@ export const TaskNode = (
             responding?: boolean;
          }
       >
-   >
+   >,
 ) => {
    const {
-      data: { label, start, last, responding }
+      data: { label, start, last, responding },
    } = props;
    const task = useFlowSelector((s) => s.flow!.tasks![label])!;
    const { actions } = useFlowCanvas();

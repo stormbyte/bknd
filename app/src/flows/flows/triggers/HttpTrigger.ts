@@ -14,10 +14,10 @@ export class HttpTrigger extends Trigger<typeof HttpTrigger.schema> {
          {
             path: Type.String({ pattern: "^/.*$" }),
             method: StringEnum(httpMethods, { default: "GET" }),
-            response_type: StringEnum(["json", "text", "html"], { default: "json" })
-         }
+            response_type: StringEnum(["json", "text", "html"], { default: "json" }),
+         },
          //{ additionalProperties: false }
-      )
+      ),
    ]);
 
    override async register(flow: Flow, hono: Hono<any>) {

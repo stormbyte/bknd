@@ -8,7 +8,7 @@ import {
    entitiesSchema,
    entityFields,
    fieldsSchema,
-   relationsSchema
+   relationsSchema,
 } from "data/data-schema";
 import { useBknd } from "ui/client/bknd";
 import type { TSchemaActions } from "ui/client/schema/actions";
@@ -28,7 +28,7 @@ export function useBkndData() {
             console.log("create entity", { data });
             const validated = parse(entitiesSchema, data, {
                skipMark: true,
-               forceParse: true
+               forceParse: true,
             });
             console.log("validated", validated);
             // @todo: check for existing?
@@ -46,12 +46,12 @@ export function useBkndData() {
                   return await bkndActions.overwrite(
                      "data",
                      `entities.${entityName}.config`,
-                     partial
+                     partial,
                   );
                },
-               fields: entityFieldActions(bkndActions, entityName)
+               fields: entityFieldActions(bkndActions, entityName),
             };
-         }
+         },
       },
       relations: {
          add: async (relation: TAppDataRelation) => {
@@ -59,12 +59,12 @@ export function useBkndData() {
             const name = crypto.randomUUID();
             const validated = parse(Type.Union(relationsSchema), relation, {
                skipMark: true,
-               forceParse: true
+               forceParse: true,
             });
             console.log("validated", validated);
             return await bkndActions.add("data", `relations.${name}`, validated);
-         }
-      }
+         },
+      },
    };
    const $data = {
       entity: (name: string) => entities[name],
@@ -72,8 +72,8 @@ export function useBkndData() {
       system: (name: string) => ({
          any: entities[name]?.type === "system",
          users: name === config.auth.entity_name,
-         media: name === config.media.entity_name
-      })
+         media: name === config.media.entity_name,
+      }),
    };
 
    return {
@@ -82,7 +82,7 @@ export function useBkndData() {
       relations: app.relations,
       config: config.data,
       schema: schema.data,
-      actions
+      actions,
    };
 }
 
@@ -91,7 +91,7 @@ const modals = {
    createEntity: () =>
       bkndModals.open(bkndModals.ids.dataCreate, {
          initialPath: ["entities", "entity"],
-         initialState: { action: "entity" }
+         initialState: { action: "entity" },
       }),
    createRelation: (entity?: string) =>
       bkndModals.open(bkndModals.ids.dataCreate, {
@@ -99,9 +99,9 @@ const modals = {
          initialState: {
             action: "relation",
             relations: {
-               create: [{ source: entity, type: "n:1" } as any]
-            }
-         }
+               create: [{ source: entity, type: "n:1" } as any],
+            },
+         },
       }),
    createMedia: (entity?: string) =>
       bkndModals.open(bkndModals.ids.dataCreate, {
@@ -109,10 +109,10 @@ const modals = {
          initialState: {
             action: "template-media",
             initial: {
-               entity
-            }
-         }
-      })
+               entity,
+            },
+         },
+      }),
 };
 
 function entityFieldActions(bkndActions: TSchemaActions, entityName: string) {
@@ -121,7 +121,7 @@ function entityFieldActions(bkndActions: TSchemaActions, entityName: string) {
          console.log("create field", { name, field });
          const validated = parse(fieldsSchema, field, {
             skipMark: true,
-            forceParse: true
+            forceParse: true,
          });
          console.log("validated", validated);
          return await bkndActions.add("data", `entities.${entityName}.fields.${name}`, validated);
@@ -132,12 +132,12 @@ function entityFieldActions(bkndActions: TSchemaActions, entityName: string) {
          try {
             const validated = parse(entityFields, fields, {
                skipMark: true,
-               forceParse: true
+               forceParse: true,
             });
             const res = await bkndActions.overwrite(
                "data",
                `entities.${entityName}.fields`,
-               validated
+               validated,
             );
             console.log("res", res);
             //bkndActions.set("data", "entities", fields);
@@ -149,6 +149,6 @@ function entityFieldActions(bkndActions: TSchemaActions, entityName: string) {
                alert("An error occured, check console. There will be nice error handling soon.");
             }
          }
-      }
+      },
    };
 }

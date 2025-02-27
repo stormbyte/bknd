@@ -1,10 +1,10 @@
 export const Q = {
    video: ["mp4", "webm"],
    audio: ["ogg"],
-   image: ["jpeg", "png", "gif", "webp", "bmp", "tiff"],
+   image: ["jpeg", "png", "gif", "webp", "bmp", "tiff", "avif", "heic", "heif"],
    text: ["html", "css", "mdx", "yaml", "vcard", "csv", "vtt"],
    application: ["zip", "xml", "toml", "json", "json5"],
-   font: ["woff", "woff2", "ttf", "otf"]
+   font: ["woff", "woff2", "ttf", "otf"],
 } as const;
 
 // reduced
@@ -14,7 +14,7 @@ const c = {
    t: (w = "plain") => `text/${w}`,
    a: (w = "octet-stream") => `application/${w}`,
    i: (w) => `image/${w}`,
-   v: (w) => `video/${w}`
+   v: (w) => `video/${w}`,
 } as const;
 export const M = new Map<string, string>([
    ["7z", c.z],
@@ -52,7 +52,7 @@ export const M = new Map<string, string>([
    ["webmanifest", c.a("manifest+json")],
    ["xls", c.a("vnd.ms-excel")],
    ["xlsx", `${c.vnd}.spreadsheetml.sheet`],
-   ["yml", c.t("yaml")]
+   ["yml", c.t("yaml")],
 ]);
 
 export function guess(f: string): string {
@@ -76,7 +76,19 @@ export function guess(f: string): string {
    }
 }
 
-export function isMimeType(mime: any, exclude: string[] = []) {
+export function isMimeType(_mime: any, exclude: string[] = []) {
+   const mime = _mime.toLowerCase();
+   if (exclude.includes(mime)) return false;
+
+   // try quick first
+   if (
+      Object.entries(Q)
+         .flatMap(([t, e]) => e.map((x) => `${t}/${x}`))
+         .includes(mime)
+   ) {
+      return true;
+   }
+
    for (const [k, v] of M.entries()) {
       if (v === mime && !exclude.includes(k)) {
          return true;
@@ -85,7 +97,17 @@ export function isMimeType(mime: any, exclude: string[] = []) {
    return false;
 }
 
-export function extension(mime: string) {
+export function extension(_mime: string) {
+   const mime = _mime.toLowerCase();
+
+   for (const [t, e] of Object.entries(Q)) {
+      for (const _e of e) {
+         if (mime === `${t}/${_e}`) {
+            return _e;
+         }
+      }
+   }
+
    for (const [k, v] of M.entries()) {
       if (v === mime) {
          return k;

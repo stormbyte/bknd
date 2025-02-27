@@ -26,7 +26,7 @@ class ReturnEvent extends Event<{ foo: string }, string> {
       }
 
       return this.clone({
-         foo: [this.params.foo, value].join("-")
+         foo: [this.params.foo, value].join("-"),
       });
    }
 }
@@ -52,7 +52,7 @@ describe("EventManager", async () => {
             await new Promise((resolve) => setTimeout(resolve, 50));
             delayed();
          },
-         "sync"
+         "sync",
       );
 
       // don't allow unknown
@@ -83,8 +83,8 @@ describe("EventManager", async () => {
       const emgr = new EventManager(
          { InformationalEvent },
          {
-            asyncExecutor
-         }
+            asyncExecutor,
+         },
       );
 
       emgr.onEvent(InformationalEvent, async () => {});
@@ -98,8 +98,8 @@ describe("EventManager", async () => {
       const emgr = new EventManager(
          { ReturnEvent, InformationalEvent },
          {
-            onInvalidReturn
-         }
+            onInvalidReturn,
+         },
       );
 
       // @ts-expect-error InformationalEvent has no return value
@@ -111,6 +111,7 @@ describe("EventManager", async () => {
       emgr.onEvent(ReturnEvent, async () => "1", "sync");
       emgr.onEvent(ReturnEvent, async () => "0", "sync");
 
+      // @todo: fix this
       // @ts-expect-error must be string
       emgr.onEvent(ReturnEvent, async () => 0, "sync");
 
@@ -139,7 +140,7 @@ describe("EventManager", async () => {
             expect(slug).toBe("informational-event");
             call();
          },
-         { mode: "sync", once: true }
+         { mode: "sync", once: true },
       );
 
       expect(emgr.getListeners().length).toBe(1);

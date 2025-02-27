@@ -7,7 +7,7 @@ import {
    type ComponentPropsWithoutRef,
    useEffect,
    useRef,
-   useState
+   useState,
 } from "react";
 import type { IconType } from "react-icons";
 import { twMerge } from "tailwind-merge";
@@ -50,7 +50,7 @@ export const NavLink = <E extends React.ElementType = "a">({
          className={twMerge(
             "px-6 py-2 [&.active]:bg-muted [&.active]:hover:bg-primary/15 hover:bg-primary/5 flex flex-row items-center rounded-full gap-2.5 link",
             disabled && "opacity-50 cursor-not-allowed",
-            className
+            className,
          )}
       >
          {Icon && <Icon size={18} />}
@@ -65,7 +65,7 @@ export function Content({ children, center }: { children: React.ReactNode; cente
          data-shell="content"
          className={twMerge(
             "flex flex-1 flex-row w-dvw h-full",
-            center && "justify-center items-center"
+            center && "justify-center items-center",
          )}
       >
          {children}
@@ -80,7 +80,7 @@ export function Main({ children }) {
          data-shell="main"
          className={twMerge(
             "flex flex-col flex-grow w-1 flex-shrink-1",
-            sidebar.open && "max-w-[calc(100%-350px)]"
+            sidebar.open && "max-w-[calc(100%-350px)]",
          )}
       >
          {children}
@@ -155,13 +155,13 @@ export function SectionHeader({ children, right, className, scrollable, sticky }
          className={twMerge(
             "flex flex-row h-14 flex-shrink-0 py-2 pl-5 pr-3 border-muted border-b items-center justify-between bg-muted/10",
             sticky && "sticky top-0 bottom-10 z-10",
-            className
+            className,
          )}
       >
          <div
             className={twMerge(
                "",
-               scrollable && "overflow-x-scroll overflow-y-visible app-scrollbar"
+               scrollable && "overflow-x-scroll overflow-y-visible app-scrollbar",
             )}
          >
             {typeof children === "string" ? (
@@ -202,11 +202,11 @@ export const SidebarLink = <E extends React.ElementType = "a">({
       <Tag
          {...otherProps}
          className={twMerge(
-            "flex flex-row px-4 py-2.5 items-center gap-2",
+            "flex flex-row px-4 items-center gap-2 h-12",
             !disabled &&
                "cursor-pointer rounded-md [&.active]:bg-primary/10 [&.active]:hover:bg-primary/15 [&.active]:font-medium hover:bg-primary/5 focus:bg-primary/5 link",
             disabled && "opacity-50 cursor-not-allowed pointer-events-none",
-            className
+            className,
          )}
       >
          {children}
@@ -243,7 +243,7 @@ export const SectionHeaderLink = <E extends React.ElementType = "a">({
                ? "bg-background hover:bg-background text-primary border border-muted border-b-0"
                : "link",
             badge && "pr-4",
-            className
+            className,
          )}
       >
          {children}
@@ -283,7 +283,7 @@ export const SectionHeaderTabs = ({ title, items }: SectionHeaderTabsProps) => {
 
 export function Scrollable({
    children,
-   initialOffset = 64
+   initialOffset = 64,
 }: {
    children: React.ReactNode;
    initialOffset?: number;
@@ -330,7 +330,7 @@ export const SectionHeaderAccordionItem = ({
    toggle,
    ActiveIcon = IconChevronUp,
    children,
-   renderHeaderRight
+   renderHeaderRight,
 }: {
    title: string;
    open: boolean;
@@ -345,12 +345,12 @@ export const SectionHeaderAccordionItem = ({
          "flex flex-col flex-animate overflow-hidden",
          open
             ? "flex-open border-b border-b-muted"
-            : "flex-initial cursor-pointer hover:bg-primary/5"
+            : "flex-initial cursor-pointer hover:bg-primary/5",
       )}
    >
       <div
          className={twMerge(
-            "flex flex-row bg-muted/10 border-muted border-b h-14 py-4 pr-4 pl-2 items-center gap-2"
+            "flex flex-row bg-muted/10 border-muted border-b h-14 py-4 pr-4 pl-2 items-center gap-2",
          )}
          onClick={toggle}
       >
@@ -362,7 +362,7 @@ export const SectionHeaderAccordionItem = ({
       <div
          className={twMerge(
             "overflow-y-scroll transition-all",
-            open ? " flex-grow" : "h-0 opacity-0"
+            open ? " flex-grow" : "h-0 opacity-0",
          )}
       >
          {children}

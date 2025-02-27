@@ -6,14 +6,14 @@ import { Route } from "wouter";
 const uiSchema = {
    cors: {
       allow_methods: {
-         "ui:widget": "checkboxes"
+         "ui:widget": "checkboxes",
       },
       allow_headers: {
          "ui:options": {
-            orderable: false
-         }
-      }
-   }
+            orderable: false,
+         },
+      },
+   },
 };
 
 export const ServerSettings = ({ schema: _unsafe_copy, config }) => {
@@ -39,7 +39,7 @@ export const ServerSettings = ({ schema: _unsafe_copy, config }) => {
                            return "The admin settings are read-only as they are overriden. Remaining server configuration can be edited.";
                         }
                         return;
-                     }
+                     },
                   }}
                   schema={schema}
                   uiSchema={uiSchema}

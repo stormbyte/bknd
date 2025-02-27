@@ -102,7 +102,7 @@ export function getMultiSchema(schema: JsonSchema): JsonSchema[] | undefined {
 
 export function getMultiSchemaMatched(
    schema: JsonSchema,
-   data: any
+   data: any,
 ): [number, JsonSchema[], JsonSchema | undefined] {
    const multiSchema = getMultiSchema(schema);
    //console.log("getMultiSchemaMatched", schema, data, multiSchema);
@@ -124,7 +124,7 @@ export function omitSchema<Given extends JSONSchema>(_schema: Given, keys: strin
 
    const updated = {
       ...schema,
-      properties: omitKeys(schema.properties, keys)
+      properties: omitKeys(schema.properties, keys),
    };
    if (updated.required) {
       updated.required = updated.required.filter((key) => !keys.includes(key as any));

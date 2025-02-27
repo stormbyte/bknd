@@ -47,7 +47,7 @@ describe("Module", async () => {
          prt = {
             ensureEntity: this.ensureEntity.bind(this),
             ensureIndex: this.ensureIndex.bind(this),
-            ensureSchema: this.ensureSchema.bind(this)
+            ensureSchema: this.ensureSchema.bind(this),
          };
 
          get em() {
@@ -60,7 +60,7 @@ describe("Module", async () => {
             Object.values(_em.entities),
             new DummyConnection(),
             _em.relations,
-            _em.indices
+            _em.indices,
          );
          return new M({} as any, { em, flags: Module.ctx_flags } as any);
       }
@@ -69,14 +69,14 @@ describe("Module", async () => {
             entities: _em.entities.map((e) => ({
                name: e.name,
                fields: e.fields.map((f) => f.name),
-               type: e.type
+               type: e.type,
             })),
             indices: _em.indices.map((i) => ({
                name: i.name,
                entity: i.entity.name,
                fields: i.fields.map((f) => f.name),
-               unique: i.unique
-            }))
+               unique: i.unique,
+            })),
          };
       }
 
@@ -88,15 +88,15 @@ describe("Module", async () => {
 
          expect(flat(make(initial).em)).toEqual({
             entities: [],
-            indices: []
+            indices: [],
          });
       });
 
       test("init", () => {
          const initial = em({
             users: entity("u", {
-               name: text()
-            })
+               name: text(),
+            }),
          });
 
          const m = make(initial);
@@ -107,18 +107,18 @@ describe("Module", async () => {
                {
                   name: "u",
                   fields: ["id", "name"],
-                  type: "regular"
-               }
+                  type: "regular",
+               },
             ],
-            indices: []
+            indices: [],
          });
       });
 
       test("ensure entity", () => {
          const initial = em({
             users: entity("u", {
-               name: text()
-            })
+               name: text(),
+            }),
          });
 
          const m = make(initial);
@@ -127,17 +127,17 @@ describe("Module", async () => {
                {
                   name: "u",
                   fields: ["id", "name"],
-                  type: "regular"
-               }
+                  type: "regular",
+               },
             ],
-            indices: []
+            indices: [],
          });
 
          // this should add a new entity
          m.prt.ensureEntity(
             entity("p", {
-               title: text()
-            })
+               title: text(),
+            }),
          );
 
          // this should only add the field "important"
@@ -145,11 +145,11 @@ describe("Module", async () => {
             entity(
                "u",
                {
-                  important: text()
+                  important: text(),
                },
                undefined,
-               "system"
-            )
+               "system",
+            ),
          );
 
          expect(m.ctx.flags.sync_required).toBe(true);
@@ -159,22 +159,22 @@ describe("Module", async () => {
                   name: "u",
                   fields: ["id", "name", "important"],
                   // ensured type must be present
-                  type: "system"
+                  type: "system",
                },
                {
                   name: "p",
                   fields: ["id", "title"],
-                  type: "regular"
-               }
+                  type: "regular",
+               },
             ],
-            indices: []
+            indices: [],
          });
       });
 
       test("ensure index", () => {
          const users = entity("u", {
             name: text(),
-            title: text()
+            title: text(),
          });
          const initial = em({ users }, ({ index }, { users }) => {
             index(users).on(["title"]);
@@ -189,23 +189,23 @@ describe("Module", async () => {
                {
                   name: "u",
                   fields: ["id", "name", "title"],
-                  type: "regular"
-               }
+                  type: "regular",
+               },
             ],
             indices: [
                {
                   name: "idx_u_title",
                   entity: "u",
                   fields: ["title"],
-                  unique: false
+                  unique: false,
                },
                {
                   name: "idx_u_name",
                   entity: "u",
                   fields: ["name"],
-                  unique: false
-               }
-            ]
+                  unique: false,
+               },
+            ],
          });
       });
    });

@@ -8,8 +8,8 @@ describe("SchemaObject", async () => {
          Type.Object({ a: Type.String({ default: "b" }) }),
          { a: "test" },
          {
-            forceParse: true
-         }
+            forceParse: true,
+         },
       );
 
       expect(m.get()).toEqual({ a: "test" });
@@ -30,14 +30,14 @@ describe("SchemaObject", async () => {
                   b: Type.Object(
                      {
                         c: Type.String({ default: "d" }),
-                        e: Type.String({ default: "f" })
+                        e: Type.String({ default: "f" }),
                      },
-                     { default: {} }
-                  )
+                     { default: {} },
+                  ),
                },
-               { default: {}, additionalProperties: false }
-            )
-         })
+               { default: {}, additionalProperties: false },
+            ),
+         }),
       );
       expect(m.get()).toEqual({ s: { a: "b", b: { c: "d", e: "f" } } });
 
@@ -59,8 +59,8 @@ describe("SchemaObject", async () => {
    test("patch array", async () => {
       const m = new SchemaObject(
          Type.Object({
-            methods: Type.Array(Type.String(), { default: ["GET", "PATCH"] })
-         })
+            methods: Type.Array(Type.String(), { default: ["GET", "PATCH"] }),
+         }),
       );
       expect(m.get()).toEqual({ methods: ["GET", "PATCH"] });
 
@@ -81,14 +81,14 @@ describe("SchemaObject", async () => {
                   a: Type.String({ default: "b" }),
                   b: Type.Object(
                      {
-                        c: Type.String({ default: "d" })
+                        c: Type.String({ default: "d" }),
                      },
-                     { default: {} }
-                  )
+                     { default: {} },
+                  ),
                },
-               { default: {} }
-            )
-         })
+               { default: {} },
+            ),
+         }),
       );
       expect(m.get()).toEqual({ s: { a: "b", b: { c: "d" } } });
 
@@ -108,8 +108,8 @@ describe("SchemaObject", async () => {
    test("set", async () => {
       const m = new SchemaObject(
          Type.Object({
-            methods: Type.Array(Type.String(), { default: ["GET", "PATCH"] })
-         })
+            methods: Type.Array(Type.String(), { default: ["GET", "PATCH"] }),
+         }),
       );
       expect(m.get()).toEqual({ methods: ["GET", "PATCH"] });
 
@@ -125,7 +125,7 @@ describe("SchemaObject", async () => {
       let result: any;
       const m = new SchemaObject(
          Type.Object({
-            methods: Type.Array(Type.String(), { default: ["GET", "PATCH"] })
+            methods: Type.Array(Type.String(), { default: ["GET", "PATCH"] }),
          }),
          undefined,
          {
@@ -133,8 +133,8 @@ describe("SchemaObject", async () => {
                await new Promise((r) => setTimeout(r, 10));
                called = true;
                result = config;
-            }
-         }
+            },
+         },
       );
 
       await m.set({ methods: ["GET", "POST"] });
@@ -146,7 +146,7 @@ describe("SchemaObject", async () => {
       let called = false;
       const m = new SchemaObject(
          Type.Object({
-            methods: Type.Array(Type.String(), { default: ["GET", "PATCH"] })
+            methods: Type.Array(Type.String(), { default: ["GET", "PATCH"] }),
          }),
          undefined,
          {
@@ -155,8 +155,8 @@ describe("SchemaObject", async () => {
                called = true;
                to.methods.push("OPTIONS");
                return to;
-            }
-         }
+            },
+         },
       );
 
       const result = await m.set({ methods: ["GET", "POST"] });
@@ -168,7 +168,7 @@ describe("SchemaObject", async () => {
 
    test("throwIfRestricted", async () => {
       const m = new SchemaObject(Type.Object({}), undefined, {
-         restrictPaths: ["a.b"]
+         restrictPaths: ["a.b"],
       });
 
       expect(() => m.throwIfRestricted("a.b")).toThrow();
@@ -185,18 +185,18 @@ describe("SchemaObject", async () => {
                   a: Type.String({ default: "b" }),
                   b: Type.Object(
                      {
-                        c: Type.String({ default: "d" })
+                        c: Type.String({ default: "d" }),
                      },
-                     { default: {} }
-                  )
+                     { default: {} },
+                  ),
                },
-               { default: {} }
-            )
+               { default: {} },
+            ),
          }),
          undefined,
          {
-            restrictPaths: ["s.b"]
-         }
+            restrictPaths: ["s.b"],
+         },
       );
 
       expect(m.patch("s.b.c", "e")).rejects.toThrow();
@@ -217,33 +217,33 @@ describe("SchemaObject", async () => {
                         additionalProperties: Type.Object({
                            type: Type.String(),
                            config: Type.Optional(
-                              Type.Object({}, { additionalProperties: Type.String() })
-                           )
-                        })
-                     }
+                              Type.Object({}, { additionalProperties: Type.String() }),
+                           ),
+                        }),
+                     },
                   ),
-                  config: Type.Optional(Type.Object({}, { additionalProperties: Type.String() }))
-               })
-            }
-         )
+                  config: Type.Optional(Type.Object({}, { additionalProperties: Type.String() })),
+               }),
+            },
+         ),
       },
       {
-         additionalProperties: false
-      }
+         additionalProperties: false,
+      },
    );
    test("patch safe object, overwrite", async () => {
       const data = {
          entities: {
             some: {
                fields: {
-                  a: { type: "string", config: { some: "thing" } }
-               }
-            }
-         }
+                  a: { type: "string", config: { some: "thing" } },
+               },
+            },
+         },
       };
       const m = new SchemaObject(dataEntitiesSchema, data, {
          forceParse: true,
-         overwritePaths: [/^entities\..*\.fields\..*\.config/]
+         overwritePaths: [/^entities\..*\.fields\..*\.config/],
       });
 
       await m.patch("entities.some.fields.a", { type: "string", config: { another: "one" } });
@@ -252,10 +252,10 @@ describe("SchemaObject", async () => {
          entities: {
             some: {
                fields: {
-                  a: { type: "string", config: { another: "one" } }
-               }
-            }
-         }
+                  a: { type: "string", config: { another: "one" } },
+               },
+            },
+         },
       });
    });
 
@@ -265,22 +265,22 @@ describe("SchemaObject", async () => {
             users: {
                fields: {
                   email: { type: "string" },
-                  password: { type: "string" }
-               }
-            }
-         }
+                  password: { type: "string" },
+               },
+            },
+         },
       };
       const m = new SchemaObject(dataEntitiesSchema, data, {
          forceParse: true,
-         overwritePaths: [/^entities\..*\.fields\..*\.config\.html_config$/]
+         overwritePaths: [/^entities\..*\.fields\..*\.config\.html_config$/],
       });
 
       await m.patch("entities.test", {
          fields: {
             content: {
-               type: "text"
-            }
-         }
+               type: "text",
+            },
+         },
       });
 
       expect(m.get()).toEqual({
@@ -288,17 +288,17 @@ describe("SchemaObject", async () => {
             users: {
                fields: {
                   email: { type: "string" },
-                  password: { type: "string" }
-               }
+                  password: { type: "string" },
+               },
             },
             test: {
                fields: {
                   content: {
-                     type: "text"
-                  }
-               }
-            }
-         }
+                     type: "text",
+                  },
+               },
+            },
+         },
       });
    });
 
@@ -308,14 +308,14 @@ describe("SchemaObject", async () => {
             users: {
                fields: {
                   email: { type: "string" },
-                  password: { type: "string" }
-               }
-            }
-         }
+                  password: { type: "string" },
+               },
+            },
+         },
       };
       const m = new SchemaObject(dataEntitiesSchema, data, {
          forceParse: true,
-         overwritePaths: [/^entities\..*\.fields\..*\.config\.html_config$/]
+         overwritePaths: [/^entities\..*\.fields\..*\.config\.html_config$/],
       });
 
       expect(m.patch("desc", "entities.users.config.sort_dir")).rejects.toThrow();
@@ -323,13 +323,13 @@ describe("SchemaObject", async () => {
       await m.patch("entities.test", {
          fields: {
             content: {
-               type: "text"
-            }
-         }
+               type: "text",
+            },
+         },
       });
 
       await m.patch("entities.users.config", {
-         sort_dir: "desc"
+         sort_dir: "desc",
       });
 
       expect(m.get()).toEqual({
@@ -337,20 +337,20 @@ describe("SchemaObject", async () => {
             users: {
                fields: {
                   email: { type: "string" },
-                  password: { type: "string" }
+                  password: { type: "string" },
                },
                config: {
-                  sort_dir: "desc"
-               }
+                  sort_dir: "desc",
+               },
             },
             test: {
                fields: {
                   content: {
-                     type: "text"
-                  }
-               }
-            }
-         }
+                     type: "text",
+                  },
+               },
+            },
+         },
       });
    });
 });

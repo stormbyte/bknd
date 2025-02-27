@@ -8,7 +8,7 @@ describe("integration config", () => {
       await app.build();
       const api = new Api({
          host: "http://localhost",
-         fetcher: app.server.request as typeof fetch
+         fetcher: app.server.request as typeof fetch,
       });
 
       // create entity
@@ -16,7 +16,7 @@ describe("integration config", () => {
          name: "posts",
          config: { sort_field: "id", sort_dir: "asc" },
          fields: { id: { type: "primary", name: "id" }, asdf: { type: "text" } },
-         type: "regular"
+         type: "regular",
       });
 
       expect(app.em.entities.map((e) => e.name)).toContain("posts");

@@ -14,13 +14,13 @@ export async function serveStatic(server: Platform): Promise<MiddlewareHandler> 
          const m = await import("@hono/node-server/serve-static");
          return m.serveStatic({
             // somehow different for node
-            root: getRelativeDistPath() + "/static"
+            root: getRelativeDistPath() + "/static",
          });
       }
       case "bun": {
          const m = await import("hono/bun");
          return m.serveStatic({
-            root: path.resolve(getRelativeDistPath(), "static")
+            root: path.resolve(getRelativeDistPath(), "static"),
          });
       }
    }
@@ -40,14 +40,14 @@ export async function startServer(server: Platform, app: any, options: { port: n
          const serve = await import("@hono/node-server").then((m) => m.serve);
          serve({
             fetch: (req) => app.fetch(req),
-            port
+            port,
          });
          break;
       }
       case "bun": {
          Bun.serve({
             fetch: (req) => app.fetch(req),
-            port
+            port,
          });
          break;
       }

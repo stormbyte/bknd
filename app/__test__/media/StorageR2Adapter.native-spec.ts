@@ -14,7 +14,7 @@ test("what", async () => {
    const mf = new Miniflare({
       modules: true,
       script: "export default { async fetch() { return new Response(null); } }",
-      r2Buckets: ["BUCKET"]
+      r2Buckets: ["BUCKET"],
    });
 
    const bucket = await mf.getR2Bucket("BUCKET");

@@ -4,7 +4,7 @@ import {
    type FormEvent,
    useEffect,
    useRef,
-   useState
+   useState,
 } from "react";
 import { useEvent } from "ui/hooks/use-event";
 import {
@@ -14,7 +14,7 @@ import {
    coerce,
    getFormTarget,
    getTargetsByName,
-   setPath
+   setPath,
 } from "./utils";
 
 export type NativeFormProps = {
@@ -25,12 +25,12 @@ export type NativeFormProps = {
    onSubmit?: (data: any, ctx: { event: FormEvent<HTMLFormElement> }) => Promise<void> | void;
    onSubmitInvalid?: (
       errors: InputError[],
-      ctx: { event: FormEvent<HTMLFormElement> }
+      ctx: { event: FormEvent<HTMLFormElement> },
    ) => Promise<void> | void;
    onError?: (errors: InputError[]) => void;
    onChange?: (
       data: any,
-      ctx: { event: ChangeEvent<HTMLFormElement>; key: string; value: any; errors: InputError[] }
+      ctx: { event: ChangeEvent<HTMLFormElement>; key: string; value: any; errors: InputError[] },
    ) => Promise<void> | void;
    clean?: CleanOptions | true;
 } & Omit<ComponentPropsWithoutRef<"form">, "onChange" | "onSubmit">;
@@ -77,13 +77,13 @@ export function NativeForm({
    const validateElement = useEvent((el: InputElement | null, opts?: { report?: boolean }) => {
       if (props.noValidate || !el || !("name" in el)) return;
       const errorElement = formRef.current?.querySelector(
-         errorFieldSelector?.(el.name) ?? `[data-role="input-error"][data-name="${el.name}"]`
+         errorFieldSelector?.(el.name) ?? `[data-role="input-error"][data-name="${el.name}"]`,
       );
 
       if (!el.checkValidity()) {
          const error = {
             name: el.name,
-            message: el.validationMessage
+            message: el.validationMessage,
          };
 
          setErrors((prev) => [...prev.filter((e) => e.name !== el.name), error]);
@@ -165,7 +165,7 @@ export function NativeForm({
             event: e,
             key: target.name,
             value: target.value,
-            errors
+            errors,
          });
       }
    });

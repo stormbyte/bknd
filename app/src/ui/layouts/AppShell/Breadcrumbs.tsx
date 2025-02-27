@@ -42,10 +42,10 @@ export const Breadcrumbs = ({ path: _path, backTo, onBack }: BreadcrumbsProps) =
             return {
                last,
                href,
-               string
+               string,
             };
          }),
-      [path, loc]
+      [path, loc],
    );
 
    return (
@@ -82,9 +82,9 @@ const CrumbsMobile = ({ crumbs }) => {
       () =>
          crumbs.slice(1, -1).map((c) => ({
             label: c.string,
-            href: c.href
+            href: c.href,
          })),
-      [crumbs]
+      [crumbs],
    );
    const onClick = useEvent((item) => navigate(`~/${item.href}`));
 

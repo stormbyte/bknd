@@ -20,6 +20,6 @@ export function nodeRequestToRequest(req: IncomingMessage): Request {
    const method = req.method || "GET";
    return new Request(url, {
       method,
-      headers
+      headers,
    });
 }

@@ -15,7 +15,7 @@ export function AuthScreen({
    action = "login",
    logo,
    intro,
-   formOnly
+   formOnly,
 }: AuthScreenProps) {
    const { strategies, basepath, loading } = useAuthStrategies();
    const Form = <AuthForm auth={{ basepath, strategies }} method={method} action={action} />;

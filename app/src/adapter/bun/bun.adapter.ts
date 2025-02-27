@@ -19,7 +19,7 @@ export async function createApp({ distPath, ...config }: RuntimeBkndConfig = {})
       registerLocalMediaAdapter();
       app = await createRuntimeApp({
          ...config,
-         serveStatic: serveStatic({ root })
+         serveStatic: serveStatic({ root }),
       });
    }
 
@@ -46,10 +46,10 @@ export function serve({
             options,
             onBuilt,
             buildConfig,
-            distPath
+            distPath,
          });
          return app.fetch(request);
-      }
+      },
    });
 
    console.log(`Server is running on http://localhost:${port}`);

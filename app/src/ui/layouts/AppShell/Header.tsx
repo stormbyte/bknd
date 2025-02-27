@@ -8,7 +8,7 @@ import {
    TbPhoto,
    TbSelector,
    TbUser,
-   TbX
+   TbX,
 } from "react-icons/tb";
 import { useAuth, useBkndWindowContext } from "ui/client";
 import { useBknd } from "ui/client/bknd";
@@ -47,10 +47,10 @@ export function HeaderNavigation() {
       { label: "Data", href: "/data", Icon: TbDatabase },
       { label: "Auth", href: "/auth", Icon: TbFingerprint },
       { label: "Media", href: "/media", Icon: TbPhoto },
-      { label: "Flows", href: "/flows", Icon: TbHierarchy2 }
+      { label: "Flows", href: "/flows", Icon: TbHierarchy2 },
    ];
    const activeItem = items.find((item) =>
-      item.exact ? location === item.href : location.startsWith(item.href)
+      item.exact ? location === item.href : location.startsWith(item.href),
    );
 
    const handleItemClick = useEvent((item) => {
@@ -158,7 +158,7 @@ function UserMenu() {
    }
 
    const items: DropdownItem[] = [
-      { label: "Settings", onClick: () => navigate("/settings"), icon: IconSettings }
+      { label: "Settings", onClick: () => navigate("/settings"), icon: IconSettings },
    ];
 
    if (config.auth.enabled) {
@@ -168,7 +168,7 @@ function UserMenu() {
          items.push({
             label: `Logout ${auth.user.email}`,
             onClick: handleLogout,
-            icon: IconKeyOff
+            icon: IconKeyOff,
          });
       }
    }
@@ -200,7 +200,7 @@ function UserMenuThemeToggler() {
             className="w-full"
             data={[
                { value: "light", label: "Light" },
-               { value: "dark", label: "Dark" }
+               { value: "dark", label: "Dark" },
             ]}
             value={theme}
             onChange={toggle}

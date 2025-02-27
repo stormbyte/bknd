@@ -24,9 +24,9 @@ describe("repros", async () => {
             adapter: {
                type: "local",
                config: {
-                  path: "./"
-               }
-            }
+                  path: "./",
+               },
+            },
          });
 
          expect(config.enabled).toBe(true);
@@ -38,9 +38,9 @@ describe("repros", async () => {
             "entities.test",
             proto
                .entity("test", {
-                  content: proto.text()
+                  content: proto.text(),
                })
-               .toJSON()
+               .toJSON(),
          );
          expect(app.em.entities.map((e) => e.name)).toContain("test");
       }
@@ -54,8 +54,8 @@ describe("repros", async () => {
                hidden: false,
                mime_types: [],
                virtual: true,
-               entity: "test"
-            }
+               entity: "test",
+            },
          });
 
          expect(
@@ -63,8 +63,8 @@ describe("repros", async () => {
                type: "poly",
                source: "test",
                target: "media",
-               config: { mappedBy: "files" }
-            })
+               config: { mappedBy: "files" },
+            }),
          ).resolves.toBeDefined();
       }
 
@@ -75,17 +75,17 @@ describe("repros", async () => {
       const schema = proto.em(
          {
             products: proto.entity("products", {
-               title: proto.text()
+               title: proto.text(),
             }),
             product_likes: proto.entity("product_likes", {
-               created_at: proto.date()
+               created_at: proto.date(),
             }),
-            users: proto.entity("users", {})
+            users: proto.entity("users", {}),
          },
          (fns, schema) => {
             fns.relation(schema.product_likes).manyToOne(schema.products, { inversedBy: "likes" });
             fns.relation(schema.product_likes).manyToOne(schema.users);
-         }
+         },
       );
       const app = createApp({ initialConfig: { data: schema.toJSON() } });
       await app.build();
@@ -96,8 +96,8 @@ describe("repros", async () => {
       expect(info.relations.listable).toEqual([
          {
             entity: "product_likes",
-            ref: "likes"
-         }
+            ref: "likes",
+         },
       ]);
    });
 });

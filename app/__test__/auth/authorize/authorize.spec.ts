@@ -7,13 +7,13 @@ describe("authorize", () => {
          ["read", "write"],
          {
             admin: {
-               permissions: ["read", "write"]
-            }
+               permissions: ["read", "write"],
+            },
          },
-         { enabled: true }
+         { enabled: true },
       );
       const user = {
-         role: "admin"
+         role: "admin",
       };
 
       expect(guard.granted("read", user)).toBe(true);
@@ -27,21 +27,21 @@ describe("authorize", () => {
          ["read", "write"],
          {
             admin: {
-               permissions: ["read", "write"]
+               permissions: ["read", "write"],
             },
             guest: {
                permissions: ["read"],
-               is_default: true
-            }
+               is_default: true,
+            },
          },
-         { enabled: true }
+         { enabled: true },
       );
 
       expect(guard.granted("read")).toBe(true);
       expect(guard.granted("write")).toBe(false);
 
       const user = {
-         role: "admin"
+         role: "admin",
       };
 
       expect(guard.granted("read", user)).toBe(true);
@@ -58,12 +58,12 @@ describe("authorize", () => {
    test("role implicit allow", async () => {
       const guard = Guard.create(["read", "write"], {
          admin: {
-            implicit_allow: true
-         }
+            implicit_allow: true,
+         },
       });
 
       const user = {
-         role: "admin"
+         role: "admin",
       };
 
       expect(guard.granted("read", user)).toBe(true);
@@ -74,8 +74,8 @@ describe("authorize", () => {
       const guard = Guard.create(["read", "write"], {
          guest: {
             implicit_allow: true,
-            is_default: true
-         }
+            is_default: true,
+         },
       });
 
       expect(guard.getUserRole()?.name).toBe("guest");

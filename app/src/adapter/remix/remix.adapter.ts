@@ -31,7 +31,7 @@ export async function getApp<Args extends RemixContext = RemixContext>(
 }
 
 export function serve<Args extends RemixContext = RemixContext>(
-   config: RemixBkndConfig<Args> = {}
+   config: RemixBkndConfig<Args> = {},
 ) {
    return async (args: Args) => {
       app = await getApp(config, args);

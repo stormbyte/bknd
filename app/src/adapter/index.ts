@@ -34,7 +34,7 @@ export function makeConfig<Args = any>(config: BkndConfig<Args>, args?: Args): C
 
 export async function createFrameworkApp<Args = any>(
    config: FrameworkBkndConfig,
-   args?: Args
+   args?: Args,
 ): Promise<App> {
    const app = App.create(makeConfig(config, args));
 
@@ -44,7 +44,7 @@ export async function createFrameworkApp<Args = any>(
          async () => {
             await config.onBuilt?.(app);
          },
-         "sync"
+         "sync",
       );
    }
 
@@ -63,7 +63,7 @@ export async function createRuntimeApp<Env = any>(
       serveStatic?: MiddlewareHandler | [string, MiddlewareHandler];
       adminOptions?: AdminControllerOptions | false;
    },
-   env?: Env
+   env?: Env,
 ): Promise<App> {
    const app = App.create(makeConfig(config, env));
 
@@ -82,7 +82,7 @@ export async function createRuntimeApp<Env = any>(
             app.registerAdminController(adminOptions);
          }
       },
-      "sync"
+      "sync",
    );
 
    await config.beforeBuild?.(app);

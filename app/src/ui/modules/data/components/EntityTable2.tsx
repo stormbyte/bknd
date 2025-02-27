@@ -37,7 +37,7 @@ export function EntityTable2({ entity, select, ...props }: EntityTableProps) {
          console.warn(
             "Couldn't render value",
             { value, property, entity, select, columns, ...props },
-            e
+            e,
          );
       }
 

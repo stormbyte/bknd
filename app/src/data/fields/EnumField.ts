@@ -12,9 +12,9 @@ export const enumFieldConfigSchema = Type.Composite(
                Type.Object(
                   {
                      type: Const("strings"),
-                     values: Type.Array(Type.String())
+                     values: Type.Array(Type.String()),
                   },
-                  { title: "Strings" }
+                  { title: "Strings" },
                ),
                Type.Object(
                   {
@@ -22,23 +22,23 @@ export const enumFieldConfigSchema = Type.Composite(
                      values: Type.Array(
                         Type.Object({
                            label: Type.String(),
-                           value: Type.String()
-                        })
-                     )
+                           value: Type.String(),
+                        }),
+                     ),
                   },
                   {
                      title: "Objects",
-                     additionalProperties: false
-                  }
-               )
-            ])
-         )
+                     additionalProperties: false,
+                  },
+               ),
+            ]),
+         ),
       }),
-      baseFieldConfigSchema
+      baseFieldConfigSchema,
    ],
    {
-      additionalProperties: false
-   }
+      additionalProperties: false,
+   },
 );
 
 export type EnumFieldConfig = Static<typeof enumFieldConfigSchema>;
@@ -123,7 +123,7 @@ export class EnumField<Required extends true | false = false, TypeOverride = str
    override async transformPersist(
       _value: any,
       em: EntityManager<any>,
-      context: TActionContext
+      context: TActionContext,
    ): Promise<string | undefined> {
       const value = await super.transformPersist(_value, em, context);
       if (this.nullish(value)) return value;
@@ -132,7 +132,7 @@ export class EnumField<Required extends true | false = false, TypeOverride = str
          throw new TransformPersistFailedException(
             `Field "${this.name}" must be one of the following values: ${this.getOptions()
                .map((o) => o.value)
-               .join(", ")}`
+               .join(", ")}`,
          );
       }
 
@@ -146,8 +146,8 @@ export class EnumField<Required extends true | false = false, TypeOverride = str
          [];
       return this.toSchemaWrapIfRequired(
          StringEnum(values, {
-            default: this.getDefault()
-         })
+            default: this.getDefault(),
+         }),
       );
    }
 }

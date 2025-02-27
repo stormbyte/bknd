@@ -5,8 +5,8 @@ export const entryOutputMeta = (
       outputs: {
          output: string;
          meta: Metafile["outputs"][string];
-      }[]
-   ) => void | Promise<void>
+      }[],
+   ) => void | Promise<void>,
 ): Plugin => ({
    name: "report-entry-output-plugin",
    setup(build) {
@@ -29,5 +29,5 @@ export const entryOutputMeta = (
             await onComplete?.(outputs);
          }
       });
-   }
+   },
 });

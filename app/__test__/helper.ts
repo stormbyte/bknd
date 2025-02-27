@@ -17,7 +17,7 @@ export function getDummyDatabase(memory: boolean = true): {
       afterAllCleanup: async () => {
          if (!memory) await unlink(DB_NAME);
          return true;
-      }
+      },
    };
 }
 
@@ -27,7 +27,7 @@ export function getDummyConnection(memory: boolean = true) {
 
    return {
       dummyConnection,
-      afterAllCleanup
+      afterAllCleanup,
    };
 }
 
@@ -39,7 +39,7 @@ type ConsoleSeverity = "log" | "warn" | "error";
 const _oldConsoles = {
    log: console.log,
    warn: console.warn,
-   error: console.error
+   error: console.error,
 };
 
 export function disableConsoleLog(severities: ConsoleSeverity[] = ["log", "warn"]) {

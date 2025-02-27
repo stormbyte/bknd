@@ -9,7 +9,7 @@ export {
    type TaskLog,
    type InputsMap,
    ExecutionState,
-   ExecutionEvent
+   ExecutionEvent,
 } from "./flows/Execution";
 export { RuntimeExecutor } from "./flows/executors/RuntimeExecutor";
 export { FlowTaskConnector } from "./flows/FlowTaskConnector";
@@ -19,7 +19,7 @@ export {
    EventTrigger,
    HttpTrigger,
    TriggerMap,
-   type TriggerMapType
+   type TriggerMapType,
 } from "./flows/triggers";
 
 import { Task } from "./tasks/Task";
@@ -34,7 +34,7 @@ export const TaskMap = {
    fetch: { cls: FetchTask },
    log: { cls: LogTask },
    render: { cls: RenderTask },
-   subflow: { cls: SubFlowTask }
+   subflow: { cls: SubFlowTask },
 } as const;
 export type TaskMapType = typeof TaskMap;
 

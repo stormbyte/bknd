@@ -1,5 +1,6 @@
 import { type ModalProps, Tabs } from "@mantine/core";
 import type { ContextModalProps } from "@mantine/modals";
+import clsx from "clsx";
 import { transformObject } from "core/utils";
 import type { ComponentProps } from "react";
 import { JsonViewer } from "../../components/code/JsonViewer";
@@ -24,13 +25,13 @@ export function DebugModal({ innerProps }: ContextModalProps<DebugProps>) {
          value: item,
          expand: 10,
          showCopy: true,
-         ...jsonViewerProps
+         ...jsonViewerProps,
       };
    });
 
    const count = Object.keys(tabs).length;
-   function renderTab({ value, label, ...props }: (typeof tabs)[keyof typeof tabs]) {
-      return <JsonViewer json={value as any} {...props} />;
+   function renderTab({ value, label, className, ...props }: (typeof tabs)[keyof typeof tabs]) {
+      return <JsonViewer json={value as any} className={clsx("text-sm", className)} {...props} />;
    }
 
    return (
@@ -57,7 +58,7 @@ export function DebugModal({ innerProps }: ContextModalProps<DebugProps>) {
                // @ts-expect-error
                ...tabs[Object.keys(tabs)[0]],
                // @ts-expect-error
-               title: tabs[Object.keys(tabs)[0]].label
+               title: tabs[Object.keys(tabs)[0]].label,
             })
          )}
       </div>
@@ -69,6 +70,6 @@ DebugModal.modalProps = {
    withCloseButton: false,
    size: "lg",
    classNames: {
-      body: "!p-0"
-   }
+      body: "!p-0",
+   },
 } satisfies Omit<ModalProps, "opened" | "onClose">;

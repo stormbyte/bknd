@@ -10,7 +10,7 @@ import {
    addEdge,
    useEdgesState,
    useNodesState,
-   useStore
+   useStore,
 } from "@xyflow/react";
 import { type Execution, ExecutionEvent, ExecutionState, type Flow, type Task } from "flows";
 import { transform } from "lodash-es";
@@ -24,8 +24,8 @@ export default function FlowCanvas({
    flow,
    execution,
    options = {
-      theme: "dark"
-   }
+      theme: "dark",
+   },
 }: {
    flow: Flow;
    execution: Execution | undefined;
@@ -70,9 +70,9 @@ function RenderedFlow({ nodes, edges, nodeTypes, execution, theme }: any) {
                            state: {
                               // @ts-ignore
                               ...node.data.state,
-                              event
-                           }
-                        }
+                              event,
+                           },
+                        },
                      };
                   }
 
@@ -90,9 +90,9 @@ function RenderedFlow({ nodes, edges, nodeTypes, execution, theme }: any) {
                         state: {
                            // @ts-ignore
                            ...node.data.state,
-                           event: undefined
-                        }
-                     }
+                           event: undefined,
+                        },
+                     },
                   }));
                });
             } else {
@@ -131,7 +131,7 @@ function RenderedFlow({ nodes, edges, nodeTypes, execution, theme }: any) {
          fitView
          fitViewOptions={{ maxZoom: 1 }}
          proOptions={{
-            hideAttribution: true
+            hideAttribution: true,
          }}
       >
          <Controls>

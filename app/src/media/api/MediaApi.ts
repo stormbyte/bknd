@@ -3,7 +3,7 @@ import {
    type BaseModuleApiOptions,
    ModuleApi,
    type PrimaryFieldType,
-   type TInput
+   type TInput,
 } from "modules/ModuleApi";
 import type { FileWithPath } from "ui/elements/media/file-selector";
 
@@ -12,7 +12,7 @@ export type MediaApiOptions = BaseModuleApiOptions & {};
 export class MediaApi extends ModuleApi<MediaApiOptions> {
    protected override getDefaultOptions(): Partial<MediaApiOptions> {
       return {
-         basepath: "/api/media"
+         basepath: "/api/media",
       };
    }
 
@@ -23,8 +23,8 @@ export class MediaApi extends ModuleApi<MediaApiOptions> {
    getFile(filename: string) {
       return this.get<ReadableStream<Uint8Array>>(["file", filename], undefined, {
          headers: {
-            Accept: "*/*"
-         }
+            Accept: "*/*",
+         },
       });
    }
 
@@ -44,7 +44,8 @@ export class MediaApi extends ModuleApi<MediaApiOptions> {
       return (await res.blob()) as File;
    }
 
-   getFileUploadUrl(file: FileWithPath): string {
+   getFileUploadUrl(file?: FileWithPath): string {
+      if (!file) return this.getUrl("/upload");
       return this.getUrl(`/upload/${file.path}`);
    }
 
@@ -54,7 +55,7 @@ export class MediaApi extends ModuleApi<MediaApiOptions> {
 
    getUploadHeaders(): Headers {
       return new Headers({
-         Authorization: `Bearer ${this.options.token}`
+         Authorization: `Bearer ${this.options.token}`,
       });
    }
 
@@ -64,11 +65,11 @@ export class MediaApi extends ModuleApi<MediaApiOptions> {
          filename?: string;
          path?: TInput;
          _init?: Omit<RequestInit, "body">;
-      }
+      },
    ) {
       const headers = {
          "Content-Type": "application/octet-stream",
-         ...(opts?._init?.headers || {})
+         ...(opts?._init?.headers || {}),
       };
       let name: string = opts?.filename || "";
       try {
@@ -86,7 +87,7 @@ export class MediaApi extends ModuleApi<MediaApiOptions> {
 
       const init = {
          ...(opts?._init || {}),
-         headers
+         headers,
       };
       if (opts?.path) {
          return this.post(opts.path, body, init);
@@ -105,7 +106,7 @@ export class MediaApi extends ModuleApi<MediaApiOptions> {
          filename?: string;
          _init?: Omit<RequestInit, "body">;
          path?: TInput;
-      } = {}
+      } = {},
    ) {
       if (item instanceof Request || typeof item === "string") {
          const res = await this.fetcher(item);
@@ -123,9 +124,9 @@ export class MediaApi extends ModuleApi<MediaApiOptions> {
                ...(opts._init ?? {}),
                headers: {
                   ...(opts._init?.headers ?? {}),
-                  "Content-Type": item.headers.get("Content-Type") || "application/octet-stream"
-               }
-            }
+                  "Content-Type": item.headers.get("Content-Type") || "application/octet-stream",
+               },
+            },
          });
       }
 
@@ -139,11 +140,11 @@ export class MediaApi extends ModuleApi<MediaApiOptions> {
       item: Request | Response | string | File | ReadableStream,
       opts?: {
          _init?: Omit<RequestInit, "body">;
-      }
+      },
    ) {
       return this.upload(item, {
          ...opts,
-         path: ["entity", entity, id, field]
+         path: ["entity", entity, id, field],
       });
    }
 

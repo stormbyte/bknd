@@ -84,7 +84,7 @@ export function serve<Env = any>(config: CloudflareBkndConfig<Env> = {}) {
                hono.all("*", async (c, next) => {
                   const res = await serveStatic({
                      path: `./${pathname}`,
-                     manifest: config.manifest!
+                     manifest: config.manifest!,
                   })(c as any, next);
                   if (res instanceof Response) {
                      const ttl = 60 * 60 * 24 * 365;
@@ -114,6 +114,6 @@ export function serve<Env = any>(config: CloudflareBkndConfig<Env> = {}) {
             default:
                throw new Error(`Unknown mode ${mode}`);
          }
-      }
+      },
    };
 }

@@ -10,15 +10,15 @@ const example = import.meta.env.VITE_EXAMPLE;
 
 const credentials = example
    ? {
-        url: `file:.configs/${example}.db`
+        url: `file:.configs/${example}.db`,
      }
    : import.meta.env.VITE_DB_URL
      ? {
           url: import.meta.env.VITE_DB_URL!,
-          authToken: import.meta.env.VITE_DB_TOKEN!
+          authToken: import.meta.env.VITE_DB_TOKEN!,
        }
      : {
-          url: ":memory:"
+          url: ":memory:",
        };
 
 let initialConfig: any = undefined;
@@ -29,13 +29,13 @@ if (example) {
 
 let app: App;
 const recreate = import.meta.env.VITE_APP_DISABLE_FRESH !== "1";
-let routesShown = false;
+let firstStart = true;
 export default {
    async fetch(request: Request) {
       if (!app || recreate) {
          app = App.create({
             connection: credentials,
-            initialConfig
+            initialConfig,
          });
          app.emgr.onEvent(
             App.Events.AppBuiltEvent,
@@ -43,19 +43,20 @@ export default {
                app.registerAdminController({ forceDev: true });
                app.module.server.client.get("/assets/*", serveStatic({ root: "./" }));
             },
-            "sync"
+            "sync",
          );
          await app.build();
 
          // log routes
-         if (!routesShown) {
-            routesShown = true;
-            console.log("\n\n[APP ROUTES]");
+         if (firstStart) {
+            console.log("[DB]", credentials);
+            firstStart = false;
+            console.log("\n[APP ROUTES]");
             showRoutes(app.server);
-            console.log("-------\n\n");
+            console.log("-------\n");
          }
       }
 
       return app.fetch(request);
-   }
+   },
 };

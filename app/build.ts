@@ -27,9 +27,9 @@ function buildTypes() {
             onExit: () => {
                console.log("Types aliased");
                types_running = false;
-            }
+            },
          });
-      }
+      },
    });
 }
 
@@ -63,11 +63,11 @@ async function buildApi() {
       splitting: false,
       treeshake: true,
       loader: {
-         ".svg": "dataurl"
+         ".svg": "dataurl",
       },
       onSuccess: async () => {
          delayTypes();
-      }
+      },
    });
 }
 
@@ -90,7 +90,7 @@ async function buildUi() {
          "use-sync-external-store",
          /codemirror/,
          "@xyflow/react",
-         "@mantine/core"
+         "@mantine/core",
       ],
       metafile: true,
       platform: "browser",
@@ -99,14 +99,14 @@ async function buildUi() {
       bundle: true,
       treeshake: true,
       loader: {
-         ".svg": "dataurl"
+         ".svg": "dataurl",
       },
       esbuildOptions: (options) => {
          options.logLevel = "silent";
       },
       onSuccess: async () => {
          delayTypes();
-      }
+      },
    });
 }
 
@@ -128,7 +128,7 @@ async function buildUiElements() {
          "react-dom",
          "react/jsx-runtime",
          "react/jsx-dev-runtime",
-         "use-sync-external-store"
+         "use-sync-external-store",
       ],
       metafile: true,
       platform: "browser",
@@ -137,12 +137,12 @@ async function buildUiElements() {
       bundle: true,
       treeshake: true,
       loader: {
-         ".svg": "dataurl"
+         ".svg": "dataurl",
       },
       esbuildOptions: (options) => {
          options.alias = {
             // not important for elements, mock to reduce bundle
-            "tailwind-merge": "./src/ui/elements/mocks/tailwind-merge.ts"
+            "tailwind-merge": "./src/ui/elements/mocks/tailwind-merge.ts",
          };
       },
       onSuccess: async () => {
@@ -152,7 +152,7 @@ async function buildUiElements() {
          await Bun.write(path, bundle.replaceAll("ui/client", "bknd/client"));
 
          delayTypes();
-      }
+      },
    });
 }
 
@@ -176,15 +176,15 @@ function baseConfig(adapter: string, overrides: Partial<tsup.Options> = {}): tsu
       ...overrides,
       define: {
          __isDev: "0",
-         ...overrides.define
+         ...overrides.define,
       },
       external: [
          /^cloudflare*/,
          /^@?(hono|libsql).*?/,
          /^(bknd|react|next|node).*?/,
          /.*\.(html)$/,
-         ...(Array.isArray(overrides.external) ? overrides.external : [])
-      ]
+         ...(Array.isArray(overrides.external) ? overrides.external : []),
+      ],
    };
 }
 
@@ -193,7 +193,7 @@ async function buildAdapters() {
    await tsup.build({
       ...baseConfig(""),
       entry: ["src/adapter/index.ts"],
-      outDir: "dist/adapter"
+      outDir: "dist/adapter",
    });
 
    // specific adatpers
@@ -202,23 +202,23 @@ async function buildAdapters() {
    await tsup.build(baseConfig("astro"));
    await tsup.build(
       baseConfig("cloudflare", {
-         external: [/^kysely/]
-      })
+         external: [/^kysely/],
+      }),
    );
 
    await tsup.build({
       ...baseConfig("vite"),
-      platform: "node"
+      platform: "node",
    });
 
    await tsup.build({
       ...baseConfig("nextjs"),
-      platform: "node"
+      platform: "node",
    });
 
    await tsup.build({
       ...baseConfig("node"),
-      platform: "node"
+      platform: "node",
    });
 }
 

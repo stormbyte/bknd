@@ -1,7 +1,7 @@
 import {
    SegmentedControl as $SegmentedControl,
    type SegmentedControlProps as $SegmentedControlProps,
-   Input
+   Input,
 } from "@mantine/core";
 import { type FieldValues, type UseControllerProps, useController } from "react-hook-form";
 
@@ -26,13 +26,13 @@ export function MantineSegmentedControl<T extends FieldValues>({
    ...props
 }: MantineSegmentedControlProps<T>) {
    const {
-      field: { value, onChange: fieldOnChange, ...field }
+      field: { value, onChange: fieldOnChange, ...field },
    } = useController<T>({
       name,
       control,
       defaultValue,
       rules,
-      shouldUnregister
+      shouldUnregister,
    });
 
    return (

@@ -11,7 +11,7 @@ class ExecTask extends Task {
    constructor(
       name: string,
       params: any,
-      private fn: () => any
+      private fn: () => any,
    ) {
       super(name, params);
    }
@@ -60,7 +60,7 @@ describe("Flow trigger", async () => {
          "test",
          [task],
          [],
-         new EventTrigger({ event: "test-event", mode: "sync" })
+         new EventTrigger({ event: "test-event", mode: "sync" }),
       );
 
       flow.trigger.register(flow, emgr);
@@ -107,8 +107,8 @@ describe("Flow trigger", async () => {
          new HttpTrigger({
             path: "/test",
             method: "GET",
-            mode: "sync"
-         })
+            mode: "sync",
+         }),
       );
 
       const hono = new Hono();
@@ -123,7 +123,7 @@ describe("Flow trigger", async () => {
 
    test("http trigger with response", async () => {
       const task = ExecTask.create("http", () => ({
-         called: true
+         called: true,
       }));
       const flow = new Flow(
          "test",
@@ -132,8 +132,8 @@ describe("Flow trigger", async () => {
          new HttpTrigger({
             path: "/test",
             method: "GET",
-            mode: "sync"
-         })
+            mode: "sync",
+         }),
       );
       flow.setRespondingTask(task);
 

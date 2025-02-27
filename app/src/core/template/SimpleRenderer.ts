@@ -14,7 +14,7 @@ export class SimpleRenderer {
 
    constructor(
       private variables: Record<string, any> = {},
-      private options: SimpleRendererOptions = {}
+      private options: SimpleRendererOptions = {},
    ) {}
 
    another() {
@@ -48,7 +48,7 @@ export class SimpleRenderer {
             return (await this.renderString(template)) as unknown as Given;
          } else if (Array.isArray(template)) {
             return (await Promise.all(
-               template.map((item) => this.render(item))
+               template.map((item) => this.render(item)),
             )) as unknown as Given;
          } else if (typeof template === "object") {
             return (await this.renderObject(template)) as unknown as Given;
@@ -61,8 +61,8 @@ export class SimpleRenderer {
                   kind: e.token.kind,
                   input: e.token.input,
                   begin: e.token.begin,
-                  end: e.token.end
-               }
+                  end: e.token.end,
+               },
             };
 
             throw new BkndError(e.message, details, "liquid");

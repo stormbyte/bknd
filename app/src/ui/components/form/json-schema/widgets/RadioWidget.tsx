@@ -6,7 +6,7 @@ import {
    ariaDescribedByIds,
    enumOptionsIsSelected,
    enumOptionsValueForIndex,
-   optionId
+   optionId,
 } from "@rjsf/utils";
 import { type FocusEvent, useCallback } from "react";
 
@@ -18,7 +18,7 @@ import { type FocusEvent, useCallback } from "react";
 function RadioWidget<
    T = any,
    S extends StrictRJSFSchema = RJSFSchema,
-   F extends FormContextType = any
+   F extends FormContextType = any,
 >({
    options,
    value,
@@ -29,20 +29,20 @@ function RadioWidget<
    onBlur,
    onFocus,
    onChange,
-   id
+   id,
 }: WidgetProps<T, S, F>) {
    const { enumOptions, enumDisabled, inline, emptyValue } = options;
 
    const handleBlur = useCallback(
       ({ target: { value } }: FocusEvent<HTMLInputElement>) =>
          onBlur(id, enumOptionsValueForIndex<S>(value, enumOptions, emptyValue)),
-      [onBlur, id]
+      [onBlur, id],
    );
 
    const handleFocus = useCallback(
       ({ target: { value } }: FocusEvent<HTMLInputElement>) =>
          onFocus(id, enumOptionsValueForIndex<S>(value, enumOptions, emptyValue)),
-      [onFocus, id]
+      [onFocus, id],
    );
 
    return (

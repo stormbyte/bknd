@@ -14,7 +14,7 @@ import {
    RelationField,
    type RelationFieldBaseConfig,
    type RelationFieldConfig,
-   relationFieldConfigSchema
+   relationFieldConfigSchema,
 } from "./RelationField";
 
 export {
@@ -32,7 +32,7 @@ export {
    RelationField,
    relationFieldConfigSchema,
    type RelationFieldBaseConfig,
-   type RelationFieldConfig
+   type RelationFieldConfig,
 };
 
 export const RelationClassMap = {
@@ -41,10 +41,10 @@ export const RelationClassMap = {
    [RelationTypes.ManyToMany]: { schema: ManyToManyRelation.schema, cls: ManyToManyRelation },
    [RelationTypes.Polymorphic]: {
       schema: PolymorphicRelation.schema,
-      cls: PolymorphicRelation
-   }
+      cls: PolymorphicRelation,
+   },
 } as const;
 
 export const RelationFieldClassMap = {
-   relation: { schema: relationFieldConfigSchema, field: RelationField }
+   relation: { schema: relationFieldConfigSchema, field: RelationField },
 } as const;

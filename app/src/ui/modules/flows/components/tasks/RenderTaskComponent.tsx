@@ -10,8 +10,8 @@ export function RenderTaskComponent(props: TaskComponentProps) {
             onChange={console.log}
             uiSchema={{
                render: {
-                  "ui:field": "LiquidJsField"
-               }
+                  "ui:field": "LiquidJsField",
+               },
             }}
          />
       </TaskComponent>

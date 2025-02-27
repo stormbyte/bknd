@@ -5,7 +5,7 @@ export class LogTask extends Task<typeof LogTask.schema> {
    type = "log";
 
    static override schema = Type.Object({
-      delay: Type.Number({ default: 10 })
+      delay: Type.Number({ default: 10 }),
    });
 
    async execute() {
