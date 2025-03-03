@@ -3,7 +3,7 @@
   "type": "module",
   "sideEffects": false,
   "bin": "./dist/cli/index.js",
-  "version": "0.9.0-rc.1-7",
+  "version": "0.9.0-rc.1-11",
   "description": "Lightweight Firebase/Supabase alternative built to run anywhere — incl. Next.js, Remix, Astro, Cloudflare, Bun, Node, AWS Lambda & more.",
   "homepage": "https://bknd.io",
   "repository": {
@@ -190,6 +190,11 @@
       "types": "./dist/types/adapter/astro/index.d.ts",
       "import": "./dist/adapter/astro/index.js",
       "require": "./dist/adapter/astro/index.cjs"
+    },
+    "./adapter/aws": {
+      "types": "./dist/types/adapter/aws/index.d.ts",
+      "import": "./dist/adapter/aws/index.js",
+      "require": "./dist/adapter/aws/index.cjs"
     },
     "./dist/main.css": "./dist/ui/main.css",
     "./dist/styles.css": "./dist/ui/styles.css",

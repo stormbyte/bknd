@@ -1,4 +1,4 @@
-import { IconSettings } from "@tabler/icons-react";
+import { IconRefresh, IconSettings } from "@tabler/icons-react";
 import { ucFirst } from "core/utils";
 import { useBknd } from "ui/client/bknd";
 import { Empty } from "ui/components/display/Empty";
@@ -12,10 +12,15 @@ import { AuthSettings } from "./routes/auth.settings";
 import { DataSettings } from "./routes/data.settings";
 import { FlowsSettings } from "./routes/flows.settings";
 import { ServerSettings } from "./routes/server.settings";
+import { IconButton } from "ui/components/buttons/IconButton";
 
 function SettingsSidebar() {
-   const { version, schema } = useBknd();
+   const { version, schema, actions } = useBknd();
    useBrowserTitle(["Settings"]);
+
+   async function handleRefresh() {
+      await actions.reload();
+   }
 
    const modules = Object.keys(schema).map((key) => {
       return {
@@ -26,7 +31,14 @@ function SettingsSidebar() {
 
    return (
       <AppShell.Sidebar>
-         <AppShell.SectionHeader right={<span className="font-mono">v{version}</span>}>
+         <AppShell.SectionHeader
+            right={
+               <div className="flex items-center gap-2">
+                  <span className="font-mono leading-none">v{version}</span>
+                  <IconButton Icon={IconRefresh} onClick={handleRefresh} />
+               </div>
+            }
+         >
             Settings
          </AppShell.SectionHeader>
          <AppShell.Scrollable initialOffset={96}>

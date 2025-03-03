@@ -1,7 +1,7 @@
 /// <reference types="@cloudflare/workers-types" />
 
 import type { App } from "App";
-import { tbValidator as tb } from "core";
+import { $console, tbValidator as tb } from "core";
 import {
    StringEnum,
    Type,
@@ -229,16 +229,22 @@ export class SystemController extends Controller {
             Type.Object({
                config: Type.Optional(booleanLike),
                secrets: Type.Optional(booleanLike),
+               fresh: Type.Optional(booleanLike),
             }),
          ),
          async (c) => {
             const module = c.req.param("module") as ModuleKey | undefined;
-            const { config, secrets } = c.req.valid("query");
+            const { config, secrets, fresh } = c.req.valid("query");
 
             config && this.ctx.guard.throwUnlessGranted(SystemPermissions.configRead, c);
             secrets && this.ctx.guard.throwUnlessGranted(SystemPermissions.configReadSecrets, c);
 
             const { version, ...schema } = this.app.getSchema();
+
+            if (fresh) {
+               // in cases of concurrency, refetching schema/config must be always fresh
+               await this.app.build({ fetch: true });
+            }
 
             if (module) {
                return c.json({
@@ -265,14 +271,18 @@ export class SystemController extends Controller {
             "query",
             Type.Object({
                sync: Type.Optional(booleanLike),
+               fetch: Type.Optional(booleanLike),
             }),
          ),
          async (c) => {
-            const { sync } = c.req.valid("query") as Record<string, boolean>;
+            const options = c.req.valid("query") as Record<string, boolean>;
             this.ctx.guard.throwUnlessGranted(SystemPermissions.build, c);
 
-            await this.app.build({ sync });
-            return c.json({ success: true, options: { sync } });
+            await this.app.build(options);
+            return c.json({
+               success: true,
+               options,
+            });
          },
       );
 

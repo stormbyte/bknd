@@ -216,6 +216,7 @@ async function buildAdapters() {
    await tsup.build(baseConfig("remix"));
    await tsup.build(baseConfig("bun"));
    await tsup.build(baseConfig("astro"));
+   await tsup.build(baseConfig("aws"));
    await tsup.build(
       baseConfig("cloudflare", {
          external: [/^kysely/],

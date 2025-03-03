@@ -4,3 +4,4 @@ export { run } from "./run";
 export { debug } from "./debug";
 export { user } from "./user";
 export { create } from "./create";
+export { copyAssets } from "./copy-assets";
