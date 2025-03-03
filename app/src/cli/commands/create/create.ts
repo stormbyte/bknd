@@ -19,6 +19,7 @@ const config = {
       node: "Node.js",
       bun: "Bun",
       cloudflare: "Cloudflare",
+      aws: "AWS Lambda",
    },
    framework: {
       nextjs: "Next.js",
