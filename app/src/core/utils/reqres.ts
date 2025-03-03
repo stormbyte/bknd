@@ -18,6 +18,16 @@ export function pickHeaders(headers: Headers, keys: string[]): Record<string, st
    return res;
 }
 
+export function pickHeaders2(headers: Headers, keys: string[]): Headers {
+   const newHeaders = new Headers();
+   for (const key of keys) {
+      if (headers.has(key)) {
+         newHeaders.set(key, headers.get(key)!);
+      }
+   }
+   return newHeaders;
+}
+
 export const replaceUrlParam = (urlString: string, params: Record<string, string>) => {
    let newString = urlString;
    for (const [k, v] of Object.entries(params)) {

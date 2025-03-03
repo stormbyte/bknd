@@ -51,9 +51,9 @@ export default {
          if (firstStart) {
             console.log("[DB]", credentials);
             firstStart = false;
-            console.log("\n[APP ROUTES]");
+            /*console.log("\n[APP ROUTES]");
             showRoutes(app.server);
-            console.log("-------\n");
+            console.log("-------\n");*/
          }
       }
 
