@@ -56,7 +56,7 @@ async function buildApi() {
       watch,
       entry: ["src/index.ts", "src/data/index.ts", "src/core/index.ts", "src/core/utils/index.ts"],
       outDir: "dist",
-      external: ["bun:test", "@libsql/client", "bknd/client"],
+      external: ["bun:test", "@libsql/client"],
       metafile: true,
       platform: "browser",
       format: ["esm"],
@@ -71,16 +71,19 @@ async function buildApi() {
    });
 }
 
+async function rewriteClient(path: string) {
+   const bundle = await Bun.file(path).text();
+   await Bun.write(path, '"use client";\n' + bundle.replaceAll("ui/client", "bknd/client"));
+}
+
 /**
  * Building UI for direct imports
  */
 async function buildUi() {
-   await tsup.build({
+   const base = {
       minify,
       sourcemap,
       watch,
-      entry: ["src/ui/index.ts", "src/ui/client/index.ts", "src/ui/main.css", "src/ui/styles.css"],
-      outDir: "dist/ui",
       external: [
          "bun:test",
          "react",
@@ -104,7 +107,24 @@ async function buildUi() {
       esbuildOptions: (options) => {
          options.logLevel = "silent";
       },
+   } satisfies tsup.Options;
+
+   await tsup.build({
+      ...base,
+      entry: ["src/ui/index.ts", "src/ui/main.css", "src/ui/styles.css"],
+      outDir: "dist/ui",
       onSuccess: async () => {
+         await rewriteClient("./dist/ui/index.js");
+         delayTypes();
+      },
+   });
+
+   await tsup.build({
+      ...base,
+      entry: ["src/ui/client/index.ts"],
+      outDir: "dist/ui/client",
+      onSuccess: async () => {
+         await rewriteClient("./dist/ui/client/index.js");
          delayTypes();
       },
    });
@@ -146,11 +166,7 @@ async function buildUiElements() {
          };
       },
       onSuccess: async () => {
-         // manually replace ui/client with bknd/client
-         const path = "./dist/ui/elements/index.js";
-         const bundle = await Bun.file(path).text();
-         await Bun.write(path, bundle.replaceAll("ui/client", "bknd/client"));
-
+         await rewriteClient("./dist/ui/elements/index.js");
          delayTypes();
       },
    });

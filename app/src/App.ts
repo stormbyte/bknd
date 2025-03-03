@@ -50,6 +50,7 @@ export type CreateAppConfig = {
 };
 
 export type AppConfig = InitialModuleConfigs;
+export type LocalApiOptions = Request | ApiOptions;
 
 export class App {
    modules: ModuleManager;
@@ -186,13 +187,13 @@ export class App {
       return this.module.auth.createUser(p);
    }
 
-   getApi(options: Request | ApiOptions = {}) {
+   getApi(options?: LocalApiOptions) {
       const fetcher = this.server.request as typeof fetch;
-      if (options instanceof Request) {
+      if (options && options instanceof Request) {
          return new Api({ request: options, headers: options.headers, fetcher });
       }
 
-      return new Api({ host: "http://localhost", ...options, fetcher });
+      return new Api({ host: "http://localhost", ...(options ?? {}), fetcher });
    }
 }
 

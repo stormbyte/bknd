@@ -1,4 +1,4 @@
-import { App } from "bknd";
+import { App, type LocalApiOptions } from "bknd";
 import { registerLocalMediaAdapter } from "bknd/adapter/node";
 import { type RemixBkndConfig, getApp as getBkndApp } from "bknd/adapter/remix";
 import { boolean, em, entity, text } from "bknd/data";
@@ -76,17 +76,7 @@ export async function getApp(args?: { request: Request }) {
    return await getBkndApp(config, args);
 }
 
-/**
- * If args are given, it will use authentication details from the request
- * @param args
- */
-export async function getApi(args?: { request: Request }) {
-   const app = await getApp(args);
-   if (args) {
-      const api = app.getApi(args.request);
-      await api.verifyAuth();
-      return api;
-   }
-
-   return app.getApi();
+export async function getApi(options?: LocalApiOptions) {
+   const app = await getApp();
+   return await app.getApi(options);
 }

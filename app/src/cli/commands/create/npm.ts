@@ -68,7 +68,7 @@ export async function replacePackageJsonVersions(
 
 export async function updateBkndPackages(dir?: string, map?: Record<string, string>) {
    const versions = {
-      bknd: "^" + (await sysGetVersion()),
+      bknd: await sysGetVersion(),
       ...(map ?? {}),
    };
    await replacePackageJsonVersions(

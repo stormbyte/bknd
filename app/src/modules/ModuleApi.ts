@@ -264,7 +264,6 @@ export class FetchPromise<T = ApiResponse<any>> implements Promise<T> {
       } else {
          resBody = res.body;
       }
-      console.groupEnd();
 
       return createResponseProxy<T>(res, resBody, resData);
    }

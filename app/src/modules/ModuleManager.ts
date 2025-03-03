@@ -286,7 +286,7 @@ export class ModuleManager {
 
             return result as unknown as ConfigTable;
          },
-         this.verbosity > Verbosity.silent ? [] : ["log", "error", "warn"],
+         this.verbosity > Verbosity.silent ? [] : ["error"],
       );
 
       this.logger

@@ -2,7 +2,7 @@ import { Type } from "core/utils";
 import { type Entity, querySchema } from "data";
 import { Fragment } from "react";
 import { TbDots } from "react-icons/tb";
-import { useApi, useApiQuery } from "ui/client";
+import { useApiQuery } from "ui/client";
 import { useBknd } from "ui/client/bknd";
 import { useBkndData } from "ui/client/schema/data/use-bknd-data";
 import { Button } from "ui/components/buttons/Button";
@@ -83,7 +83,7 @@ export function DataEntityList({ params }) {
       search.set("perPage", perPage);
    }
 
-   const isUpdating = $q.isLoading && $q.isValidating;
+   const isUpdating = $q.isLoading || $q.isValidating;
 
    return (
       <Fragment key={entity.name}>

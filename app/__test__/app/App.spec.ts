@@ -48,7 +48,7 @@ describe("App", () => {
 
       const todos = await app.getApi().data.readMany("todos");
       expect(todos.length).toBe(2);
-      expect(todos[0].title).toBe("ctx");
-      expect(todos[1].title).toBe("api");
+      expect(todos[0]?.title).toBe("ctx");
+      expect(todos[1]?.title).toBe("api");
    });
 });

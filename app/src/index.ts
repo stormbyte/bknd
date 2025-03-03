@@ -5,6 +5,7 @@ export {
    type AppConfig,
    type CreateAppConfig,
    type AppPlugin,
+   type LocalApiOptions,
 } from "./App";
 
 export {
