@@ -22,7 +22,27 @@ function entitiesToNodes(entities: AppDataConfig["entities"]): Node<TAppDataEnti
 }
 
 function relationsToEdges(relations: AppDataConfig["relations"]) {
-   return Object.entries(relations ?? {}).map(([name, relation]) => {
+   return Object.entries(relations ?? {}).flatMap(([name, relation]) => {
+      if (relation.type === "m:n") {
+         const conn_table = `${relation.source}_${relation.target}`;
+         return [
+            {
+               id: name,
+               target: relation.source,
+               source: conn_table,
+               targetHandle: `${relation.source}:id`,
+               sourceHandle: `${conn_table}:${relation.source}_id`,
+            },
+            {
+               id: `${name}-2`,
+               target: relation.target,
+               source: conn_table,
+               targetHandle: `${relation.target}:id`,
+               sourceHandle: `${conn_table}:${relation.target}_id`,
+            },
+         ];
+      }
+
       let sourceHandle = relation.source + `:${relation.target}`;
       if (relation.config?.mappedBy) {
          sourceHandle = `${relation.source}:${relation.config?.mappedBy}`;
@@ -64,6 +84,8 @@ export function DataSchemaCanvas() {
          color: theme === "light" ? "#aaa" : "#777",
       },
    }));
+
+   console.log("-", data, { nodes, edges });
 
    const nodeLayout = layoutWithDagre({
       nodes: nodes.map((n) => ({

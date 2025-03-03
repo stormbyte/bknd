@@ -77,7 +77,7 @@ export class JsonSchemaField<
             return value;
          case "table":
             if (value === null) return null;
-            return value;
+            return JSON.stringify(value);
          case "submit":
             break;
       }

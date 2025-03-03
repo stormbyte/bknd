@@ -161,7 +161,7 @@ const EntityLinkList = ({
                   >
                      {entity.label}
 
-                     {isLinkActive(href) && (
+                     {isLinkActive(href, 1) && (
                         <Button
                            IconLeft={IconSwitchHorizontal}
                            size="small"
