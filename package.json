@@ -44,6 +44,6 @@
   },
   "workspaces": [
     "app",
-    "docs"
+    "packages/*"
   ]
 }

@@ -47,19 +47,29 @@ export function BkndProvider({
    const api = useApi();
 
    async function reloadSchema() {
-      await fetchSchema(includeSecrets, true);
+      await fetchSchema(includeSecrets, {
+         force: true,
+         fresh: true,
+      });
    }
 
-   async function fetchSchema(_includeSecrets: boolean = false, force?: boolean) {
+   async function fetchSchema(
+      _includeSecrets: boolean = false,
+      opts?: {
+         force?: boolean;
+         fresh?: boolean;
+      },
+   ) {
       const requesting = withSecrets ? Fetching.Secrets : Fetching.Schema;
       if (fetching.current === requesting) return;
 
-      if (withSecrets && !force) return;
+      if (withSecrets && opts?.force !== true) return;
       fetching.current = requesting;
 
       const res = await api.system.readSchema({
          config: true,
          secrets: _includeSecrets,
+         fresh: opts?.fresh,
       });
 
       if (!res.ok) {

@@ -14,6 +14,8 @@ export type FrameworkBkndConfig<Args = any> = BkndConfig<Args>;
 
 export type RuntimeBkndConfig<Args = any> = BkndConfig<Args> & {
    distPath?: string;
+   serveStatic?: MiddlewareHandler | [string, MiddlewareHandler];
+   adminOptions?: AdminControllerOptions | false;
 };
 
 export function makeConfig<Args = any>(config: BkndConfig<Args>, args?: Args): CreateAppConfig {
@@ -55,14 +57,7 @@ export async function createFrameworkApp<Args = any>(
 }
 
 export async function createRuntimeApp<Env = any>(
-   {
-      serveStatic,
-      adminOptions,
-      ...config
-   }: RuntimeBkndConfig & {
-      serveStatic?: MiddlewareHandler | [string, MiddlewareHandler];
-      adminOptions?: AdminControllerOptions | false;
-   },
+   { serveStatic, adminOptions, ...config }: RuntimeBkndConfig,
    env?: Env,
 ): Promise<App> {
    const app = App.create(makeConfig(config, env));

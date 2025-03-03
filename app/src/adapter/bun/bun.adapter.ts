@@ -34,6 +34,7 @@ export function serve({
    port = config.server.default_port,
    onBuilt,
    buildConfig,
+   adminOptions,
    ...serveOptions
 }: BunBkndConfig = {}) {
    Bun.serve({
@@ -46,6 +47,7 @@ export function serve({
             options,
             onBuilt,
             buildConfig,
+            adminOptions,
             distPath,
          });
          return app.fetch(request);

@@ -164,13 +164,23 @@ export class AdminController extends Controller {
       };
 
       if (isProd) {
-         // @ts-ignore
-         const manifest = await import("bknd/dist/manifest.json", {
-            assert: { type: "json" },
-         });
+         let manifest: any;
+         if (this.options.assets_path.startsWith("http")) {
+            manifest = await fetch(this.options.assets_path + "manifest.json", {
+               headers: {
+                  Accept: "application/json",
+               },
+            }).then((res) => res.json());
+         } else {
+            // @ts-ignore
+            manifest = await import("bknd/dist/manifest.json", {
+               assert: { type: "json" },
+            }).then((res) => res.default);
+         }
+
          // @todo: load all marked as entry (incl. css)
-         assets.js = manifest.default["src/ui/main.tsx"].file;
-         assets.css = manifest.default["src/ui/main.tsx"].css[0] as any;
+         assets.js = manifest["src/ui/main.tsx"].file;
+         assets.css = manifest["src/ui/main.tsx"].css[0] as any;
       }
 
       const theme = configs.server.admin.color_scheme ?? "light";
@@ -197,16 +207,8 @@ export class AdminController extends Controller {
                   )}
                   {isProd ? (
                      <Fragment>
-                        <script
-                           type="module"
-                           CrossOrigin
-                           src={this.options.assets_path + assets?.js}
-                        />
-                        <link
-                           rel="stylesheet"
-                           crossOrigin
-                           href={this.options.assets_path + assets?.css}
-                        />
+                        <script type="module" src={this.options.assets_path + assets?.js} />
+                        <link rel="stylesheet" href={this.options.assets_path + assets?.css} />
                      </Fragment>
                   ) : (
                      <Fragment>

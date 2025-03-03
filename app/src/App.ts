@@ -58,6 +58,8 @@ export class App {
    adminController?: AdminController;
    private trigger_first_boot = false;
    private plugins: AppPlugin[];
+   private _id: string = crypto.randomUUID();
+   private _building: boolean = false;
 
    constructor(
       private connection: Connection,
@@ -90,6 +92,11 @@ export class App {
             server.use(async (c, next) => {
                c.set("app", this);
                await next();
+
+               try {
+                  // gracefully add the app id
+                  c.res.headers.set("X-bknd-id", this._id);
+               } catch (e) {}
             });
          },
       });
@@ -100,9 +107,18 @@ export class App {
       return this.modules.ctx().emgr;
    }
 
-   async build(options?: { sync?: boolean }) {
+   async build(options?: { sync?: boolean; fetch?: boolean; forceBuild?: boolean }) {
+      // prevent multiple concurrent builds
+      if (this._building) {
+         while (this._building) {
+            await new Promise((resolve) => setTimeout(resolve, 10));
+         }
+         if (!options?.forceBuild) return;
+      }
+      this._building = true;
+
       if (options?.sync) this.modules.ctx().flags.sync_required = true;
-      await this.modules.build();
+      await this.modules.build({ fetch: options?.fetch });
 
       const { guard, server } = this.modules.ctx();
 
@@ -127,6 +143,8 @@ export class App {
             app: this,
          });
       }
+
+      this._building = false;
    }
 
    mutateConfig<Module extends keyof Modules>(module: Module) {

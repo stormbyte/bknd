@@ -468,13 +468,18 @@ export class ModuleManager {
       });
    }
 
-   async build() {
+   async build(opts?: { fetch?: boolean }) {
       this.logger.context("build").log("version", this.version());
       this.logger.log("booted with", this._booted_with);
 
       // if no config provided, try fetch from db
-      if (this.version() === 0) {
-         this.logger.context("no version").log("version is 0");
+      if (this.version() === 0 || opts?.fetch === true) {
+         if (this.version() === 0) {
+            this.logger.context("no version").log("version is 0");
+         } else {
+            this.logger.context("force fetch").log("force fetch");
+         }
+
          try {
             const result = await this.fetch();
 
