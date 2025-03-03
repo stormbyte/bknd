@@ -1,5 +1,5 @@
 import { isDebug, tbValidator as tb } from "core";
-import { HttpStatus, Type, getFileFromContext } from "core/utils";
+import { HttpStatus, Type, getFileFromContext, headersToObject } from "core/utils";
 import type { StorageAdapter } from "media";
 import { StorageEvents, getRandomizedFilename } from "media";
 import { Controller } from "modules/Controller";
@@ -36,6 +36,7 @@ export class MediaController extends Controller {
       });
 
       // get file by name
+      // @todo: implement more aggressive cache? (configurable)
       hono.get("/file/:filename", async (c) => {
          const { filename } = c.req.param();
          if (!filename) {
@@ -43,7 +44,16 @@ export class MediaController extends Controller {
          }
 
          await this.getStorage().emgr.emit(new StorageEvents.FileAccessEvent({ name: filename }));
-         return await this.getStorageAdapter().getObject(filename, c.req.raw.headers);
+         const res = await this.getStorageAdapter().getObject(filename, c.req.raw.headers);
+
+         const headers = new Headers(res.headers);
+         headers.set("Cache-Control", "public, max-age=31536000, immutable");
+
+         return new Response(res.body, {
+            status: res.status,
+            statusText: res.statusText,
+            headers,
+         });
       });
 
       // delete a file by name
