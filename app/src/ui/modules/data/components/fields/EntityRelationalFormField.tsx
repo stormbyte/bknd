@@ -14,6 +14,8 @@ import { routes } from "ui/lib/routes";
 import { useLocation } from "wouter";
 import { EntityTable, type EntityTableProps } from "../EntityTable";
 import type { ResponseObject } from "modules/ModuleApi";
+import ErrorBoundary from "ui/components/display/ErrorBoundary";
+import { EntityTable2 } from "ui/modules/data/components/EntityTable2";
 
 // @todo: allow clear if not required
 export function EntityRelationalFormField({
@@ -151,8 +153,13 @@ export function EntityRelationalFormField({
                                        <span className="opacity-60 text-nowrap">
                                           {field.getLabel()}:
                                        </span>{" "}
-                                       {_value !== null && typeof value !== "undefined" ? (
-                                          <span className="text-nowrap truncate">{_value}</span>
+                                       {_value !== null && typeof _value !== "undefined" ? (
+                                          <ErrorBoundary
+                                             fallback={JSON.stringify(_value)}
+                                             suppressError
+                                          >
+                                             <span className="text-nowrap truncate">{_value}</span>
+                                          </ErrorBoundary>
                                        ) : (
                                           <span className="opacity-30 text-nowrap font-mono mt-0.5">
                                              null
@@ -219,7 +226,7 @@ const PopoverTable = ({
 
    return (
       <div>
-         <EntityTable
+         <EntityTable2
             classNames={{ value: "line-clamp-1 truncate max-w-52 text-nowrap" }}
             data={container ?? []}
             entity={entity}

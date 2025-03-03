@@ -42,9 +42,16 @@ const useLocationFromRouter = (router) => {
    ];
 };
 
-export function isLinkActive(href: string, strict?: boolean) {
+export function isLinkActive(href: string, strictness?: number) {
    const path = window.location.pathname;
-   return strict ? path === href : path.includes(href);
+
+   if (!strictness || strictness === 0) {
+      return path.includes(href);
+   } else if (strictness === 1) {
+      return path === href || path.endsWith(href) || path.includes(href + "/");
+   }
+
+   return path === href;
 }
 
 export function Link({
