@@ -23,78 +23,97 @@ To get started with Next.js and bknd you can either install the package manually
 </Tabs>
 
 ## Serve the API
-``` tsx
-// pages/api/[...route].ts
-import { serve } from "bknd/adapter/nextjs";
+Create a helper file to instantiate the bknd instance and retrieve the API:
+
+```ts src/bknd.ts
+import { type NextjsBkndConfig, getApp as getBkndApp } from "bknd/adapter/nextjs";
+import { headers } from "next/headers";
 
 export const config = {
-   runtime: "edge", // or "experimental-edge", depending on your nextjs version
-   unstable_allowDynamic: ["**/*.js"]
-};
-
-export default serve({
    connection: {
-      url: process.env.DB_URL!,
-      authToken: process.env.DB_AUTH_TOKEN!
+      url: "file:data.db"
+   },
+} as const satisfies NextjsBkndConfig;
+
+export async function getApp() {
+   return await getBkndApp(config);
+}
+
+export async function getApi(opts?: { verify?: boolean }) {
+   const app = await getApp();
+   if (opts?.verify) {
+      const api = app.getApi({ headers: await headers() });
+      await api.verifyAuth();
+      return api;
    }
-});
+
+   return app.getApi();
+}
 ```
 For more information about the connection object, refer to the [Database](/usage/database) guide.
 
+Now to expose the API, create a catch-all route file at `src/api/[[...bknd]]/route.ts`:
+```ts src/api/[[...bknd]]/route.ts
+import { config } from "@/bknd";
+import { serve } from "bknd/adapter/nextjs";
+
+// optionally, you can set the runtime to edge for better performance
+export const runtime = "edge";
+
+const handler = serve({
+   ...config,
+   cleanRequest: {
+      // depending on what name you used for the catch-all route,
+      // you need to change this to clean it from the request.
+      searchParams: ["bknd"],
+   },
+});
+
+export const GET = handler;
+export const POST = handler;
+export const PUT = handler;
+export const PATCH = handler;
+export const DELETE = handler;
+```
+
 ## Enabling the Admin UI
-Create a file `[[...admin]].tsx` inside the `pages/admin` folder:
-```tsx
-// pages/admin/[[...admin]].tsx
-import type { InferGetServerSidePropsType as InferProps } from "next";
-import { withApi } from "bknd/adapter/nextjs";
-import dynamic from "next/dynamic";
+Create a page at `admin/[[...admin]]/page.tsx`:
+```tsx admin/[[...admin]]/page.tsx
+import { Admin } from "bknd/ui";
+import { getApi } from "@/bknd";
 import "bknd/dist/styles.css";
 
-const Admin = dynamic(() => import("bknd/ui").then((mod) => mod.Admin), {
-   ssr: false,
-});
+export default async function AdminPage() {
+   // make sure to verify auth using headers
+   const api = await getApi({ verify: true });
 
-export const getServerSideProps = withApi(async (context) => {
-   return {
-      props: {
-         user: context.api.getUser(),
-      },
-   };
-});
-
-export default function AdminPage({ user }: InferProps<typeof getServerSideProps>) {
-   if (typeof document === "undefined") return null;
-   return <Admin
-      withProvider={{ user }}
-      config={{ basepath: "/admin", logo_return_path: "/../" }}
-   />;
+   return (
+      <Admin
+         withProvider={{ user: api.getUser() }}
+         config={{
+            basepath: "/admin",
+            logo_return_path: "/../",
+            color_scheme: "system",
+         }}
+      />
+   );
 }
 ```
 
-## Example usage of the API in pages dir
-Using pages dir, you need to wrap the `getServerSideProps` function with `withApi` to get access
-to the API. With the API, you can query the database or retrieve the authentication status:
-```tsx
-import { withApi } from "bknd/adapter/nextjs";
-import type { InferGetServerSidePropsType as InferProps } from "next";
+## Example usage of the API
+You can use the `getApi` helper function we've already set up to fetch and mutate in static pages and server components:
 
-export const getServerSideProps = withApi(async (context) => {
-   const { data = [] } = await context.api.data.readMany("todos");
-   const user = context.api.getUser();
+```tsx app/page.tsx
+import { getApi } from "@/bknd";
 
-   return { props: { data, user } };
-});
+export default async function Home() {
+   const api = await getApi();
+   const { data: todos } = await api.data.readMany("todos", { limit: 5 });
 
-export default function Home(props: InferProps<typeof getServerSideProps>) {
-   const { data, user } = props;
-   return (
-      <div>
-         <h1>Data</h1>
-         <pre>{JSON.stringify(data, null, 2)}</pre>
-
-         <h1>User</h1>
-         <pre>{JSON.stringify(user, null, 2)}</pre>
-      </div>
-   );
+   return <ul>
+      {todos.map((todo) => (
+         <li key={String(todo.id)}>{todo.title}</li>
+      ))}
+   </ul>
 }
 ```

@@ -1,5 +1,6 @@
 import type { App } from "bknd";
 import { type FrameworkBkndConfig, createFrameworkApp } from "bknd/adapter";
+import { getRuntimeKey, isNode } from "core/utils";
 
 export type NextjsBkndConfig = FrameworkBkndConfig & {
    cleanRequest?: { searchParams?: string[] };
@@ -30,6 +31,16 @@ function getCleanRequest(req: Request, cleanRequest: NextjsBkndConfig["cleanRequ
 
    const url = new URL(req.url);
    cleanRequest?.searchParams?.forEach((k) => url.searchParams.delete(k));
+
+   if (isNode()) {
+      return new Request(url.toString(), {
+         method: req.method,
+         headers: req.headers,
+         body: req.body,
+         // @ts-ignore
+         duplex: "half",
+      });
+   }
 
    return new Request(url.toString(), {
       method: req.method,

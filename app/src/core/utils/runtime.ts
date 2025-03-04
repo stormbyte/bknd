@@ -39,3 +39,11 @@ export function runtimeSupports(feature: keyof typeof features) {
 
    return features[feature];
 }
+
+export function isNode() {
+   try {
+      return global?.process?.release?.name === "node";
+   } catch (e) {
+      return false;
+   }
+}

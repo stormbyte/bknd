@@ -1,13 +1,16 @@
-import { getApp } from "@/bknd";
+import { config } from "@/bknd";
+import { serve } from "bknd/adapter/nextjs";
 
-// if you're not using a local media adapter, or file database,
-// you can uncomment this line to enable running bknd on edge
+// since we're using the local media adapter in this example,
+// we can't use the edge runtime.
 // export const runtime = "edge";
 
-const handler = async (request: Request) => {
-   const app = await getApp();
-   return app.fetch(request);
-};
+const handler = serve({
+   ...config,
+   cleanRequest: {
+      searchParams: ["bknd"],
+   },
+});
 
 export const GET = handler;
 export const POST = handler;
