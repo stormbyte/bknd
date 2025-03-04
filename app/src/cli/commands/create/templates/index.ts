@@ -8,7 +8,15 @@ export type TemplateSetupCtx = {
    name: string;
 };
 
-export type Integration = "node" | "bun" | "cloudflare" | "nextjs" | "remix" | "astro" | "custom";
+export type Integration =
+   | "node"
+   | "bun"
+   | "cloudflare"
+   | "nextjs"
+   | "remix"
+   | "astro"
+   | "aws"
+   | "custom";
 
 type TemplateScripts = "install" | "dev" | "build" | "start";
 export type Template = {
@@ -59,6 +67,14 @@ export const templates: Template[] = [
       integration: "astro",
       description: "A basic bknd Astro starter",
       path: "gh:bknd-io/bknd/examples/astro",
+      ref: true,
+   },
+   {
+      key: "aws",
+      title: "AWS Lambda Basic",
+      integration: "aws",
+      description: "A basic bknd AWS Lambda starter",
+      path: "gh:bknd-io/bknd/examples/aws-lambda",
       ref: true,
    },
 ];

@@ -49,11 +49,14 @@ export default {
 
          // log routes
          if (firstStart) {
-            console.log("[DB]", credentials);
             firstStart = false;
-            /*console.log("\n[APP ROUTES]");
-            showRoutes(app.server);
-            console.log("-------\n");*/
+            console.log("[DB]", credentials);
+
+            if (import.meta.env.VITE_SHOW_ROUTES === "1") {
+               console.log("\n[APP ROUTES]");
+               showRoutes(app.server);
+               console.log("-------\n");
+            }
          }
       }
 

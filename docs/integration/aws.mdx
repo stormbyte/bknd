@@ -35,7 +35,7 @@ export const handler = serveLambda({
    }
 });
 ```
-Although the runtime would support database as a file, we don't recommend it. You'd need to also bundle the native dependencies which increases the deployment size and cold start time.
+Although the runtime would support database as a file, we don't recommend it. You'd need to also bundle the native dependencies which increases the deployment size and cold start time. Instead, we recommend you to use [LibSQL on Turso](/usage/database#sqlite-using-libsql-on-turso).
 
 ## Serve the Admin UI
 Lambda functions should be as small as possible. Therefore, the static files for the admin panel should not be served from node_modules like with the Node adapter.

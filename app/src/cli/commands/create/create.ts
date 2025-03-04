@@ -5,7 +5,7 @@ import type { CliCommand } from "cli/types";
 import { typewriter, wait } from "cli/utils/cli";
 import { execAsync, getVersion } from "cli/utils/sys";
 import { Option } from "commander";
-import { colorizeConsole } from "core";
+import { env } from "core";
 import color from "picocolors";
 import { overridePackageJson, updateBkndPackages } from "./npm";
 import { type Template, templates } from "./templates";
@@ -50,7 +50,6 @@ function errorOutro() {
 
 async function action(options: { template?: string; dir?: string; integration?: string }) {
    console.log("");
-   colorizeConsole(console);
 
    const downloadOpts = {
       dir: options.dir || "./",
@@ -59,7 +58,7 @@ async function action(options: { template?: string; dir?: string; integration?: 
 
    const version = await getVersion();
    $p.intro(
-      `👋 Welcome to the ${color.bold(color.cyan("bknd"))} create wizard ${color.bold(`v${version}`)}`,
+      `👋 Welcome to the ${color.bold(color.cyan("bknd"))} create cli ${color.bold(`v${version}`)}`,
    );
 
    await $p.stream.message(
@@ -178,10 +177,11 @@ async function action(options: { template?: string; dir?: string; integration?: 
    const ctx = { template, dir: downloadOpts.dir, name };
 
    {
-      const ref = process.env.BKND_CLI_CREATE_REF ?? `v${version}`;
-      if (process.env.BKND_CLI_CREATE_REF) {
-         $p.log.warn(color.dim("[DEV] Using local ref: ") + color.yellow(ref));
-      }
+      const ref = env("cli_create_ref", `#v${version}`, {
+         onValid: (given) => {
+            $p.log.warn(color.dim("[DEV] Using local ref: ") + color.yellow(given));
+         },
+      });
 
       const prefix =
          template.ref === true

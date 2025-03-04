@@ -1,5 +1,5 @@
 import { Guard } from "auth";
-import { $console, BkndError, DebugLogger, withDisabledConsole } from "core";
+import { $console, BkndError, DebugLogger, env } from "core";
 import { EventManager } from "core/events";
 import { clone, diff } from "core/object/diff";
 import {
@@ -91,7 +91,7 @@ export type ModuleManagerOptions = {
    trustFetched?: boolean;
    // runs when initial config provided on a fresh database
    seed?: (ctx: ModuleBuildContext) => Promise<void>;
-   // wether
+   /** @deprecated */
    verbosity?: Verbosity;
 };
 
@@ -127,6 +127,8 @@ interface T_INTERNAL_EM {
    __bknd: ConfigTable2;
 }
 
+const debug_modules = env("modules_debug");
+
 // @todo: cleanup old diffs on upgrade
 // @todo: cleanup multiple backups on upgrade
 export class ModuleManager {
@@ -152,7 +154,7 @@ export class ModuleManager {
       this.__em = new EntityManager([__bknd], this.connection);
       this.modules = {} as Modules;
       this.emgr = new EventManager();
-      this.logger = new DebugLogger(this.verbosity === Verbosity.log);
+      this.logger = new DebugLogger(debug_modules);
       let initial = {} as Partial<ModuleConfigs>;
 
       if (options?.initial) {
@@ -215,7 +217,9 @@ export class ModuleManager {
    }
 
    private repo() {
-      return this.__em.repo(__bknd);
+      return this.__em.repo(__bknd, {
+         silent: !debug_modules,
+      });
    }
 
    private mutator() {
@@ -226,6 +230,7 @@ export class ModuleManager {
       return this.connection.kysely as Kysely<{ table: ConfigTable }>;
    }
 
+   // @todo: add indices for: version, type
    async syncConfigTable() {
       this.logger.context("sync").log("start");
       const result = await this.__em.schema().sync({ force: true });
@@ -271,23 +276,17 @@ export class ModuleManager {
       const startTime = performance.now();
 
       // disabling console log, because the table might not exist yet
-      const result = await withDisabledConsole(
-         async () => {
-            const { data: result } = await this.repo().findOne(
-               { type: "config" },
-               {
-                  sort: { by: "version", dir: "desc" },
-               },
-            );
-
-            if (!result) {
-               throw BkndError.with("no config");
-            }
-
-            return result as unknown as ConfigTable;
+      const { data: result } = await this.repo().findOne(
+         { type: "config" },
+         {
+            sort: { by: "version", dir: "desc" },
          },
-         this.verbosity > Verbosity.silent ? [] : ["error"],
       );
+
+      if (!result) {
+         this.logger.log("error fetching").clear();
+         throw BkndError.with("no config");
+      }
 
       this.logger
          .log("took", performance.now() - startTime, "ms", {
@@ -295,7 +294,8 @@ export class ModuleManager {
             id: result.id,
          })
          .clear();
-      return result;
+
+      return result as unknown as ConfigTable;
    }
 
    async save() {
@@ -412,7 +412,6 @@ export class ModuleManager {
                );
             }
          } catch (e: any) {
-            this.logger.clear(); // fetch couldn't clear
             throw new Error(`Version is ${this.version()}, fetch failed: ${e.message}`);
          }
 

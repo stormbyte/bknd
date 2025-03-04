@@ -14,7 +14,7 @@ import type { EntityRelation } from "../relations";
 import { RelationAccessor } from "../relations/RelationAccessor";
 import { SchemaManager } from "../schema/SchemaManager";
 import { Entity } from "./Entity";
-import { type EntityData, Mutator, Repository } from "./index";
+import { type EntityData, Mutator, Repository, type RepositoryOptions } from "./index";
 
 type EntitySchema<
    TBD extends object = DefaultDB,
@@ -211,12 +211,15 @@ export class EntityManager<TBD extends object = DefaultDB> {
       return this.repo(entity);
    }
 
-   repo<E extends Entity | keyof TBD | string>(entity: E): Repository<TBD, EntitySchema<TBD, E>> {
-      return new Repository(this, this.entity(entity), this.emgr);
+   repo<E extends Entity | keyof TBD | string>(
+      entity: E,
+      opts: Omit<RepositoryOptions, "emgr"> = {},
+   ): Repository<TBD, EntitySchema<TBD, E>> {
+      return new Repository(this, this.entity(entity), { ...opts, emgr: this.emgr });
    }
 
    mutator<E extends Entity | keyof TBD | string>(entity: E): Mutator<TBD, EntitySchema<TBD, E>> {
-      return new Mutator(this, this.entity(entity), this.emgr);
+      return new Mutator(this, this.entity(entity), { emgr: this.emgr });
    }
 
    addIndex(index: EntityIndex, force = false) {

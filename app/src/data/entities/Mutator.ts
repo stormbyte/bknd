@@ -32,8 +32,6 @@ export class Mutator<
    Input = Omit<Output, "id">,
 > implements EmitsEvents
 {
-   em: EntityManager<TBD>;
-   entity: Entity;
    static readonly Events = MutatorEvents;
    emgr: EventManager<typeof MutatorEvents>;
 
@@ -43,10 +41,12 @@ export class Mutator<
       this.__unstable_disable_system_entity_creation = value;
    }
 
-   constructor(em: EntityManager<TBD>, entity: Entity, emgr?: EventManager<any>) {
-      this.em = em;
-      this.entity = entity;
-      this.emgr = emgr ?? new EventManager(MutatorEvents);
+   constructor(
+      public em: EntityManager<TBD>,
+      public entity: Entity,
+      protected options?: { emgr?: EventManager<any> },
+   ) {
+      this.emgr = options?.emgr ?? new EventManager(MutatorEvents);
    }
 
    private get conn() {

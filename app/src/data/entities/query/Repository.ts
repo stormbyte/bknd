@@ -4,7 +4,7 @@ import { type EmitsEvents, EventManager } from "core/events";
 import { type SelectQueryBuilder, sql } from "kysely";
 import { cloneDeep } from "lodash-es";
 import { InvalidSearchParamsException } from "../../errors";
-import { MutatorEvents, RepositoryEvents, RepositoryFindManyBefore } from "../../events";
+import { MutatorEvents, RepositoryEvents } from "../../events";
 import { type RepoQuery, defaultQuerySchema } from "../../server/data-query-impl";
 import {
    type Entity,
@@ -44,22 +44,27 @@ export type RepositoryExistsResponse = RepositoryRawResponse & {
    exists: boolean;
 };
 
+export type RepositoryOptions = {
+   silent?: boolean;
+   emgr?: EventManager<any>;
+};
+
 export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = any>
    implements EmitsEvents
 {
-   em: EntityManager<TBD>;
-   entity: Entity;
    static readonly Events = RepositoryEvents;
    emgr: EventManager<typeof Repository.Events>;
 
-   constructor(em: EntityManager<TBD>, entity: Entity, emgr?: EventManager<any>) {
-      this.em = em;
-      this.entity = entity;
-      this.emgr = emgr ?? new EventManager(MutatorEvents);
+   constructor(
+      public em: EntityManager<TBD>,
+      public entity: Entity,
+      protected options?: RepositoryOptions,
+   ) {
+      this.emgr = options?.emgr ?? new EventManager(MutatorEvents);
    }
 
    private cloneFor(entity: Entity) {
-      return new Repository(this.em, this.em.entity(entity), this.emgr);
+      return new Repository(this.em, this.em.entity(entity), { emgr: this.emgr });
    }
 
    private get conn() {
@@ -68,7 +73,7 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
 
    private checkIndex(entity: string, field: string, clause: string) {
       const indexed = this.em.getIndexedFields(entity).map((f) => f.name);
-      if (!indexed.includes(field)) {
+      if (!indexed.includes(field) && this.options?.silent !== true) {
          $console.warn(`Field "${entity}.${field}" used in "${clause}" is not indexed`);
       }
    }
@@ -174,7 +179,9 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
    protected async performQuery(qb: RepositoryQB): Promise<RepositoryResponse> {
       const entity = this.entity;
       const compiled = qb.compile();
-      //$console.debug(`Repository: query\n${compiled.sql}\n`, compiled.parameters);
+      if (this.options?.silent !== true) {
+         $console.debug(`Repository: query\n${compiled.sql}\n`, compiled.parameters);
+      }
 
       const start = performance.now();
       const selector = (as = "count") => this.conn.fn.countAll<number>().as(as);
@@ -186,6 +193,20 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
          .clearGroupBy()
          .clearOrderBy();
       const totalQuery = this.conn.selectFrom(entity.name).select(selector("total"));
+      const payload = {
+         entity,
+         sql: compiled.sql,
+         parameters: [...compiled.parameters],
+         result: [],
+         data: [],
+         meta: {
+            total: 0,
+            count: 0,
+            items: 0,
+            time: 0,
+            query: { sql: compiled.sql, parameters: compiled.parameters },
+         },
+      };
 
       try {
          const [_count, _total, result] = await this.em.connection.batchQuery([
@@ -199,25 +220,27 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
          const data = this.em.hydrate(entity.name, result);
 
          return {
-            entity,
-            sql: compiled.sql,
-            parameters: [...compiled.parameters],
+            ...payload,
             result,
             data,
             meta: {
+               ...payload.meta,
                total: _total[0]?.total ?? 0,
                count: _count[0]?.count ?? 0, // @todo: better graceful method
                items: result.length,
                time,
-               query: { sql: compiled.sql, parameters: compiled.parameters },
             },
          };
       } catch (e) {
-         if (e instanceof Error) {
-            $console.error("[ERROR] Repository.performQuery", e.message);
-         }
+         if (this.options?.silent !== true) {
+            if (e instanceof Error) {
+               $console.error("[ERROR] Repository.performQuery", e.message);
+            }
 
-         throw e;
+            throw e;
+         } else {
+            return payload;
+         }
       }
    }
 
