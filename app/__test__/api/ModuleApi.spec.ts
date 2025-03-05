@@ -89,6 +89,14 @@ describe("ModuleApi", () => {
       expect(api.delete("/").request.method).toEqual("DELETE");
    });
 
+   it("refines", async () => {
+      const app = new Hono().get("/endpoint", (c) => c.json({ foo: ["bar"] }));
+      const api = new Api({ host }, app.request as typeof fetch);
+
+      expect((await api.get("/endpoint")).data).toEqual({ foo: ["bar"] });
+      expect((await api.get("/endpoint").refine((data) => data.foo)).data).toEqual(["bar"]);
+   });
+
    // @todo: test error response
    // @todo: test method shortcut functions
 });

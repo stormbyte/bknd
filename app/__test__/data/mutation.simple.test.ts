@@ -137,7 +137,7 @@ describe("Mutator simple", async () => {
       expect((await em.repository(items).findMany()).data.length).toBe(data.length - 2);
       //console.log((await em.repository(items).findMany()).data);
 
-      await em.mutator(items).deleteWhere();
+      await em.mutator(items).deleteWhere({ id: { $isnull: 0 } });
       expect((await em.repository(items).findMany()).data.length).toBe(0);
 
       //expect(res.data.count).toBe(0);

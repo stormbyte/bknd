@@ -148,9 +148,10 @@ export abstract class ModuleApi<Options extends BaseModuleApiOptions = BaseModul
       });
    }
 
-   delete<Data = any>(_input: TInput, _init?: RequestInit) {
+   delete<Data = any>(_input: TInput, body?: any, _init?: RequestInit) {
       return this.request<Data>(_input, undefined, {
          ..._init,
+         body,
          method: "DELETE",
       });
    }
@@ -171,7 +172,7 @@ export function createResponseProxy<Body = any, Data = any>(
    body: Body,
    data?: Data,
 ): ResponseObject<Body, Data> {
-   let actualData: any = data ?? body;
+   let actualData: any = typeof data !== "undefined" ? data : body;
    const _props = ["raw", "body", "ok", "status", "res", "data", "toJSON"];
 
    // that's okay, since you have to check res.ok anyway
@@ -189,6 +190,7 @@ export function createResponseProxy<Body = any, Data = any>(
          if (prop === "toJSON") {
             return () => target;
          }
+
          return Reflect.get(target, prop, receiver);
       },
       has(target, prop) {
@@ -223,10 +225,17 @@ export class FetchPromise<T = ApiResponse<any>> implements Promise<T> {
          fetcher?: typeof fetch;
          verbose?: boolean;
       },
+      protected refineData?: (data: T) => any,
    ) {}
 
    get verbose() {
       return this.options?.verbose ?? false;
+   }
+
+   refine<N>(fn: (data: T) => N) {
+      return new FetchPromise(this.request, this.options, fn) as unknown as FetchPromise<
+         ApiResponse<N>
+      >;
    }
 
    async execute(): Promise<ResponseObject<T>> {
@@ -263,6 +272,15 @@ export class FetchPromise<T = ApiResponse<any>> implements Promise<T> {
          resBody = await res.text();
       } else {
          resBody = res.body;
+      }
+
+      if (this.refineData) {
+         try {
+            resData = this.refineData(resData);
+         } catch (e) {
+            console.warn("[FetchPromise] Error in refineData", e);
+            resData = undefined;
+         }
       }
 
       return createResponseProxy<T>(res, resBody, resData);
