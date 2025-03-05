@@ -2,9 +2,9 @@ import type { SafeUser } from "auth";
 import { AuthApi } from "auth/api/AuthApi";
 import { DataApi } from "data/api/DataApi";
 import { decode } from "hono/jwt";
-import { omit } from "lodash-es";
 import { MediaApi } from "media/api/MediaApi";
 import { SystemApi } from "modules/SystemApi";
+import { omitKeys } from "core/utils";
 
 export type TApiUser = SafeUser;
 
@@ -122,7 +122,7 @@ export class Api {
       this.verified = false;
 
       if (token) {
-         this.user = omit(decode(token).payload as any, ["iat", "iss", "exp"]) as any;
+         this.user = omitKeys(decode(token).payload as any, ["iat", "iss", "exp"]) as any;
       } else {
          this.user = undefined;
       }
