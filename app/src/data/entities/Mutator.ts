@@ -270,8 +270,13 @@ export class Mutator<
    }
 
    // @todo: decide whether entries should be deleted all at once or one by one (for events)
-   async deleteWhere(where?: RepoQuery["where"]): Promise<MutatorResponse<Output[]>> {
+   async deleteWhere(where: RepoQuery["where"]): Promise<MutatorResponse<Output[]>> {
       const entity = this.entity;
+
+      // @todo: add a way to delete all by adding force?
+      if (!where || typeof where !== "object" || Object.keys(where).length === 0) {
+         throw new Error("Where clause must be provided for mass deletion");
+      }
 
       const qb = this.appendWhere(this.conn.deleteFrom(entity.name), where).returning(
          entity.getSelect(),
@@ -282,10 +287,15 @@ export class Mutator<
 
    async updateWhere(
       data: Partial<Input>,
-      where?: RepoQuery["where"],
+      where: RepoQuery["where"],
    ): Promise<MutatorResponse<Output[]>> {
       const entity = this.entity;
       const validatedData = await this.getValidatedData(data, "update");
+
+      // @todo: add a way to delete all by adding force?
+      if (!where || typeof where !== "object" || Object.keys(where).length === 0) {
+         throw new Error("Where clause must be provided for mass update");
+      }
 
       const query = this.appendWhere(this.conn.updateTable(entity.name), where)
          .set(validatedData as any)

@@ -343,14 +343,20 @@ export class DataController extends Controller {
          "/:entity",
          permission(DataPermissions.entityCreate),
          tb("param", Type.Object({ entity: Type.String() })),
+         tb("json", Type.Union([Type.Object({}), Type.Array(Type.Object({}))])),
          async (c) => {
             const { entity } = c.req.param();
             if (!this.entityExists(entity)) {
                return this.notFound(c);
             }
-            const body = (await c.req.json()) as EntityData;
-            const result = await this.em.mutator(entity).insertOne(body);
+            const body = (await c.req.json()) as EntityData | EntityData[];
 
+            if (Array.isArray(body)) {
+               const result = await this.em.mutator(entity).insertMany(body);
+               return c.json(this.mutatorResult(result), 201);
+            }
+
+            const result = await this.em.mutator(entity).insertOne(body);
             return c.json(this.mutatorResult(result), 201);
          },
       );

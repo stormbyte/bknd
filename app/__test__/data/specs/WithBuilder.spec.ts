@@ -1,5 +1,4 @@
-import { afterAll, describe, expect, test } from "bun:test";
-import { _jsonp } from "../../../src/core/utils";
+import { describe, expect, test } from "bun:test";
 import {
    Entity,
    EntityManager,
@@ -10,7 +9,7 @@ import {
    WithBuilder,
 } from "../../../src/data";
 import * as proto from "../../../src/data/prototype";
-import { compileQb, prettyPrintQb, schemaToEm } from "../../helper";
+import { schemaToEm } from "../../helper";
 import { getDummyConnection } from "../helper";
 
 const { dummyConnection } = getDummyConnection();
@@ -30,7 +29,7 @@ describe("[data] WithBuilder", async () => {
       );
       const em = schemaToEm(schema);
 
-      expect(WithBuilder.validateWiths(em, "posts", undefined)).toBe(0);
+      expect(WithBuilder.validateWiths(em, "posts", undefined as any)).toBe(0);
       expect(WithBuilder.validateWiths(em, "posts", {})).toBe(0);
       expect(WithBuilder.validateWiths(em, "posts", { users: {} })).toBe(1);
       expect(

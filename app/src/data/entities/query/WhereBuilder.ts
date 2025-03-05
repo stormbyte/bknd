@@ -2,7 +2,6 @@ import {
    type BooleanLike,
    type FilterQuery,
    type Primitive,
-   type TExpression,
    exp,
    isBooleanLike,
    isPrimitive,
