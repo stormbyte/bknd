@@ -1,4 +1,6 @@
-export type Primitive = string | number | boolean;
+import type { PrimaryFieldType } from "core";
+
+export type Primitive = PrimaryFieldType | string | number | boolean;
 export function isPrimitive(value: any): value is Primitive {
    return ["string", "number", "boolean"].includes(typeof value);
 }
@@ -63,7 +65,6 @@ function _convert<Exps extends Expressions>(
    expressions: Exps,
    path: string[] = [],
 ): FilterQuery<Exps> {
-   //console.log("-----------------");
    const ExpressionConditionKeys = expressions.map((e) => e.key);
    const keys = Object.keys($query);
    const operands = [OperandOr] as const;
@@ -132,8 +133,6 @@ function _build<Exps extends Expressions>(
 ): ValidationResults {
    const $query = options.convert ? _convert<Exps>(_query, expressions) : _query;
 
-   //console.log("-----------------", { $query });
-   //const keys = Object.keys($query);
    const result: ValidationResults = {
       $and: [],
       $or: [],
@@ -150,22 +149,16 @@ function _build<Exps extends Expressions>(
       if (!exp.valid(expected)) {
          throw new Error(`Invalid expected value at "${[...path, $op].join(".")}": ${expected}`);
       }
-      //console.log("found exp", { key: exp.key, expected, actual });
       return exp.validate(expected, actual, options.exp_ctx);
    }
 
    // check $and
-   //console.log("$and entries", Object.entries($and));
    for (const [key, value] of Object.entries($and)) {
-      //console.log("$op/$v", Object.entries(value));
       for (const [$op, $v] of Object.entries(value)) {
          const objValue = options.value_is_kv ? key : options.object[key];
-         //console.log("--check $and", { key, value, objValue, v_i_kv: options.value_is_kv });
-         //console.log("validate", { $op, $v, objValue, key });
          result.$and.push(__validate($op, $v, objValue, [key]));
          result.keys.add(key);
       }
-      //console.log("-", { key, value });
    }
 
    // check $or
@@ -173,14 +166,11 @@ function _build<Exps extends Expressions>(
       const objValue = options.value_is_kv ? key : options.object[key];
 
       for (const [$op, $v] of Object.entries(value)) {
-         //console.log("validate", { $op, $v, objValue });
          result.$or.push(__validate($op, $v, objValue, [key]));
          result.keys.add(key);
       }
-      //console.log("-", { key, value });
    }
 
-   //console.log("matches", matches);
    return result;
 }
 
