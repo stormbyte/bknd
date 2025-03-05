@@ -80,7 +80,7 @@ export default function AdminPage() {
 ### Using the REST API or TypeScript SDK (`bknd/client`)
 If you're not using a JavaScript environment, you can still access any endpoint using the REST API:
 ```bash
-curl -XGET <your-endpoint>/api/data/<entity>
+curl -XGET <your-endpoint>/api/data/entity/<entity>
 {
   "data": [
     { "id": 1, ... },
