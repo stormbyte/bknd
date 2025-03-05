@@ -6,7 +6,7 @@ export class EntityIndex {
       public entity: Entity,
       public fields: Field[],
       public unique: boolean = false,
-      public name?: string
+      public name?: string,
    ) {
       if (fields.length === 0) {
          throw new Error("Indices must contain at least one field");
@@ -21,7 +21,7 @@ export class EntityIndex {
             throw new Error(
                `Unique indices must have first field as required: ${fields
                   .map((f) => f.name)
-                  .join(", ")}`
+                  .join(", ")}`,
             );
          }
       }
@@ -30,7 +30,7 @@ export class EntityIndex {
          this.name = [
             unique ? "idx_unique" : "idx",
             entity.name,
-            ...fields.map((f) => f.name)
+            ...fields.map((f) => f.name),
          ].join("_");
       }
    }
@@ -40,7 +40,7 @@ export class EntityIndex {
          entity: this.entity.name,
          fields: this.fields.map((f) => f.name),
          //name: this.name,
-         unique: this.unique
+         unique: this.unique,
       };
    }
 }

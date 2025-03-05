@@ -48,7 +48,7 @@ async function create(app: App, options: any) {
             return "Invalid email";
          }
          return;
-      }
+      },
    });
 
    const password = await $password({
@@ -58,7 +58,7 @@ async function create(app: App, options: any) {
             return "Invalid password";
          }
          return;
-      }
+      },
    });
 
    if (typeof email !== "string" || typeof password !== "string") {
@@ -69,8 +69,8 @@ async function create(app: App, options: any) {
    try {
       const created = await app.createUser({
          email,
-         password: await strategy.hash(password as string)
-      })
+         password: await strategy.hash(password as string),
+      });
       console.log("Created:", created);
    } catch (e) {
       console.error("Error", e);
@@ -90,7 +90,7 @@ async function update(app: App, options: any) {
             return "Invalid email";
          }
          return;
-      }
+      },
    })) as string;
    if (typeof email !== "string") {
       console.log("Cancelled");
@@ -111,7 +111,7 @@ async function update(app: App, options: any) {
             return "Invalid password";
          }
          return;
-      }
+      },
    });
    if (typeof password !== "string") {
       console.log("Cancelled");
@@ -130,7 +130,7 @@ async function update(app: App, options: any) {
          .ctx()
          .em.mutator(users_entity)
          .updateOne(user.id, {
-            strategy_value: await strategy.hash(password as string)
+            strategy_value: await strategy.hash(password as string),
          });
       togglePw(false);
 

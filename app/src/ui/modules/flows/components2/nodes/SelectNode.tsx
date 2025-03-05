@@ -15,15 +15,15 @@ const nodes = [
          params: {
             method: "GET",
             headers: [],
-            url: ""
-         }
-      }
+            url: "",
+         },
+      },
    },
    {
       type: "render",
       label: "Render",
-      description: "Render data using LiquidJS"
-   }
+      description: "Render data using LiquidJS",
+   },
 ];
 
 export function SelectNode(props) {
@@ -46,13 +46,13 @@ export function SelectNode(props) {
                   type: "task",
                   data: {
                      ...node.template,
-                     label
-                  }
+                     label,
+                  },
                };
             }
 
             return n;
-         })
+         }),
       );
       setTimeout(() => {
          reactflow.setEdges((prev) =>
@@ -62,12 +62,12 @@ export function SelectNode(props) {
                   return {
                      ...e,
                      id: "task-" + label,
-                     target: "task-" + label
+                     target: "task-" + label,
                   };
                }
 
                return e;
-            })
+            }),
          );
       }, 100);
 
@@ -92,7 +92,7 @@ export function SelectNode(props) {
                      key={node.type}
                      className={twMerge(
                         "border border-primary/10 rounded-md py-2 px-4 hover:bg-primary/10",
-                        selected === node.type && "bg-primary/10"
+                        selected === node.type && "bg-primary/10",
                      )}
                      onClick={() => setSelected(node.type)}
                   >

@@ -9,7 +9,7 @@ import {
    ManyToOneRelation,
    type MutatorResponse,
    type RepositoryResponse,
-   TextField
+   TextField,
 } from "../../src/data";
 import { DataController } from "../../src/data/api/DataController";
 import { dataConfigSchema } from "../../src/data/data-schema";
@@ -35,17 +35,17 @@ describe("[data] DataController", async () => {
          meta: {
             total: 0,
             count: 0,
-            items: 0
-         }
+            items: 0,
+         },
       });
 
       expect(res).toEqual({
          meta: {
             total: 0,
             count: 0,
-            items: 0
+            items: 0,
          },
-         data: []
+         data: [],
       });
    });
 
@@ -59,22 +59,22 @@ describe("[data] DataController", async () => {
          data: [] as any,
          sql: "",
          parameters: [] as any,
-         result: [] as any
+         result: [] as any,
       });
 
       expect(res).toEqual({
-         data: []
+         data: [],
       });
    });
 
    describe("getController", async () => {
       const users = new Entity("users", [
          new TextField("name", { required: true }),
-         new TextField("bio")
+         new TextField("bio"),
       ]);
       const posts = new Entity("posts", [new TextField("content")]);
       const em = new EntityManager([users, posts], dummyConnection, [
-         new ManyToOneRelation(posts, users)
+         new ManyToOneRelation(posts, users),
       ]);
 
       await em.schema().sync({ force: true });
@@ -83,12 +83,12 @@ describe("[data] DataController", async () => {
          users: [
             { name: "foo", bio: "bar" },
             { name: "bar", bio: null },
-            { name: "baz", bio: "!!!" }
+            { name: "baz", bio: "!!!" },
          ],
          posts: [
             { content: "post 1", users_id: 1 },
-            { content: "post 2", users_id: 2 }
-         ]
+            { content: "post 2", users_id: 2 },
+         ],
       };
 
       const ctx: any = { em, guard: new Guard() };
@@ -118,7 +118,7 @@ describe("[data] DataController", async () => {
          for await (const _user of fixtures.users) {
             const res = await app.request("/entity/users", {
                method: "POST",
-               body: JSON.stringify(_user)
+               body: JSON.stringify(_user),
             });
             //console.log("res", { _user }, res);
             const result = (await res.json()) as MutatorResponse;
@@ -133,7 +133,7 @@ describe("[data] DataController", async () => {
          for await (const _post of fixtures.posts) {
             const res = await app.request("/entity/posts", {
                method: "POST",
-               body: JSON.stringify(_post)
+               body: JSON.stringify(_post),
             });
             const result = (await res.json()) as MutatorResponse;
             const { id, ...data } = result.data as any;
@@ -159,11 +159,11 @@ describe("[data] DataController", async () => {
          const res = await app.request("/entity/users/query", {
             method: "POST",
             headers: {
-               "Content-Type": "application/json"
+               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-               where: { bio: { $isnull: 1 } }
-            })
+               where: { bio: { $isnull: 1 } },
+            }),
          });
          const data = (await res.json()) as RepositoryResponse;
 
@@ -199,7 +199,7 @@ describe("[data] DataController", async () => {
       test("/:entity (update one)", async () => {
          const res = await app.request("/entity/users/3", {
             method: "PATCH",
-            body: JSON.stringify({ name: "new name" })
+            body: JSON.stringify({ name: "new name" }),
          });
          const { data } = (await res.json()) as MutatorResponse;
 
@@ -221,7 +221,7 @@ describe("[data] DataController", async () => {
 
       test("/:entity/:id (delete one)", async () => {
          const res = await app.request("/entity/posts/2", {
-            method: "DELETE"
+            method: "DELETE",
          });
          const { data } = (await res.json()) as RepositoryResponse<EntityData>;
          expect(data).toEqual({ id: 2, ...fixtures.posts[1] });

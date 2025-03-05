@@ -12,7 +12,7 @@ import {
    type UseFormReturn,
    useController,
    useFieldArray,
-   useForm
+   useForm,
 } from "react-hook-form";
 import { TbChevronDown, TbChevronUp, TbGripVertical, TbTrash } from "react-icons/tb";
 import { Button } from "../../../components/buttons/Button";
@@ -26,21 +26,21 @@ const fieldSchema = Type.Union(
          {
             type: Type.Const(type),
             name: StringIdentifier,
-            config: Type.Optional(schema)
+            config: Type.Optional(schema),
          },
          {
-            additionalProperties: false
-         }
-      )
-   )
+            additionalProperties: false,
+         },
+      ),
+   ),
 );
 const schema = Type.Object({
-   fields: Type.Array(fieldSchema)
+   fields: Type.Array(fieldSchema),
 });
 
 const fieldSchema2 = Type.Object({
    type: StringEnum(Object.keys(fieldSchemas)),
-   name: StringIdentifier
+   name: StringIdentifier,
 });
 
 function specificFieldSchema(type: keyof typeof fieldSchemas) {
@@ -50,7 +50,7 @@ function specificFieldSchema(type: keyof typeof fieldSchemas) {
       "required",
       "fillable",
       "hidden",
-      "virtual"
+      "virtual",
    ]);
 }
 
@@ -62,19 +62,19 @@ export default function EntityFieldsForm() {
       handleSubmit,
       watch,
       register,
-      setValue
+      setValue,
    } = useForm({
       mode: "onTouched",
       resolver: typeboxResolver(schema),
       defaultValues: {
          fields: [{ type: "text", name: "", config: {} }],
-         sort: { by: "-1", dir: "asc" }
-      }
+         sort: { by: "-1", dir: "asc" },
+      },
    });
    const defaultType = Object.keys(fieldSchemas)[0];
    const { fields, append, prepend, remove, swap, move, insert, update } = useFieldArray({
       control, // control props comes from useForm (optional: if you are using FormProvider)
-      name: "fields" // unique name for your Field Array
+      name: "fields", // unique name for your Field Array
    });
 
    function handleAppend() {
@@ -113,16 +113,16 @@ function EntityFieldForm({ update, index, value }) {
       register,
       handleSubmit,
       control,
-      formState: { errors }
+      formState: { errors },
    } = useForm({
       mode: "onBlur",
       resolver: typeboxResolver(
          Type.Object({
             type: StringEnum(Object.keys(fieldSchemas)),
-            name: Type.String({ minLength: 1, maxLength: 3 })
-         })
+            name: Type.String({ minLength: 1, maxLength: 3 }),
+         }),
       ),
-      defaultValues: value
+      defaultValues: value,
    });
 
    function handleUpdate({ id, ...data }) {
@@ -153,19 +153,19 @@ function EntityFieldController({
    control,
    defaultValue,
    rules,
-   shouldUnregister
+   shouldUnregister,
 }: UseControllerProps & {
    index: number;
 }) {
    const {
       field: { value, onChange: fieldOnChange, ...field },
-      fieldState
+      fieldState,
    } = useController({
       name,
       control,
       defaultValue,
       rules,
-      shouldUnregister
+      shouldUnregister,
    });
 
    return <div>field</div>;
@@ -176,7 +176,7 @@ function EntityField({
    index,
    form: { watch, register, setValue, getValues, control },
    remove,
-   defaultType
+   defaultType,
 }: {
    field: FieldArrayWithId;
    index: number;

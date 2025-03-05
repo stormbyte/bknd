@@ -20,7 +20,7 @@ export function SocialLink({
    action,
    method = "POST",
    basepath = "/api/auth",
-   children
+   children,
 }: SocialLinkProps) {
    const url = [basepath, provider, action].join("/");
 

@@ -5,7 +5,7 @@ import {
    EntityIndex,
    type EntityManager,
    Field,
-   type SchemaResponse
+   type SchemaResponse,
 } from "../../../../src/data";
 
 class TestField extends Field {

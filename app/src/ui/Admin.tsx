@@ -21,7 +21,7 @@ export type BkndAdminProps = {
 export default function Admin({
    baseUrl: baseUrlOverride,
    withProvider = false,
-   config
+   config,
 }: BkndAdminProps) {
    const Component = (
       <BkndProvider adminOverride={config} fallback={<Skeleton theme={config?.color_scheme} />}>
@@ -45,7 +45,7 @@ function AdminInternal() {
 
    return (
       <MantineProvider {...createMantineTheme(theme as any)}>
-         <Notifications />
+         <Notifications position="top-right" />
          <FlashMessage />
          <BkndModalsProvider>
             <Routes />
@@ -54,9 +54,9 @@ function AdminInternal() {
    );
 }
 
-const Skeleton = ({ theme }: { theme?: string }) => {
-   const actualTheme =
-      (theme ?? document.querySelector("html")?.classList.contains("light")) ? "light" : "dark";
+const Skeleton = ({ theme }: { theme?: any }) => {
+   const t = useTheme();
+   const actualTheme = theme ?? t.theme;
 
    return (
       <div id="bknd-admin" className={actualTheme + " antialiased"}>

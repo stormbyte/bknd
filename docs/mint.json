@@ -94,6 +94,7 @@
             "integration/bun",
             "integration/cloudflare",
             "integration/deno",
+            "integration/aws",
             "integration/docker"
           ]
         }
@@ -108,20 +109,6 @@
         "modules/auth",
         "modules/media",
         "modules/flows"
-      ]
-    },
-    {
-      "group": "Deployment",
-      "pages": [
-        "deployment/overview",
-        {
-          "group": "Providers",
-          "pages": [
-            "deployment/providers/cloudflare",
-            "deployment/providers/vercel",
-            "deployment/providers/aws"
-          ]
-        }
       ]
     },
     {

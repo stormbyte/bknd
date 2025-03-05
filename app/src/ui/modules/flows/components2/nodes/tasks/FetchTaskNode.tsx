@@ -19,8 +19,8 @@ import { BaseNode } from "../BaseNode";
 const schema = Type.Composite([
    FetchTask.schema,
    Type.Object({
-      query: Type.Optional(Type.Record(Type.String(), Type.String()))
-   })
+      query: Type.Optional(Type.Record(Type.String(), Type.String())),
+   }),
 ]);
 
 type TFetchTaskSchema = Static<typeof FetchTask.schema>;
@@ -39,11 +39,11 @@ export function FetchTaskForm({ onChange, params, ...props }: FetchTaskFormProps
       getValues,
       formState: { isValid, errors },
       watch,
-      control
+      control,
    } = useForm({
       resolver: typeboxResolver(schema),
       defaultValues: params as Static<typeof schema>,
-      mode: "onChange"
+      mode: "onChange",
       //defaultValues: (state.relations?.create?.[0] ?? {}) as Static<typeof schema>
    });
 
@@ -130,11 +130,11 @@ const TaskNodeTabs = ({ watch }: any) => [
          <div className="scroll-auto">
             <JsonViewer json={watch()} expand={2} className="bg-white break-all" />
          </div>
-      )
+      ),
    },
    {
       id: "test",
       label: "test",
-      content: () => <div>test</div>
-   }
+      content: () => <div>test</div>,
+   },
 ];

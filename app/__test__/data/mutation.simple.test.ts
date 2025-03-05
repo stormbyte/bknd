@@ -14,7 +14,7 @@ describe("Mutator simple", async () => {
 
    const items = new Entity("items", [
       new TextField("label", { required: true, minLength: 1 }),
-      new NumberField("count", { default_value: 0 })
+      new NumberField("count", { default_value: 0 }),
    ]);
    const em = new EntityManager<any>([items], connection);
 
@@ -29,11 +29,11 @@ describe("Mutator simple", async () => {
    test("insert single row", async () => {
       const mutation = await em.mutator(items).insertOne({
          label: "test",
-         count: 1
+         count: 1,
       });
 
       expect(mutation.sql).toBe(
-         'insert into "items" ("count", "label") values (?, ?) returning "id", "label", "count"'
+         'insert into "items" ("count", "label") values (?, ?) returning "id", "label", "count"',
       );
       expect(mutation.data).toEqual({ id: 1, label: "test", count: 1 });
 
@@ -41,8 +41,8 @@ describe("Mutator simple", async () => {
          limit: 1,
          sort: {
             by: "id",
-            dir: "desc"
-         }
+            dir: "desc",
+         },
       });
 
       expect(query.result).toEqual([{ id: 1, label: "test", count: 1 }]);
@@ -53,18 +53,18 @@ describe("Mutator simple", async () => {
          limit: 1,
          sort: {
             by: "id",
-            dir: "desc"
-         }
+            dir: "desc",
+         },
       });
       const id = query.data![0].id as number;
 
       const mutation = await em.mutator(items).updateOne(id, {
          label: "new label",
-         count: 100
+         count: 100,
       });
 
       expect(mutation.sql).toBe(
-         'update "items" set "label" = ?, "count" = ? where "id" = ? returning "id", "label", "count"'
+         'update "items" set "label" = ?, "count" = ? where "id" = ? returning "id", "label", "count"',
       );
       expect(mutation.data).toEqual({ id, label: "new label", count: 100 });
    });
@@ -74,15 +74,15 @@ describe("Mutator simple", async () => {
          limit: 1,
          sort: {
             by: "id",
-            dir: "desc"
-         }
+            dir: "desc",
+         },
       });
 
       const id = query.data![0].id as number;
       const mutation = await em.mutator(items).deleteOne(id);
 
       expect(mutation.sql).toBe(
-         'delete from "items" where "id" = ? returning "id", "label", "count"'
+         'delete from "items" where "id" = ? returning "id", "label", "count"',
       );
       expect(mutation.data).toEqual({ id, label: "new label", count: 100 });
 
@@ -94,7 +94,7 @@ describe("Mutator simple", async () => {
       const incompleteCreate = async () =>
          await em.mutator(items).insertOne({
             //label: "test",
-            count: 1
+            count: 1,
          });
 
       expect(incompleteCreate()).rejects.toThrow();
@@ -104,7 +104,7 @@ describe("Mutator simple", async () => {
       const invalidCreate1 = async () =>
          await em.mutator(items).insertOne({
             label: 111, // this should work
-            count: "1" // this should fail
+            count: "1", // this should fail
          });
 
       expect(invalidCreate1()).rejects.toThrow(TransformPersistFailedException);
@@ -112,7 +112,7 @@ describe("Mutator simple", async () => {
       const invalidCreate2 = async () =>
          await em.mutator(items).insertOne({
             label: "", // this should fail
-            count: 1
+            count: 1,
          });
 
       expect(invalidCreate2()).rejects.toThrow(TransformPersistFailedException);
@@ -137,7 +137,7 @@ describe("Mutator simple", async () => {
       expect((await em.repository(items).findMany()).data.length).toBe(data.length - 2);
       //console.log((await em.repository(items).findMany()).data);
 
-      await em.mutator(items).deleteWhere();
+      await em.mutator(items).deleteWhere({ id: { $isnull: 0 } });
       expect((await em.repository(items).findMany()).data.length).toBe(0);
 
       //expect(res.data.count).toBe(0);
@@ -152,27 +152,27 @@ describe("Mutator simple", async () => {
       await em.mutator(items).updateWhere(
          { count: 2 },
          {
-            count: 10
-         }
+            count: 10,
+         },
       );
       expect((await em.repository(items).findMany()).data).toEqual([
          { id: 6, label: "update", count: 1 },
          { id: 7, label: "update too", count: 1 },
-         { id: 8, label: "keep", count: 0 }
+         { id: 8, label: "keep", count: 0 },
       ]);
 
       // expect 2 to be updated
       await em.mutator(items).updateWhere(
          { count: 2 },
          {
-            count: 1
-         }
+            count: 1,
+         },
       );
 
       expect((await em.repository(items).findMany()).data).toEqual([
          { id: 6, label: "update", count: 2 },
          { id: 7, label: "update too", count: 2 },
-         { id: 8, label: "keep", count: 0 }
+         { id: 8, label: "keep", count: 0 },
       ]);
    });
 

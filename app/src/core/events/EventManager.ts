@@ -17,7 +17,7 @@ export interface EmitsEvents {
 export type { EventClass };
 
 export class EventManager<
-   RegisteredEvents extends Record<string, EventClass> = Record<string, EventClass>
+   RegisteredEvents extends Record<string, EventClass> = Record<string, EventClass>,
 > {
    protected events: EventClass[] = [];
    protected listeners: EventListener[] = [];
@@ -30,7 +30,7 @@ export class EventManager<
          onError?: (event: Event, e: unknown) => void;
          onInvalidReturn?: (event: Event, e: InvalidEventReturn) => void;
          asyncExecutor?: typeof Promise.all;
-      }
+      },
    ) {
       if (events) {
          this.registerEvents(events);
@@ -69,7 +69,7 @@ export class EventManager<
       return new Proxy(this, {
          get: (_, prop: string) => {
             return this.events.find((e) => e.slug === prop);
-         }
+         },
       }) as any;
    }
 
@@ -141,7 +141,7 @@ export class EventManager<
    protected createEventListener(
       _event: EventClass | string,
       handler: ListenerHandler<any>,
-      _config: RegisterListenerConfig = "async"
+      _config: RegisterListenerConfig = "async",
    ) {
       const event =
          typeof _event === "string" ? this.events.find((e) => e.slug === _event)! : _event;
@@ -159,7 +159,7 @@ export class EventManager<
    onEvent<ActualEvent extends EventClass, Instance extends InstanceType<ActualEvent>>(
       event: ActualEvent,
       handler: ListenerHandler<Instance>,
-      config?: RegisterListenerConfig
+      config?: RegisterListenerConfig,
    ) {
       this.createEventListener(event, handler, config);
    }
@@ -167,7 +167,7 @@ export class EventManager<
    on<Params = any>(
       slug: string,
       handler: ListenerHandler<Event<Params>>,
-      config?: RegisterListenerConfig
+      config?: RegisterListenerConfig,
    ) {
       this.createEventListener(slug, handler, config);
    }
@@ -225,7 +225,7 @@ export class EventManager<
                   if (!newEvent.returned) {
                      throw new Error(
                         // @ts-expect-error slug is static
-                        `Returned event ${newEvent.constructor.slug} must be marked as returned.`
+                        `Returned event ${newEvent.constructor.slug} must be marked as returned.`,
                      );
                   }
                   _event = newEvent as Actual;

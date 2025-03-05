@@ -13,7 +13,7 @@ export function useEntityForm({
    action = "update",
    entity,
    initialData,
-   onSubmitted
+   onSubmitted,
 }: EntityFormProps) {
    const data = initialData ?? {};
    // @todo: check if virtual must be filtered
@@ -32,14 +32,14 @@ export function useEntityForm({
                entity.isValidData(value, action, {
                   explain: true,
                   // unknown will later be removed in getChangeSet
-                  ignoreUnknown: true
+                  ignoreUnknown: true,
                });
                return undefined;
             } catch (e) {
                //console.log("---validation error", e);
                return (e as Error).message;
             }
-         }
+         },
       },
       onSubmit: async ({ value, formApi }) => {
          //console.log("onSubmit", value);
@@ -55,7 +55,7 @@ export function useEntityForm({
 
          // only submit change set if there were changes
          await onSubmitted?.(Object.keys(changeSet).length === 0 ? undefined : changeSet);
-      }
+      },
    });
 
    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {

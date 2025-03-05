@@ -57,7 +57,7 @@ export function FlowsEmpty() {
             to continue."
                primary={{
                   children: "Create Flow",
-                  onClick: () => navigate(app.getSettingsPath(["flows"]))
+                  onClick: () => navigate(app.getSettingsPath(["flows"])),
                }}
             />
          </main>

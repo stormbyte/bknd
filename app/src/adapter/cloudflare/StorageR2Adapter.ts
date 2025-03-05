@@ -8,9 +8,9 @@ import { getBindings } from "./bindings";
 export function makeSchema(bindings: string[] = []) {
    return Type.Object(
       {
-         binding: bindings.length > 0 ? StringEnum(bindings) : Type.Optional(Type.String())
+         binding: bindings.length > 0 ? StringEnum(bindings) : Type.Optional(Type.String()),
       },
-      { title: "R2", description: "Cloudflare R2 storage" }
+      { title: "R2", description: "Cloudflare R2 storage" },
    );
 }
 
@@ -36,10 +36,10 @@ export function registerMedia(env: Record<string, any>) {
          override toJSON() {
             return {
                ...super.toJSON(),
-               config: this.config
+               config: this.config,
             };
          }
-      }
+      },
    );
 }
 
@@ -67,13 +67,13 @@ export class StorageR2Adapter implements StorageAdapter {
       }
    }
    async listObjects(
-      prefix?: string
+      prefix?: string,
    ): Promise<{ key: string; last_modified: Date; size: number }[]> {
       const list = await this.bucket.list({ limit: 50 });
       return list.objects.map((item) => ({
          key: item.key,
          size: item.size,
-         last_modified: item.uploaded
+         last_modified: item.uploaded,
       }));
    }
 
@@ -89,7 +89,7 @@ export class StorageR2Adapter implements StorageAdapter {
       let object: R2ObjectBody | null;
       const responseHeaders = new Headers({
          "Accept-Ranges": "bytes",
-         "Content-Type": guess(key)
+         "Content-Type": guess(key),
       });
 
       //console.log("getObject:headers", headersToObject(headers));
@@ -98,7 +98,7 @@ export class StorageR2Adapter implements StorageAdapter {
             ? {} // miniflare doesn't support range requests
             : {
                  range: headers,
-                 onlyIf: headers
+                 onlyIf: headers,
               };
          object = (await this.bucket.get(key, options)) as R2ObjectBody;
 
@@ -130,7 +130,7 @@ export class StorageR2Adapter implements StorageAdapter {
 
       return new Response(object.body, {
          status: object.range ? 206 : 200,
-         headers: responseHeaders
+         headers: responseHeaders,
       });
    }
 
@@ -139,7 +139,7 @@ export class StorageR2Adapter implements StorageAdapter {
       if (!metadata || Object.keys(metadata).length === 0) {
          // guessing is especially required for dev environment (miniflare)
          metadata = {
-            contentType: guess(object.key)
+            contentType: guess(object.key),
          };
       }
 
@@ -157,7 +157,7 @@ export class StorageR2Adapter implements StorageAdapter {
 
       return {
          type: String(head.httpMetadata?.contentType ?? guess(key)),
-         size: head.size
+         size: head.size,
       };
    }
 
@@ -172,7 +172,7 @@ export class StorageR2Adapter implements StorageAdapter {
    toJSON(secrets?: boolean) {
       return {
          type: this.getName(),
-         config: {}
+         config: {},
       };
    }
 }

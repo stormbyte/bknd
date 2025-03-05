@@ -1,7 +1,7 @@
 import { registries } from "bknd";
 import {
    type LocalAdapterConfig,
-   StorageLocalAdapter
+   StorageLocalAdapter,
 } from "../../media/storage/adapters/StorageLocalAdapter";
 
 export * from "./node.adapter";

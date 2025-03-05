@@ -16,10 +16,10 @@ export const remix = {
             dependencies: {
                ...pkg.dependencies,
                react: "^18.2.0",
-               "react-dom": "^18.2.0"
-            }
+               "react-dom": "^18.2.0",
+            },
          }),
-         { dir: ctx.dir }
+         { dir: ctx.dir },
       );
-   }
+   },
 } as const satisfies Template;

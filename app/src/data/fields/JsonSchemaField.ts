@@ -9,20 +9,20 @@ export const jsonSchemaFieldConfigSchema = Type.Composite(
       Type.Object({
          schema: Type.Object({}, { default: {} }),
          ui_schema: Type.Optional(Type.Object({})),
-         default_from_schema: Type.Optional(Type.Boolean())
+         default_from_schema: Type.Optional(Type.Boolean()),
       }),
-      baseFieldConfigSchema
+      baseFieldConfigSchema,
    ],
    {
-      additionalProperties: false
-   }
+      additionalProperties: false,
+   },
 );
 
 export type JsonSchemaFieldConfig = Static<typeof jsonSchemaFieldConfigSchema>;
 
 export class JsonSchemaField<
    Required extends true | false = false,
-   TypeOverride = object
+   TypeOverride = object,
 > extends Field<JsonSchemaFieldConfig, TypeOverride, Required> {
    override readonly type = "jsonschema";
    private validator: Validator;
@@ -77,7 +77,7 @@ export class JsonSchemaField<
             return value;
          case "table":
             if (value === null) return null;
-            return value;
+            return JSON.stringify(value);
          case "submit":
             break;
       }
@@ -107,7 +107,7 @@ export class JsonSchemaField<
    override async transformPersist(
       _value: any,
       em: EntityManager<any>,
-      context: TActionContext
+      context: TActionContext,
    ): Promise<string | undefined> {
       const value = await super.transformPersist(_value, em, context);
       if (this.nullish(value)) return value;
@@ -130,8 +130,8 @@ export class JsonSchemaField<
       return this.toSchemaWrapIfRequired(
          FromSchema({
             default: this.getDefault(),
-            ...schema
-         })
+            ...schema,
+         }),
       );
    }
 }

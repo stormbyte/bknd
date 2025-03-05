@@ -5,7 +5,7 @@ import {
    EntityIndex,
    type EntityManager,
    constructEntity,
-   constructRelation
+   constructRelation,
 } from "data";
 import { Module } from "modules/Module";
 import { DataController } from "./api/DataController";
@@ -16,7 +16,7 @@ export class AppData extends Module<typeof dataConfigSchema> {
       const {
          entities: _entities = {},
          relations: _relations = {},
-         indices: _indices = {}
+         indices: _indices = {},
       } = this.config;
 
       this.ctx.logger.context("AppData").log("building with entities", Object.keys(_entities));
@@ -33,7 +33,7 @@ export class AppData extends Module<typeof dataConfigSchema> {
       };
 
       const relations = transformObject(_relations, (relation) =>
-         constructRelation(relation, _entity)
+         constructRelation(relation, _entity),
       );
 
       const indices = transformObject(_indices, (index, name) => {
@@ -56,7 +56,7 @@ export class AppData extends Module<typeof dataConfigSchema> {
 
       this.ctx.server.route(
          this.basepath,
-         new DataController(this.ctx, this.config).getController()
+         new DataController(this.ctx, this.config).getController(),
       );
       this.ctx.guard.registerPermissions(Object.values(DataPermissions));
 
@@ -84,7 +84,7 @@ export class AppData extends Module<typeof dataConfigSchema> {
    override toJSON(secrets?: boolean): AppDataConfig {
       return {
          ...this.config,
-         ...this.em.toJSON()
+         ...this.em.toJSON(),
       };
    }
 }

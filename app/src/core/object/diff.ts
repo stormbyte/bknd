@@ -1,7 +1,7 @@
 enum Change {
    Add = "a",
    Remove = "r",
-   Edit = "e"
+   Edit = "e",
 }
 
 type Object = object;
@@ -50,7 +50,7 @@ function diff(oldObj: Object, newObj: Object): DiffEntry[] {
             t: Change.Edit,
             p: path,
             o: oldValue,
-            n: newValue
+            n: newValue,
          });
       } else if (Array.isArray(oldValue) && Array.isArray(newValue)) {
          const maxLength = Math.max(oldValue.length, newValue.length);
@@ -60,14 +60,14 @@ function diff(oldObj: Object, newObj: Object): DiffEntry[] {
                   t: Change.Add,
                   p: [...path, i],
                   o: undefined,
-                  n: newValue[i]
+                  n: newValue[i],
                });
             } else if (i >= newValue.length) {
                diffs.push({
                   t: Change.Remove,
                   p: [...path, i],
                   o: oldValue[i],
-                  n: undefined
+                  n: undefined,
                });
             } else {
                recurse(oldValue[i], newValue[i], [...path, i]);
@@ -83,14 +83,14 @@ function diff(oldObj: Object, newObj: Object): DiffEntry[] {
                   t: Change.Add,
                   p: [...path, key],
                   o: undefined,
-                  n: newValue[key]
+                  n: newValue[key],
                });
             } else if (!(key in newValue)) {
                diffs.push({
                   t: Change.Remove,
                   p: [...path, key],
                   o: oldValue[key],
-                  n: undefined
+                  n: undefined,
                });
             } else {
                recurse(oldValue[key], newValue[key], [...path, key]);
@@ -101,7 +101,7 @@ function diff(oldObj: Object, newObj: Object): DiffEntry[] {
             t: Change.Edit,
             p: path,
             o: oldValue,
-            n: newValue
+            n: newValue,
          });
       }
    }

@@ -4,7 +4,7 @@ import {
    type RJSFSchema,
    type StrictRJSFSchema,
    getTemplate,
-   getUiOptions
+   getUiOptions,
 } from "@rjsf/utils";
 import { identifierToHumanReadable } from "core/utils";
 import { twMerge } from "tailwind-merge";
@@ -45,7 +45,7 @@ export function Label(props: LabelProps) {
 export function FieldTemplate<
    T = any,
    S extends StrictRJSFSchema = RJSFSchema,
-   F extends FormContextType = any
+   F extends FormContextType = any,
 >(props: FieldTemplateProps<T, S, F>) {
    const {
       id,
@@ -58,14 +58,14 @@ export function FieldTemplate<
       required,
       displayLabel,
       registry,
-      uiSchema
+      uiSchema,
    } = props;
    const uiOptions = getUiOptions(uiSchema, registry.globalUiOptions);
    //console.log("field---", uiOptions);
    const WrapIfAdditionalTemplate = getTemplate<"WrapIfAdditionalTemplate", T, S, F>(
       "WrapIfAdditionalTemplate",
       registry,
-      uiOptions
+      uiOptions,
    );
    if (hidden) {
       return <div className="hidden">{children}</div>;
@@ -81,7 +81,7 @@ export function FieldTemplate<
                   "flex flex-grow additional-children",
                   uiOptions.flexDirection === "row"
                      ? "flex-row items-center gap-3"
-                     : "flex-col flex-grow gap-2"
+                     : "flex-col flex-grow gap-2",
                )}
             >
                {children}

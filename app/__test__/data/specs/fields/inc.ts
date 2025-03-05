@@ -18,7 +18,7 @@ export function transformPersist(field: Field, value: any, context?: TActionCont
 export function runBaseFieldTests(
    fieldClass: ConstructableField,
    config: FieldTestConfig,
-   _requiredConfig: any = {}
+   _requiredConfig: any = {},
 ) {
    const noConfigField = new fieldClass("no_config", _requiredConfig);
    const fillable = new fieldClass("fillable", { ..._requiredConfig, fillable: true });
@@ -29,7 +29,7 @@ export function runBaseFieldTests(
       ..._requiredConfig,
       fillable: true,
       required: true,
-      default_value: config.defaultValue
+      default_value: config.defaultValue,
    });
 
    test("schema", () => {
@@ -37,7 +37,7 @@ export function runBaseFieldTests(
       expect(noConfigField.schema(null as any)).toEqual([
          "no_config",
          config.schemaType,
-         expect.any(Function)
+         expect.any(Function),
       ]);
    });
 
@@ -96,7 +96,7 @@ export function runBaseFieldTests(
          //order: 1,
          fillable: true,
          required: false,
-         hidden: false
+         hidden: false,
          //virtual: false,
          //default_value: undefined
       };
@@ -105,20 +105,20 @@ export function runBaseFieldTests(
          const json = field.toJSON();
          return {
             ...json,
-            config: omit(json.config, ["html"])
+            config: omit(json.config, ["html"]),
          };
       }
 
       expect(fieldJson(noConfigField)).toEqual({
          //name: "no_config",
          type: noConfigField.type,
-         config: _config
+         config: _config,
       });
 
       expect(fieldJson(fillable)).toEqual({
          //name: "fillable",
          type: noConfigField.type,
-         config: _config
+         config: _config,
       });
 
       expect(fieldJson(required)).toEqual({
@@ -126,8 +126,8 @@ export function runBaseFieldTests(
          type: required.type,
          config: {
             ..._config,
-            required: true
-         }
+            required: true,
+         },
       });
 
       expect(fieldJson(hidden)).toEqual({
@@ -135,8 +135,8 @@ export function runBaseFieldTests(
          type: required.type,
          config: {
             ..._config,
-            hidden: true
-         }
+            hidden: true,
+         },
       });
 
       expect(fieldJson(dflt)).toEqual({
@@ -144,8 +144,8 @@ export function runBaseFieldTests(
          type: dflt.type,
          config: {
             ..._config,
-            default_value: config.defaultValue
-         }
+            default_value: config.defaultValue,
+         },
       });
 
       expect(fieldJson(requiredAndDefault)).toEqual({
@@ -155,8 +155,8 @@ export function runBaseFieldTests(
             ..._config,
             fillable: true,
             required: true,
-            default_value: config.defaultValue
-         }
+            default_value: config.defaultValue,
+         },
       });
    });
 }

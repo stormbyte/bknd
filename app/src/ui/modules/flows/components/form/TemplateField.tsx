@@ -9,14 +9,14 @@ type Mode = (typeof modes)[number];
 export function TemplateField<
    T = any,
    S extends StrictRJSFSchema = RJSFSchema,
-   F extends FormContextType = any
+   F extends FormContextType = any,
 >(props: FieldProps<T, S, F>) {
    const formData = props.formData;
    const hasMarkup = SimpleRenderer.hasMarkup(formData!);
    const [mode, setMode] = useState<Mode>(hasMarkup ? "code" : "field");
    const [values, setValues] = useState<Record<Mode, any>>({
       field: hasMarkup ? "" : formData,
-      code: hasMarkup ? formData : ""
+      code: hasMarkup ? formData : "",
    });
    //console.log("TemplateField", props);
    const { SchemaField } = props.registry.fields;
@@ -35,7 +35,7 @@ export function TemplateField<
    let _schema: any = schema;
    if (!("anyOf" in schema)) {
       _schema = {
-         anyOf: [schema, { type: "string" }]
+         anyOf: [schema, { type: "string" }],
       };
    }
 
@@ -48,7 +48,7 @@ export function TemplateField<
          : {
               "ui:label": false,
               "ui:widget": "textarea",
-              "ui:options": { rows: 1 }
+              "ui:options": { rows: 1 },
            };
 
    return (

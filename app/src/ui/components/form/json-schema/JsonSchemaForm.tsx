@@ -40,7 +40,7 @@ export const JsonSchemaForm = forwardRef<JsonSchemaFormRef, JsonSchemaFormProps>
          cleanOnChange,
          ...props
       },
-      ref
+      ref,
    ) => {
       const formRef = useRef<Form<any, RJSFSchema, any>>(null);
       const id = useId();
@@ -67,32 +67,32 @@ export const JsonSchemaForm = forwardRef<JsonSchemaFormRef, JsonSchemaFormProps>
             formData: () => value,
             validateForm: () => formRef.current!.validateForm(),
             silentValidate: () => isValid(value),
-            cancel: () => formRef.current!.reset()
+            cancel: () => formRef.current!.reset(),
          }),
-         [value]
+         [value],
       );
 
       const _uiSchema: UiSchema = {
          ...uiSchema,
          "ui:globalOptions": {
             ...uiSchema?.["ui:globalOptions"],
-            enableMarkdownInDescription: true
+            enableMarkdownInDescription: true,
          },
          "ui:submitButtonOptions": {
-            norender: true
-         }
+            norender: true,
+         },
       };
       const _fields: any = {
          ...Fields,
-         ...fields
+         ...fields,
       };
       const _templates: any = {
          ...Templates,
-         ...templates
+         ...templates,
       };
       const _widgets: any = {
          ...Widgets,
-         ...widgets
+         ...widgets,
       };
       //console.log("schema", schema, removeTitleFromSchema(schema));
 
@@ -115,7 +115,7 @@ export const JsonSchemaForm = forwardRef<JsonSchemaFormRef, JsonSchemaFormProps>
             validator={validator as any}
          />
       );
-   }
+   },
 );
 function removeTitleFromSchema(schema: any): any {
    // Create a deep copy of the schema using lodash

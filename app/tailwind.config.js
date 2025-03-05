@@ -11,9 +11,9 @@ export default {
             background: "rgb(var(--color-background) / <alpha-value>)",
             muted: "rgb(var(--color-muted) / <alpha-value>)",
             lightest: "rgb(var(--color-lightest) / <alpha-value>)",
-            darkest: "rgb(var(--color-darkest) / <alpha-value>)"
-         }
-      }
+            darkest: "rgb(var(--color-darkest) / <alpha-value>)",
+         },
+      },
    },
-   plugins: [tailwindCssAnimate]
+   plugins: [tailwindCssAnimate],
 };

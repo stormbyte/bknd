@@ -24,14 +24,14 @@ export type { TSchemaActions };
 enum Fetching {
    None = 0,
    Schema = 1,
-   Secrets = 2
+   Secrets = 2,
 }
 
 export function BkndProvider({
    includeSecrets = false,
    adminOverride,
    children,
-   fallback = null
+   fallback = null,
 }: { includeSecrets?: boolean; children: any; fallback?: React.ReactNode } & Pick<
    BkndContext,
    "adminOverride"
@@ -47,19 +47,29 @@ export function BkndProvider({
    const api = useApi();
 
    async function reloadSchema() {
-      await fetchSchema(includeSecrets, true);
+      await fetchSchema(includeSecrets, {
+         force: true,
+         fresh: true,
+      });
    }
 
-   async function fetchSchema(_includeSecrets: boolean = false, force?: boolean) {
+   async function fetchSchema(
+      _includeSecrets: boolean = false,
+      opts?: {
+         force?: boolean;
+         fresh?: boolean;
+      },
+   ) {
       const requesting = withSecrets ? Fetching.Secrets : Fetching.Schema;
       if (fetching.current === requesting) return;
 
-      if (withSecrets && !force) return;
+      if (withSecrets && opts?.force !== true) return;
       fetching.current = requesting;
 
       const res = await api.system.readSchema({
          config: true,
-         secrets: _includeSecrets
+         secrets: _includeSecrets,
+         fresh: opts?.fresh,
       });
 
       if (!res.ok) {
@@ -80,13 +90,13 @@ export function BkndProvider({
               schema: getDefaultSchema(),
               config: getDefaultConfig(),
               permissions: [],
-              fallback: true
+              fallback: true,
            } as any);
 
       if (adminOverride) {
          newSchema.config.server.admin = {
             ...newSchema.config.server.admin,
-            ...adminOverride
+            ...adminOverride,
          };
       }
 

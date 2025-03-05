@@ -4,7 +4,7 @@ import {
    IconAugmentedReality,
    IconBox,
    IconCirclesRelation,
-   IconInfoCircle
+   IconInfoCircle,
 } from "@tabler/icons-react";
 import { ucFirst } from "core/utils";
 import { useEffect, useState } from "react";
@@ -37,8 +37,8 @@ export function StepCreate() {
             type: "Entity",
             name: entity.name,
             json: entity,
-            run: async () => await $data.actions.entity.add(entity.name, entity)
-         }))
+            run: async () => await $data.actions.entity.add(entity.name, entity),
+         })),
       );
    }
    if (state.fields?.create) {
@@ -52,8 +52,8 @@ export function StepCreate() {
             run: async () =>
                await $data.actions.entity
                   .patch(field.entity)
-                  .fields.add(field.name, field.field as any)
-         }))
+                  .fields.add(field.name, field.field as any),
+         })),
       );
    }
    if (state.relations?.create) {
@@ -64,8 +64,8 @@ export function StepCreate() {
             type: "Relation",
             name: `${rel.source} -> ${rel.target} (${rel.type})`,
             json: rel,
-            run: async () => await $data.actions.relations.add(rel)
-         }))
+            run: async () => await $data.actions.relations.add(rel),
+         })),
       );
    }
 
@@ -92,7 +92,7 @@ export function StepCreate() {
          items,
          states.length,
          items.length,
-         states.every((s) => s === true)
+         states.every((s) => s === true),
       );
       if (items.length === states.length && states.every((s) => s === true)) {
          b.actions.reload().then(close);
@@ -116,7 +116,7 @@ export function StepCreate() {
             nextLabel="Create"
             next={{
                onClick: handleCreate,
-               disabled: submitting
+               disabled: submitting,
             }}
             prev={{ onClick: stepBack, disabled: submitting }}
             debug={{ state }}
@@ -142,7 +142,7 @@ const SummaryItem: React.FC<SummaryItemProps> = ({
    json,
    state,
    action,
-   initialExpanded = false
+   initialExpanded = false,
 }) => {
    const [expanded, handlers] = useDisclosure(initialExpanded);
    const error = typeof state !== "undefined" && state !== true;
@@ -153,7 +153,7 @@ const SummaryItem: React.FC<SummaryItemProps> = ({
          className={twMerge(
             "flex flex-col border border-muted rounded bg-background mb-2",
             error && "bg-red-500/20",
-            done && "bg-green-500/20"
+            done && "bg-green-500/20",
          )}
       >
          <div className="flex flex-row gap-4 px-2 py-2 items-center">

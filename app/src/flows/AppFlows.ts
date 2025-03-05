@@ -20,7 +20,7 @@ export class AppFlows extends Module<typeof flowsConfigSchema> {
       return {
          ...flow.toJSON(),
          tasks: flow.tasks.length,
-         connections: flow.connections
+         connections: flow.connections,
       };
    }
 
@@ -59,7 +59,7 @@ export class AppFlows extends Module<typeof flowsConfigSchema> {
             errors,
             response: execution.getResponse(),
             flow: this.getFlowInfo(flow),
-            logs: execution.logs
+            logs: execution.logs,
          });
       });
 
@@ -84,7 +84,7 @@ export class AppFlows extends Module<typeof flowsConfigSchema> {
    override toJSON() {
       return {
          ...this.config,
-         flows: transformObject(this.flows, (flow) => flow.toJSON())
+         flows: transformObject(this.flows, (flow) => flow.toJSON()),
       };
    }
 }

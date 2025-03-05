@@ -7,13 +7,13 @@ import {
    Type,
    parse,
    runtimeSupports,
-   transformObject
+   transformObject,
 } from "core/utils";
 import type { Context, Hono } from "hono";
 import { deleteCookie, getSignedCookie, setSignedCookie } from "hono/cookie";
 import { sign, verify } from "hono/jwt";
 import type { CookieOptions } from "hono/utils/cookie";
-import type { ServerEnv } from "modules/Module";
+import type { ServerEnv } from "modules/Controller";
 
 type Input = any; // workaround
 export type JWTPayload = Parameters<typeof sign>[0];
@@ -71,9 +71,9 @@ export const cookieConfig = Type.Partial(
       expires: Type.Number({ default: defaultCookieExpires }), // seconds
       renew: Type.Boolean({ default: true }),
       pathSuccess: Type.String({ default: "/" }),
-      pathLoggedOut: Type.String({ default: "/" })
+      pathLoggedOut: Type.String({ default: "/" }),
    }),
-   { default: {}, additionalProperties: false }
+   { default: {}, additionalProperties: false },
 );
 
 // @todo: maybe add a config to not allow cookie/api tokens to be used interchangably?
@@ -86,16 +86,16 @@ export const jwtConfig = Type.Object(
       alg: Type.Optional(StringEnum(["HS256", "HS384", "HS512"], { default: "HS256" })),
       expires: Type.Optional(Type.Number()), // seconds
       issuer: Type.Optional(Type.String()),
-      fields: Type.Array(Type.String(), { default: ["id", "email", "role"] })
+      fields: Type.Array(Type.String(), { default: ["id", "email", "role"] }),
    },
    {
       default: {},
-      additionalProperties: false
-   }
+      additionalProperties: false,
+   },
 );
 export const authenticatorConfig = Type.Object({
    jwt: jwtConfig,
-   cookie: cookieConfig
+   cookie: cookieConfig,
 });
 
 type AuthConfig = Static<typeof authenticatorConfig>;
@@ -104,7 +104,7 @@ export type AuthUserResolver = (
    action: AuthAction,
    strategy: Strategy,
    identifier: string,
-   profile: ProfileExchange
+   profile: ProfileExchange,
 ) => Promise<SafeUser | undefined>;
 type AuthClaims = SafeUser & {
    iat: number;
@@ -127,7 +127,7 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
       action: AuthAction,
       strategy: Strategy,
       identifier: string,
-      profile: ProfileExchange
+      profile: ProfileExchange,
    ): Promise<AuthResponse> {
       //console.log("resolve", { action, strategy: strategy.getName(), profile });
       const user = await this.userResolver(action, strategy, identifier, profile);
@@ -135,7 +135,7 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
       if (user) {
          return {
             user,
-            token: await this.jwt(user)
+            token: await this.jwt(user),
          };
       }
 
@@ -148,7 +148,7 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
 
    strategy<
       StrategyName extends keyof Strategies,
-      Strat extends Strategy = Strategies[StrategyName]
+      Strat extends Strategy = Strategies[StrategyName],
    >(strategy: StrategyName): Strat {
       try {
          return this.strategies[strategy] as unknown as Strat;
@@ -168,7 +168,7 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
 
       const payload: JWTPayload = {
          ...user,
-         iat: Math.floor(Date.now() / 1000)
+         iat: Math.floor(Date.now() / 1000),
       };
 
       // issuer
@@ -194,7 +194,7 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
          const payload = await verify(
             jwt,
             this.config.jwt?.secret ?? "",
-            this.config.jwt?.alg ?? "HS256"
+            this.config.jwt?.alg ?? "HS256",
          );
 
          // manually verify issuer (hono doesn't support it)
@@ -215,7 +215,7 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
 
       return {
          ...cookieConfig,
-         expires: new Date(Date.now() + expires * 1000)
+         expires: new Date(Date.now() + expires * 1000),
       };
    }
 
@@ -343,17 +343,16 @@ export class Authenticator<Strategies extends Record<string, Strategy> = Record<
       return {
          ...this.config,
          jwt: secrets ? this.config.jwt : undefined,
-         strategies: transformObject(this.getStrategies(), (s) => s.toJSON(secrets))
       };
    }
 }
 
 export function createStrategyAction<S extends TObject>(
    schema: S,
-   preprocess: (input: Static<S>) => Promise<Partial<DB["users"]>>
+   preprocess: (input: Static<S>) => Promise<Partial<DB["users"]>>,
 ) {
    return {
       schema,
-      preprocess
+      preprocess,
    } as StrategyAction<S>;
 }

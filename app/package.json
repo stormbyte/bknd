@@ -3,7 +3,7 @@
   "type": "module",
   "sideEffects": false,
   "bin": "./dist/cli/index.js",
-  "version": "0.8.1",
+  "version": "0.9.0-rc.4",
   "description": "Lightweight Firebase/Supabase alternative built to run anywhere — incl. Next.js, Remix, Astro, Cloudflare, Bun, Node, AWS Lambda & more.",
   "homepage": "https://bknd.io",
   "repository": {
@@ -63,12 +63,14 @@
     "@aws-sdk/client-s3": "^3.613.0",
     "@bluwy/giget-core": "^0.1.2",
     "@dagrejs/dagre": "^1.1.4",
+    "@mantine/modals": "^7.13.4",
+    "@mantine/notifications": "^7.13.4",
     "@hono/typebox-validator": "^0.2.6",
     "@hono/vite-dev-server": "^0.17.0",
     "@hono/zod-validator": "^0.4.1",
     "@hookform/resolvers": "^3.9.1",
     "@libsql/kysely-libsql": "^0.4.1",
-    "@rjsf/core": "^5.22.2",
+    "@rjsf/core": "5.22.2",
     "@tabler/icons-react": "3.18.0",
     "@types/node": "^22.10.0",
     "@types/react": "^18.3.12",
@@ -188,6 +190,11 @@
       "types": "./dist/types/adapter/astro/index.d.ts",
       "import": "./dist/adapter/astro/index.js",
       "require": "./dist/adapter/astro/index.cjs"
+    },
+    "./adapter/aws": {
+      "types": "./dist/types/adapter/aws/index.d.ts",
+      "import": "./dist/adapter/aws/index.js",
+      "require": "./dist/adapter/aws/index.cjs"
     },
     "./dist/main.css": "./dist/ui/main.css",
     "./dist/styles.css": "./dist/ui/styles.css",

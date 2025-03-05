@@ -34,7 +34,7 @@ const Wrapper = ({ children, className, ...props }: ElementProps<"div">) => (
       {...props}
       className={twMerge(
          "flex flex-row bg-lightest border ring-2 ring-muted/5 border-muted rounded-full items-center p-1",
-         className
+         className,
       )}
    >
       {children}
@@ -71,7 +71,7 @@ const Text = forwardRef<any, ElementProps<"span"> & { mono?: boolean }>(
       >
          {children}
       </span>
-   )
+   ),
 );
 
 FlowPanel.Wrapper = Wrapper;

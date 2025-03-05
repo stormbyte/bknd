@@ -4,7 +4,7 @@ import {
    type BaseRelationConfig,
    EntityRelation,
    EntityRelationAnchor,
-   RelationTypes
+   RelationTypes,
 } from "../../../../src/data/relations";
 
 class TestEntityRelation extends EntityRelation {
@@ -12,7 +12,7 @@ class TestEntityRelation extends EntityRelation {
       super(
          new EntityRelationAnchor(new Entity("source"), "source"),
          new EntityRelationAnchor(new Entity("target"), "target"),
-         config
+         config,
       );
    }
    initialize(em: EntityManager<any>) {}

@@ -8,7 +8,7 @@ import {
    ModalFooter,
    type TCreateModalSchema,
    entitySchema,
-   useStepContext
+   useStepContext,
 } from "./CreateModal";
 
 export function StepEntity() {
@@ -18,7 +18,7 @@ export function StepEntity() {
    const { register, handleSubmit, formState, watch } = useForm({
       mode: "onTouched",
       resolver: typeboxResolver(entitySchema),
-      defaultValues: state.entities?.create?.[0] ?? {}
+      defaultValues: state.entities?.create?.[0] ?? {},
    });
    /*const data = watch();
    console.log("state", { isValid });
@@ -83,7 +83,7 @@ export function StepEntity() {
             <ModalFooter
                next={{
                   type: "submit",
-                  disabled: !formState.isValid
+                  disabled: !formState.isValid,
                   //onClick:
                }}
                prev={{ onClick: stepBack }}

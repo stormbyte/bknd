@@ -11,7 +11,7 @@ export function ImageOptimizationPlugin({
    accessUrl = "/_plugin/image/optimize",
    resolvePath = "/api/media/file",
    autoFormat = true,
-   devBypass
+   devBypass,
 }: ImageOptimizationPluginOptions = {}) {
    const disallowedAccessUrls = ["/api", "/admin", "/_optimize"];
    if (disallowedAccessUrls.includes(accessUrl) || accessUrl.length < 2) {
@@ -63,7 +63,7 @@ export function ImageOptimizationPlugin({
 
          // Build a request that passes through request headers
          const imageRequest = new Request(imageURL, {
-            headers: request.headers
+            headers: request.headers,
          });
 
          // Returning fetch() with resizing options will pass through response with the resized image.
@@ -75,8 +75,8 @@ export function ImageOptimizationPlugin({
             headers: {
                "Cache-Control": "public, max-age=600",
                "Content-Type": metadata.type,
-               "Content-Length": metadata.size.toString()
-            }
+               "Content-Length": metadata.size.toString(),
+            },
          });
       });
    };

@@ -26,5 +26,5 @@ export const BooleanInputMantine = forwardRef<HTMLInputElement, React.ComponentP
             />
          </div>
       );
-   }
+   },
 );

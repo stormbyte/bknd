@@ -4,7 +4,7 @@ import type { AppTheme } from "modules/server/AppServer";
 import { createContext, useContext } from "react";
 
 const ClientContext = createContext<{ baseUrl: string; api: Api }>({
-   baseUrl: undefined
+   baseUrl: undefined,
 } as any);
 
 export type ClientProviderProps = {
@@ -69,7 +69,7 @@ export function useBkndWindowContext(): BkndWindowContext {
       return window.__BKND__ as any;
    } else {
       return {
-         logout_route: "/api/auth/logout"
+         logout_route: "/api/auth/logout",
       };
    }
 }

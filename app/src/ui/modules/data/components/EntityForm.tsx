@@ -6,7 +6,7 @@ import {
    type Field,
    JsonField,
    JsonSchemaField,
-   RelationField
+   RelationField,
 } from "data";
 import { MediaField } from "media/MediaField";
 import { type ComponentProps, Suspense } from "react";
@@ -17,6 +17,8 @@ import { Media } from "ui/elements";
 import { useEvent } from "ui/hooks/use-event";
 import { EntityJsonSchemaFormField } from "./fields/EntityJsonSchemaFormField";
 import { EntityRelationalFormField } from "./fields/EntityRelationalFormField";
+import ErrorBoundary from "ui/components/display/ErrorBoundary";
+import { Alert } from "ui/components/display/Alert";
 
 type EntityFormProps = {
    entity: Entity;
@@ -37,7 +39,7 @@ export function EntityForm({
    Form,
    data,
    className,
-   action
+   action,
 }: EntityFormProps) {
    const fields = entity.getFillableFields(action, true);
    console.log("data", { data, fields });
@@ -94,20 +96,28 @@ export function EntityForm({
                const _key = `${entity.name}-${field.name}-${key}`;
 
                return (
-                  <Form.Field
+                  <ErrorBoundary
                      key={_key}
-                     name={field.name}
-                     children={(props) => (
-                        <EntityFormField
-                           field={field}
-                           fieldApi={props}
-                           disabled={fieldsDisabled}
-                           tabIndex={key + 1}
-                           action={action}
-                           data={data}
-                        />
-                     )}
-                  />
+                     fallback={
+                        <Alert.Exception className="font-mono">
+                           Field error: {field.name}
+                        </Alert.Exception>
+                     }
+                  >
+                     <Form.Field
+                        name={field.name}
+                        children={(props) => (
+                           <EntityFormField
+                              field={field}
+                              fieldApi={props}
+                              disabled={fieldsDisabled}
+                              tabIndex={key + 1}
+                              action={action}
+                              data={data}
+                           />
+                        )}
+                     />
+                  </ErrorBoundary>
                );
             })}
          </div>
@@ -120,7 +130,7 @@ export function EntityForm({
 
 type EntityFormFieldProps<
    T extends keyof JSX.IntrinsicElements = "input",
-   F extends Field = Field
+   F extends Field = Field,
 > = ComponentProps<T> & {
    fieldApi: FieldApi<any, any>;
    field: F;
@@ -203,7 +213,7 @@ function EntityMediaFormField({
    field,
    entity,
    entityId,
-   disabled
+   disabled,
 }: {
    formApi: FormApi<any>;
    field: MediaField;
@@ -232,7 +242,7 @@ function EntityMediaFormField({
             entity={{
                name: entity.name,
                id: entityId,
-               field: field.name
+               field: field.name,
             }}
          />
       </Formy.Group>

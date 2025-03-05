@@ -9,7 +9,7 @@ import { guess } from "media/storage/mime-types-tiny";
 const FILES_TO_IGNORE = [
    // Thumbnail cache files for macOS and Windows
    ".DS_Store", // macOs
-   "Thumbs.db" // Windows
+   "Thumbs.db", // Windows
 ];
 
 export function toFileWithPath(file: FileWithPath, path?: string): FileWithPath {
@@ -29,7 +29,7 @@ export function toFileWithPath(file: FileWithPath, path?: string): FileWithPath 
                  : file.name,
          writable: false,
          configurable: false,
-         enumerable: true
+         enumerable: true,
       });
    }
 
@@ -55,7 +55,7 @@ function withMimeType(file: FileWithPath) {
             value: type,
             writable: false,
             configurable: false,
-            enumerable: true
+            enumerable: true,
          });
       }
    }
@@ -80,10 +80,8 @@ export interface FileWithPath extends File {
 export async function fromEvent(evt: Event | any): Promise<(FileWithPath | DataTransferItem)[]> {
    if (isObject<DragEvent>(evt) && isDataTransfer(evt.dataTransfer)) {
       return getDataTransferFiles(evt.dataTransfer, evt.type);
-      // biome-ignore lint/style/noUselessElse: not useless
    } else if (isChangeEvt(evt)) {
       return getInputFiles(evt);
-      // biome-ignore lint/style/noUselessElse: not useless
    } else if (
       Array.isArray(evt) &&
       evt.every((item) => "getFile" in item && typeof item.getFile === "function")
@@ -107,7 +105,7 @@ function isObject<T>(v: any): v is T {
 
 function getInputFiles(evt: Event) {
    return fromList<FileWithPath>((evt.target as HTMLInputElement).files).map((file) =>
-      toFileWithPath(file)
+      toFileWithPath(file),
    );
 }
 
@@ -181,9 +179,9 @@ function flatten<T>(items: any[]): T[] {
       (acc, files) => [
          // biome-ignore lint/performance/noAccumulatingSpread: <explanation>
          ...acc,
-         ...(Array.isArray(files) ? flatten(files) : [files])
+         ...(Array.isArray(files) ? flatten(files) : [files]),
       ],
-      []
+      [],
    );
 }
 
@@ -231,7 +229,7 @@ function fromDirEntry(entry: any) {
             },
             (err: any) => {
                reject(err);
-            }
+            },
          );
       }
 
@@ -249,7 +247,7 @@ async function fromFileEntry(entry: any) {
          },
          (err: any) => {
             reject(err);
-         }
+         },
       );
    });
 }

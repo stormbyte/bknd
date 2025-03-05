@@ -4,7 +4,7 @@ import {
    type RJSFSchema,
    type StrictRJSFSchema,
    TranslatableString,
-   type WrapIfAdditionalTemplateProps
+   type WrapIfAdditionalTemplateProps,
 } from "@rjsf/utils";
 import { useState } from "react";
 
@@ -16,7 +16,7 @@ import { useState } from "react";
 export default function WrapIfAdditionalTemplate<
    T = any,
    S extends StrictRJSFSchema = RJSFSchema,
-   F extends FormContextType = any
+   F extends FormContextType = any,
 >(props: WrapIfAdditionalTemplateProps<T, S, F>) {
    const {
       id,
@@ -31,7 +31,7 @@ export default function WrapIfAdditionalTemplate<
       schema,
       children,
       uiSchema,
-      registry
+      registry,
    } = props;
    const { templates, translateString } = registry;
    // Button templates are not overridden in the uiSchema

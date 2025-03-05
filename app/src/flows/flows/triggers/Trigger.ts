@@ -10,8 +10,8 @@ export class Trigger<Schema extends typeof Trigger.schema = typeof Trigger.schem
 
    static schema = Type.Object(
       {
-         mode: StringEnum(["sync", "async"], { default: "async" })
-      }
+         mode: StringEnum(["sync", "async"], { default: "async" }),
+      },
       //{ additionalProperties: false }
    );
 
@@ -29,7 +29,7 @@ export class Trigger<Schema extends typeof Trigger.schema = typeof Trigger.schem
    toJSON() {
       return {
          type: this.type,
-         config: this.config
+         config: this.config,
       };
    }
 }

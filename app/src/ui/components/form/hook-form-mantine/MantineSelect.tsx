@@ -16,13 +16,13 @@ export function MantineSelect<T extends FieldValues>({
 }: MantineSelectProps<T>) {
    const {
       field: { value, onChange: fieldOnChange, ...field },
-      fieldState
+      fieldState,
    } = useController<T>({
       name,
       control,
       defaultValue,
       rules,
-      shouldUnregister
+      shouldUnregister,
    });
 
    return (
@@ -34,8 +34,8 @@ export function MantineSelect<T extends FieldValues>({
                ...new Event("change", { bubbles: true, cancelable: true }),
                target: {
                   value: e,
-                  name: field.name
-               }
+                  name: field.name,
+               },
             });
             // @ts-ignore
             onChange?.(e);

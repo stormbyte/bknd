@@ -61,7 +61,7 @@ describe("ModuleApi", () => {
 
    it("adds additional headers from options", () => {
       const headers = new Headers({
-         "X-Test": "123"
+         "X-Test": "123",
       });
       const api = new Api({ host, headers });
       expect(api.get("/").request.headers.get("X-Test")).toEqual("123");
@@ -75,7 +75,7 @@ describe("ModuleApi", () => {
    it("uses search params", () => {
       const api = new Api({ host });
       const search = new URLSearchParams({
-         foo: "bar"
+         foo: "bar",
       });
       expect(api.get("/", search).request.url).toEqual("http://localhost/?" + search.toString());
    });
@@ -87,6 +87,14 @@ describe("ModuleApi", () => {
       expect(api.put("/").request.method).toEqual("PUT");
       expect(api.patch("/").request.method).toEqual("PATCH");
       expect(api.delete("/").request.method).toEqual("DELETE");
+   });
+
+   it("refines", async () => {
+      const app = new Hono().get("/endpoint", (c) => c.json({ foo: ["bar"] }));
+      const api = new Api({ host }, app.request as typeof fetch);
+
+      expect((await api.get("/endpoint")).data).toEqual({ foo: ["bar"] });
+      expect((await api.get("/endpoint").refine((data) => data.foo)).data).toEqual(["bar"]);
    });
 
    // @todo: test error response

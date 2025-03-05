@@ -26,7 +26,7 @@ export const SettingNewModal = ({
    anyOfValues,
    path,
    prefixPath,
-   generateKey
+   generateKey,
 }: SettingsNewModalProps) => {
    const [location, navigate] = useLocation();
    const [formSchema, setFormSchema] = useState(schema);
@@ -44,8 +44,8 @@ export const SettingNewModal = ({
       if (generateKey && typeof generateKey === "function") {
          handleKeyNameChange({
             target: {
-               value: generateKey(data)
-            }
+               value: generateKey(data),
+            },
          });
       }
       console.log("form change", data);
@@ -69,7 +69,7 @@ export const SettingNewModal = ({
          if (await actions.add(module as any, addPath, data)) {
             setTimeout(() => {
                navigate(prefixPath + newKey, {
-                  replace: true
+                  replace: true,
                });
             }, 500);
          } else {
@@ -92,7 +92,7 @@ export const SettingNewModal = ({
               onClick: () => {
                  setFormSchema(item);
                  open();
-              }
+              },
            };
         })
       : [];

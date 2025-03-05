@@ -30,8 +30,8 @@ describe("Registry", () => {
          first: {
             cls: What,
             schema: Type.Object({ type: Type.String(), what: Type.String() }),
-            enabled: true
-         }
+            enabled: true,
+         },
       } satisfies Record<string, Test1>);
 
       const item = registry.get("first");
@@ -42,7 +42,7 @@ describe("Registry", () => {
       registry.add("second", {
          cls: What2,
          schema: second,
-         enabled: true
+         enabled: true,
       });
       // @ts-ignore
       expect(registry.get("second").schema).toEqual(second);
@@ -52,7 +52,7 @@ describe("Registry", () => {
          // @ts-expect-error
          cls: NotAllowed,
          schema: third,
-         enabled: true
+         enabled: true,
       });
       // @ts-ignore
       expect(registry.get("third").schema).toEqual(third);
@@ -62,7 +62,7 @@ describe("Registry", () => {
          cls: What,
          // @ts-expect-error
          schema: fourth,
-         enabled: true
+         enabled: true,
       });
       // @ts-ignore
       expect(registry.get("fourth").schema).toEqual(fourth);
@@ -75,7 +75,7 @@ describe("Registry", () => {
          return {
             cls: a,
             schema: a.prototype.getType(),
-            enabled: true
+            enabled: true,
          };
       });
 

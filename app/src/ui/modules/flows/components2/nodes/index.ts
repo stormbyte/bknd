@@ -5,5 +5,5 @@ import { TriggerNode } from "./triggers/TriggerNode";
 export const nodeTypes = {
    select: SelectNode,
    trigger: TriggerNode,
-   task: TaskNode
+   task: TaskNode,
 };

@@ -15,8 +15,7 @@
     "formatter": {
       "indentWidth": 3,
       "lineWidth": 100,
-      "indentStyle": "space",
-      "trailingCommas": "none"
+      "indentStyle": "space"
     }
   },
   "css": {

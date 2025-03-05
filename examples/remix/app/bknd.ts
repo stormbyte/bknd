@@ -1,4 +1,4 @@
-import { App } from "bknd";
+import { App, type LocalApiOptions } from "bknd";
 import { registerLocalMediaAdapter } from "bknd/adapter/node";
 import { type RemixBkndConfig, getApp as getBkndApp } from "bknd/adapter/remix";
 import { boolean, em, entity, text } from "bknd/data";
@@ -10,8 +10,8 @@ registerLocalMediaAdapter();
 const schema = em({
    todos: entity("todos", {
       title: text(),
-      done: boolean()
-   })
+      done: boolean(),
+   }),
 });
 
 // register your schema to get automatic type completion
@@ -23,7 +23,7 @@ declare module "bknd/core" {
 const config = {
    // we can use any libsql config, and if omitted, uses in-memory
    connection: {
-      url: "file:test.db"
+      url: "file:test.db",
    },
    // an initial config is only applied if the database is empty
    initialConfig: {
@@ -33,8 +33,8 @@ const config = {
          enabled: true,
          jwt: {
             issuer: "bknd-remix-example",
-            secret: secureRandomString(64)
-         }
+            secret: secureRandomString(64),
+         },
       },
       // ... and media
       media: {
@@ -42,19 +42,19 @@ const config = {
          adapter: {
             type: "local",
             config: {
-               path: "./public"
-            }
-         }
-      }
+               path: "./public",
+            },
+         },
+      },
    },
    options: {
       // the seed option is only executed if the database was empty
       seed: async (ctx) => {
          await ctx.em.mutator("todos").insertMany([
             { title: "Learn bknd", done: true },
-            { title: "Build something cool", done: false }
+            { title: "Build something cool", done: false },
          ]);
-      }
+      },
    },
    // here we can hook into the app lifecycle events ...
    beforeBuild: async (app) => {
@@ -63,30 +63,20 @@ const config = {
          async () => {
             // ... to create an initial user
             await app.module.auth.createUser({
-               email: "ds@bknd.io",
-               password: "12345678"
+               email: "test@bknd.io",
+               password: "12345678",
             });
          },
-         "sync"
+         "sync",
       );
-   }
+   },
 } as const satisfies RemixBkndConfig;
 
 export async function getApp(args?: { request: Request }) {
    return await getBkndApp(config, args);
 }
 
-/**
- * If args are given, it will use authentication details from the request
- * @param args
- */
-export async function getApi(args?: { request: Request }) {
-   const app = await getApp(args);
-   if (args) {
-      const api = app.getApi(args.request);
-      await api.verifyAuth();
-      return api;
-   }
-
-   return app.getApi();
+export async function getApi(options?: LocalApiOptions) {
+   const app = await getApp();
+   return await app.getApi(options);
 }

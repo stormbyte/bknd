@@ -3,7 +3,7 @@ export {
    useBkndWindowContext,
    type ClientProviderProps,
    useApi,
-   useBaseUrl
+   useBaseUrl,
 } from "./ClientProvider";
 
 export * from "./api/use-api";

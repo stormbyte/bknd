@@ -18,14 +18,14 @@ const schemaProvided = Type.Object(
       client: Type.Object(
          {
             client_id: Type.String(),
-            client_secret: Type.String()
+            client_secret: Type.String(),
          },
          {
-            additionalProperties: false
-         }
-      )
+            additionalProperties: false,
+         },
+      ),
    },
-   { title: "OAuth" }
+   { title: "OAuth" },
 );
 type ProvidedOAuthConfig = Static<typeof schemaProvided>;
 
@@ -56,7 +56,7 @@ export type IssuerConfig<UserInfo = any> = {
    profile: (
       info: UserInfo,
       config: Omit<IssuerConfig, "profile">,
-      tokenResponse: any
+      tokenResponse: any,
    ) => Promise<UserProfile>;
 };
 
@@ -65,7 +65,7 @@ export class OAuthCallbackException extends Exception {
 
    constructor(
       public error: any,
-      public step: string
+      public step: string,
    ) {
       super("OAuthCallbackException on " + step);
    }
@@ -103,8 +103,8 @@ export class OAuthStrategy implements Strategy {
          type: info.type,
          client: {
             ...info.client,
-            ...this._config.client
-         }
+            ...this._config.client,
+         },
       };
    }
 
@@ -129,7 +129,7 @@ export class OAuthStrategy implements Strategy {
 
       const { challenge_supported, challenge, challenge_method } = await this.getCodeChallenge(
          as,
-         options.state
+         options.state,
       );
 
       if (!as.authorization_endpoint) {
@@ -150,7 +150,7 @@ export class OAuthStrategy implements Strategy {
          client_id: client.client_id,
          redirect_uri: options.redirect_uri,
          response_type: "code",
-         scope: scopes.join(as.scope_separator ?? " ")
+         scope: scopes.join(as.scope_separator ?? " "),
       };
       if (challenge_supported) {
          params.code_challenge = challenge;
@@ -162,13 +162,13 @@ export class OAuthStrategy implements Strategy {
       return {
          url: new URL(endpoint) + "?" + new URLSearchParams(params).toString(),
          endpoint,
-         params
+         params,
       };
    }
 
    private async oidc(
       callbackParams: URL | URLSearchParams,
-      options: { redirect_uri: string; state: string; scopes?: string[] }
+      options: { redirect_uri: string; state: string; scopes?: string[] },
    ) {
       const config = await this.getConfig();
       const { client, as, type } = config;
@@ -178,7 +178,7 @@ export class OAuthStrategy implements Strategy {
          as,
          client, // no client_secret required
          callbackParams,
-         oauth.expectNoState
+         oauth.expectNoState,
       );
       if (oauth.isOAuth2Error(parameters)) {
          //console.log("callback.error", parameters);
@@ -193,7 +193,7 @@ export class OAuthStrategy implements Strategy {
          client,
          parameters,
          options.redirect_uri,
-         options.state
+         options.state,
       );
       //console.log("callback.response", response);
 
@@ -213,7 +213,7 @@ export class OAuthStrategy implements Strategy {
          as,
          client,
          response,
-         expectedNonce
+         expectedNonce,
       );
       if (oauth.isOAuth2Error(result)) {
          console.log("callback.error", result);
@@ -236,7 +236,7 @@ export class OAuthStrategy implements Strategy {
 
    private async oauth2(
       callbackParams: URL | URLSearchParams,
-      options: { redirect_uri: string; state: string; scopes?: string[] }
+      options: { redirect_uri: string; state: string; scopes?: string[] },
    ) {
       const config = await this.getConfig();
       const { client, type, as, profile } = config;
@@ -246,7 +246,7 @@ export class OAuthStrategy implements Strategy {
          as,
          client, // no client_secret required
          callbackParams,
-         oauth.expectNoState
+         oauth.expectNoState,
       );
       if (oauth.isOAuth2Error(parameters)) {
          console.log("callback.error", parameters);
@@ -254,14 +254,14 @@ export class OAuthStrategy implements Strategy {
       }
       console.log(
          "callback.parameters",
-         JSON.stringify(Object.fromEntries(parameters.entries()), null, 2)
+         JSON.stringify(Object.fromEntries(parameters.entries()), null, 2),
       );
       const response = await oauth.authorizationCodeGrantRequest(
          as,
          client,
          parameters,
          options.redirect_uri,
-         options.state
+         options.state,
       );
 
       const challenges = oauth.parseWwwAuthenticateChallenges(response);
@@ -297,7 +297,7 @@ export class OAuthStrategy implements Strategy {
 
    async callback(
       callbackParams: URL | URLSearchParams,
-      options: { redirect_uri: string; state: string; scopes?: string[] }
+      options: { redirect_uri: string; state: string; scopes?: string[] },
    ): Promise<UserProfile> {
       const type = this.getIssuerConfig().type;
 
@@ -330,7 +330,7 @@ export class OAuthStrategy implements Strategy {
             secure: true,
             httpOnly: true,
             sameSite: "Lax",
-            maxAge: 60 * 5 // 5 minutes
+            maxAge: 60 * 5, // 5 minutes
          });
       };
 
@@ -339,7 +339,7 @@ export class OAuthStrategy implements Strategy {
             return {
                state: c.req.header("X-State-Challenge"),
                action: c.req.header("X-State-Action"),
-               mode: "token"
+               mode: "token",
             } as any;
          }
 
@@ -366,7 +366,7 @@ export class OAuthStrategy implements Strategy {
 
          const profile = await this.callback(params, {
             redirect_uri,
-            state: state.state
+            state: state.state,
          });
 
          try {
@@ -392,7 +392,7 @@ export class OAuthStrategy implements Strategy {
          const params = new URLSearchParams(url.search);
 
          return c.json({
-            code: params.get("code") ?? null
+            code: params.get("code") ?? null,
          });
       });
 
@@ -410,7 +410,7 @@ export class OAuthStrategy implements Strategy {
          const state = oauth.generateRandomCodeVerifier();
          const response = await this.request({
             redirect_uri,
-            state
+            state,
          });
          //console.log("_state", state);
 
@@ -433,7 +433,7 @@ export class OAuthStrategy implements Strategy {
          const state = oauth.generateRandomCodeVerifier();
          const response = await this.request({
             redirect_uri,
-            state
+            state,
          });
 
          if (isDebug()) {
@@ -442,14 +442,14 @@ export class OAuthStrategy implements Strategy {
                redirect_uri,
                challenge: state,
                action,
-               params: response.params
+               params: response.params,
             });
          }
 
          return c.json({
             url: response.url,
             challenge: state,
-            action
+            action,
          });
       });
 
@@ -476,11 +476,8 @@ export class OAuthStrategy implements Strategy {
       const config = secrets ? this.config : filterKeys(this.config, ["secret", "client_id"]);
 
       return {
-         type: this.getType(),
-         config: {
-            type: this.getIssuerConfig().type,
-            ...config
-         }
+         type: this.getIssuerConfig().type,
+         ...config,
       };
    }
 }

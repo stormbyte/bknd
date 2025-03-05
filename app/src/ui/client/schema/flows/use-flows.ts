@@ -13,8 +13,8 @@ export function useFlows() {
             console.log("parsed", parsed);
             const res = await bkndActions.add("flows", `flows.${name}`, parsed);
             console.log("res", res);
-         }
-      }
+         },
+      },
    };
 
    return { flows: app.flows, config: config.flows, actions };

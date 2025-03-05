@@ -6,9 +6,9 @@ export const mediaFieldConfigSchema = Type.Composite([
       entity: Type.String(), // @todo: is this really required?
       min_items: Type.Optional(Type.Number()),
       max_items: Type.Optional(Type.Number()),
-      mime_types: Type.Optional(Type.Array(Type.String()))
+      mime_types: Type.Optional(Type.Array(Type.String())),
    }),
-   baseFieldConfigSchema
+   baseFieldConfigSchema,
 ]);
 
 export type MediaFieldConfig = Static<typeof mediaFieldConfigSchema>;
@@ -26,7 +26,7 @@ export type MediaItem = {
 
 export class MediaField<
    Required extends true | false = false,
-   TypeOverride = MediaItem[]
+   TypeOverride = MediaItem[],
 > extends Field<MediaFieldConfig, TypeOverride, Required> {
    override readonly type = "media";
 
@@ -64,7 +64,7 @@ export class MediaField<
             type: "array",
             items: { $ref },
             minItems,
-            maxItems
+            maxItems,
          };
       }
    }

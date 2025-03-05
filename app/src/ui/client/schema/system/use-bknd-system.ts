@@ -9,15 +9,15 @@ export function useBkndSystem() {
       theme: {
          set: async (scheme: "light" | "dark") => {
             return await bkndActions.patch("server", "admin", {
-               color_scheme: scheme
+               color_scheme: scheme,
             });
          },
          toggle: async () => {
             return await bkndActions.patch("server", "admin", {
-               color_scheme: theme === "light" ? "dark" : "light"
+               color_scheme: theme === "light" ? "dark" : "light",
             });
-         }
-      }
+         },
+      },
    };
    const $system = {};
 
@@ -26,7 +26,7 @@ export function useBkndSystem() {
       config: config.server,
       schema: schema.server,
       theme,
-      actions
+      actions,
    };
 }
 
@@ -36,6 +36,6 @@ export function useBkndSystemTheme() {
    return {
       theme: $sys.theme,
       set: $sys.actions.theme.set,
-      toggle: () => $sys.actions.theme.toggle()
+      toggle: () => $sys.actions.theme.toggle(),
    };
 }

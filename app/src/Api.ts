@@ -2,9 +2,9 @@ import type { SafeUser } from "auth";
 import { AuthApi } from "auth/api/AuthApi";
 import { DataApi } from "data/api/DataApi";
 import { decode } from "hono/jwt";
-import { omit } from "lodash-es";
 import { MediaApi } from "media/api/MediaApi";
 import { SystemApi } from "modules/SystemApi";
+import { omitKeys } from "core/utils";
 
 export type TApiUser = SafeUser;
 
@@ -122,7 +122,7 @@ export class Api {
       this.verified = false;
 
       if (token) {
-         this.user = omit(decode(token).payload as any, ["iat", "iss", "exp"]) as any;
+         this.user = omitKeys(decode(token).payload as any, ["iat", "iss", "exp"]) as any;
       } else {
          this.user = undefined;
       }
@@ -153,7 +153,7 @@ export class Api {
       return {
          token: this.token,
          user: this.user,
-         verified: this.verified
+         verified: this.verified,
       };
    }
 
@@ -198,7 +198,7 @@ export class Api {
          token: this.token,
          headers: this.options.headers,
          token_transport: this.token_transport,
-         verbose: this.options.verbose
+         verbose: this.options.verbose,
       });
    }
 
@@ -211,9 +211,9 @@ export class Api {
       this.auth = new AuthApi(
          {
             ...baseParams,
-            onTokenUpdate: (token) => this.updateToken(token, true)
+            onTokenUpdate: (token) => this.updateToken(token, true),
          },
-         fetcher
+         fetcher,
       );
       this.media = new MediaApi(baseParams, fetcher);
    }

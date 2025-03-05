@@ -15,5 +15,5 @@ export const templates = {
    TitleFieldTemplate,
    ObjectFieldTemplate,
    BaseInputTemplate,
-   WrapIfAdditionalTemplate
+   WrapIfAdditionalTemplate,
 };

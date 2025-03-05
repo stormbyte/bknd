@@ -17,7 +17,7 @@ export type Options = {
 export async function getApi(Astro: TAstro, options: Options = { mode: "static" }) {
    const api = new Api({
       host: new URL(Astro.request.url).origin,
-      headers: options.mode === "dynamic" ? Astro.request.headers : undefined
+      headers: options.mode === "dynamic" ? Astro.request.headers : undefined,
    });
    await api.verifyAuth();
    return api;

@@ -23,7 +23,7 @@ export type AdminControllerOptions = {
 export class AdminController extends Controller {
    constructor(
       private readonly app: App,
-      private _options: AdminControllerOptions = {}
+      private _options: AdminControllerOptions = {},
    ) {
       super();
    }
@@ -36,7 +36,7 @@ export class AdminController extends Controller {
       return {
          ...this._options,
          basepath: this._options.basepath ?? "/",
-         assets_path: this._options.assets_path ?? config.server.assets_path
+         assets_path: this._options.assets_path ?? config.server.assets_path,
       };
    }
 
@@ -53,7 +53,7 @@ export class AdminController extends Controller {
       const hono = this.create().use(
          authMiddleware({
             //skip: [/favicon\.ico$/]
-         })
+         }),
       );
 
       const auth = this.app.module.auth;
@@ -66,14 +66,14 @@ export class AdminController extends Controller {
          success: configs.auth.cookie.pathSuccess ?? "/",
          loggedOut: configs.auth.cookie.pathLoggedOut ?? "/",
          login: "/auth/login",
-         logout: "/auth/logout"
+         logout: "/auth/logout",
       };
 
       hono.use("*", async (c, next) => {
          const obj = {
             user: c.get("auth")?.user,
             logout_route: this.withBasePath(authRoutes.logout),
-            color_scheme: configs.server.admin.color_scheme
+            color_scheme: configs.server.admin.color_scheme,
          };
          const html = await this.getHtml(obj);
          if (!html) {
@@ -97,11 +97,11 @@ export class AdminController extends Controller {
                      console.log("redirecting to success");
                      return c.redirect(authRoutes.success);
                   }
-               }
+               },
             }),
             async (c) => {
                return c.html(c.get("html")!);
-            }
+            },
          );
 
          hono.get(authRoutes.logout, async (c) => {
@@ -119,16 +119,16 @@ export class AdminController extends Controller {
 
                console.log("redirecting");
                return c.redirect(authRoutes.login);
-            }
+            },
          }),
          permission(SystemPermissions.schemaRead, {
             onDenied: async (c) => {
                addFlashMessage(c, "You not allowed to read the schema", "warning");
-            }
+            },
          }),
          async (c) => {
             return c.html(c.get("html")!);
-         }
+         },
       );
 
       return hono;
@@ -141,12 +141,12 @@ export class AdminController extends Controller {
          if (this.options.html.includes(htmlBkndContextReplace)) {
             return this.options.html.replace(
                htmlBkndContextReplace,
-               "<script>" + bknd_context + "</script>"
+               "<script>" + bknd_context + "</script>",
             );
          }
 
          console.warn(
-            `Custom HTML needs to include '${htmlBkndContextReplace}' to inject BKND context`
+            `Custom HTML needs to include '${htmlBkndContextReplace}' to inject BKND context`,
          );
          return this.options.html as string;
       }
@@ -160,17 +160,27 @@ export class AdminController extends Controller {
 
       const assets = {
          js: "main.js",
-         css: "styles.css"
+         css: "styles.css",
       };
 
       if (isProd) {
-         // @ts-ignore
-         const manifest = await import("bknd/dist/manifest.json", {
-            assert: { type: "json" }
-         });
+         let manifest: any;
+         if (this.options.assets_path.startsWith("http")) {
+            manifest = await fetch(this.options.assets_path + "manifest.json", {
+               headers: {
+                  Accept: "application/json",
+               },
+            }).then((res) => res.json());
+         } else {
+            // @ts-ignore
+            manifest = await import("bknd/dist/manifest.json", {
+               assert: { type: "json" },
+            }).then((res) => res.default);
+         }
+
          // @todo: load all marked as entry (incl. css)
-         assets.js = manifest.default["src/ui/main.tsx"].file;
-         assets.css = manifest.default["src/ui/main.tsx"].css[0] as any;
+         assets.js = manifest["src/ui/main.tsx"].file;
+         assets.css = manifest["src/ui/main.tsx"].css[0] as any;
       }
 
       const theme = configs.server.admin.color_scheme ?? "light";
@@ -197,16 +207,8 @@ export class AdminController extends Controller {
                   )}
                   {isProd ? (
                      <Fragment>
-                        <script
-                           type="module"
-                           CrossOrigin
-                           src={this.options.assets_path + assets?.js}
-                        />
-                        <link
-                           rel="stylesheet"
-                           crossOrigin
-                           href={this.options.assets_path + assets?.css}
-                        />
+                        <script type="module" src={this.options.assets_path + assets?.js} />
+                        <link rel="stylesheet" href={this.options.assets_path + assets?.css} />
                      </Fragment>
                   ) : (
                      <Fragment>
@@ -217,7 +219,7 @@ export class AdminController extends Controller {
                               RefreshRuntime.injectIntoGlobalHook(window)
                               window.$RefreshReg$ = () => {}
                               window.$RefreshSig$ = () => (type) => type
-                              window.__vite_plugin_react_preamble_installed__ = true`
+                              window.__vite_plugin_react_preamble_installed__ = true`,
                            }}
                         />
                         <script type="module" src={"/@vite/client"} />
@@ -235,7 +237,7 @@ export class AdminController extends Controller {
                   </div>
                   <script
                      dangerouslySetInnerHTML={{
-                        __html: bknd_context
+                        __html: bknd_context,
                      }}
                   />
                   {!isProd && <script type="module" src={mainPath} />}
@@ -256,21 +258,21 @@ const style = (theme: AppTheme) => {
       justifyContent: "center",
       alignItems: "center",
       "-webkit-font-smoothing": "antialiased",
-      "-moz-osx-font-smoothing": "grayscale"
+      "-moz-osx-font-smoothing": "grayscale",
    };
    const styles = {
       light: {
          color: "rgb(9,9,11)",
-         backgroundColor: "rgb(250,250,250)"
+         backgroundColor: "rgb(250,250,250)",
       },
       dark: {
          color: "rgb(250,250,250)",
-         backgroundColor: "rgb(30,31,34)"
-      }
+         backgroundColor: "rgb(30,31,34)",
+      },
    };
 
    return {
       ...base,
-      ...styles[theme === "light" ? "light" : "dark"]
+      ...styles[theme === "light" ? "light" : "dark"],
    };
 };

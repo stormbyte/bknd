@@ -14,8 +14,8 @@ registerLocalMediaAdapter();
 const schema = em({
    todos: entity("todos", {
       title: text(),
-      done: boolean()
-   })
+      done: boolean(),
+   }),
 });
 
 // register your schema to get automatic type completion
@@ -27,7 +27,7 @@ declare module "bknd/core" {
 export const ALL = serve<APIContext>({
    // we can use any libsql config, and if omitted, uses in-memory
    connection: {
-      url: "file:data.db"
+      url: "file:data.db",
    },
    // an initial config is only applied if the database is empty
    initialConfig: {
@@ -36,8 +36,9 @@ export const ALL = serve<APIContext>({
       auth: {
          enabled: true,
          jwt: {
-            secret: secureRandomString(64)
-         }
+            issuer: "bknd-astro-example",
+            secret: secureRandomString(64),
+         },
       },
       // ... and media
       media: {
@@ -45,19 +46,19 @@ export const ALL = serve<APIContext>({
          adapter: {
             type: "local",
             config: {
-               path: "./public"
-            }
-         }
-      }
+               path: "./public",
+            },
+         },
+      },
    },
    options: {
       // the seed option is only executed if the database was empty
       seed: async (ctx) => {
          await ctx.em.mutator("todos").insertMany([
             { title: "Learn bknd", done: true },
-            { title: "Build something cool", done: false }
+            { title: "Build something cool", done: false },
          ]);
-      }
+      },
    },
    // here we can hook into the app lifecycle events ...
    beforeBuild: async (app) => {
@@ -66,11 +67,11 @@ export const ALL = serve<APIContext>({
          async () => {
             // ... to create an initial user
             await app.module.auth.createUser({
-               email: "ds@bknd.io",
-               password: "12345678"
+               email: "test@bknd.io",
+               password: "12345678",
             });
          },
-         "sync"
+         "sync",
       );
-   }
+   },
 });

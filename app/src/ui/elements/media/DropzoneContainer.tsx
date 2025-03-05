@@ -38,7 +38,7 @@ export function DropzoneContainer({
    const baseUrl = api.baseUrl;
    const defaultQuery = {
       limit: query?.limit ? query?.limit : props.maxItems ? props.maxItems : 50,
-      sort: "-id"
+      sort: "-id",
    };
    const entity_name = (media?.entity_name ?? "media") as "media";
    //console.log("dropzone:baseUrl", baseUrl);
@@ -51,12 +51,12 @@ export function DropzoneContainer({
               where: {
                  reference: `${entity.name}.${entity.field}`,
                  entity_id: entity.id,
-                 ...query?.where
-              }
+                 ...query?.where,
+              },
            })
          : api.data.readMany(entity_name, {
               ...defaultQuery,
-              ...query
+              ...query,
            });
 
    const $q = useApiQuery(selectApi, { enabled: initialItems !== false && !initialItems });
@@ -69,7 +69,7 @@ export function DropzoneContainer({
       return {
          url,
          headers: api.media.getUploadHeaders(),
-         method: "POST"
+         method: "POST",
       };
    });
 
@@ -81,7 +81,9 @@ export function DropzoneContainer({
       return api.media.deleteFile(file.path);
    });
 
-   const actualItems = (initialItems || $q.data || []) as MediaFieldSchema[];
+   const actualItems = (initialItems ??
+      (Array.isArray($q.data) ? $q.data : []) ??
+      []) as MediaFieldSchema[];
    const _initialItems = mediaItemsToFileStates(actualItems, { baseUrl });
 
    const key = id + JSON.stringify(_initialItems);

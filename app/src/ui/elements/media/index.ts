@@ -4,7 +4,7 @@ import { DropzoneContainer, useDropzone } from "./DropzoneContainer";
 export const Media = {
    Dropzone: DropzoneContainer,
    Preview: PreviewWrapperMemoized,
-   useDropzone: useDropzone
+   useDropzone: useDropzone,
 };
 
 export { useDropzone as useMediaDropzone };
@@ -14,6 +14,6 @@ export type {
    FileState,
    FileStateWithData,
    DropzoneProps,
-   DropzoneRenderProps
+   DropzoneRenderProps,
 } from "./Dropzone";
 export type { DropzoneContainerProps } from "./DropzoneContainer";

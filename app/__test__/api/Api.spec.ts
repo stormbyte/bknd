@@ -19,8 +19,8 @@ describe("Api", async () => {
       const token = await sign({ foo: "bar" }, "1234");
       const request = new Request("http://example.com/test", {
          headers: {
-            Authorization: `Bearer ${token}`
-         }
+            Authorization: `Bearer ${token}`,
+         },
       });
       const api = new Api({ request });
       expect(api.isAuthVerified()).toBe(false);
@@ -35,8 +35,8 @@ describe("Api", async () => {
       const token = await sign({ foo: "bar" }, "1234");
       const request = new Request("http://example.com/test", {
          headers: {
-            Cookie: `auth=${token}`
-         }
+            Cookie: `auth=${token}`,
+         },
       });
       const api = new Api({ request });
       expect(api.isAuthVerified()).toBe(false);

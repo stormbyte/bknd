@@ -7,7 +7,7 @@ import {
    TbChevronUp,
    TbDots,
    TbPlayerPlayFilled,
-   TbSettings
+   TbSettings,
 } from "react-icons/tb";
 import { twMerge } from "tailwind-merge";
 import FlowCanvas from "ui/modules/flows/components/FlowCanvas";
@@ -48,7 +48,7 @@ export function FlowEdit({ params }) {
                await new Promise((resolve) => setTimeout(resolve, 100));
             }
          },
-         "sync"
+         "sync",
       );
 
       execution.subscribe(async (event) => {
@@ -67,7 +67,7 @@ export function FlowEdit({ params }) {
       onChange: ({ nodes, edges }) => {
          setSelectedNodes(nodes);
          setSelectedEdges(edges);
-      }
+      },
    });
 
    return (
@@ -94,8 +94,8 @@ export function FlowEdit({ params }) {
                         items={[
                            {
                               label: "Settings",
-                              onClick: () => navigate(`${prefix}/flows/flows/${flow.name}`)
-                           }
+                              onClick: () => navigate(`${prefix}/flows/flows/${flow.name}`),
+                           },
                         ]}
                         position="bottom-end"
                      >
@@ -145,7 +145,7 @@ function Sidebar({ nodes, edges, flow }: { flow: Flow; nodes: Node[]; edges: Edg
       <div
          className={twMerge(
             "flex flex-row pl-5 pr-3 py-3 border-muted border-b cursor-pointer justify-between items-center font-bold",
-            opened && "bg-primary/5"
+            opened && "bg-primary/5",
          )}
          onClick={onClick}
       >

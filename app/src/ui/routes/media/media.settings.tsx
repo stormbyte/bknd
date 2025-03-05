@@ -16,9 +16,8 @@ import {
    FormDebug,
    ObjectField,
    Subscribe,
-   useFormError
+   useFormError,
 } from "ui/components/form/json-schema-form";
-import { Media } from "ui/elements";
 import { useBrowserTitle } from "ui/hooks/use-browser-title";
 import * as AppShell from "ui/layouts/AppShell/AppShell";
 
@@ -35,7 +34,7 @@ export function MediaSettings(props) {
 
 const formConfig = {
    ignoreKeys: ["entity_name", "basepath"],
-   options: { debug: isDebug(), keepEmpty: true }
+   options: { debug: isDebug(), keepEmpty: true },
 };
 
 function MediaSettingsInternal() {
@@ -58,7 +57,7 @@ function MediaSettingsInternal() {
                selector={(state) => ({
                   dirty: state.dirty,
                   errors: state.errors.length > 0,
-                  submitting: state.submitting
+                  submitting: state.submitting,
                })}
             >
                {({ dirty, errors, submitting }) => (
@@ -87,7 +86,7 @@ function MediaSettingsInternal() {
                   </div>
                </div>
                <AppShell.Separator />
-               <div className="flex flex-col gap-3 p-3">
+               <div className="flex flex-col gap-3 p-3 relative">
                   <Overlay />
                   <AnyOf.Root path="adapter">
                      <Adapters />
@@ -117,7 +116,7 @@ const Icons = {
    s3: IconBrandAws,
    cloudinary: IconCloud,
    local: IconServer,
-   r2: IconBrandCloudflare
+   r2: IconBrandCloudflare,
 };
 
 const AdapterIcon = ({ type }: { type: string }) => {
@@ -143,7 +142,7 @@ function Adapters() {
                   variant={ctx.selected === i ? "primary" : "outline"}
                   className={twMerge(
                      "flex flex-row items-center justify-center gap-3 border",
-                     ctx.selected === i && "border-primary"
+                     ctx.selected === i && "border-primary",
                   )}
                >
                   <div>
@@ -177,7 +176,7 @@ const Overlay = () => (
    <Subscribe selector={(state) => ({ enabled: state.data.enabled })}>
       {({ enabled }) =>
          !enabled && (
-            <div className="absolute w-full h-full z-50 bg-background opacity-70 pointer-events-none" />
+            <div className="absolute w-full h-full z-50 inset-0 bg-background opacity-90" />
          )
       }
    </Subscribe>

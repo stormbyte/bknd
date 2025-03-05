@@ -5,7 +5,7 @@ export type RegisterFn<Item> = (unknown: any) => Item;
 export class Registry<
    Item,
    Items extends Record<string, Item> = Record<string, Item>,
-   Fn extends RegisterFn<Item> = RegisterFn<Item>
+   Fn extends RegisterFn<Item> = RegisterFn<Item>,
 > {
    private is_set: boolean = false;
    private items: Items = {} as Items;

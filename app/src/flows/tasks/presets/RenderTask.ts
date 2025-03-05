@@ -8,7 +8,7 @@ export class RenderTask<Output extends Record<string, any>> extends Task<
    type = "render";
 
    static override schema = Type.Object({
-      render: Type.String()
+      render: Type.String(),
    });
 
    async execute() {

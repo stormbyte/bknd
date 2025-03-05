@@ -11,7 +11,7 @@ export function useCreateUserModal() {
 
    const open = async () => {
       const loading = bkndModals.open("overlay", {
-         content: "Loading..."
+         content: "Loading...",
       });
 
       const schema = await api.auth.actionSchema("password", "create");
@@ -23,8 +23,8 @@ export function useCreateUserModal() {
             schema,
             uiSchema: {
                password: {
-                  "ui:widget": "password"
-               }
+                  "ui:widget": "password",
+               },
             },
             autoCloseAfterSubmit: false,
             onSubmit: async (data, ctx) => {
@@ -41,11 +41,11 @@ export function useCreateUserModal() {
                } else {
                   ctx.setError("Unknown error");
                }
-            }
+            },
          },
          {
-            title: "Create User"
-         }
+            title: "Create User",
+         },
       );
    };
 

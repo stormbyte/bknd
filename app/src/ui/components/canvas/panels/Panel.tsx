@@ -33,7 +33,7 @@ const Wrapper = ({ children, className, ...props }: ComponentPropsWithoutRef<"di
       {...props}
       className={twMerge(
          "flex flex-row bg-lightest border ring-2 ring-muted/5 border-muted rounded-full items-center p-1",
-         className
+         className,
       )}
    >
       {children}
@@ -70,7 +70,7 @@ const Text = forwardRef<any, ComponentPropsWithoutRef<"span"> & { mono?: boolean
       >
          {children}
       </span>
-   )
+   ),
 );
 
 Panel.Wrapper = Wrapper;

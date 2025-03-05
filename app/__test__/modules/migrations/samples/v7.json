@@ -1,0 +1,638 @@
+{
+  "version": 7,
+  "server": {
+    "admin": {
+      "basepath": "",
+      "logo_return_path": "/",
+      "color_scheme": "light"
+    },
+    "cors": {
+      "origin": "*",
+      "allow_methods": ["GET", "POST", "PATCH", "PUT", "DELETE"],
+      "allow_headers": [
+        "Content-Type",
+        "Content-Length",
+        "Authorization",
+        "Accept"
+      ]
+    }
+  },
+  "data": {
+    "basepath": "/api/data",
+    "entities": {
+      "products": {
+        "type": "regular",
+        "fields": {
+          "id": {
+            "type": "primary",
+            "config": {
+              "fillable": false,
+              "required": false,
+              "hidden": false
+            }
+          },
+          "title": {
+            "type": "text",
+            "config": {
+              "required": true,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "brand": {
+            "type": "text",
+            "config": {
+              "required": true,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "currency": {
+            "type": "text",
+            "config": {
+              "required": false,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "price": {
+            "type": "number",
+            "config": {
+              "required": true,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "price_compare": {
+            "type": "number",
+            "config": {
+              "required": false,
+              "fillable": true,
+              "hidden": ["table"]
+            }
+          },
+          "url": {
+            "type": "text",
+            "config": {
+              "html_config": {
+                "element": "input"
+              },
+              "required": true,
+              "fillable": true,
+              "hidden": ["table"]
+            }
+          },
+          "created_at": {
+            "type": "date",
+            "config": {
+              "type": "date",
+              "required": false,
+              "fillable": true,
+              "hidden": ["table"]
+            }
+          },
+          "description": {
+            "type": "text",
+            "config": {
+              "html_config": {
+                "element": "textarea",
+                "props": {
+                  "rows": 4
+                }
+              },
+              "required": false,
+              "fillable": true,
+              "hidden": ["table"]
+            }
+          },
+          "images": {
+            "type": "media",
+            "config": {
+              "required": false,
+              "fillable": ["update"],
+              "hidden": false,
+              "mime_types": [],
+              "virtual": true,
+              "entity": "products"
+            }
+          },
+          "identifier": {
+            "type": "text",
+            "config": {
+              "required": false,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "metadata": {
+            "type": "jsonschema",
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "size": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": false,
+              "fillable": true,
+              "hidden": ["table"]
+            }
+          }
+        },
+        "config": {
+          "sort_field": "id",
+          "sort_dir": "asc"
+        }
+      },
+      "media": {
+        "type": "system",
+        "fields": {
+          "id": {
+            "type": "primary",
+            "config": {
+              "fillable": false,
+              "required": false,
+              "hidden": false
+            }
+          },
+          "path": {
+            "type": "text",
+            "config": {
+              "required": true,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "folder": {
+            "type": "boolean",
+            "config": {
+              "default_value": false,
+              "hidden": true,
+              "fillable": ["create"],
+              "required": false
+            }
+          },
+          "mime_type": {
+            "type": "text",
+            "config": {
+              "required": false,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "size": {
+            "type": "number",
+            "config": {
+              "required": false,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "scope": {
+            "type": "text",
+            "config": {
+              "hidden": true,
+              "fillable": ["create"],
+              "required": false
+            }
+          },
+          "etag": {
+            "type": "text",
+            "config": {
+              "required": false,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "modified_at": {
+            "type": "date",
+            "config": {
+              "type": "datetime",
+              "required": false,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "reference": {
+            "type": "text",
+            "config": {
+              "required": false,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "entity_id": {
+            "type": "number",
+            "config": {
+              "required": false,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "metadata": {
+            "type": "json",
+            "config": {
+              "required": false,
+              "fillable": true,
+              "hidden": false
+            }
+          }
+        },
+        "config": {
+          "sort_field": "id",
+          "sort_dir": "asc"
+        }
+      },
+      "users": {
+        "type": "system",
+        "fields": {
+          "id": {
+            "type": "primary",
+            "config": {
+              "fillable": false,
+              "required": false,
+              "hidden": false
+            }
+          },
+          "email": {
+            "type": "text",
+            "config": {
+              "required": true,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "strategy": {
+            "type": "enum",
+            "config": {
+              "options": {
+                "type": "strings",
+                "values": ["password"]
+              },
+              "required": true,
+              "fillable": ["create"],
+              "hidden": ["update", "form"]
+            }
+          },
+          "strategy_value": {
+            "type": "text",
+            "config": {
+              "fillable": ["create"],
+              "hidden": ["read", "table", "update", "form"],
+              "required": true
+            }
+          },
+          "role": {
+            "type": "enum",
+            "config": {
+              "options": {
+                "type": "strings",
+                "values": ["guest", "admin"]
+              },
+              "required": false,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "username": {
+            "type": "text",
+            "config": {
+              "required": false,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "name": {
+            "type": "text",
+            "config": {
+              "required": false,
+              "fillable": true,
+              "hidden": false
+            }
+          }
+        },
+        "config": {
+          "sort_field": "id",
+          "sort_dir": "asc"
+        }
+      },
+      "product_likes": {
+        "type": "regular",
+        "fields": {
+          "id": {
+            "type": "primary",
+            "config": {
+              "fillable": false,
+              "required": false,
+              "hidden": false
+            }
+          },
+          "created_at": {
+            "type": "date",
+            "config": {
+              "type": "date",
+              "required": false,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "users_id": {
+            "type": "relation",
+            "config": {
+              "label": "User",
+              "required": true,
+              "reference": "users",
+              "target": "users",
+              "target_field": "id",
+              "fillable": true,
+              "hidden": false,
+              "on_delete": "set null"
+            }
+          },
+          "products_id": {
+            "type": "relation",
+            "config": {
+              "label": "Product",
+              "required": true,
+              "reference": "products",
+              "target": "products",
+              "target_field": "id",
+              "fillable": true,
+              "hidden": false,
+              "on_delete": "set null"
+            }
+          }
+        },
+        "config": {
+          "name": "Product Likes",
+          "sort_field": "id",
+          "sort_dir": "asc"
+        }
+      },
+      "boards": {
+        "type": "regular",
+        "fields": {
+          "id": {
+            "type": "primary",
+            "config": {
+              "fillable": false,
+              "required": false,
+              "hidden": false
+            }
+          },
+          "private": {
+            "type": "boolean",
+            "config": {
+              "required": false,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "title": {
+            "type": "text",
+            "config": {
+              "required": true,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "users_id": {
+            "type": "relation",
+            "config": {
+              "label": "Users",
+              "required": true,
+              "reference": "users",
+              "target": "users",
+              "target_field": "id",
+              "fillable": true,
+              "hidden": false,
+              "on_delete": "set null"
+            }
+          },
+          "images": {
+            "type": "media",
+            "config": {
+              "required": false,
+              "fillable": ["update"],
+              "hidden": false,
+              "mime_types": [],
+              "virtual": true,
+              "entity": "boards",
+              "max_items": 5
+            }
+          },
+          "cover": {
+            "type": "number",
+            "config": {
+              "default_value": 0,
+              "required": false,
+              "fillable": true,
+              "hidden": false
+            }
+          }
+        },
+        "config": {
+          "sort_field": "id",
+          "sort_dir": "asc"
+        }
+      },
+      "boards_products": {
+        "type": "generated",
+        "fields": {
+          "id": {
+            "type": "primary",
+            "config": {
+              "fillable": false,
+              "required": false,
+              "hidden": false
+            }
+          },
+          "boards_id": {
+            "type": "relation",
+            "config": {
+              "required": false,
+              "reference": "boards",
+              "target": "boards",
+              "target_field": "id",
+              "fillable": true,
+              "hidden": false,
+              "on_delete": "set null"
+            }
+          },
+          "products_id": {
+            "type": "relation",
+            "config": {
+              "required": false,
+              "reference": "products",
+              "target": "products",
+              "target_field": "id",
+              "fillable": true,
+              "hidden": false,
+              "on_delete": "set null"
+            }
+          }
+        },
+        "config": {
+          "sort_field": "id",
+          "sort_dir": "asc"
+        }
+      }
+    },
+    "relations": {
+      "poly_products_media_images": {
+        "type": "poly",
+        "source": "products",
+        "target": "media",
+        "config": {
+          "mappedBy": "images"
+        }
+      },
+      "n1_product_likes_users": {
+        "type": "n:1",
+        "source": "product_likes",
+        "target": "users",
+        "config": {
+          "mappedBy": "",
+          "inversedBy": "",
+          "required": true,
+          "with_limit": 5
+        }
+      },
+      "n1_product_likes_products": {
+        "type": "n:1",
+        "source": "product_likes",
+        "target": "products",
+        "config": {
+          "mappedBy": "",
+          "inversedBy": "",
+          "required": true,
+          "with_limit": 5
+        }
+      },
+      "n1_boards_users": {
+        "type": "n:1",
+        "source": "boards",
+        "target": "users",
+        "config": {
+          "mappedBy": "",
+          "inversedBy": "",
+          "required": true,
+          "with_limit": 5
+        }
+      },
+      "poly_boards_media_images": {
+        "type": "poly",
+        "source": "boards",
+        "target": "media",
+        "config": {
+          "mappedBy": "images",
+          "targetCardinality": 5
+        }
+      },
+      "mn_boards_products_boards_products,boards_products": {
+        "type": "m:n",
+        "source": "boards",
+        "target": "products",
+        "config": {}
+      }
+    },
+    "indices": {
+      "idx_unique_media_path": {
+        "entity": "media",
+        "fields": ["path"],
+        "unique": true
+      },
+      "idx_media_reference": {
+        "entity": "media",
+        "fields": ["reference"],
+        "unique": false
+      },
+      "idx_unique_users_email": {
+        "entity": "users",
+        "fields": ["email"],
+        "unique": true
+      },
+      "idx_users_strategy": {
+        "entity": "users",
+        "fields": ["strategy"],
+        "unique": false
+      },
+      "idx_users_strategy_value": {
+        "entity": "users",
+        "fields": ["strategy_value"],
+        "unique": false
+      },
+      "idx_product_likes_unique_products_id_users_id": {
+        "entity": "product_likes",
+        "fields": ["products_id", "users_id"],
+        "unique": true
+      },
+      "idx_media_entity_id": {
+        "entity": "media",
+        "fields": ["entity_id"],
+        "unique": false
+      }
+    }
+  },
+  "auth": {
+    "enabled": true,
+    "basepath": "/api/auth",
+    "entity_name": "users",
+    "allow_register": true,
+    "jwt": {
+      "secret": "...",
+      "alg": "HS256",
+      "fields": ["id", "email", "role"]
+    },
+    "cookie": {
+      "path": "/",
+      "sameSite": "lax",
+      "secure": true,
+      "httpOnly": true,
+      "expires": 604800,
+      "renew": true,
+      "pathSuccess": "/",
+      "pathLoggedOut": "/"
+    },
+    "strategies": {
+      "password": {
+        "type": "password",
+        "config": {
+          "hashing": "sha256"
+        }
+      }
+    },
+    "roles": {
+      "guest": {
+        "is_default": true,
+        "permissions": ["system.access.api", "data.entity.read"]
+      },
+      "admin": {
+        "implicit_allow": true
+      }
+    },
+    "guard": {
+      "enabled": true
+    }
+  },
+  "media": {
+    "enabled": true,
+    "basepath": "/api/media",
+    "entity_name": "media",
+    "storage": {},
+    "adapter": {
+      "type": "s3",
+      "config": {
+        "access_key": "...",
+        "secret_access_key": "...",
+        "url": "https://some.r2.cloudflarestorage.com/some"
+      }
+    }
+  },
+  "flows": {
+    "basepath": "/api/flows",
+    "flows": {}
+  }
+}

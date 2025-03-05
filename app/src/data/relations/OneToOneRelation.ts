@@ -9,12 +9,6 @@ import { type RelationType, RelationTypes } from "./relation-types";
  */
 export type OneToOneRelationConfig = ManyToOneRelationConfig;
 
-/* export type OneToOneRelationConfig = {
-   mappedBy?: string; // author|users
-   inversedBy?: string; // posts
-   required?: boolean;
-}; */
-
 export class OneToOneRelation extends ManyToOneRelation {
    constructor(source: Entity, target: Entity, config?: OneToOneRelationConfig) {
       const { mappedBy, inversedBy, required } = config || {};
@@ -22,7 +16,7 @@ export class OneToOneRelation extends ManyToOneRelation {
          mappedBy,
          inversedBy,
          sourceCardinality: 1,
-         required
+         required,
       });
    }
 
@@ -41,7 +35,7 @@ export class OneToOneRelation extends ManyToOneRelation {
    override async $set(
       em: EntityManager<any>,
       key: string,
-      value: object
+      value: object,
    ): Promise<MutationInstructionResponse> {
       throw new Error("$set is not allowed");
    }
@@ -49,7 +43,7 @@ export class OneToOneRelation extends ManyToOneRelation {
    override async $create(
       em: EntityManager<any>,
       key: string,
-      value: unknown
+      value: unknown,
    ): Promise<void | MutationInstructionResponse> {
       if (value === null || typeof value !== "object") {
          throw new Error(`Invalid value for relation field "${key}" given, expected object.`);

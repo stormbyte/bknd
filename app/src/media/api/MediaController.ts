@@ -1,5 +1,5 @@
 import { isDebug, tbValidator as tb } from "core";
-import { HttpStatus, Type, getFileFromContext } from "core/utils";
+import { HttpStatus, Type, getFileFromContext, headersToObject } from "core/utils";
 import type { StorageAdapter } from "media";
 import { StorageEvents, getRandomizedFilename } from "media";
 import { Controller } from "modules/Controller";
@@ -36,6 +36,7 @@ export class MediaController extends Controller {
       });
 
       // get file by name
+      // @todo: implement more aggressive cache? (configurable)
       hono.get("/file/:filename", async (c) => {
          const { filename } = c.req.param();
          if (!filename) {
@@ -43,7 +44,16 @@ export class MediaController extends Controller {
          }
 
          await this.getStorage().emgr.emit(new StorageEvents.FileAccessEvent({ name: filename }));
-         return await this.getStorageAdapter().getObject(filename, c.req.raw.headers);
+         const res = await this.getStorageAdapter().getObject(filename, c.req.raw.headers);
+
+         const headers = new Headers(res.headers);
+         headers.set("Cache-Control", "public, max-age=31536000, immutable");
+
+         return new Response(res.body, {
+            status: res.status,
+            statusText: res.statusText,
+            headers,
+         });
       });
 
       // delete a file by name
@@ -65,7 +75,7 @@ export class MediaController extends Controller {
             return c.json({
                type: file?.type,
                name: file?.name,
-               size: file?.size
+               size: file?.size,
             });
          });
       }
@@ -82,7 +92,7 @@ export class MediaController extends Controller {
          if (body.size > maxSize) {
             return c.json(
                { error: `Max size (${maxSize} bytes) exceeded` },
-               HttpStatus.PAYLOAD_TOO_LARGE
+               HttpStatus.PAYLOAD_TOO_LARGE,
             );
          }
 
@@ -99,8 +109,8 @@ export class MediaController extends Controller {
          tb(
             "query",
             Type.Object({
-               overwrite: Type.Optional(booleanLike)
-            })
+               overwrite: Type.Optional(booleanLike),
+            }),
          ),
          async (c) => {
             const entity_name = c.req.param("entity");
@@ -124,7 +134,7 @@ export class MediaController extends Controller {
             const mediaRef = {
                scope: field_name,
                reference,
-               entity_id: entity_id
+               entity_id: entity_id,
             };
 
             // check max items
@@ -140,7 +150,7 @@ export class MediaController extends Controller {
                   if (!overwrite) {
                      return c.json(
                         { error: `Max items (${max_items}) reached` },
-                        HttpStatus.BAD_REQUEST
+                        HttpStatus.BAD_REQUEST,
                      );
                   }
 
@@ -149,7 +159,7 @@ export class MediaController extends Controller {
                   if (count > max_items) {
                      return c.json(
                         { error: `Max items (${max_items}) exceeded already with ${count} items.` },
-                        HttpStatus.UNPROCESSABLE_ENTITY
+                        HttpStatus.UNPROCESSABLE_ENTITY,
                      );
                   }
 
@@ -159,9 +169,9 @@ export class MediaController extends Controller {
                      where: mediaRef,
                      sort: {
                         by: "id",
-                        dir: "asc"
+                        dir: "asc",
                      },
-                     limit: count - max_items + 1
+                     limit: count - max_items + 1,
                   });
 
                   if (deleteRes.data && deleteRes.data.length > 0) {
@@ -175,7 +185,7 @@ export class MediaController extends Controller {
             if (!exists) {
                return c.json(
                   { error: `Entity "${entity_name}" with ID "${entity_id}" doesn't exist found` },
-                  HttpStatus.NOT_FOUND
+                  HttpStatus.NOT_FOUND,
                );
             }
 
@@ -186,7 +196,7 @@ export class MediaController extends Controller {
             if (file.size > maxSize) {
                return c.json(
                   { error: `Max size (${maxSize} bytes) exceeded` },
-                  HttpStatus.PAYLOAD_TOO_LARGE
+                  HttpStatus.PAYLOAD_TOO_LARGE,
                );
             }
 
@@ -197,7 +207,7 @@ export class MediaController extends Controller {
             mutator.__unstable_toggleSystemEntityCreation(false);
             const result = await mutator.insertOne({
                ...this.media.uploadedEventDataToMediaPayload(info),
-               ...mediaRef
+               ...mediaRef,
             } as any);
             mutator.__unstable_toggleSystemEntityCreation(true);
 
@@ -210,7 +220,7 @@ export class MediaController extends Controller {
             }
 
             return c.json({ ok: true, result: result.data, ...info }, HttpStatus.CREATED);
-         }
+         },
       );
 
       return hono.all("*", (c) => c.notFound());

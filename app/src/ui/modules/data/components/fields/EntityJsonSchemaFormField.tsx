@@ -39,7 +39,7 @@ export function EntityJsonSchemaFormField({
                formData={formData}
                uiSchema={{
                   "ui:globalOptions": { flexDirection: "row" },
-                  ...field.getJsonUiSchema()
+                  ...field.getJsonUiSchema(),
                }}
             />
          </div>

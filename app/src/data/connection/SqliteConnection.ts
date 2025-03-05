@@ -10,9 +10,9 @@ export class SqliteConnection extends Connection {
             ...fn,
             jsonArrayFrom,
             jsonObjectFrom,
-            jsonBuildObject
+            jsonBuildObject,
          },
-         plugins
+         plugins,
       );
    }
 

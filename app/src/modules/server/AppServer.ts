@@ -16,29 +16,29 @@ export const serverConfigSchema = Type.Object(
             logo_return_path: Type.Optional(
                Type.String({
                   default: "/",
-                  description: "Path to return to after *clicking* the logo"
-               })
-            )
+                  description: "Path to return to after *clicking* the logo",
+               }),
+            ),
          },
-         { default: {}, additionalProperties: false }
+         { default: {}, additionalProperties: false },
       ),
       cors: Type.Object(
          {
             origin: Type.String({ default: "*" }),
             allow_methods: Type.Array(StringEnum(serverMethods), {
                default: serverMethods,
-               uniqueItems: true
+               uniqueItems: true,
             }),
             allow_headers: Type.Array(Type.String(), {
-               default: ["Content-Type", "Content-Length", "Authorization", "Accept"]
-            })
+               default: ["Content-Type", "Content-Length", "Authorization", "Accept"],
+            }),
          },
-         { default: {}, additionalProperties: false }
-      )
+         { default: {}, additionalProperties: false },
+      ),
    },
    {
-      additionalProperties: false
-   }
+      additionalProperties: false,
+   },
 );
 
 export type AppServerConfig = Static<typeof serverConfigSchema>;
@@ -70,8 +70,8 @@ export class AppServer extends Module<typeof serverConfigSchema> {
          cors({
             origin: this.config.cors.origin,
             allowMethods: this.config.cors.allow_methods,
-            allowHeaders: this.config.cors.allow_headers
-         })
+            allowHeaders: this.config.cors.allow_headers,
+         }),
       );
 
       // add an initial fallback route
@@ -83,7 +83,7 @@ export class AppServer extends Module<typeof serverConfigSchema> {
             if (new URL(c.req.url).pathname === "/") {
                c.res = undefined;
                c.res = Response.json({
-                  bknd: "hello world!"
+                  bknd: "hello world!",
                });
             }
          }

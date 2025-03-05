@@ -22,18 +22,18 @@ export const cloudflare = {
             ...json,
             name: ctx.name,
             assets: {
-               directory: "node_modules/bknd/dist/static"
-            }
+               directory: "node_modules/bknd/dist/static",
+            },
          }),
-         { dir: ctx.dir }
+         { dir: ctx.dir },
       );
 
       const db = await $p.select({
          message: "What database do you want to use?",
          options: [
             { label: "Cloudflare D1", value: "d1" },
-            { label: "LibSQL", value: "libsql" }
-         ]
+            { label: "LibSQL", value: "libsql" },
+         ],
       });
       if ($p.isCancel(db)) {
          process.exit(1);
@@ -53,10 +53,10 @@ export const cloudflare = {
       } catch (e) {
          const message = (e as any).message || "An error occurred";
          $p.log.warn(
-            "Couldn't add database. You can add it manually later. Error: " + c.red(message)
+            "Couldn't add database. You can add it manually later. Error: " + c.red(message),
          );
       }
-   }
+   },
 } as const satisfies Template;
 
 async function createD1(ctx: TemplateSetupCtx) {
@@ -69,7 +69,7 @@ async function createD1(ctx: TemplateSetupCtx) {
             return "Invalid name";
          }
          return;
-      }
+      },
    });
    if ($p.isCancel(name)) {
       process.exit(1);
@@ -83,11 +83,11 @@ async function createD1(ctx: TemplateSetupCtx) {
             {
                binding: "DB",
                database_name: name,
-               database_id: uuid()
-            }
-         ]
+               database_id: uuid(),
+            },
+         ],
       }),
-      { dir: ctx.dir }
+      { dir: ctx.dir },
    );
 
    await $p.stream.info(
@@ -96,9 +96,9 @@ async function createD1(ctx: TemplateSetupCtx) {
          await wait();
          yield* typewriter(
             `\nNote that if you deploy, you have to create a real database using ${c.cyan("npx wrangler d1 create <name>")} and update your wrangler configuration.`,
-            c.dim
+            c.dim,
          );
-      })()
+      })(),
    );
 }
 
@@ -108,10 +108,10 @@ async function createLibsql(ctx: TemplateSetupCtx) {
       (json) => ({
          ...json,
          vars: {
-            DB_URL: "http://127.0.0.1:8080"
-         }
+            DB_URL: "http://127.0.0.1:8080",
+         },
       }),
-      { dir: ctx.dir }
+      { dir: ctx.dir },
    );
 
    await overridePackageJson(
@@ -120,10 +120,10 @@ async function createLibsql(ctx: TemplateSetupCtx) {
          scripts: {
             ...pkg.scripts,
             db: "turso dev",
-            dev: "npm run db && wrangler dev"
-         }
+            dev: "npm run db && wrangler dev",
+         },
       }),
-      { dir: ctx.dir }
+      { dir: ctx.dir },
    );
 
    await $p.stream.info(
@@ -132,13 +132,13 @@ async function createLibsql(ctx: TemplateSetupCtx) {
          await wait();
          yield* typewriter(
             `\nYou can now run ${c.cyan("npm run db")} to start the database and ${c.cyan("npm run dev")} to start the worker.`,
-            c.dim
+            c.dim,
          );
          await wait();
          yield* typewriter(
             `\nAlso make sure you have Turso's CLI installed. Check their docs on how to install at ${c.cyan("https://docs.turso.tech/cli/introduction")}`,
-            c.dim
+            c.dim,
          );
-      })()
+      })(),
    );
 }

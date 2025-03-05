@@ -9,7 +9,7 @@ import type {
    StrictRJSFSchema,
    UiSchema,
    ValidationData,
-   ValidatorType
+   ValidatorType,
 } from "@rjsf/utils";
 import { toErrorSchema } from "@rjsf/utils";
 import { get } from "lodash-es";
@@ -49,7 +49,7 @@ const validate = true;
 export class JsonSchemaValidator<
    T = any,
    S extends StrictRJSFSchema = RJSFSchema,
-   F extends FormContextType = any
+   F extends FormContextType = any,
 > implements ValidatorType
 {
    // @ts-ignore
@@ -69,7 +69,7 @@ export class JsonSchemaValidator<
       schema: S,
       customValidate?: CustomValidator,
       transformErrors?: ErrorTransformer,
-      uiSchema?: UiSchema
+      uiSchema?: UiSchema,
    ): ValidationData<T> {
       if (!validate) return { errors: [], errorSchema: {} as any };
 
@@ -80,7 +80,7 @@ export class JsonSchemaValidator<
             schema,
             customValidate,
             transformErrors,
-            uiSchema
+            uiSchema,
          );
       const { errors } = this.rawValidation(schema, formData);
       debug && console.log("errors", { errors });
@@ -97,14 +97,14 @@ export class JsonSchemaValidator<
                message: errorText,
                property: "." + error.instanceLocation.replace(/^#\/?/, "").split("/").join("."),
                schemaPath: error.keywordLocation,
-               stack: error.error
+               stack: error.error,
             };
          });
       debug && console.log("transformed", transformedErrors);
 
       return {
          errors: transformedErrors,
-         errorSchema: toErrorSchema(transformedErrors)
+         errorSchema: toErrorSchema(transformedErrors),
       } as any;
    }
 

@@ -5,7 +5,7 @@ import {
    type RJSFSchema,
    type StrictRJSFSchema,
    getTemplate,
-   getUiOptions
+   getUiOptions,
 } from "@rjsf/utils";
 import { cloneElement } from "react";
 
@@ -16,7 +16,7 @@ import { cloneElement } from "react";
 export default function ArrayFieldTemplate<
    T = any,
    S extends StrictRJSFSchema = RJSFSchema,
-   F extends FormContextType = any
+   F extends FormContextType = any,
 >(props: ArrayFieldTemplateProps<T, S, F>) {
    const {
       canAdd,
@@ -30,27 +30,27 @@ export default function ArrayFieldTemplate<
       registry,
       required,
       schema,
-      title
+      title,
    } = props;
    const uiOptions = getUiOptions<T, S, F>(uiSchema);
    const ArrayFieldDescriptionTemplate = getTemplate<"ArrayFieldDescriptionTemplate", T, S, F>(
       "ArrayFieldDescriptionTemplate",
       registry,
-      uiOptions
+      uiOptions,
    );
    const ArrayFieldItemTemplate = getTemplate<"ArrayFieldItemTemplate", T, S, F>(
       "ArrayFieldItemTemplate",
       registry,
-      uiOptions
+      uiOptions,
    );
    const ArrayFieldTitleTemplate = getTemplate<"ArrayFieldTitleTemplate", T, S, F>(
       "ArrayFieldTitleTemplate",
       registry,
-      uiOptions
+      uiOptions,
    );
    // Button templates are not overridden in the uiSchema
    const {
-      ButtonTemplates: { AddButton }
+      ButtonTemplates: { AddButton },
    } = registry.templates;
    return (
       <fieldset className={className} id={idSchema.$id}>
@@ -76,13 +76,13 @@ export default function ArrayFieldTemplate<
                      const newChildren = cloneElement(children, {
                         ...children.props,
                         name: undefined,
-                        title: undefined
+                        title: undefined,
                      });
 
                      return (
                         <ArrayFieldItemTemplate key={key} {...itemProps} children={newChildren} />
                      );
-                  }
+                  },
                )}
             </div>
          )}

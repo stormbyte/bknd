@@ -1,7 +1,7 @@
 import { MediaAdapterRegistry } from "media";
 
 const registries = {
-   media: MediaAdapterRegistry
+   media: MediaAdapterRegistry,
 } as const;
 
 export { registries };

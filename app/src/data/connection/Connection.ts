@@ -8,7 +8,7 @@ import {
    type SelectQueryBuilder,
    type SelectQueryNode,
    type Simplify,
-   sql
+   sql,
 } from "kysely";
 
 export type QB = SelectQueryBuilder<any, any, any>;
@@ -33,7 +33,7 @@ export type DbFunctions = {
    jsonObjectFrom<O>(expr: SelectQueryBuilderExpression<O>): RawBuilder<Simplify<O> | null>;
    jsonArrayFrom<O>(expr: SelectQueryBuilderExpression<O>): RawBuilder<Simplify<O>[]>;
    jsonBuildObject<O extends Record<string, Expression<unknown>>>(
-      obj: O
+      obj: O,
    ): RawBuilder<
       Simplify<{
          [K in keyof O]: O[K] extends Expression<infer V> ? V : never;
@@ -49,7 +49,7 @@ export abstract class Connection<DB = any> {
    constructor(
       kysely: Kysely<DB>,
       public fn: Partial<DbFunctions> = {},
-      protected plugins: KyselyPlugin[] = []
+      protected plugins: KyselyPlugin[] = [],
    ) {
       this.kysely = kysely;
       this[CONN_SYMBOL] = true;
@@ -73,6 +73,7 @@ export abstract class Connection<DB = any> {
       return false;
    }
 
+   // @todo: add if only first field is used in index
    supportsIndices(): boolean {
       return false;
    }
@@ -83,7 +84,7 @@ export abstract class Connection<DB = any> {
    }
 
    protected async batch<Queries extends QB[]>(
-      queries: [...Queries]
+      queries: [...Queries],
    ): Promise<{
       [K in keyof Queries]: Awaited<ReturnType<Queries[K]["execute"]>>;
    }> {
@@ -91,7 +92,7 @@ export abstract class Connection<DB = any> {
    }
 
    async batchQuery<Queries extends QB[]>(
-      queries: [...Queries]
+      queries: [...Queries],
    ): Promise<{
       [K in keyof Queries]: Awaited<ReturnType<Queries[K]["execute"]>>;
    }> {

@@ -6,9 +6,9 @@ export async function makeApp(config: CloudflareBkndConfig, ctx: Context) {
    return await createRuntimeApp(
       {
          ...makeCfConfig(config, ctx),
-         adminOptions: config.html ? { html: config.html } : undefined
+         adminOptions: config.html ? { html: config.html } : undefined,
       },
-      ctx
+      ctx,
    );
 }
 

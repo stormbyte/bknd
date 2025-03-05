@@ -5,7 +5,7 @@ import {
    type DraggableRubric,
    type DraggableStateSnapshot,
    Droppable,
-   type DroppableProps
+   type DroppableProps,
 } from "@hello-pangea/dnd";
 import type { ElementProps } from "@mantine/core";
 import { useListState } from "@mantine/hooks";

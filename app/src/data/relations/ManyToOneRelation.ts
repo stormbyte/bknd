@@ -23,7 +23,7 @@ export type ManyToOneRelationConfig = Static<typeof ManyToOneRelation.schema>;
 export class ManyToOneRelation extends EntityRelation<typeof ManyToOneRelation.schema> {
    private fieldConfig?: RelationFieldBaseConfig;
    static DEFAULTS = {
-      with_limit: 5
+      with_limit: 5,
    };
 
    static override schema = Type.Composite(
@@ -32,24 +32,24 @@ export class ManyToOneRelation extends EntityRelation<typeof ManyToOneRelation.s
          Type.Object({
             sourceCardinality: Type.Optional(Type.Number()),
             with_limit: Type.Optional(
-               Type.Number({ default: ManyToOneRelation.DEFAULTS.with_limit })
+               Type.Number({ default: ManyToOneRelation.DEFAULTS.with_limit }),
             ),
             fieldConfig: Type.Optional(
                Type.Object({
-                  label: Type.String()
-               })
-            )
-         })
+                  label: Type.String(),
+               }),
+            ),
+         }),
       ],
       {
-         additionalProperties: false
-      }
+         additionalProperties: false,
+      },
    );
 
    constructor(
       source: Entity,
       target: Entity,
-      config: Partial<Static<typeof ManyToOneRelation.schema>> = {}
+      config: Partial<Static<typeof ManyToOneRelation.schema>> = {},
    ) {
       const mappedBy = config.mappedBy || target.name;
       const inversedBy = config.inversedBy || source.name;
@@ -78,15 +78,15 @@ export class ManyToOneRelation extends EntityRelation<typeof ManyToOneRelation.s
       // add required mapping field on source
       const field = RelationField.create(this, this.target, {
          label: defaultLabel,
-         ...this.fieldConfig
+         ...this.fieldConfig,
       });
 
       if (!this.source.entity.field(field.name)) {
          this.source.entity.addField(
             RelationField.create(this, this.target, {
                label: defaultLabel,
-               ...this.fieldConfig
-            })
+               ...this.fieldConfig,
+            }),
          );
       }
    }
@@ -100,14 +100,14 @@ export class ManyToOneRelation extends EntityRelation<typeof ManyToOneRelation.s
 
       if (!(field instanceof RelationField)) {
          throw new Error(
-            `Field "${this.target.reference}_${id}" not found on entity "${this.source.entity.name}"`
+            `Field "${this.target.reference}_${id}" not found on entity "${this.source.entity.name}"`,
          );
       }
 
       return field;
    }
 
-   private queryInfo(entity: Entity, reference: string) {
+   protected queryInfo(entity: Entity, reference: string) {
       const side = this.source.reference === reference ? "source" : "target";
       const self = this[side];
       const other = this[side === "source" ? "target" : "source"];
@@ -133,7 +133,7 @@ export class ManyToOneRelation extends EntityRelation<typeof ManyToOneRelation.s
          relationRef,
          entityRef,
          otherRef,
-         groupBy
+         groupBy,
       };
    }
 
@@ -145,9 +145,9 @@ export class ManyToOneRelation extends EntityRelation<typeof ManyToOneRelation.s
 
       return {
          where: {
-            [otherRef]: id
+            [otherRef]: id,
          },
-         join: other.entity.name === self.entity.name ? [] : [other.entity.name]
+         join: other.entity.name === self.entity.name ? [] : [other.entity.name],
       };
    }
 
@@ -176,7 +176,7 @@ export class ManyToOneRelation extends EntityRelation<typeof ManyToOneRelation.s
    override async $set(
       em: EntityManager<any>,
       key: string,
-      value: object
+      value: object,
    ): Promise<void | MutationInstructionResponse> {
       if (typeof value !== "object") {
          throw new Error(`Invalid value for relation field "${key}" given, expected object.`);
@@ -204,14 +204,14 @@ export class ManyToOneRelation extends EntityRelation<typeof ManyToOneRelation.s
       }
 
       const query = await em.repository(field.target()).exists({
-         [field.targetField()]: primaryReference as any
+         [field.targetField()]: primaryReference as any,
       });
 
       if (!query.exists) {
          const idProp = field.targetField();
          throw new Error(
             `Cannot connect "${entity.name}.${key}" to ` +
-               `"${field.target()}.${idProp}" = "${primaryReference}": not found.`
+               `"${field.target()}.${idProp}" = "${primaryReference}": not found.`,
          );
       }
 

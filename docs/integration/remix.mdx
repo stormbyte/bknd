@@ -24,7 +24,8 @@ To get started with Remix and bknd you can either install the package manually, 
 
 
 ## Serve the API
-Since Remix doesn't support middleware yet, we need a helper file to initialize the App to import from. Create a new file at `app/bknd.ts`:
+Create a helper file to instantiate the bknd instance and retrieve the API:
+
 ```ts app/bknd.ts
 import { type RemixBkndConfig, getApp as getBkndApp } from "bknd/adapter/remix";
 
@@ -49,6 +50,7 @@ export async function getApi(args?: { request: Request }) {
    return app.getApi();
 }
 ```
+For more information about the connection object, refer to the [Database](/usage/database) guide.
 
 Create a new api splat route file at `app/routes/api.$.ts`:
 ```ts app/routes/api.$.ts
@@ -62,7 +64,6 @@ const handler = async (args: { request: Request }) => {
 export const loader = handler;
 export const action = handler;
 ```
-For more information about the connection object, refer to the [Database](/usage/database) guide.
 
 Now make sure that you wrap your root layout with the `ClientProvider` so that all components share the same context. Also add the user context to both the `Outlet` and the provider:
 ```tsx app/root.tsx

@@ -23,7 +23,7 @@ export async function getDurable(config: CloudflareBkndConfig, ctx: Context) {
       config: create_config,
       html: config.html,
       keepAliveSeconds: config.keepAliveSeconds,
-      setAdminHtml: config.setAdminHtml
+      setAdminHtml: config.setAdminHtml,
    });
 
    const headers = new Headers(res.headers);
@@ -32,7 +32,7 @@ export async function getDurable(config: CloudflareBkndConfig, ctx: Context) {
    return new Response(res.body, {
       status: res.status,
       statusText: res.statusText,
-      headers
+      headers,
    });
 }
 
@@ -48,7 +48,7 @@ export class DurableBkndApp extends DurableObject {
          html?: string;
          keepAliveSeconds?: number;
          setAdminHtml?: boolean;
-      }
+      },
    ) {
       let buildtime = 0;
       if (!this.app) {
@@ -73,7 +73,7 @@ export class DurableBkndApp extends DurableObject {
                   return c.json({
                      id: this.id,
                      keepAliveSeconds: options?.keepAliveSeconds ?? 0,
-                     colo: context.colo
+                     colo: context.colo,
                   });
                });
 
@@ -82,7 +82,7 @@ export class DurableBkndApp extends DurableObject {
             adminOptions: { html: options.html },
             beforeBuild: async (app) => {
                await this.beforeBuild(app);
-            }
+            },
          });
 
          buildtime = performance.now() - start;
@@ -101,7 +101,7 @@ export class DurableBkndApp extends DurableObject {
       return new Response(res.body, {
          status: res.status,
          statusText: res.statusText,
-         headers
+         headers,
       });
    }
 

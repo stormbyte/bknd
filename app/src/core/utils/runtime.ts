@@ -28,7 +28,7 @@ export function getRuntimeKey(): string {
 const features = {
    // supports the redirect of not full qualified addresses
    // not supported in nextjs
-   redirects_non_fq: true
+   redirects_non_fq: true,
 };
 
 export function runtimeSupports(feature: keyof typeof features) {
@@ -38,4 +38,12 @@ export function runtimeSupports(feature: keyof typeof features) {
    }
 
    return features[feature];
+}
+
+export function isNode() {
+   try {
+      return global?.process?.release?.name === "node";
+   } catch (e) {
+      return false;
+   }
 }

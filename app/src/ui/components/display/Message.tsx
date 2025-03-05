@@ -20,5 +20,5 @@ const MissingPermission = ({
 export const Message = {
    NotFound,
    NotAllowed,
-   MissingPermission
+   MissingPermission,
 };

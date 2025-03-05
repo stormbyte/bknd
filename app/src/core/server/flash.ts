@@ -7,7 +7,7 @@ export type FlashMessageType = "error" | "warning" | "success" | "info";
 export function addFlashMessage(c: Context, message: string, type: FlashMessageType = "info") {
    if (c.req.header("Accept")?.includes("text/html")) {
       setCookie(c, flash_key, JSON.stringify({ type, message }), {
-         path: "/"
+         path: "/",
       });
    }
 }
@@ -28,7 +28,7 @@ function getCookieValue(name) {
 }
 
 export function getFlashMessage(
-   clear = true
+   clear = true,
 ): { type: FlashMessageType; message: string } | undefined {
    const flash = getCookieValue(flash_key);
    if (flash && clear) {

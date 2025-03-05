@@ -1,9 +1,9 @@
 import { type AppAuth, AuthPermissions, type SafeUser, type Strategy } from "auth";
-import { TypeInvalidError, parse } from "core/utils";
+import { tbValidator as tb } from "core";
+import { Type, TypeInvalidError, parse, transformObject } from "core/utils";
 import { DataPermissions } from "data";
 import type { Hono } from "hono";
-import { Controller } from "modules/Controller";
-import type { ServerEnv } from "modules/Module";
+import { Controller, type ServerEnv } from "modules/Controller";
 
 export type AuthActionResponse = {
    success: boolean;
@@ -11,6 +11,10 @@ export type AuthActionResponse = {
    data?: SafeUser;
    errors?: any;
 };
+
+const booleanLike = Type.Transform(Type.String())
+   .Decode((v) => v === "1")
+   .Encode((v) => (v ? "1" : "0"));
 
 export class AuthController extends Controller {
    constructor(private auth: AppAuth) {
@@ -31,6 +35,9 @@ export class AuthController extends Controller {
    }
 
    private registerStrategyActions(strategy: Strategy, mainHono: Hono<ServerEnv>) {
+      if (!this.auth.isStrategyEnabled(strategy)) {
+         return;
+      }
       const actions = strategy.getActions?.();
       if (!actions) {
          return;
@@ -51,7 +58,7 @@ export class AuthController extends Controller {
                try {
                   const body = await this.auth.authenticator.getBody(c);
                   const valid = parse(create.schema, body, {
-                     skipMark: true
+                     skipMark: true,
                   });
                   const processed = (await create.preprocess?.(valid)) ?? valid;
 
@@ -60,7 +67,7 @@ export class AuthController extends Controller {
                   mutator.__unstable_toggleSystemEntityCreation(false);
                   const { data: created } = await mutator.insertOne({
                      ...processed,
-                     strategy: name
+                     strategy: name,
                   });
                   mutator.__unstable_toggleSystemEntityCreation(true);
 
@@ -68,21 +75,21 @@ export class AuthController extends Controller {
                      success: true,
                      action: "create",
                      strategy: name,
-                     data: created as unknown as SafeUser
+                     data: created as unknown as SafeUser,
                   } as AuthActionResponse);
                } catch (e) {
                   if (e instanceof TypeInvalidError) {
                      return c.json(
                         {
                            success: false,
-                           errors: e.errors
+                           errors: e.errors,
                         },
-                        400
+                        400,
                      );
                   }
                   throw e;
                }
-            }
+            },
          );
          hono.get("create/schema.json", async (c) => {
             return c.json(create.schema);
@@ -98,7 +105,8 @@ export class AuthController extends Controller {
       const strategies = this.auth.authenticator.getStrategies();
 
       for (const [name, strategy] of Object.entries(strategies)) {
-         //console.log("registering", name, "at", `/${name}`);
+         if (!this.auth.isStrategyEnabled(strategy)) continue;
+
          hono.route(`/${name}`, strategy.getController(this.auth.authenticator));
          this.registerStrategyActions(strategy, hono);
       }
@@ -127,10 +135,25 @@ export class AuthController extends Controller {
          return c.redirect("/");
       });
 
-      hono.get("/strategies", async (c) => {
-         const { strategies, basepath } = this.auth.toJSON(false);
-         return c.json({ strategies, basepath });
-      });
+      hono.get(
+         "/strategies",
+         tb("query", Type.Object({ include_disabled: Type.Optional(booleanLike) })),
+         async (c) => {
+            const { include_disabled } = c.req.valid("query");
+            const { strategies, basepath } = this.auth.toJSON(false);
+
+            if (!include_disabled) {
+               return c.json({
+                  strategies: transformObject(strategies ?? {}, (strategy, name) => {
+                     return this.auth.isStrategyEnabled(name) ? strategy : undefined;
+                  }),
+                  basepath,
+               });
+            }
+
+            return c.json({ strategies, basepath });
+         },
+      );
 
       return hono.all("*", (c) => c.notFound());
    }

@@ -9,7 +9,7 @@ import {
    OneToOneRelation,
    type RelationField,
    RelationMutator,
-   TextField
+   TextField,
 } from "../../../src/data";
 import * as proto from "../../../src/data/prototype";
 import { getDummyConnection } from "../helper";
@@ -22,7 +22,7 @@ describe("[data] Mutator (base)", async () => {
       new TextField("label", { required: true }),
       new NumberField("count"),
       new TextField("hidden", { hidden: true }),
-      new TextField("not_fillable", { fillable: false })
+      new TextField("not_fillable", { fillable: false }),
    ]);
    const em = new EntityManager<any>([entity], dummyConnection);
    await em.schema().sync({ force: true });
@@ -44,7 +44,7 @@ describe("[data] Mutator (base)", async () => {
    test("updateOne", async () => {
       const { data } = await em.mutator(entity).insertOne(payload);
       const updated = await em.mutator(entity).updateOne(data.id, {
-         count: 2
+         count: 2,
       });
 
       expect(updated.parameters).toEqual([2, data.id]);
@@ -77,7 +77,7 @@ describe("[data] Mutator (ManyToOne)", async () => {
 
       // persisting relational field should just return key value to be added
       expect(
-         postRelMutator.persistRelationField(postRelField, "users_id", userData.data.id)
+         postRelMutator.persistRelationField(postRelField, "users_id", userData.data.id),
       ).resolves.toEqual(["users_id", userData.data.id]);
 
       // persisting invalid value should throw
@@ -86,8 +86,8 @@ describe("[data] Mutator (ManyToOne)", async () => {
       // persisting reference should ...
       expect(
          postRelMutator.persistReference(relations[0]!, "users", {
-            $set: { id: userData.data.id }
-         })
+            $set: { id: userData.data.id },
+         }),
       ).resolves.toEqual(["users_id", userData.data.id]);
       // @todo: add what methods are allowed to relation, like $create should not be allowed for post<>users
 
@@ -99,8 +99,8 @@ describe("[data] Mutator (ManyToOne)", async () => {
       expect(
          em.mutator(posts).insertOne({
             title: "post1",
-            users_id: 100 // user does not exist yet
-         })
+            users_id: 100, // user does not exist yet
+         }),
       ).rejects.toThrow();
    });
 
@@ -111,7 +111,7 @@ describe("[data] Mutator (ManyToOne)", async () => {
       const em = new EntityManager([items, cats], dummyConnection, relations);
 
       expect(em.mutator(items).insertOne({ label: "test" })).rejects.toThrow(
-         'Field "cats_id" is required'
+         'Field "cats_id" is required',
       );
    });
 
@@ -119,14 +119,14 @@ describe("[data] Mutator (ManyToOne)", async () => {
       const { data } = await em.mutator(users).insertOne({ username: "user1" });
       const res = await em.mutator(posts).insertOne({
          title: "post1",
-         users_id: data.id
+         users_id: data.id,
       });
       expect(res.data.users_id).toBe(data.id);
 
       // setting "null" should be allowed
       const res2 = await em.mutator(posts).insertOne({
          title: "post1",
-         users_id: null
+         users_id: null,
       });
       expect(res2.data.users_id).toBe(null);
    });
@@ -135,14 +135,14 @@ describe("[data] Mutator (ManyToOne)", async () => {
       const { data } = await em.mutator(users).insertOne({ username: "user1" });
       const res = await em.mutator(posts).insertOne({
          title: "post1",
-         users: { $set: { id: data.id } }
+         users: { $set: { id: data.id } },
       });
       expect(res.data.users_id).toBe(data.id);
 
       // setting "null" should be allowed
       const res2 = await em.mutator(posts).insertOne({
          title: "post1",
-         users: { $set: { id: null } }
+         users: { $set: { id: null } },
       });
       expect(res2.data.users_id).toBe(null);
    });
@@ -151,8 +151,8 @@ describe("[data] Mutator (ManyToOne)", async () => {
       expect(
          em.mutator(posts).insertOne({
             title: "test",
-            users: { $create: { username: "test" } }
-         })
+            users: { $create: { username: "test" } },
+         }),
       ).rejects.toThrow();
    });
 
@@ -162,27 +162,27 @@ describe("[data] Mutator (ManyToOne)", async () => {
       const res2 = await em.mutator(posts).insertOne({ title: "post1" });
 
       const up1 = await em.mutator(posts).updateOne(res2.data.id, {
-         users: { $set: { id: res1.data.id } }
+         users: { $set: { id: res1.data.id } },
       });
       expect(up1.data.users_id).toBe(res1.data.id);
 
       const up2 = await em.mutator(posts).updateOne(res2.data.id, {
-         users: { $set: { id: res1_1.data.id } }
+         users: { $set: { id: res1_1.data.id } },
       });
       expect(up2.data.users_id).toBe(res1_1.data.id);
 
       const up3_1 = await em.mutator(posts).updateOne(res2.data.id, {
-         users_id: res1.data.id
+         users_id: res1.data.id,
       });
       expect(up3_1.data.users_id).toBe(res1.data.id);
 
       const up3_2 = await em.mutator(posts).updateOne(res2.data.id, {
-         users_id: res1_1.data.id
+         users_id: res1_1.data.id,
       });
       expect(up3_2.data.users_id).toBe(res1_1.data.id);
 
       const up4 = await em.mutator(posts).updateOne(res2.data.id, {
-         users_id: null
+         users_id: null,
       });
       expect(up4.data.users_id).toBe(null);
    });
@@ -199,8 +199,8 @@ describe("[data] Mutator (OneToOne)", async () => {
       expect(
          em.mutator(users).insertOne({
             username: "test",
-            settings_id: 1 // todo: throws because it doesn't exist, but it shouldn't be allowed
-         })
+            settings_id: 1, // todo: throws because it doesn't exist, but it shouldn't be allowed
+         }),
       ).rejects.toThrow();
    });
 
@@ -210,15 +210,15 @@ describe("[data] Mutator (OneToOne)", async () => {
       expect(
          em.mutator(users).insertOne({
             username: "test",
-            settings: { $set: { id: data.id } }
-         })
+            settings: { $set: { id: data.id } },
+         }),
       ).rejects.toThrow();
    });
 
    test("insertOne: using $create", async () => {
       const res = await em.mutator(users).insertOne({
          username: "test",
-         settings: { $create: { theme: "dark" } }
+         settings: { $create: { theme: "dark" } },
       });
       expect(res.data.settings_id).toBeDefined();
    });
@@ -303,7 +303,7 @@ describe("[data] Mutator (Events)", async () => {
    test("insertOne event return is respected", async () => {
       const posts = proto.entity("posts", {
          title: proto.text(),
-         views: proto.number()
+         views: proto.number(),
       });
 
       const conn = getDummyConnection();
@@ -318,10 +318,10 @@ describe("[data] Mutator (Events)", async () => {
          async (event) => {
             return {
                ...event.params.data,
-               views: 2
+               views: 2,
             };
          },
-         "sync"
+         "sync",
       );
 
       const mutator = em.mutator("posts");
@@ -329,14 +329,14 @@ describe("[data] Mutator (Events)", async () => {
       expect(result.data).toEqual({
          id: 1,
          title: "test",
-         views: 2
+         views: 2,
       });
    });
 
    test("updateOne event return is respected", async () => {
       const posts = proto.entity("posts", {
          title: proto.text(),
-         views: proto.number()
+         views: proto.number(),
       });
 
       const conn = getDummyConnection();
@@ -351,10 +351,10 @@ describe("[data] Mutator (Events)", async () => {
          async (event) => {
             return {
                ...event.params.data,
-               views: event.params.data.views + 1
+               views: event.params.data.views + 1,
             };
          },
-         "sync"
+         "sync",
       );
 
       const mutator = em.mutator("posts");
@@ -363,7 +363,7 @@ describe("[data] Mutator (Events)", async () => {
       expect(result.data).toEqual({
          id: 1,
          title: "test",
-         views: 3
+         views: 3,
       });
    });
 });

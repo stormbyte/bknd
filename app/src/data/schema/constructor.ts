@@ -18,17 +18,17 @@ export function constructEntity(name: string, entityConfig: TAppDataEntity) {
       name,
       Object.values(fields),
       entityConfig.config as any,
-      entityConfig.type as any
+      entityConfig.type as any,
    );
 }
 
 export function constructRelation(
    relationConfig: TAppDataRelation,
-   resolver: (name: Entity | string) => Entity
+   resolver: (name: Entity | string) => Entity,
 ) {
    return new RELATIONS[relationConfig.type].cls(
       resolver(relationConfig.source),
       resolver(relationConfig.target),
-      relationConfig.config
+      relationConfig.config,
    );
 }

@@ -6,7 +6,7 @@ import { SqliteIntrospector } from "./SqliteIntrospector";
 class CustomSqliteDialect extends SqliteDialect {
    override createIntrospector(db: Kysely<any>): DatabaseIntrospector {
       return new SqliteIntrospector(db, {
-         excludeTables: ["test_table"]
+         excludeTables: ["test_table"],
       });
    }
 }
@@ -16,7 +16,7 @@ export class SqliteLocalConnection extends SqliteConnection {
       const plugins = [new ParseJSONResultsPlugin()];
       const kysely = new Kysely({
          dialect: new CustomSqliteDialect({ database }),
-         plugins
+         plugins,
          //log: ["query"],
       });
 

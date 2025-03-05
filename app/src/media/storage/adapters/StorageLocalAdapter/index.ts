@@ -1,5 +1,5 @@
 export {
    StorageLocalAdapter,
    type LocalAdapterConfig,
-   localAdapterConfig
+   localAdapterConfig,
 } from "./StorageLocalAdapter";

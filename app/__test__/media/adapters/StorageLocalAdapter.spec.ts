@@ -1,13 +1,14 @@
 import { describe, expect, test } from "bun:test";
 import { randomString } from "../../../src/core/utils";
 import { StorageLocalAdapter } from "../../../src/media/storage/adapters/StorageLocalAdapter";
+import { assetsPath, assetsTmpPath } from "../../helper";
 
 describe("StorageLocalAdapter", () => {
    const adapter = new StorageLocalAdapter({
-      path: `${import.meta.dir}/local`
+      path: assetsTmpPath,
    });
 
-   const file = Bun.file(`${import.meta.dir}/icon.png`);
+   const file = Bun.file(`${assetsPath}/image.png`);
    const _filename = randomString(10);
    const filename = `${_filename}.png`;
 
@@ -35,7 +36,7 @@ describe("StorageLocalAdapter", () => {
    test("gets object meta", async () => {
       expect(await adapter.getObjectMeta(filename)).toEqual({
          type: file.type, // image/png
-         size: file.size
+         size: file.size,
       });
    });
 

@@ -1,4 +1,6 @@
+import { datetimeStringLocal } from "core/utils";
 import colors from "picocolors";
+import { env } from "core";
 
 function hasColors() {
    try {
@@ -8,10 +10,10 @@ function hasColors() {
          env = p.env || {};
       return (
          !(!!env.NO_COLOR || argv.includes("--no-color")) &&
-         // biome-ignore lint/complexity/useOptionalChain: <explanation>
          (!!env.FORCE_COLOR ||
             argv.includes("--color") ||
             p.platform === "win32" ||
+            // biome-ignore lint/complexity/useOptionalChain: <explanation>
             ((p.stdout || {}).isTTY && env.TERM !== "dumb") ||
             !!env.CI)
       );
@@ -20,86 +22,74 @@ function hasColors() {
    }
 }
 
-const originalConsoles = {
-   error: console.error,
-   warn: console.warn,
-   info: console.info,
-   log: console.log,
-   debug: console.debug
-} as typeof console;
+const __consoles = {
+   error: {
+      prefix: "ERR",
+      color: colors.red,
+      args_color: colors.red,
+      original: console.error,
+   },
+   warn: {
+      prefix: "WRN",
+      color: colors.yellow,
+      args_color: colors.yellow,
+      original: console.warn,
+   },
+   info: {
+      prefix: "INF",
+      color: colors.cyan,
+      original: console.info,
+   },
+   log: {
+      prefix: "LOG",
+      color: colors.dim,
+      args_color: colors.dim,
+      original: console.log,
+   },
+   debug: {
+      prefix: "DBG",
+      color: colors.yellow,
+      args_color: colors.dim,
+      original: console.debug,
+   },
+} as const;
 
-function __tty(type: any, args: any[]) {
+function __tty(_type: any, args: any[]) {
    const has = hasColors();
-   const styles = {
-      error: {
-         prefix: colors.red,
-         args: colors.red
-      },
-      warn: {
-         prefix: colors.yellow,
-         args: colors.yellow
-      },
-      info: {
-         prefix: colors.cyan
-      },
-      log: {
-         prefix: colors.gray
-      },
-      debug: {
-         prefix: colors.yellow
-      }
-   } as const;
-   const prefix = styles[type].prefix(
-      `[${type.toUpperCase()}]${has ? " ".repeat(5 - type.length) : ""}`
-   );
+   const cons = __consoles[_type];
+   const prefix = cons.color(`[${cons.prefix}]`);
    const _args = args.map((a) =>
-      "args" in styles[type] && has && typeof a === "string" ? styles[type].args(a) : a
+      "args_color" in cons && has && typeof a === "string" ? cons.args_color(a) : a,
    );
-   return originalConsoles[type](prefix, ..._args);
+   return cons.original(prefix, colors.gray(datetimeStringLocal()), ..._args);
 }
 
-export type TConsoleSeverity = keyof typeof originalConsoles;
-const severities = Object.keys(originalConsoles) as TConsoleSeverity[];
+export type TConsoleSeverity = keyof typeof __consoles;
+const level = env("cli_log_level", "log");
 
-let enabled = [...severities];
-
-export function disableConsole(severities: TConsoleSeverity[] = enabled) {
-   enabled = enabled.filter((s) => !severities.includes(s));
-}
-
-export function enableConsole() {
-   enabled = [...severities];
-}
-
+const keys = Object.keys(__consoles);
 export const $console = new Proxy(
    {},
    {
       get: (_, prop) => {
-         if (prop in originalConsoles && enabled.includes(prop as TConsoleSeverity)) {
+         if (prop === "original") {
+            return console;
+         }
+
+         const current = keys.indexOf(level as string);
+         const requested = keys.indexOf(prop as string);
+         if (prop in __consoles && requested <= current) {
             return (...args: any[]) => __tty(prop, args);
          }
          return () => null;
-      }
-   }
-) as typeof console;
-
-export async function withDisabledConsole<R>(
-   fn: () => Promise<R>,
-   sev?: TConsoleSeverity[]
-): Promise<R> {
-   disableConsole(sev);
-   try {
-      const result = await fn();
-      enableConsole();
-      return result;
-   } catch (e) {
-      enableConsole();
-      throw e;
-   }
-}
+      },
+   },
+) as typeof console & {
+   original: typeof console;
+};
 
 export function colorizeConsole(con: typeof console) {
-   for (const [key] of Object.entries(originalConsoles)) {
+   for (const [key] of Object.entries(__consoles)) {
       con[key] = $console[key];
    }
 }

@@ -36,7 +36,7 @@ export function BaseNode({ children, className, tabs, Icon, isInvalid, ...props 
             "w-96",
             //props.selected && "ring-4 ring-blue-500/15",
             isInvalid && "ring-8 ring-red-500/15",
-            className
+            className,
          )}
       >
          <Header
@@ -70,7 +70,7 @@ const BaseNodeTabs = ({ tabs }: { tabs: BaseNodeProps["tabs"] }) => {
                   onClick={handleClick(i)}
                   className={twMerge(
                      "text-sm leading-none",
-                     i === active ? "font-bold opacity-80" : "font-medium opacity-50"
+                     i === active ? "font-bold opacity-80" : "font-medium opacity-50",
                   )}
                >
                   {tab.label}
@@ -90,7 +90,7 @@ const Header = ({
    rightSection,
    initialValue,
    changable = false,
-   onChange
+   onChange,
 }: {
    Icon: React.FC<any>;
    iconProps?: ElementProps<"svg">;
@@ -129,7 +129,7 @@ const Header = ({
                   disabled={!changable}
                   onChange={handleChange}
                   className={twMerge(
-                     "font-mono font-semibold bg-transparent rounded-lg outline-none pl-1.5 w-full hover:bg-lightest/30 transition-colors focus:bg-lightest/60"
+                     "font-mono font-semibold bg-transparent rounded-lg outline-none pl-1.5 w-full hover:bg-lightest/30 transition-colors focus:bg-lightest/60",
                   )}
                />
             ) : (

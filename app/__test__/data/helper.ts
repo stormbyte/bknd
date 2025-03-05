@@ -16,7 +16,7 @@ export function getDummyDatabase(memory: boolean = true): {
       afterAllCleanup: async () => {
          if (!memory) await unlink(DB_NAME);
          return true;
-      }
+      },
    };
 }
 
@@ -26,7 +26,7 @@ export function getDummyConnection(memory: boolean = true) {
 
    return {
       dummyConnection,
-      afterAllCleanup
+      afterAllCleanup,
    };
 }
 

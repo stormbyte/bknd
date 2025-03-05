@@ -42,11 +42,11 @@ export class InvalidFieldConfigException extends Exception {
    constructor(
       field: Field<any, any, any>,
       public given: any,
-      error: TypeInvalidError
+      error: TypeInvalidError,
    ) {
       console.error("InvalidFieldConfigException", {
          given,
-         error: error.firstToString()
+         error: error.firstToString(),
       });
       super(`Invalid Field config given for field "${field.name}": ${error.firstToString()}`);
    }
@@ -71,7 +71,7 @@ export class EntityNotFoundException extends Exception {
 
    constructor(entity: Entity | string, id: any) {
       super(
-         `Entity "${typeof entity !== "string" ? entity.name : entity}" with id "${id}" not found`
+         `Entity "${typeof entity !== "string" ? entity.name : entity}" with id "${id}" not found`,
       );
    }
 }

@@ -70,14 +70,14 @@ export type CleanOptions = {
 };
 export function cleanObject<Obj extends { [key: string]: any }>(
    obj: Obj,
-   _opts?: CleanOptions
+   _opts?: CleanOptions,
 ): Obj {
    if (!obj) return obj;
    const _empty = [null, undefined, ""];
    const opts = {
       empty: _opts?.empty ?? _empty,
       emptyInArray: _opts?.emptyInArray ?? _empty,
-      keepEmptyArray: _opts?.keepEmptyArray ?? false
+      keepEmptyArray: _opts?.keepEmptyArray ?? false,
    };
 
    return Object.entries(obj).reduce((acc, [key, value]) => {

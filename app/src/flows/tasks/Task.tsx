@@ -21,7 +21,7 @@ export type TaskRenderProps<T extends Task = Task> = any;
 
 export function dynamic<Type extends TSchema>(
    type: Type,
-   parse?: (val: any | string) => Static<Type>
+   parse?: (val: any | string) => Static<Type>,
 ) {
    const guessDecode = (val: unknown): Static<Type> => {
       if (typeof val === "string") {
@@ -46,7 +46,7 @@ export function dynamic<Type extends TSchema>(
 
       return val as Static<Type>;
    };
-   const title = type.title ?? type.type ? ucFirst(type.type) : "Raw";
+   const title = (type.title ?? type.type) ? ucFirst(type.type) : "Raw";
 
    return (
       Type.Transform(Type.Union([{ title, ...type }, Type.String({ title: "Template" })]))
@@ -87,7 +87,7 @@ export abstract class Task<Params extends TObject = TObject, Output = unknown> {
          Object.keys(params).length > 0
       ) {
          throw new Error(
-            `Task "${name}" has no schema defined but params passed: ${JSON.stringify(params)}`
+            `Task "${name}" has no schema defined but params passed: ${JSON.stringify(params)}`,
          );
       }
 
@@ -121,7 +121,7 @@ export abstract class Task<Params extends TObject = TObject, Output = unknown> {
    static async resolveParams<S extends TSchema>(
       schema: S,
       params: any,
-      inputs: object = {}
+      inputs: object = {},
    ): Promise<StaticDecode<S>> {
       const newParams: any = {};
       const renderer = new SimpleRenderer(inputs, { strictVariables: true, renderKeys: true });
@@ -141,9 +141,9 @@ export abstract class Task<Params extends TObject = TObject, Output = unknown> {
                      {
                         key,
                         value,
-                        error: e.message
+                        error: e.message,
                      },
-                     "resolve-params"
+                     "resolve-params",
                   );
                }
 
@@ -170,7 +170,7 @@ export abstract class Task<Params extends TObject = TObject, Output = unknown> {
       const newParams = await Task.resolveParams(
          (this.constructor as any).schema,
          this._params,
-         inputs
+         inputs,
       );
       //console.log("--clone:newParams", this.name, newParams);
 
@@ -207,7 +207,7 @@ export abstract class Task<Params extends TObject = TObject, Output = unknown> {
          } else {
             error = {
                type: "unknown",
-               message: (e as any).message
+               message: (e as any).message,
             };
          }
       }
@@ -229,7 +229,7 @@ export abstract class Task<Params extends TObject = TObject, Output = unknown> {
    toJSON() {
       return {
          type: this.type,
-         params: this.params
+         params: this.params,
       };
    }
 }

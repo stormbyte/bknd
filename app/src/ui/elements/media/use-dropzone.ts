@@ -3,13 +3,13 @@ import { type FileWithPath, fromEvent } from "./file-selector";
 
 type DropzoneProps = {
    onDropped: (files: FileWithPath[]) => void;
-   onOver?: (items: DataTransferItem[]) => void;
+   onOver?: (items: DataTransferItem[], event: DragEvent) => void;
    onLeave?: () => void;
 };
 
 const events = {
-   enter: ["dragenter", "dragover", "dragstart"],
-   leave: ["dragleave", "drop"]
+   enter: ["dragenter", "dragover", "dragstart"] as const,
+   leave: ["dragleave", "drop"] as const,
 };
 const allEvents = [...events.enter, ...events.leave];
 
@@ -24,10 +24,10 @@ export function useDropzone({ onDropped, onOver, onLeave }: DropzoneProps) {
       e.stopPropagation();
    }, []);
 
-   const toggleHighlight = useCallback(async (e: Event) => {
-      const _isOver = events.enter.includes(e.type);
+   const toggleHighlight = useCallback(async (e: DragEvent) => {
+      const _isOver = events.enter.includes(e.type as any);
       if (onOver && _isOver !== isOver && !onOverCalled.current) {
-         onOver((await fromEvent(e)) as DataTransferItem[]);
+         onOver((await fromEvent(e)) as DataTransferItem[], e);
          onOverCalled.current = true;
       }
 
@@ -45,7 +45,7 @@ export function useDropzone({ onDropped, onOver, onLeave }: DropzoneProps) {
          onDropped?.(files as any);
          onOverCalled.current = false;
       },
-      [onDropped]
+      [onDropped],
    );
 
    const handleFileInputChange = useCallback(
@@ -53,7 +53,7 @@ export function useDropzone({ onDropped, onOver, onLeave }: DropzoneProps) {
          const files = await fromEvent(e);
          onDropped?.(files as any);
       },
-      [onDropped]
+      [onDropped],
    );
 
    useEffect(() => {

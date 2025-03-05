@@ -15,7 +15,7 @@ export type LibSqlCredentials = Config & {
 class CustomLibsqlDialect extends LibsqlDialect {
    override createIntrospector(db: Kysely<any>): DatabaseIntrospector {
       return new SqliteIntrospector(db, {
-         excludeTables: ["libsql_wasm_func_table"]
+         excludeTables: ["libsql_wasm_func_table"],
       });
    }
 }
@@ -44,7 +44,7 @@ export class LibsqlConnection extends SqliteConnection {
       const kysely = new Kysely({
          // @ts-expect-error libsql has type issues
          dialect: new CustomLibsqlDialect({ client }),
-         plugins
+         plugins,
       });
 
       super(kysely, {}, plugins);
@@ -64,7 +64,7 @@ export class LibsqlConnection extends SqliteConnection {
    }
 
    protected override async batch<Queries extends QB[]>(
-      queries: [...Queries]
+      queries: [...Queries],
    ): Promise<{
       [K in keyof Queries]: Awaited<ReturnType<Queries[K]["execute"]>>;
    }> {
@@ -72,7 +72,7 @@ export class LibsqlConnection extends SqliteConnection {
          const compiled = q.compile();
          return {
             sql: compiled.sql,
-            args: compiled.parameters as any[]
+            args: compiled.parameters as any[],
          };
       });
 

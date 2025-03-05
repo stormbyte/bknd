@@ -8,7 +8,7 @@ import { MantineSelect } from "ui/components/form/hook-form-mantine/MantineSelec
 import { useEvent } from "ui/hooks/use-event";
 import {
    EntityFieldsForm,
-   type EntityFieldsFormRef
+   type EntityFieldsFormRef,
 } from "ui/routes/data/forms/entity.fields.form";
 import { ModalBody, ModalFooter, type TCreateModalSchema, useStepContext } from "./CreateModal";
 
@@ -25,9 +25,9 @@ export function StepEntityFields() {
          fields: defaultFields,
          config: {
             sort_field: "id",
-            sort_dir: "asc"
-         }
-      })
+            sort_dir: "asc",
+         },
+      }),
    );
    const {
       control,
@@ -35,17 +35,16 @@ export function StepEntityFields() {
       getValues,
       handleSubmit,
       watch,
-      setValue
+      setValue,
    } = useForm({
       mode: "onTouched",
       resolver: typeboxResolver(schema),
-      defaultValues: initial as NonNullable<Schema>
+      defaultValues: initial as NonNullable<Schema>,
    });
 
    const values = watch();
 
    const updateListener = useEvent((data: TAppDataEntityFields) => {
-      console.log("updateListener", data);
       setValue("fields", data as any);
    });
 
@@ -58,14 +57,15 @@ export function StepEntityFields() {
             return {
                ...prev,
                entities: {
-                  create: [getValues() as any]
-               }
+                  create: [getValues() as any],
+               },
             };
          });
 
+         console.log("valid");
          nextStep("create")();
       } else {
-         console.warn("not valid");
+         console.warn("not valid", ref.current?.getErrors());
       }
    }
 
@@ -119,7 +119,7 @@ export function StepEntityFields() {
          <ModalFooter
             next={{
                disabled: !isValid,
-               type: "submit"
+               type: "submit",
                //onClick: handleNext
             }}
             prev={{ onClick: stepBack }}

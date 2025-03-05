@@ -2,14 +2,14 @@ import type { Hono, MiddlewareHandler } from "hono";
 
 export { tbValidator } from "./server/lib/tbValidator";
 export { Exception, BkndError } from "./errors";
-export { isDebug } from "./env";
+export { isDebug, env } from "./env";
 export { type PrimaryFieldType, config, type DB } from "./config";
 export { AwsClient } from "./clients/aws/AwsClient";
 export {
    SimpleRenderer,
    type TemplateObject,
    type TemplateTypes,
-   type SimpleRendererOptions
+   type SimpleRendererOptions,
 } from "./template/SimpleRenderer";
 export { SchemaObject } from "./object/SchemaObject";
 export { DebugLogger } from "./utils/DebugLogger";
@@ -22,7 +22,7 @@ export {
    isPrimitive,
    type TExpression,
    type BooleanLike,
-   isBooleanLike
+   isBooleanLike,
 } from "./object/query/query";
 export { Registry, type Constructor } from "./registry/Registry";
 

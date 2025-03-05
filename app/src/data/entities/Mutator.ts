@@ -29,11 +29,9 @@ export class Mutator<
    TBD extends object = DefaultDB,
    TB extends keyof TBD = any,
    Output = TBD[TB],
-   Input = Omit<Output, "id">
+   Input = Omit<Output, "id">,
 > implements EmitsEvents
 {
-   em: EntityManager<TBD>;
-   entity: Entity;
    static readonly Events = MutatorEvents;
    emgr: EventManager<typeof MutatorEvents>;
 
@@ -43,10 +41,12 @@ export class Mutator<
       this.__unstable_disable_system_entity_creation = value;
    }
 
-   constructor(em: EntityManager<TBD>, entity: Entity, emgr?: EventManager<any>) {
-      this.em = em;
-      this.entity = entity;
-      this.emgr = emgr ?? new EventManager(MutatorEvents);
+   constructor(
+      public em: EntityManager<TBD>,
+      public entity: Entity,
+      protected options?: { emgr?: EventManager<any> },
+   ) {
+      this.emgr = options?.emgr ?? new EventManager(MutatorEvents);
    }
 
    private get conn() {
@@ -85,7 +85,7 @@ export class Mutator<
                `Field "${key}" not found on entity "${entity.name}". Fields: ${entity
                   .getFillableFields()
                   .map((f) => f.name)
-                  .join(", ")}`
+                  .join(", ")}`,
             );
          }
 
@@ -118,7 +118,7 @@ export class Mutator<
             sql,
             parameters: [...parameters],
             result: result,
-            data
+            data,
          };
       } catch (e) {
          // @todo: redact
@@ -139,14 +139,14 @@ export class Mutator<
       }
 
       const result = await this.emgr.emit(
-         new Mutator.Events.MutatorInsertBefore({ entity, data: data as any })
+         new Mutator.Events.MutatorInsertBefore({ entity, data: data as any }),
       );
 
       // if listener returned, take what's returned
       const _data = result.returned ? result.params.data : data;
       const validatedData = {
          ...entity.getDefaultObject(),
-         ...(await this.getValidatedData(_data, "create"))
+         ...(await this.getValidatedData(_data, "create")),
       };
 
       // check if required fields are present
@@ -182,8 +182,8 @@ export class Mutator<
          new Mutator.Events.MutatorUpdateBefore({
             entity,
             entityId: id,
-            data
-         })
+            data,
+         }),
       );
 
       const _data = result.returned ? result.params.data : data;
@@ -198,7 +198,7 @@ export class Mutator<
       const res = await this.single(query);
 
       await this.emgr.emit(
-         new Mutator.Events.MutatorUpdateAfter({ entity, entityId: id, data: res.data })
+         new Mutator.Events.MutatorUpdateAfter({ entity, entityId: id, data: res.data }),
       );
 
       return res as any;
@@ -220,7 +220,7 @@ export class Mutator<
       const res = await this.single(query);
 
       await this.emgr.emit(
-         new Mutator.Events.MutatorDeleteAfter({ entity, entityId: id, data: res.data })
+         new Mutator.Events.MutatorDeleteAfter({ entity, entityId: id, data: res.data }),
       );
 
       return res as any;
@@ -270,11 +270,16 @@ export class Mutator<
    }
 
    // @todo: decide whether entries should be deleted all at once or one by one (for events)
-   async deleteWhere(where?: RepoQuery["where"]): Promise<MutatorResponse<Output[]>> {
+   async deleteWhere(where: RepoQuery["where"]): Promise<MutatorResponse<Output[]>> {
       const entity = this.entity;
 
+      // @todo: add a way to delete all by adding force?
+      if (!where || typeof where !== "object" || Object.keys(where).length === 0) {
+         throw new Error("Where clause must be provided for mass deletion");
+      }
+
       const qb = this.appendWhere(this.conn.deleteFrom(entity.name), where).returning(
-         entity.getSelect()
+         entity.getSelect(),
       );
 
       return (await this.many(qb)) as any;
@@ -282,10 +287,15 @@ export class Mutator<
 
    async updateWhere(
       data: Partial<Input>,
-      where?: RepoQuery["where"]
+      where: RepoQuery["where"],
    ): Promise<MutatorResponse<Output[]>> {
       const entity = this.entity;
       const validatedData = await this.getValidatedData(data, "update");
+
+      // @todo: add a way to delete all by adding force?
+      if (!where || typeof where !== "object" || Object.keys(where).length === 0) {
+         throw new Error("Where clause must be provided for mass update");
+      }
 
       const query = this.appendWhere(this.conn.updateTable(entity.name), where)
          .set(validatedData as any)
@@ -304,7 +314,7 @@ export class Mutator<
       for (const row of data) {
          const validatedData = {
             ...entity.getDefaultObject(),
-            ...(await this.getValidatedData(row, "create"))
+            ...(await this.getValidatedData(row, "create")),
          };
 
          // check if required fields are present

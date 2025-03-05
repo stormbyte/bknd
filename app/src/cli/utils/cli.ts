@@ -12,7 +12,7 @@ export default function ansiRegex({ onlyFirst = false } = {}) {
    const ST = "(?:\\u0007|\\u001B\\u005C|\\u009C)";
    const pattern = [
       `[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]+)*|[a-zA-Z\\d]+(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?${ST})`,
-      "(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-nq-uy=><~]))"
+      "(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-nq-uy=><~]))",
    ].join("|");
 
    return new RegExp(pattern, onlyFirst ? undefined : "g");
@@ -22,7 +22,7 @@ const DEFAULT_WAIT_WRITER = _SPEEDUP ? 0 : 20;
 export async function* typewriter(
    text: string,
    transform?: (char: string) => string,
-   _delay?: number
+   _delay?: number,
 ) {
    const delay = DEFAULT_WAIT_WRITER * (_delay ?? 1);
    const regex = ansiRegex();

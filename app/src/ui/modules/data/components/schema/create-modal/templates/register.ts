@@ -9,7 +9,7 @@ export type StepTemplate = {
 };
 
 const Templates: [() => JSX.Element, StepTemplate][] = [
-   [TemplateMediaComponent, TemplateMediaMeta]
+   [TemplateMediaComponent, TemplateMediaMeta],
 ];
 
 export default Templates;

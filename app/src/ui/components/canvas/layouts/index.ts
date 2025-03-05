@@ -29,7 +29,7 @@ export const layoutWithDagre = ({ nodes, edges, graph }: LayoutProps) => {
    nodes.forEach((node) => {
       dagreGraph.setNode(node.id, {
          width: node.width,
-         height: node.height
+         height: node.height,
       });
    });
 
@@ -45,9 +45,9 @@ export const layoutWithDagre = ({ nodes, edges, graph }: LayoutProps) => {
          return {
             ...node,
             x: position.x - (node.width ?? 0) / 2,
-            y: position.y - (node.height ?? 0) / 2
+            y: position.y - (node.height ?? 0) / 2,
          };
       }),
-      edges
+      edges,
    };
 };

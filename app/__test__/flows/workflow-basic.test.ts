@@ -11,13 +11,13 @@ class ExecTask extends Task<typeof ExecTask.schema> {
    type = "exec";
 
    static override schema = Type.Object({
-      delay: Type.Number({ default: 10 })
+      delay: Type.Number({ default: 10 }),
    });
 
    constructor(
       name: string,
       params: Static<typeof ExecTask.schema>,
-      private func: () => Promise<any>
+      private func: () => Promise<any>,
    ) {
       super(name, params);
    }
@@ -36,12 +36,12 @@ function getTask(num: number = 0, delay: number = 5) {
    return new ExecTask(
       `Task ${num}`,
       {
-         delay
+         delay,
       },
       async () => {
          //console.log(`[DONE] Task: ${num}`);
          return true;
-      }
+      },
    );
    //return new LogTask(`Log ${num}`, { delay });
 }
@@ -56,9 +56,9 @@ function getNamedTask(name: string, _func?: () => Promise<any>, delay?: number) 
    return new ExecTask(
       name,
       {
-         delay: delay ?? 0
+         delay: delay ?? 0,
       },
-      func
+      func,
    );
 }
 
@@ -228,7 +228,7 @@ describe("Flow tests", async () => {
          back
             .task(third)
             .getOutTasks()
-            .map((t) => t.name)
+            .map((t) => t.name),
       ).toEqual(["second", "fourth"]);
 
       const execution = back.createExecution();
@@ -263,7 +263,7 @@ describe("Flow tests", async () => {
          back
             .task(third)
             .getOutTasks()
-            .map((t) => t.name)
+            .map((t) => t.name),
       ).toEqual(["second", "fourth"]);
 
       const execution = back.createExecution();
@@ -324,8 +324,8 @@ describe("Flow tests", async () => {
       const first = getNamedTask("first", async () => {
          return {
             inner: {
-               result: 2
-            }
+               result: 2,
+            },
          };
       });
       const second = getNamedTask("second");
@@ -361,7 +361,7 @@ describe("Flow tests", async () => {
                "[event]",
                event.isStart() ? "start" : "end",
                event.task().name,
-               event.isStart() ? undefined : event.succeeded()
+               event.isStart() ? undefined : event.succeeded(),
             );
          }
       });
@@ -389,7 +389,7 @@ describe("Flow tests", async () => {
       const second = new LogTask("Task 1");
       const third = new LogTask("Task 2", { delay: 50 });
       const fourth = new FetchTask("Fetch Something", {
-         url: "https://jsonplaceholder.typicode.com/todos/1"
+         url: "https://jsonplaceholder.typicode.com/todos/1",
       });
       const fifth = new LogTask("Task 4"); // without connection
 
@@ -405,7 +405,7 @@ describe("Flow tests", async () => {
       // @todo: fix
       const deserialized = Flow.fromObject("", original, {
          fetch: { cls: FetchTask },
-         log: { cls: LogTask }
+         log: { cls: LogTask },
       } as any);
 
       const diffdeep = getObjectDiff(original, deserialized.toJSON());
@@ -414,7 +414,7 @@ describe("Flow tests", async () => {
       expect(flow.startTask.name).toEqual(deserialized.startTask.name);
       expect(flow.respondingTask?.name).toEqual(
          // @ts-ignore
-         deserialized.respondingTask?.name
+         deserialized.respondingTask?.name,
       );
 
       //console.log("--- creating original sequence");

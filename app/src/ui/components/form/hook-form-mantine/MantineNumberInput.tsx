@@ -1,6 +1,6 @@
 import {
    NumberInput as $NumberInput,
-   type NumberInputProps as $NumberInputProps
+   type NumberInputProps as $NumberInputProps,
 } from "@mantine/core";
 import { type FieldValues, type UseControllerProps, useController } from "react-hook-form";
 
@@ -18,13 +18,13 @@ export function MantineNumberInput<T extends FieldValues>({
 }: MantineNumberInputProps<T>) {
    const {
       field: { value, onChange: fieldOnChange, ...field },
-      fieldState
+      fieldState,
    } = useController<T>({
       name,
       control,
       defaultValue,
       rules,
-      shouldUnregister
+      shouldUnregister,
    });
 
    return (
