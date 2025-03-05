@@ -225,7 +225,8 @@ export class FetchPromise<T = ApiResponse<any>> implements Promise<T> {
          fetcher?: typeof fetch;
          verbose?: boolean;
       },
-      protected refineData?: (data: T) => any,
+      // keep "any" here, it gets inferred correctly with the "refine" fn
+      protected refineData?: (data: any) => any,
    ) {}
 
    get verbose() {
