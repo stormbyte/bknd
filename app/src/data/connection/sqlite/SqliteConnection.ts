@@ -1,6 +1,6 @@
 import type { ColumnDataType, ColumnDefinitionBuilder, Kysely, KyselyPlugin } from "kysely";
 import { jsonArrayFrom, jsonBuildObject, jsonObjectFrom } from "kysely/helpers/sqlite";
-import { Connection, type DbFunctions, type FieldSpec, type SchemaResponse } from "./Connection";
+import { Connection, type DbFunctions, type FieldSpec, type SchemaResponse } from "../Connection";
 
 export class SqliteConnection extends Connection {
    constructor(kysely: Kysely<any>, fn: Partial<DbFunctions> = {}, plugins: KyselyPlugin[] = []) {

@@ -42,11 +42,16 @@ export class PostgresConnection extends Connection {
       let type: ColumnDataType = spec.primary ? "serial" : spec.type;
 
       switch (spec.type) {
+         case "blob":
+            type = "bytea";
+            break;
          case "date":
          case "datetime":
+            // https://www.postgresql.org/docs/17/datatype-datetime.html
             type = "timestamp";
             break;
          case "text":
+            // https://www.postgresql.org/docs/17/datatype-character.html
             type = "varchar";
             break;
       }

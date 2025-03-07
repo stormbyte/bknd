@@ -1,55 +1,37 @@
-import {
-   type DatabaseIntrospector,
-   type DatabaseMetadata,
-   type DatabaseMetadataOptions,
-   type SchemaMetadata,
-   type TableMetadata,
-   type Kysely,
-   type KyselyPlugin,
-   ParseJSONResultsPlugin,
-} from "kysely";
-import { DEFAULT_MIGRATION_LOCK_TABLE, DEFAULT_MIGRATION_TABLE, sql } from "kysely";
-import { KyselyPluginRunner } from "data";
-import type { IndexMetadata } from "data/connection/Connection";
+import { type SchemaMetadata, sql } from "kysely";
+import { BaseIntrospector } from "data/connection/BaseIntrospector";
 
-export type PostgresIntrospectorConfig = {
-   excludeTables?: string[];
-   plugins?: KyselyPlugin[];
+type PostgresSchemaSpec = {
+   name: string;
+   type: "VIEW" | "BASE TABLE";
+   columns: {
+      name: string;
+      type: string;
+      notnull: number;
+      dflt: string;
+      pk: boolean;
+   }[];
+   indices: {
+      name: string;
+      origin: string;
+      partial: number;
+      sql: string;
+      columns: { name: string; seqno: number }[];
+   }[];
 };
 
-export class PostgresIntrospector implements DatabaseIntrospector {
-   readonly #db: Kysely<any>;
-   readonly _excludeTables: string[] = [];
-   readonly _plugins: KyselyPlugin[];
-
-   constructor(db: Kysely<any>, config: PostgresIntrospectorConfig = {}) {
-      this.#db = db;
-      this._excludeTables = config.excludeTables ?? [];
-      this._plugins = config.plugins ?? [new ParseJSONResultsPlugin()];
-   }
-
+export class PostgresIntrospector extends BaseIntrospector {
    async getSchemas(): Promise<SchemaMetadata[]> {
-      const rawSchemas = await this.#db
+      const rawSchemas = await this.db
          .selectFrom("pg_catalog.pg_namespace")
          .select("nspname")
-         .$castTo<RawSchemaMetadata>()
+         .$castTo<{ nspname: string }>()
          .execute();
 
       return rawSchemas.map((it) => ({ name: it.nspname }));
    }
 
-   async getMetadata(options?: DatabaseMetadataOptions): Promise<DatabaseMetadata> {
-      return {
-         tables: await this.getTables(options),
-      };
-   }
-
-   async getSchema() {
-      const excluded = [
-         ...this._excludeTables,
-         DEFAULT_MIGRATION_TABLE,
-         DEFAULT_MIGRATION_LOCK_TABLE,
-      ];
+   async getSchemaSpec() {
       const query = sql`
          WITH tables_and_views AS (
             SELECT table_name AS name,
@@ -58,7 +40,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
             WHERE table_schema = 'public'
               AND table_type IN ('BASE TABLE', 'VIEW')
               AND table_name NOT LIKE 'pg_%'
-              AND table_name NOT IN (${excluded.join(", ")})
+              AND table_name NOT IN (${this.getExcludedTableNames().join(", ")})
          ),
 
             columns_info AS (
@@ -115,26 +97,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
             LEFT JOIN indices_info ii ON tv.name = ii.table_name;
       `;
 
-      const result = await query.execute(this.#db);
-      const runner = new KyselyPluginRunner(this._plugins ?? []);
-      const tables = (await runner.transformResultRows(result.rows)) as unknown as {
-         name: string;
-         type: "VIEW" | "BASE TABLE";
-         columns: {
-            name: string;
-            type: string;
-            notnull: number;
-            dflt: string;
-            pk: boolean;
-         }[];
-         indices: {
-            name: string;
-            origin: string;
-            partial: number;
-            sql: string;
-            columns: { name: string; seqno: number }[];
-         }[];
-      }[];
+      const tables = await this.executeWithPlugins<PostgresSchemaSpec[]>(query);
 
       return tables.map((table) => ({
          name: table.name,
@@ -144,6 +107,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
                name: col.name,
                dataType: col.type,
                isNullable: !col.notnull,
+               // @todo: check default value on 'nextval' see https://www.postgresql.org/docs/17/datatype-numeric.html#DATATYPE-SERIAL
                isAutoIncrementing: true, // just for now
                hasDefaultValue: col.dflt != null,
                comment: undefined,
@@ -160,26 +124,4 @@ export class PostgresIntrospector implements DatabaseIntrospector {
          })),
       }));
    }
-
-   async getIndices(tbl_name?: string): Promise<IndexMetadata[]> {
-      const schema = await this.getSchema();
-      return schema
-         .flatMap((table) => table.indices)
-         .filter((index) => !tbl_name || index.table === tbl_name);
-   }
-
-   async getTables(
-      options: DatabaseMetadataOptions = { withInternalKyselyTables: false },
-   ): Promise<TableMetadata[]> {
-      const schema = await this.getSchema();
-      return schema.map((table) => ({
-         name: table.name,
-         isView: table.isView,
-         columns: table.columns,
-      }));
-   }
-}
-
-interface RawSchemaMetadata {
-   nspname: string;
 }

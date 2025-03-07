@@ -1,9 +1,9 @@
 import { type Client, type Config, type InStatement, createClient } from "@libsql/client";
 import { LibsqlDialect } from "@libsql/kysely-libsql";
 import { type DatabaseIntrospector, Kysely, ParseJSONResultsPlugin } from "kysely";
-import { FilterNumericKeysPlugin } from "../plugins/FilterNumericKeysPlugin";
-import { KyselyPluginRunner } from "../plugins/KyselyPluginRunner";
-import type { QB } from "./Connection";
+import { FilterNumericKeysPlugin } from "data/plugins/FilterNumericKeysPlugin";
+import { KyselyPluginRunner } from "data/plugins/KyselyPluginRunner";
+import type { QB } from "../Connection";
 import { SqliteConnection } from "./SqliteConnection";
 import { SqliteIntrospector } from "./SqliteIntrospector";
 

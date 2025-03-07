@@ -1,4 +1,4 @@
-import type { AlterTableColumnAlteringBuilder, CompiledQuery, TableMetadata } from "kysely";
+import type { CompiledQuery, TableMetadata } from "kysely";
 import type { IndexMetadata, SchemaResponse } from "../connection/Connection";
 import type { Entity, EntityManager } from "../entities";
 import { PrimaryField } from "../fields";

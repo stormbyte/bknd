@@ -13,6 +13,7 @@ import {
    type Simplify,
    sql,
 } from "kysely";
+import type { BaseIntrospector } from "./BaseIntrospector";
 
 export type QB = SelectQueryBuilder<any, any, any>;
 
@@ -22,10 +23,6 @@ export type IndexMetadata = {
    isUnique: boolean;
    columns: { name: string; order: number }[];
 };
-
-export interface ConnectionIntrospector extends DatabaseIntrospector {
-   getIndices(tbl_name?: string): Promise<IndexMetadata[]>;
-}
 
 export interface SelectQueryBuilderExpression<O> extends AliasableExpression<O> {
    get isSelectQueryBuilder(): true;
@@ -100,8 +97,8 @@ export abstract class Connection<DB = any> {
       return conn[CONN_SYMBOL] === true;
    }
 
-   getIntrospector(): ConnectionIntrospector {
-      return this.kysely.introspection as ConnectionIntrospector;
+   getIntrospector(): BaseIntrospector {
+      return this.kysely.introspection as any;
    }
 
    supportsBatching(): boolean {
