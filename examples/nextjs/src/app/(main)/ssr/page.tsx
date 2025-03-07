@@ -20,12 +20,24 @@ export default async function SSRPage() {
                   </a>
                </>
             ) : (
-               <>
-                  Not logged in.{" "}
-                  <a className="font-medium underline" href="/admin/auth/login">
-                     Login
-                  </a>
-               </>
+               <div className="flex flex-col gap-1">
+                  <p>
+                     Not logged in.{" "}
+                     <a className="font-medium underline" href="/admin/auth/login">
+                        Login
+                     </a>
+                  </p>
+                  <p className="text-xs opacity-50">
+                     Sign in with:{" "}
+                     <b>
+                        <code>test@bknd.io</code>
+                     </b>{" "}
+                     /{" "}
+                     <b>
+                        <code>12345678</code>
+                     </b>
+                  </p>
+               </div>
             )}
          </p>
       </>
