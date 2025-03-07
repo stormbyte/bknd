@@ -13,7 +13,9 @@ const connection = new PostgresConnection({
    port: 5433,
 });
 
-describe("postgres", () => {
+const ALL_TESTS = !!process.env.ALL_TESTS;
+
+describe.skipIf(ALL_TESTS)("postgres", () => {
    test.skip("introspector", async () => {
       const introspector = new PostgresIntrospector(connection.kysely, {
          plugins: [new ParseJSONResultsPlugin()],
