@@ -47,4 +47,8 @@ export class SqliteConnection extends Connection {
          },
       ] as const;
    }
+
+   override async close(): Promise<void> {
+      // no-op
+   }
 }

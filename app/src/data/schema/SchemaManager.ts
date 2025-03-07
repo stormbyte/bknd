@@ -329,6 +329,7 @@ export class SchemaManager {
          if (local_updates === 0) continue;
 
          // iterate through built qbs
+         // @todo: run in batches
          for (const qb of qbs) {
             const { sql, parameters } = qb.compile();
             statements.push({ sql, parameters });

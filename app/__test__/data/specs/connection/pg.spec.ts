@@ -21,7 +21,7 @@ describe.skipIf(ALL_TESTS)("postgres", () => {
          plugins: [new ParseJSONResultsPlugin()],
       });
 
-      console.log(await introspector.getSchema());
+      console.log(await introspector.getSchemaSpec());
    });
 
    test("builds", async () => {
@@ -50,6 +50,11 @@ describe.skipIf(ALL_TESTS)("postgres", () => {
 
       await app.build({ sync: true });
 
+      /*await app.em
+         .mutator("posts")
+         .insertMany([{ title: "hello world" }, { title: "hello world 2" }]);*/
+
       expect(app.version()).toBeDefined();
+      console.log(await app.em.repo("posts").findMany());
    });
 });

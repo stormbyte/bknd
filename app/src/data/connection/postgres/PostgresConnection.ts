@@ -8,7 +8,12 @@ import {
 } from "kysely";
 import pg from "pg";
 import { PostgresIntrospector } from "./PostgresIntrospector";
-import { type FieldSpec, type SchemaResponse, Connection } from "data/connection/Connection";
+import {
+   type FieldSpec,
+   type SchemaResponse,
+   Connection,
+   type QB,
+} from "data/connection/Connection";
 
 export type PostgresConnectionConfig = pg.PoolConfig;
 
@@ -21,16 +26,20 @@ class CustomPostgresDialect extends PostgresDialect {
 }
 
 export class PostgresConnection extends Connection {
+   private pool: pg.Pool;
+
    constructor(config: PostgresConnectionConfig) {
+      const pool = new pg.Pool(config);
       const kysely = new Kysely({
          dialect: new CustomPostgresDialect({
-            pool: new pg.Pool(config),
+            pool,
          }),
          plugins,
          //log: ["query", "error"],
       });
 
       super(kysely, {}, plugins);
+      this.pool = pool;
    }
 
    override supportsIndices(): boolean {
@@ -72,5 +81,23 @@ export class PostgresConnection extends Connection {
             return spec.nullable ? col : col.notNull();
          },
       ];
+   }
+
+   override supportsBatching(): boolean {
+      return true;
+   }
+
+   override async close(): Promise<void> {
+      await this.pool.end();
+   }
+
+   protected override async batch<Queries extends QB[]>(
+      queries: [...Queries],
+   ): Promise<{
+      [K in keyof Queries]: Awaited<ReturnType<Queries[K]["execute"]>>;
+   }> {
+      return this.kysely.transaction().execute(async (trx) => {
+         return Promise.all(queries.map((q) => trx.executeQuery(q).then((r) => r.rows)));
+      }) as any;
    }
 }

@@ -151,4 +151,5 @@ export abstract class Connection<DB = any> {
    }
 
    abstract getFieldSchema(spec: FieldSpec, strict?: boolean): SchemaResponse;
+   abstract close(): Promise<void>;
 }
