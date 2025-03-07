@@ -12,10 +12,13 @@ export type LibSqlCredentials = Config & {
    protocol?: (typeof LIBSQL_PROTOCOLS)[number];
 };
 
+const plugins = [new FilterNumericKeysPlugin(), new ParseJSONResultsPlugin()];
+
 class CustomLibsqlDialect extends LibsqlDialect {
    override createIntrospector(db: Kysely<any>): DatabaseIntrospector {
       return new SqliteIntrospector(db, {
          excludeTables: ["libsql_wasm_func_table"],
+         plugins,
       });
    }
 }
@@ -26,7 +29,6 @@ export class LibsqlConnection extends SqliteConnection {
    constructor(client: Client);
    constructor(credentials: LibSqlCredentials);
    constructor(clientOrCredentials: Client | LibSqlCredentials) {
-      const plugins = [new FilterNumericKeysPlugin(), new ParseJSONResultsPlugin()];
       let client: Client;
       if (clientOrCredentials && "url" in clientOrCredentials) {
          let { url, authToken, protocol } = clientOrCredentials;

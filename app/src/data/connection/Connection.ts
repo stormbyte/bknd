@@ -1,9 +1,12 @@
 import {
    type AliasableExpression,
+   type ColumnBuilderCallback,
+   type ColumnDataType,
    type DatabaseIntrospector,
    type Expression,
    type Kysely,
    type KyselyPlugin,
+   type OnModifyForeignAction,
    type RawBuilder,
    type SelectQueryBuilder,
    type SelectQueryNode,
@@ -28,6 +31,38 @@ export interface SelectQueryBuilderExpression<O> extends AliasableExpression<O> 
    get isSelectQueryBuilder(): true;
    toOperationNode(): SelectQueryNode;
 }
+
+export type SchemaResponse = [string, ColumnDataType, ColumnBuilderCallback] | undefined;
+
+const FieldSpecTypes = [
+   "text",
+   "integer",
+   "real",
+   "blob",
+   "date",
+   "datetime",
+   "timestamp",
+   "boolean",
+   "json",
+] as const;
+
+export type FieldSpec = {
+   type: (typeof FieldSpecTypes)[number];
+   name: string;
+   nullable?: boolean;
+   dflt?: any;
+   unique?: boolean;
+   primary?: boolean;
+   references?: string;
+   onDelete?: OnModifyForeignAction;
+   onUpdate?: OnModifyForeignAction;
+};
+
+export type IndexSpec = {
+   name: string;
+   columns: string[];
+   unique?: boolean;
+};
 
 export type DbFunctions = {
    jsonObjectFrom<O>(expr: SelectQueryBuilderExpression<O>): RawBuilder<Simplify<O> | null>;
@@ -108,4 +143,15 @@ export abstract class Connection<DB = any> {
 
       return await this.batch(queries);
    }
+
+   protected validateFieldSpecType(type: string): type is FieldSpec["type"] {
+      if (!FieldSpecTypes.includes(type as any)) {
+         throw new Error(
+            `Invalid field type "${type}". Allowed types are: ${FieldSpecTypes.join(", ")}`,
+         );
+      }
+      return true;
+   }
+
+   abstract getFieldSchema(spec: FieldSpec, strict?: boolean): SchemaResponse;
 }

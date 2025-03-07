@@ -1,26 +1,31 @@
-import type {
-   DatabaseIntrospector,
-   DatabaseMetadata,
-   DatabaseMetadataOptions,
-   ExpressionBuilder,
-   Kysely,
-   SchemaMetadata,
-   TableMetadata,
+import {
+   type DatabaseIntrospector,
+   type DatabaseMetadata,
+   type DatabaseMetadataOptions,
+   type Kysely,
+   ParseJSONResultsPlugin,
+   type SchemaMetadata,
+   type TableMetadata,
+   type KyselyPlugin,
 } from "kysely";
 import { DEFAULT_MIGRATION_LOCK_TABLE, DEFAULT_MIGRATION_TABLE, sql } from "kysely";
 import type { ConnectionIntrospector, IndexMetadata } from "./Connection";
+import { KyselyPluginRunner } from "data";
 
 export type SqliteIntrospectorConfig = {
    excludeTables?: string[];
+   plugins?: KyselyPlugin[];
 };
 
 export class SqliteIntrospector implements DatabaseIntrospector, ConnectionIntrospector {
    readonly #db: Kysely<any>;
    readonly _excludeTables: string[] = [];
+   readonly _plugins: KyselyPlugin[];
 
    constructor(db: Kysely<any>, config: SqliteIntrospectorConfig = {}) {
       this.#db = db;
       this._excludeTables = config.excludeTables ?? [];
+      this._plugins = config.plugins ?? [new ParseJSONResultsPlugin()];
    }
 
    async getSchemas(): Promise<SchemaMetadata[]> {
@@ -28,86 +33,96 @@ export class SqliteIntrospector implements DatabaseIntrospector, ConnectionIntro
       return [];
    }
 
-   async getIndices(tbl_name?: string): Promise<IndexMetadata[]> {
-      const indices = await this.#db
-         .selectFrom("sqlite_master")
-         .where("type", "=", "index")
-         .$if(!!tbl_name, (eb) => eb.where("tbl_name", "=", tbl_name))
-         .select("name")
-         .$castTo<{ name: string }>()
-         .execute();
+   async getSchema() {
+      const excluded = [
+         ...this._excludeTables,
+         DEFAULT_MIGRATION_TABLE,
+         DEFAULT_MIGRATION_LOCK_TABLE,
+      ];
+      const query = sql`
+         SELECT m.name, m.type, m.sql,
+            (SELECT json_group_array(
+               json_object(
+                  'name', p.name,
+                  'type', p.type,
+                  'notnull', p."notnull",
+                  'default', p.dflt_value,
+                  'primary_key', p.pk
+               )) FROM pragma_table_info(m.name) p) AS columns,
+            (SELECT json_group_array(
+               json_object(
+                  'name', i.name,
+                  'origin', i.origin,
+                  'partial', i.partial,
+                  'sql', im.sql,
+                  'columns', (SELECT json_group_array(
+                     json_object(
+                        'name', ii.name,
+                        'seqno', ii.seqno
+                     )) FROM pragma_index_info(i.name) ii)
+               )) FROM pragma_index_list(m.name) i
+                 LEFT JOIN sqlite_master im ON im.name = i.name
+                  AND im.type = 'index'
+            ) AS indices
+         FROM sqlite_master m
+         WHERE m.type IN ('table', 'view')
+           and m.name not like 'sqlite_%'
+           and m.name not in (${excluded.join(", ")})
+      `;
 
-      return Promise.all(indices.map(({ name }) => this.#getIndexMetadata(name)));
-   }
+      const result = await query.execute(this.#db);
+      const runner = new KyselyPluginRunner(this._plugins ?? []);
+      const tables = (await runner.transformResultRows(result.rows)) as unknown as {
+         name: string;
+         type: string;
+         sql: string;
+         columns: {
+            name: string;
+            type: string;
+            notnull: number;
+            dflt_value: any;
+            pk: number;
+         }[];
+         indices: {
+            name: string;
+            origin: string;
+            partial: number;
+            sql: string;
+            columns: { name: string; seqno: number }[];
+         }[];
+      }[];
 
-   async #getIndexMetadata(index: string): Promise<IndexMetadata> {
-      const db = this.#db;
+      //console.log("tables", tables);
+      return tables.map((table) => ({
+         name: table.name,
+         isView: table.type === "view",
+         columns: table.columns.map((col) => {
+            const autoIncrementCol = table.sql
+               ?.split(/[\(\),]/)
+               ?.find((it) => it.toLowerCase().includes("autoincrement"))
+               ?.trimStart()
+               ?.split(/\s+/)?.[0]
+               ?.replace(/["`]/g, "");
 
-      // Get the SQL that was used to create the index.
-      const indexDefinition = await db
-         .selectFrom("sqlite_master")
-         .where("name", "=", index)
-         .select(["sql", "tbl_name", "type"])
-         .$castTo<{ sql: string | undefined; tbl_name: string; type: string }>()
-         .executeTakeFirstOrThrow();
-
-      //console.log("--indexDefinition--", indexDefinition, index);
-
-      // check unique by looking for the word "unique" in the sql
-      const isUnique = indexDefinition.sql?.match(/unique/i) != null;
-
-      const columns = await db
-         .selectFrom(
-            sql<{
-               seqno: number;
-               cid: number;
-               name: string;
-            }>`pragma_index_info(${index})`.as("index_info"),
-         )
-         .select(["seqno", "cid", "name"])
-         .orderBy("cid")
-         .execute();
-
-      return {
-         name: index,
-         table: indexDefinition.tbl_name,
-         isUnique: isUnique,
-         columns: columns.map((col) => ({
-            name: col.name,
-            order: col.seqno,
+            return {
+               name: col.name,
+               dataType: col.type,
+               isNullable: !col.notnull,
+               isAutoIncrementing: col.name === autoIncrementCol,
+               hasDefaultValue: col.dflt_value != null,
+               comment: undefined,
+            };
+         }),
+         indices: table.indices.map((index) => ({
+            name: index.name,
+            table: table.name,
+            isUnique: index.sql?.match(/unique/i) != null,
+            columns: index.columns.map((col) => ({
+               name: col.name,
+               order: col.seqno,
+            })),
          })),
-      };
-   }
-
-   private excludeTables(tables: string[] = []) {
-      return (eb: ExpressionBuilder<any, any>) => {
-         const and = tables.map((t) => eb("name", "!=", t));
-         return eb.and(and);
-      };
-   }
-
-   async getTables(
-      options: DatabaseMetadataOptions = { withInternalKyselyTables: false },
-   ): Promise<TableMetadata[]> {
-      let query = this.#db
-         .selectFrom("sqlite_master")
-         .where("type", "in", ["table", "view"])
-         .where("name", "not like", "sqlite_%")
-         .select("name")
-         .orderBy("name")
-         .$castTo<{ name: string }>();
-
-      if (!options.withInternalKyselyTables) {
-         query = query.where(
-            this.excludeTables([DEFAULT_MIGRATION_TABLE, DEFAULT_MIGRATION_LOCK_TABLE]),
-         );
-      }
-      if (this._excludeTables.length > 0) {
-         query = query.where(this.excludeTables(this._excludeTables));
-      }
-
-      const tables = await query.execute();
-      return Promise.all(tables.map(({ name }) => this.#getTableMetadata(name)));
+      }));
    }
 
    async getMetadata(options?: DatabaseMetadataOptions): Promise<DatabaseMetadata> {
@@ -116,49 +131,21 @@ export class SqliteIntrospector implements DatabaseIntrospector, ConnectionIntro
       };
    }
 
-   async #getTableMetadata(table: string): Promise<TableMetadata> {
-      const db = this.#db;
+   async getIndices(tbl_name?: string): Promise<IndexMetadata[]> {
+      const schema = await this.getSchema();
+      return schema
+         .flatMap((table) => table.indices)
+         .filter((index) => !tbl_name || index.table === tbl_name);
+   }
 
-      // Get the SQL that was used to create the table.
-      const tableDefinition = await db
-         .selectFrom("sqlite_master")
-         .where("name", "=", table)
-         .select(["sql", "type"])
-         .$castTo<{ sql: string | undefined; type: string }>()
-         .executeTakeFirstOrThrow();
-
-      // Try to find the name of the column that has `autoincrement` 🤦
-      const autoIncrementCol = tableDefinition.sql
-         ?.split(/[\(\),]/)
-         ?.find((it) => it.toLowerCase().includes("autoincrement"))
-         ?.trimStart()
-         ?.split(/\s+/)?.[0]
-         ?.replace(/["`]/g, "");
-
-      const columns = await db
-         .selectFrom(
-            sql<{
-               name: string;
-               type: string;
-               notnull: 0 | 1;
-               dflt_value: any;
-            }>`pragma_table_info(${table})`.as("table_info"),
-         )
-         .select(["name", "type", "notnull", "dflt_value"])
-         .orderBy("cid")
-         .execute();
-
-      return {
-         name: table,
-         isView: tableDefinition.type === "view",
-         columns: columns.map((col) => ({
-            name: col.name,
-            dataType: col.type,
-            isNullable: !col.notnull,
-            isAutoIncrementing: col.name === autoIncrementCol,
-            hasDefaultValue: col.dflt_value != null,
-            comment: undefined,
-         })),
-      };
+   async getTables(
+      options: DatabaseMetadataOptions = { withInternalKyselyTables: false },
+   ): Promise<TableMetadata[]> {
+      const schema = await this.getSchema();
+      return schema.map((table) => ({
+         name: table.name,
+         isView: table.isView,
+         columns: table.columns,
+      }));
    }
 }
