@@ -4,7 +4,7 @@ FROM node:20 as builder
 WORKDIR /app
 
 # Install & copy required cli
-RUN npm install --omit=dev bknd
+RUN npm install --omit=dev bknd@0.9.1
 RUN mkdir /output && cp -r node_modules/bknd/dist /output/dist
 
 # Stage 2: Final minimal image
