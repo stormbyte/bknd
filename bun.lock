@@ -38,7 +38,7 @@
         "@libsql/client": "^0.14.0",
         "@mantine/core": "^7.17.1",
         "@mantine/hooks": "^7.17.1",
-        "@sinclair/typebox": "^0.32.34",
+        "@sinclair/typebox": "^0.34.30",
         "@tanstack/react-form": "^1.0.5",
         "@uiw/react-codemirror": "^4.23.10",
         "@xyflow/react": "^12.4.4",
@@ -62,7 +62,7 @@
         "@aws-sdk/client-s3": "^3.758.0",
         "@bluwy/giget-core": "^0.1.2",
         "@dagrejs/dagre": "^1.1.4",
-        "@hono/typebox-validator": "^0.2.6",
+        "@hono/typebox-validator": "^0.3.2",
         "@hono/vite-dev-server": "^0.19.0",
         "@hono/zod-validator": "^0.4.1",
         "@hookform/resolvers": "^3.9.1",
@@ -575,7 +575,7 @@
 
     "@hono/node-server": ["@hono/node-server@1.13.8", "", { "peerDependencies": { "hono": "^4" } }, "sha512-fsn8ucecsAXUoVxrUil0m13kOEq4mkX4/4QozCqmY+HpGfKl74OYSn8JcMA8GnG0ClfdRI4/ZSeG7zhFaVg+wg=="],
 
-    "@hono/typebox-validator": ["@hono/typebox-validator@0.2.6", "", { "peerDependencies": { "@sinclair/typebox": ">=0.31.15 <1", "hono": ">=3.9.0" } }, "sha512-x+Q7RWiw6rJmJs7MDgtvRbS7ViXXEzqimC0duY4or7y1f89f5Z3KCQSdUSVka+Uv0HZ/O0ZNt+ixNDxfJLi4hA=="],
+    "@hono/typebox-validator": ["@hono/typebox-validator@0.3.2", "", { "peerDependencies": { "@sinclair/typebox": ">=0.31.15 <1", "hono": ">=3.9.0" } }, "sha512-MIxYk80vtuFnkvbNreMubZ/vLoNCCQivLH8n3vNDY5dFNsZ12BFaZV3FmsLJHGibNMMpmkO6y4w5gNWY4KzSdg=="],
 
     "@hono/vite-dev-server": ["@hono/vite-dev-server@0.19.0", "", { "dependencies": { "@hono/node-server": "^1.12.0", "minimatch": "^9.0.3" }, "peerDependencies": { "hono": "*", "miniflare": "*", "wrangler": "*" }, "optionalPeers": ["miniflare", "wrangler"] }, "sha512-myMc4Nm0nFQSPaeE6I/a1ODyDR5KpQ4EHodX4Tu/7qlB31GfUemhUH/WsO91HJjDEpRRpsT4Zbg+PleMlpTljw=="],
 
@@ -957,7 +957,7 @@
 
     "@sagold/json-query": ["@sagold/json-query@6.2.0", "", { "dependencies": { "@sagold/json-pointer": "^5.1.2", "ebnf": "^1.9.1" } }, "sha512-7bOIdUE6eHeoWtFm8TvHQHfTVSZuCs+3RpOKmZCDBIOrxpvF/rNFTeuvIyjHva/RR0yVS3kQtr+9TW72LQEZjA=="],
 
-    "@sinclair/typebox": ["@sinclair/typebox@0.32.35", "", {}, "sha512-Ul3YyOTU++to8cgNkttakC0dWvpERr6RYoHO2W47DLbFvrwBDJUY31B1sImH6JZSYc4Kt4PyHtoPNu+vL2r2dA=="],
+    "@sinclair/typebox": ["@sinclair/typebox@0.34.30", "", {}, "sha512-gFB3BiqjDxEoadW0zn+xyMVb7cLxPCoblVn2C/BKpI41WPYi2d6fwHAlynPNZ5O/Q4WEiujdnJzVtvG/Jc2CBQ=="],
 
     "@sinonjs/commons": ["@sinonjs/commons@1.8.6", "", { "dependencies": { "type-detect": "4.0.8" } }, "sha512-Ky+XkAkqPZSm3NLBeUng77EBQl3cmeJhITaGHdYH8kjVB+aun3S4XBRti2zt17mtt0mIUDiNxYeoJm6drVvBJQ=="],
 
