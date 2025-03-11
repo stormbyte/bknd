@@ -5,6 +5,6 @@ export default adminPage({
    config: {
       basepath: "/admin",
       logo_return_path: "/../",
-      color_scheme: "system"
-   }
+      theme: "system",
+   },
 });
