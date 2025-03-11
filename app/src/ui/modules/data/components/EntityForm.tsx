@@ -1,4 +1,5 @@
 import type { FieldApi, ReactFormExtendedApi } from "@tanstack/react-form";
+import type { JSX } from "react";
 import {
    type Entity,
    type EntityData,
