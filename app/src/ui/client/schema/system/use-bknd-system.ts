@@ -36,6 +36,10 @@ export function useBkndSystemTheme() {
    return {
       theme: $sys.theme,
       set: $sys.actions.theme.set,
-      toggle: () => $sys.actions.theme.toggle(),
+      toggle: async () => {
+         document.startViewTransition(async () => {
+            await $sys.actions.theme.toggle();
+         });
+      },
    };
 }

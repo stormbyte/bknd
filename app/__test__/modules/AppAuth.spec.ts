@@ -157,7 +157,7 @@ describe("AppAuth", () => {
          const authField = make(name, _authFieldProto as any);
          const field = users.field(name)!;
          for (const prop of props) {
-            expect(field.config[prop]).toBe(authField.config[prop]);
+            expect(field.config[prop]).toEqual(authField.config[prop]);
          }
       }
    });

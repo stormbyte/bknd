@@ -19,7 +19,7 @@ type CanvasProps = ReactFlowProps & {
    externalProvider?: boolean;
    backgroundStyle?: "lines" | "dots";
    minimap?: boolean | MiniMapProps;
-   children?: JSX.Element | ReactNode;
+   children?: Element | ReactNode;
    onDropNewNode?: (base: any) => any;
    onDropNewEdge?: (base: any) => any;
 };

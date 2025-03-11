@@ -1,8 +1,9 @@
-import { describe, expect, test } from "bun:test";
+import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { randomString } from "../../../src/core/utils";
 import { StorageS3Adapter } from "../../../src/media";
 
 import { config } from "dotenv";
+//import { enableFetchLogging } from "../../helper";
 const dotenvOutput = config({ path: `${import.meta.dir}/../../../.env` });
 const { R2_ACCESS_KEY, R2_SECRET_ACCESS_KEY, R2_URL, AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_S3_URL } =
    dotenvOutput.parsed!;
@@ -11,7 +12,17 @@ const { R2_ACCESS_KEY, R2_SECRET_ACCESS_KEY, R2_URL, AWS_ACCESS_KEY, AWS_SECRET_
 const ALL_TESTS = !!process.env.ALL_TESTS;
 console.log("ALL_TESTS?", ALL_TESTS);
 
-describe.skipIf(true)("StorageS3Adapter", async () => {
+/* 
+// @todo: preparation to mock s3 calls + replace fast-xml-parser
+let cleanup: () => void;
+beforeAll(async () => {
+   cleanup = await enableFetchLogging();
+});
+afterAll(() => {
+   cleanup();
+}); */
+
+describe.skipIf(ALL_TESTS)("StorageS3Adapter", async () => {
    if (ALL_TESTS) return;
 
    const versions = [
@@ -66,7 +77,7 @@ describe.skipIf(true)("StorageS3Adapter", async () => {
 
       test.skipIf(disabled("putObject"))("puts an object", async () => {
          objects = (await adapter.listObjects()).length;
-         expect(await adapter.putObject(filename, file)).toBeString();
+         expect(await adapter.putObject(filename, file as any)).toBeString();
       });
 
       test.skipIf(disabled("listObjects"))("lists objects", async () => {

@@ -4,6 +4,9 @@ import Database from "libsql";
 import { format as sqlFormat } from "sql-formatter";
 import { type Connection, EntityManager, SqliteLocalConnection } from "../src/data";
 import type { em as protoEm } from "../src/data/prototype";
+import { writeFile } from "node:fs/promises";
+import { join } from "node:path";
+import { slugify } from "core/utils/strings";
 
 export function getDummyDatabase(memory: boolean = true): {
    dummyDb: SqliteDatabase;
@@ -71,3 +74,46 @@ export function schemaToEm(s: ReturnType<typeof protoEm>, conn?: Connection): En
 
 export const assetsPath = `${import.meta.dir}/_assets`;
 export const assetsTmpPath = `${import.meta.dir}/_assets/tmp`;
+
+export async function enableFetchLogging() {
+   const originalFetch = global.fetch;
+
+   global.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+      const response = await originalFetch(input, init);
+      const url = input instanceof URL || typeof input === "string" ? input : input.url;
+
+      // Only clone if it's a supported content type
+      const contentType = response.headers.get("content-type") || "";
+      const isSupported =
+         contentType.includes("json") ||
+         contentType.includes("text") ||
+         contentType.includes("xml");
+
+      if (isSupported) {
+         const clonedResponse = response.clone();
+         let extension = "txt";
+         let body: string;
+
+         if (contentType.includes("json")) {
+            body = JSON.stringify(await clonedResponse.json(), null, 2);
+            extension = "json";
+         } else if (contentType.includes("xml")) {
+            body = await clonedResponse.text();
+            extension = "xml";
+         } else {
+            body = await clonedResponse.text();
+         }
+
+         const fileName = `${new Date().getTime()}_${init?.method ?? "GET"}_${slugify(String(url))}.${extension}`;
+         const filePath = join(assetsTmpPath, fileName);
+
+         await writeFile(filePath, body);
+      }
+
+      return response;
+   };
+
+   return () => {
+      global.fetch = originalFetch;
+   };
+}

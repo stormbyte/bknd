@@ -70,7 +70,7 @@ export function StepCreate() {
          name: "",
          trigger: "manual",
          mode: "async",
-      },
+      } as Static<typeof schema>,
       mode: "onSubmit",
    });
 

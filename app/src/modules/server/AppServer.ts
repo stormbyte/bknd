@@ -1,4 +1,4 @@
-import { Exception } from "core";
+import { Exception, isDebug } from "core";
 import { type Static, StringEnum, Type } from "core/utils";
 import { cors } from "hono/cors";
 import { Module } from "modules/Module";
@@ -100,6 +100,12 @@ export class AppServer extends Module<typeof serverConfigSchema> {
          if (err instanceof Exception) {
             console.log("---is exception", err.code);
             return c.json(err.toJSON(), err.code as any);
+         }
+
+         if (err instanceof Error) {
+            if (isDebug()) {
+               return c.json({ error: err.message, stack: err.stack }, 500);
+            }
          }
 
          return c.json({ error: err.message }, 500);

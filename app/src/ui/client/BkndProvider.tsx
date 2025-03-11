@@ -41,7 +41,7 @@ export function BkndProvider({
       useState<Pick<BkndContext, "version" | "schema" | "config" | "permissions" | "fallback">>();
    const [fetched, setFetched] = useState(false);
    const [error, setError] = useState<boolean>();
-   const errorShown = useRef<boolean>();
+   const errorShown = useRef<boolean>(false);
    const fetching = useRef<Fetching>(Fetching.None);
    const [local_version, set_local_version] = useState(0);
    const api = useApi();
@@ -101,11 +101,13 @@ export function BkndProvider({
       }
 
       startTransition(() => {
-         setSchema(newSchema);
-         setWithSecrets(_includeSecrets);
-         setFetched(true);
-         set_local_version((v) => v + 1);
-         fetching.current = Fetching.None;
+         document.startViewTransition(() => {
+            setSchema(newSchema);
+            setWithSecrets(_includeSecrets);
+            setFetched(true);
+            set_local_version((v) => v + 1);
+            fetching.current = Fetching.None;
+         });
       });
    }
 
