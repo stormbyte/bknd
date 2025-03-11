@@ -29,17 +29,3 @@ export function useBkndSystem() {
       actions,
    };
 }
-
-export function useBkndSystemTheme() {
-   const $sys = useBkndSystem();
-
-   return {
-      theme: $sys.theme,
-      set: $sys.actions.theme.set,
-      toggle: async () => {
-         document.startViewTransition(async () => {
-            await $sys.actions.theme.toggle();
-         });
-      },
-   };
-}

@@ -8,7 +8,6 @@ import { Fragment } from "hono/jsx";
 import { css, Style } from "hono/css";
 import { Controller } from "modules/Controller";
 import * as SystemPermissions from "modules/permissions";
-import type { AppTheme } from "modules/server/AppServer";
 
 const htmlBkndContextReplace = "<!-- BKND_CONTEXT -->";
 
@@ -74,7 +73,6 @@ export class AdminController extends Controller {
          const obj = {
             user: c.get("auth")?.user,
             logout_route: this.withBasePath(authRoutes.logout),
-            color_scheme: configs.server.admin.color_scheme,
          };
          const html = await this.getHtml(obj);
          if (!html) {

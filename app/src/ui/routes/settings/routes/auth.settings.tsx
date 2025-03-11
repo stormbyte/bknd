@@ -44,8 +44,7 @@ const uiSchema = {
 export const AuthSettings = ({ schema: _unsafe_copy, config }) => {
    const _s = useBknd();
    const _schema = cloneDeep(_unsafe_copy);
-   const { basepath } = _s.app.getAdminConfig();
-   const prefix = `~/${basepath}/settings`.replace(/\/+/g, "/");
+   const prefix = _s.app.getAbsolutePath("settings");
 
    try {
       const user_entity = config.entity_name ?? "users";

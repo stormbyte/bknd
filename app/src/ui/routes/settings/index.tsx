@@ -15,7 +15,7 @@ import { ServerSettings } from "./routes/server.settings";
 import { IconButton } from "ui/components/buttons/IconButton";
 
 function SettingsSidebar() {
-   const { version, schema, actions } = useBknd();
+   const { version, schema, actions, app } = useBknd();
    useBrowserTitle(["Settings"]);
 
    async function handleRefresh() {
@@ -151,11 +151,10 @@ const FallbackRoutes = ({
    ...settingProps
 }: SettingProps<any> & { module: string }) => {
    const { app } = useBknd();
-   const basepath = app.getAdminConfig();
-   const prefix = `~/${basepath}/settings`.replace(/\/+/g, "/");
+   const prefix = app.getAbsolutePath("settings");
 
    return (
-      <Route path={`/${module}`} nest>
+      <Route path={module} nest>
          <Switch>
             <Route
                path="/"

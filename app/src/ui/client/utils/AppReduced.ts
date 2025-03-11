@@ -2,6 +2,7 @@ import type { App } from "App";
 import { type Entity, type EntityRelation, constructEntity, constructRelation } from "data";
 import { RelationAccessor } from "data/relations/RelationAccessor";
 import { Flow, TaskMap } from "flows";
+import type { BkndAdminOptions } from "ui/client/BkndProvider";
 
 export type AppType = ReturnType<App["toJSON"]>;
 
@@ -15,7 +16,10 @@ export class AppReduced {
    private _relations: EntityRelation[] = [];
    private _flows: Flow[] = [];
 
-   constructor(protected appJson: AppType) {
+   constructor(
+      protected appJson: AppType,
+      protected _options: BkndAdminOptions = {},
+   ) {
       //console.log("received appjson", appJson);
 
       this._entities = Object.entries(this.appJson.data.entities ?? {}).map(([name, entity]) => {
@@ -62,18 +66,21 @@ export class AppReduced {
       return this.appJson;
    }
 
-   getAdminConfig() {
-      return this.appJson.server.admin;
+   get options() {
+      return {
+         basepath: "",
+         logo_return_path: "/",
+         ...this._options,
+      };
    }
 
    getSettingsPath(path: string[] = []): string {
-      const { basepath } = this.getAdminConfig();
-      const base = `~/${basepath}/settings`.replace(/\/+/g, "/");
+      const base = `~/${this.options.basepath}/settings`.replace(/\/+/g, "/");
       return [base, ...path].join("/");
    }
 
    getAbsolutePath(path?: string): string {
-      const { basepath } = this.getAdminConfig();
+      const { basepath } = this.options;
       return (path ? `~/${basepath}/${path}` : `~/${basepath}`).replace(/\/+/g, "/");
    }
 

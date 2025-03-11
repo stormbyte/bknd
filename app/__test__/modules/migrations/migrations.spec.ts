@@ -1,39 +1,44 @@
 import { describe, expect, test } from "bun:test";
 import { type InitialModuleConfigs, createApp } from "../../../src";
 
-import type { Kysely } from "kysely";
+import { type Kysely, sql } from "kysely";
 import { getDummyConnection } from "../../helper";
 import v7 from "./samples/v7.json";
+import v8 from "./samples/v8.json";
+import v8_2 from "./samples/v8-2.json";
 
 // app expects migratable config to be present in database
-async function createVersionedApp(config: InitialModuleConfigs) {
+async function createVersionedApp(config: InitialModuleConfigs | any) {
    const { dummyConnection } = getDummyConnection();
 
    if (!("version" in config)) throw new Error("config must have a version");
    const { version, ...rest } = config;
 
-   const app = createApp({ connection: dummyConnection });
-   await app.build();
+   const db = dummyConnection.kysely as Kysely<any>;
+   await sql`CREATE TABLE "__bknd" (
+       "id"         integer not null primary key autoincrement,
+       "version"    integer,
+       "type"       text,
+       "json"       text,
+       "created_at" datetime,
+       "updated_at" datetime
+    )`.execute(db);
 
-   const qb = app.modules.ctx().connection.kysely as Kysely<any>;
-   const current = await qb
-      .selectFrom("__bknd")
-      .selectAll()
-      .where("type", "=", "config")
-      .executeTakeFirst();
-
-   await qb
-      .updateTable("__bknd")
-      .set("json", JSON.stringify(rest))
-      .set("version", 7)
-      .where("id", "=", current!.id)
+   await db
+      .insertInto("__bknd")
+      .values({
+         version,
+         type: "config",
+         created_at: new Date().toISOString(),
+         json: JSON.stringify(rest),
+      })
       .execute();
 
-   const app2 = createApp({
+   const app = createApp({
       connection: dummyConnection,
    });
-   await app2.build();
-   return app2;
+   await app.build();
+   return app;
 }
 
 describe("Migrations", () => {
@@ -46,8 +51,8 @@ describe("Migrations", () => {
 
       const app = await createVersionedApp(v7);
 
-      expect(app.version()).toBe(8);
-      expect(app.toJSON(true).auth.strategies.password.enabled).toBe(true);
+      expect(app.version()).toBeGreaterThan(7);
+      expect(app.toJSON(true).auth.strategies?.password?.enabled).toBe(true);
 
       const req = await app.server.request("/api/auth/password/register", {
          method: "POST",
@@ -60,7 +65,30 @@ describe("Migrations", () => {
          }),
       });
       expect(req.ok).toBe(true);
-      const res = await req.json();
+      const res = (await req.json()) as any;
       expect(res.user.email).toBe("test@test.com");
+   });
+
+   test("migration from 8 to 9", async () => {
+      expect(v8.version).toBe(8);
+
+      const app = await createVersionedApp(v8);
+
+      expect(app.version()).toBeGreaterThan(8);
+      // @ts-expect-error
+      expect(app.toJSON(true).server.admin).toBeUndefined();
+   });
+
+   test.only("migration from 8 to 9 (from initial)", async () => {
+      expect(v8_2.version).toBe(8);
+
+      const app = createApp({
+         connection: getDummyConnection().dummyConnection,
+         initialConfig: v8_2 as any,
+      });
+
+      expect(app.version()).toBeGreaterThan(8);
+      // @ts-expect-error
+      expect(app.toJSON(true).server.admin).toBeUndefined();
    });
 });

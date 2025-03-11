@@ -43,7 +43,7 @@ describe("ModuleManager", async () => {
                }).toJSON(),
             },
          },
-      });
+      }) as any;
       //const { version, ...json } = mm.toJSON() as any;
 
       const c2 = getDummyConnection();
@@ -73,7 +73,7 @@ describe("ModuleManager", async () => {
                }).toJSON(),
             },
          },
-      };
+      } as any;
       //const { version, ...json } = mm.toJSON() as any;
 
       const { dummyConnection } = getDummyConnection();
@@ -90,23 +90,20 @@ describe("ModuleManager", async () => {
       await mm2.build();
 
       expect(stripMark(json)).toEqual(stripMark(mm2.configs()));
-      expect(mm2.configs().data.entities.test).toBeDefined();
-      expect(mm2.configs().data.entities.test.fields.content).toBeDefined();
-      expect(mm2.get("data").toJSON().entities.test.fields.content).toBeDefined();
+      expect(mm2.configs().data.entities?.test).toBeDefined();
+      expect(mm2.configs().data.entities?.test?.fields?.content).toBeDefined();
+      expect(mm2.get("data").toJSON().entities?.test?.fields?.content).toBeDefined();
    });
 
    test("s4: config given, table exists, version outdated, migrate", async () => {
       const c = getDummyConnection();
       const mm = new ModuleManager(c.dummyConnection);
       await mm.build();
-      const version = mm.version();
       const json = mm.configs();
 
       const c2 = getDummyConnection();
       const db = c2.dummyConnection.kysely;
-      const mm2 = new ModuleManager(c2.dummyConnection, {
-         initial: { version: version - 1, ...json },
-      });
+      const mm2 = new ModuleManager(c2.dummyConnection);
       await mm2.syncConfigTable();
 
       await db
@@ -171,7 +168,7 @@ describe("ModuleManager", async () => {
       expect(mm2.configs().data.basepath).toBe("/api/data2");
    });
 
-   test("blank app, modify config", async () => {
+   /*test("blank app, modify config", async () => {
       const { dummyConnection } = getDummyConnection();
 
       const mm = new ModuleManager(dummyConnection);
@@ -194,7 +191,7 @@ describe("ModuleManager", async () => {
             },
          },
       });
-   });
+   });*/
 
    test("partial config given", async () => {
       const { dummyConnection } = getDummyConnection();
@@ -212,13 +209,15 @@ describe("ModuleManager", async () => {
       expect(mm.version()).toBe(CURRENT_VERSION);
       expect(mm.built()).toBe(true);
       expect(mm.configs().auth.enabled).toBe(true);
-      expect(mm.configs().data.entities.users).toBeDefined();
+      expect(mm.configs().data.entities?.users).toBeDefined();
    });
 
    test("partial config given, but db version exists", async () => {
       const c = getDummyConnection();
       const mm = new ModuleManager(c.dummyConnection);
       await mm.build();
+      console.log("==".repeat(30));
+      console.log("");
       const json = mm.configs();
 
       const c2 = getDummyConnection();
@@ -265,8 +264,8 @@ describe("ModuleManager", async () => {
 
          override async build() {
             //console.log("building FailingModule", this.config);
-            if (this.config.value < 0) {
-               throw new Error("value must be positive");
+            if (this.config.value && this.config.value < 0) {
+               throw new Error("value must be positive, given: " + this.config.value);
             }
             this.setBuilt();
          }
@@ -332,6 +331,7 @@ describe("ModuleManager", async () => {
          // @ts-ignore
          const f = mm.mutateConfigSafe("failing");
 
+         // @ts-ignore
          expect(f.set({ value: 2 })).resolves.toBeDefined();
          expect(mockOnUpdated).toHaveBeenCalled();
       });

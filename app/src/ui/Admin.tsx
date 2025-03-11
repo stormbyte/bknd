@@ -1,8 +1,7 @@
 import { MantineProvider } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
-import type { ModuleConfigs } from "modules";
 import React from "react";
-import { BkndProvider } from "ui/client/bknd";
+import { BkndProvider, type BkndAdminOptions } from "ui/client/bknd";
 import { useTheme } from "ui/client/use-theme";
 import { Logo } from "ui/components/display/Logo";
 import * as AppShell from "ui/layouts/AppShell/AppShell";
@@ -14,7 +13,7 @@ import { Routes } from "./routes";
 export type BkndAdminProps = {
    baseUrl?: string;
    withProvider?: boolean | ClientProviderProps;
-   config?: ModuleConfigs["server"]["admin"];
+   config?: BkndAdminOptions;
 };
 
 export default function Admin({
@@ -23,7 +22,7 @@ export default function Admin({
    config,
 }: BkndAdminProps) {
    const Component = (
-      <BkndProvider adminOverride={config} fallback={<Skeleton theme={config?.color_scheme} />}>
+      <BkndProvider options={config} fallback={<Skeleton />}>
          <AdminInternal />
       </BkndProvider>
    );

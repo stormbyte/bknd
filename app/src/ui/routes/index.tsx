@@ -17,12 +17,11 @@ const TestRoutes = lazy(() => import("./test"));
 export function Routes() {
    const { app } = useBknd();
    const { theme } = useTheme();
-   const { basepath } = app.getAdminConfig();
 
    return (
       <div id="bknd-admin" className={theme + " antialiased"}>
          <FlashMessage />
-         <Router base={basepath}>
+         <Router base={app.options.basepath}>
             <Switch>
                <Route path="/auth/login" component={AuthLogin} />
                <Route path="/" nest>

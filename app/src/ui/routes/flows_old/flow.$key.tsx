@@ -20,12 +20,12 @@ import { Dropdown } from "../../components/overlay/Dropdown";
 import { useFlow } from "../../container/use-flows";
 import * as AppShell from "../../layouts/AppShell/AppShell";
 import { SectionHeader } from "../../layouts/AppShell/AppShell";
+import { useTheme } from "ui/client/use-theme";
 
 export function FlowEdit({ params }) {
    const { app } = useBknd();
-   const { color_scheme: theme } = app.getAdminConfig();
-   const { basepath } = app.getAdminConfig();
-   const prefix = `~/${basepath}/settings`.replace(/\/+/g, "/");
+   const { theme } = useTheme();
+   const prefix = app.getAbsolutePath("settings");
    const [location, navigate] = useLocation();
    const [execution, setExecution] = useState<Execution>();
    const [selectedNodes, setSelectedNodes] = useState<Node[]>([]);
