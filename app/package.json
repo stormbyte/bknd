@@ -46,7 +46,7 @@
     "@xyflow/react": "^12.4.4",
     "aws4fetch": "^1.0.20",
     "dayjs": "^1.11.13",
-    "fast-xml-parser": "^4.4.0",
+    "fast-xml-parser": "^5.0.8",
     "hono": "^4.6.12",
     "json-schema-form-react": "^0.0.2",
     "json-schema-library": "^10.0.0-rc7",
