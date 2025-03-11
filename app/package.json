@@ -40,7 +40,7 @@
     "@libsql/client": "^0.14.0",
     "@mantine/core": "^7.13.4",
     "@sinclair/typebox": "^0.32.34",
-    "@tanstack/react-form": "0.19.2",
+    "@tanstack/react-form": "^1.0.5",
     "@uiw/react-codemirror": "^4.23.6",
     "@xyflow/react": "^12.3.2",
     "aws4fetch": "^1.0.18",

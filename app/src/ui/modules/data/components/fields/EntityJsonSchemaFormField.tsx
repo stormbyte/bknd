@@ -1,8 +1,8 @@
-import type { FieldApi } from "@tanstack/react-form";
 import type { EntityData, JsonSchemaField } from "data";
 import * as Formy from "ui/components/form/Formy";
 import { FieldLabel } from "ui/components/form/Formy";
 import { JsonSchemaForm } from "ui/components/form/json-schema";
+import type { TFieldApi } from "ui/modules/data/components/EntityForm";
 
 export function EntityJsonSchemaFormField({
    fieldApi,
@@ -11,7 +11,7 @@ export function EntityJsonSchemaFormField({
    disabled,
    ...props
 }: {
-   fieldApi: FieldApi<any, any>;
+   fieldApi: TFieldApi;
    field: JsonSchemaField;
    data?: EntityData;
    disabled?: boolean;
