@@ -16,7 +16,6 @@ import ModalTest from "../../routes/test/tests/modal-test";
 import QueryJsonFormTest from "../../routes/test/tests/query-jsonform";
 import DropdownTest from "./tests/dropdown-test";
 import DropzoneElementTest from "./tests/dropzone-element-test";
-import EntityFieldsForm from "./tests/entity-fields-form";
 import FlowsTest from "./tests/flows-test";
 import JsonSchemaForm3 from "./tests/json-schema-form3";
 import JsonFormTest from "./tests/jsonform-test";
@@ -42,7 +41,6 @@ const tests = {
    SqlAiTest,
    SortableTest,
    ReactHookErrors,
-   EntityFieldsForm,
    FlowsTest,
    AppShellAccordionsTest,
    SwaggerTest,
