@@ -48,7 +48,7 @@ export const NavLink = <E extends React.ElementType = "a">({
       <Tag
          {...otherProps}
          className={twMerge(
-            "px-6 py-2 [&.active]:bg-muted [&.active]:hover:bg-primary/15 hover:bg-primary/5 flex flex-row items-center rounded-full gap-2.5 link",
+            "px-6 py-2 [&.active]:bg-muted [&.active]:hover:bg-primary/15 hover:bg-primary/5 flex flex-row items-center rounded-full gap-2.5 link transition-colors",
             disabled && "opacity-50 cursor-not-allowed",
             className,
          )}
@@ -80,7 +80,7 @@ export function Main({ children }) {
          data-shell="main"
          className={twMerge(
             "flex flex-col flex-grow w-1 flex-shrink-1",
-            sidebar.open && "max-w-[calc(100%-350px)]",
+            sidebar.open && "md:max-w-[calc(100%-350px)]",
          )}
       >
          {children}

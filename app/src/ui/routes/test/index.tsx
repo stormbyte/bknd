@@ -26,9 +26,11 @@ import ReactFlowTest from "./tests/reactflow-test";
 import SchemaTest from "./tests/schema-test";
 import SortableTest from "./tests/sortable-test";
 import { SqlAiTest } from "./tests/sql-ai-test";
+import Themes from "./tests/themes";
 
 const tests = {
    DropdownTest,
+   Themes,
    ModalTest,
    JsonFormTest,
    FlowFormTest,

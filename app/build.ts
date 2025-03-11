@@ -46,10 +46,18 @@ if (types && !watch) {
    buildTypes();
 }
 
+function banner(title: string) {
+   console.log("");
+   console.log("=".repeat(40));
+   console.log(title.toUpperCase());
+   console.log("-".repeat(40));
+}
+
 /**
  * Building backend and general API
  */
 async function buildApi() {
+   banner("Building API");
    await tsup.build({
       minify,
       sourcemap,
@@ -109,6 +117,7 @@ async function buildUi() {
       },
    } satisfies tsup.Options;
 
+   banner("Building UI");
    await tsup.build({
       ...base,
       entry: ["src/ui/index.ts", "src/ui/main.css", "src/ui/styles.css"],
@@ -119,6 +128,7 @@ async function buildUi() {
       },
    });
 
+   banner("Building Client");
    await tsup.build({
       ...base,
       entry: ["src/ui/client/index.ts"],
@@ -136,6 +146,7 @@ async function buildUi() {
  * - ui/client is external, and after built replaced with "bknd/client"
  */
 async function buildUiElements() {
+   banner("Building UI Elements");
    await tsup.build({
       minify,
       sourcemap,
@@ -205,6 +216,7 @@ function baseConfig(adapter: string, overrides: Partial<tsup.Options> = {}): tsu
 }
 
 async function buildAdapters() {
+   banner("Building Adapters");
    // base adapter handles
    await tsup.build({
       ...baseConfig(""),

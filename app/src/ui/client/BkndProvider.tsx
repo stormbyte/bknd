@@ -101,11 +101,13 @@ export function BkndProvider({
       }
 
       startTransition(() => {
-         setSchema(newSchema);
-         setWithSecrets(_includeSecrets);
-         setFetched(true);
-         set_local_version((v) => v + 1);
-         fetching.current = Fetching.None;
+         document.startViewTransition(() => {
+            setSchema(newSchema);
+            setWithSecrets(_includeSecrets);
+            setFetched(true);
+            set_local_version((v) => v + 1);
+            fetching.current = Fetching.None;
+         });
       });
    }
 
