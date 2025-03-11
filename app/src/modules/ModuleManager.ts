@@ -220,7 +220,8 @@ export class ModuleManager {
 
    private repo() {
       return this.__em.repo(__bknd, {
-         silent: !debug_modules,
+         // to prevent exceptions when table doesn't exist
+         silent: true,
       });
    }
 

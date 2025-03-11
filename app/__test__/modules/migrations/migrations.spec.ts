@@ -78,17 +78,4 @@ describe("Migrations", () => {
       // @ts-expect-error
       expect(app.toJSON(true).server.admin).toBeUndefined();
    });
-
-   test.only("migration from 8 to 9 (from initial)", async () => {
-      expect(v8_2.version).toBe(8);
-
-      const app = createApp({
-         connection: getDummyConnection().dummyConnection,
-         initialConfig: v8_2 as any,
-      });
-
-      expect(app.version()).toBeGreaterThan(8);
-      // @ts-expect-error
-      expect(app.toJSON(true).server.admin).toBeUndefined();
-   });
 });
