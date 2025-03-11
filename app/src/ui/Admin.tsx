@@ -22,7 +22,7 @@ export default function Admin({
    config,
 }: BkndAdminProps) {
    const Component = (
-      <BkndProvider options={config} fallback={<Skeleton />}>
+      <BkndProvider options={config} fallback={<Skeleton theme={config?.theme} />}>
          <AdminInternal />
       </BkndProvider>
    );
