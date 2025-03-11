@@ -8,12 +8,12 @@ export {
    type StorageAdapter,
    type FileMeta,
    type FileListObject,
-   type StorageConfig
+   type StorageConfig,
 } from "./storage/Storage";
 import type { StorageAdapter } from "./storage/Storage";
 import {
    type CloudinaryConfig,
-   StorageCloudinaryAdapter
+   StorageCloudinaryAdapter,
 } from "./storage/adapters/StorageCloudinaryAdapter";
 import { type S3AdapterConfig, StorageS3Adapter } from "./storage/adapters/StorageS3Adapter";
 
@@ -30,7 +30,7 @@ export const MediaAdapterRegistry = new Registry<{
    schema: TObject;
 }>((cls: ClassThatImplements<StorageAdapter>) => ({
    cls,
-   schema: cls.prototype.getSchema() as TObject
+   schema: cls.prototype.getSchema() as TObject,
 }))
    .register("s3", StorageS3Adapter)
    .register("cloudinary", StorageCloudinaryAdapter);
@@ -38,10 +38,10 @@ export const MediaAdapterRegistry = new Registry<{
 export const Adapters = {
    s3: {
       cls: StorageS3Adapter,
-      schema: StorageS3Adapter.prototype.getSchema()
+      schema: StorageS3Adapter.prototype.getSchema(),
    },
    cloudinary: {
       cls: StorageCloudinaryAdapter,
-      schema: StorageCloudinaryAdapter.prototype.getSchema()
-   }
+      schema: StorageCloudinaryAdapter.prototype.getSchema(),
+   },
 } as const;

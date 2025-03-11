@@ -7,7 +7,7 @@ import {
    StringEnum,
    StringIdentifier,
    Type,
-   registerCustomTypeboxKinds
+   registerCustomTypeboxKinds,
 } from "core/utils";
 import { TRIGGERS } from "flows/flows-schema";
 import { forwardRef, useState } from "react";
@@ -19,7 +19,7 @@ import {
    type Modal2Ref,
    ModalBody,
    ModalFooter,
-   ModalTitle
+   ModalTitle,
 } from "../../../components/modal/Modal2";
 import { Step, Steps, useStepContext } from "../../../components/steps/Steps";
 
@@ -31,7 +31,7 @@ const triggerNames = Object.keys(TRIGGERS) as unknown as (keyof typeof TRIGGERS)
 const schema = Type.Object({
    name: StringIdentifier,
    trigger: StringEnum(triggerNames),
-   mode: StringEnum(["async", "sync"])
+   mode: StringEnum(["async", "sync"]),
 });
 
 export const FlowCreateModal = forwardRef<Modal2Ref>(function FlowCreateModal(props, ref) {
@@ -63,15 +63,15 @@ export function StepCreate() {
       watch,
       control,
       register,
-      formState: { isValid, errors }
+      formState: { isValid, errors },
    } = useForm({
       resolver: typeboxResolver(schema),
       defaultValues: {
          name: "",
          trigger: "manual",
-         mode: "async"
-      },
-      mode: "onSubmit"
+         mode: "async",
+      } as Static<typeof schema>,
+      mode: "onSubmit",
    });
 
    async function onSubmit(data: Static<typeof schema>) {
@@ -80,9 +80,9 @@ export function StepCreate() {
          trigger: {
             type: data.trigger,
             config: {
-               mode: data.mode
-            }
-         }
+               mode: data.mode,
+            },
+         },
       });
    }
    console.log("errors", errors);
@@ -106,7 +106,7 @@ export function StepCreate() {
                   data={[
                      { label: "Manual", value: "manual" },
                      { label: "HTTP", value: "http" },
-                     { label: "Event", value: "event" }
+                     { label: "Event", value: "event" },
                   ]}
                   control={control}
                />
@@ -115,7 +115,7 @@ export function StepCreate() {
                   name="mode"
                   data={[
                      { label: "Async", value: "async" },
-                     { label: "Sync", value: "sync" }
+                     { label: "Sync", value: "sync" },
                   ]}
                   control={control}
                />
@@ -125,7 +125,7 @@ export function StepCreate() {
          <ModalFooter
             next={{
                type: "submit",
-               disabled: !isValid
+               disabled: !isValid,
             }}
             nextLabel="Create"
             prev={{ onClick: stepBack }}

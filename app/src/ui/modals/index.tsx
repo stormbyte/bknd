@@ -12,7 +12,7 @@ const modals = {
    debug: DebugModal,
    form: SchemaFormModal,
    overlay: OverlayModal,
-   dataCreate: CreateModal
+   dataCreate: CreateModal,
 };
 
 declare module "@mantine/modals" {
@@ -28,7 +28,7 @@ export function BkndModalsProvider({ children }) {
 function open<Modal extends keyof typeof modals>(
    modal: Modal,
    innerProps: ComponentProps<(typeof modals)[Modal]>["innerProps"],
-   { title: _title, ...modalProps }: Partial<ModalProps> = {}
+   { title: _title, ...modalProps }: Partial<ModalProps> = {},
 ) {
    const title = _title ?? modals[modal].defaultTitle ?? undefined;
    const cmpModalProps = modals[modal].modalProps ?? {};
@@ -37,12 +37,12 @@ function open<Modal extends keyof typeof modals>(
       ...modalProps,
       ...cmpModalProps,
       modal,
-      innerProps
+      innerProps,
    };
    openContextModal(props);
    return {
       close: () => close(modal),
-      closeAll: $modals.closeAll
+      closeAll: $modals.closeAll,
    };
 }
 
@@ -56,5 +56,5 @@ export const bkndModals = {
    },
    open,
    close,
-   closeAll: $modals.closeAll
+   closeAll: $modals.closeAll,
 };

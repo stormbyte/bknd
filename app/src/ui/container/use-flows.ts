@@ -6,7 +6,7 @@ export function useFlows() {
 
    return {
       flows: app.flows,
-      config: app.config.flows
+      config: app.config.flows,
    };
 }
 
@@ -17,6 +17,6 @@ export function useFlow(name: string) {
 
    return {
       flow: flow!,
-      config: app.config.flows[name]
+      config: app.config.flows[name],
    };
 }

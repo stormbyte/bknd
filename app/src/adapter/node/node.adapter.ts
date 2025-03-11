@@ -24,7 +24,7 @@ export function serve({
 }: NodeBkndConfig = {}) {
    const root = path.relative(
       process.cwd(),
-      path.resolve(distPath ?? relativeDistPath ?? "./node_modules/bknd/dist", "static")
+      path.resolve(distPath ?? relativeDistPath ?? "./node_modules/bknd/dist", "static"),
    );
    if (relativeDistPath) {
       console.warn("relativeDistPath is deprecated, please use distPath instead");
@@ -41,16 +41,16 @@ export function serve({
                registerLocalMediaAdapter();
                app = await createRuntimeApp({
                   ...config,
-                  serveStatic: serveStatic({ root })
+                  serveStatic: serveStatic({ root }),
                });
             }
 
             return app.fetch(req);
-         }
+         },
       },
       (connInfo) => {
          console.log(`Server is running on http://localhost:${connInfo.port}`);
          listener?.(connInfo);
-      }
+      },
    );
 }

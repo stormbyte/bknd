@@ -13,7 +13,7 @@ import {
    attachServeStatic,
    getConfigPath,
    getConnectionCredentialsFromEnv,
-   startServer
+   startServer,
 } from "./platform";
 
 dotenv.config();
@@ -26,27 +26,28 @@ export const run: CliCommand = (program) => {
          new Option("-p, --port <port>", "port to run on")
             .env("PORT")
             .default(config.server.default_port)
-            .argParser((v) => Number.parseInt(v))
+            .argParser((v) => Number.parseInt(v)),
       )
       .addOption(
          new Option("-m, --memory", "use in-memory database").conflicts([
             "config",
             "db-url",
-            "db-token"
-         ])
+            "db-token",
+         ]),
       )
       .addOption(new Option("-c, --config <config>", "config file"))
       .addOption(
          new Option("--db-url <db>", "database url, can be any valid libsql url").conflicts(
-            "config"
-         )
+            "config",
+         ),
       )
       .addOption(new Option("--db-token <db>", "database token").conflicts("config"))
       .addOption(
          new Option("--server <server>", "server type")
             .choices(PLATFORMS)
-            .default(isBun ? "bun" : "node")
+            .default(isBun ? "bun" : "node"),
       )
+      .addOption(new Option("--no-open", "don't open browser window on start"))
       .action(action);
 };
 
@@ -76,7 +77,7 @@ async function makeApp(config: MakeAppConfig) {
             await config.onBuilt(app);
          }
       },
-      "sync"
+      "sync",
    );
 
    await app.build();
@@ -95,7 +96,7 @@ export async function makeConfigApp(config: CliBkndConfig, platform?: Platform) 
 
          await config.onBuilt?.(app);
       },
-      "sync"
+      "sync",
    );
 
    await config.beforeBuild?.(app);
@@ -110,6 +111,7 @@ async function action(options: {
    dbUrl?: string;
    dbToken?: string;
    server: Platform;
+   open?: boolean;
 }) {
    colorizeConsole(console);
    const configFilePath = await getConfigPath(options.config);
@@ -141,9 +143,9 @@ async function action(options: {
       console.info("Using connection", c.cyan(connection.url));
       app = await makeApp({
          connection,
-         server: { platform: options.server }
+         server: { platform: options.server },
       });
    }
 
-   await startServer(options.server, app, { port: options.port });
+   await startServer(options.server, app, { port: options.port, open: options.open });
 }

@@ -5,5 +5,5 @@ export const TemplateMediaMeta = {
    id: "template-media",
    title: "Attach Media",
    description: "Attach media to an entity",
-   Icon: TbPhoto
+   Icon: TbPhoto,
 } satisfies StepTemplate;

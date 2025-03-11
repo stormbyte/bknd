@@ -10,12 +10,8 @@ import { FieldWrapper } from "./FieldWrapper";
 import { useDerivedFieldContext, useFormValue } from "./Form";
 import { coerce, getMultiSchema, getMultiSchemaMatched, isEqual, suffixPath } from "./utils";
 
-export const ArrayField = ({
-   path = "",
-   schema: _schema
-}: { path?: string; schema?: JsonSchema }) => {
-   const { setValue, pointer, required, ...ctx } = useDerivedFieldContext(path, _schema);
-   const schema = _schema ?? ctx.schema;
+export const ArrayField = ({ path = "" }: { path?: string }) => {
+   const { setValue, pointer, required, schema, ...ctx } = useDerivedFieldContext(path);
    if (!schema || typeof schema === "undefined") return `ArrayField(${path}): no schema ${pointer}`;
 
    // if unique items with enum
@@ -55,7 +51,7 @@ export const ArrayField = ({
 };
 
 const ArrayItem = memo(({ path, index, schema }: any) => {
-   const { value, ...ctx } = useDerivedFieldContext(path, schema, (ctx) => {
+   const { value, ...ctx } = useDerivedFieldContext(path, (ctx) => {
       return ctx.value?.[index];
    });
    const itemPath = suffixPath(path, index);
@@ -76,7 +72,7 @@ const ArrayItem = memo(({ path, index, schema }: any) => {
 
    const DeleteButton = useMemo(
       () => <IconButton Icon={IconTrash} onClick={() => handleDelete(itemPath)} size="sm" />,
-      [itemPath]
+      [itemPath],
    );
 
    return (
@@ -99,7 +95,7 @@ const ArrayIterator = memo(
    ({ name, children }: any) => {
       return children(useFormValue(name));
    },
-   (prev, next) => prev.value?.length === next.value?.length
+   (prev, next) => prev.value?.length === next.value?.length,
 );
 
 const ArrayAdd = ({ schema, path }: { schema: JsonSchema; path: string }) => {
@@ -107,7 +103,7 @@ const ArrayAdd = ({ schema, path }: { schema: JsonSchema; path: string }) => {
       setValue,
       value: { currentIndex },
       ...ctx
-   } = useDerivedFieldContext(path, schema, (ctx) => {
+   } = useDerivedFieldContext(path, (ctx) => {
       return { currentIndex: ctx.value?.length ?? 0 };
    });
    const itemsMultiSchema = getMultiSchema(schema.items);
@@ -121,11 +117,11 @@ const ArrayAdd = ({ schema, path }: { schema: JsonSchema; path: string }) => {
       return (
          <Dropdown
             dropdownWrapperProps={{
-               className: "min-w-0"
+               className: "min-w-0",
             }}
             items={itemsMultiSchema.map((s, i) => ({
                label: s!.title ?? `Option ${i + 1}`,
-               onClick: () => handleAdd(ctx.lib.getTemplate(undefined, s!))
+               onClick: () => handleAdd(ctx.lib.getTemplate(undefined, s!)),
             }))}
             onClickItem={console.log}
          >

@@ -5,7 +5,7 @@ import {
    type StrictRJSFSchema,
    ariaDescribedByIds,
    examplesId,
-   getInputProps
+   getInputProps,
 } from "@rjsf/utils";
 import { type ChangeEvent, type FocusEvent, useCallback } from "react";
 import { Label } from "./FieldTemplate";
@@ -19,7 +19,7 @@ import { Label } from "./FieldTemplate";
 export default function BaseInputTemplate<
    T = any,
    S extends StrictRJSFSchema = RJSFSchema,
-   F extends FormContextType = any
+   F extends FormContextType = any,
 >(props: BaseInputTemplateProps<T, S, F>) {
    const {
       id,
@@ -52,7 +52,7 @@ export default function BaseInputTemplate<
    }
    const inputProps = {
       ...rest,
-      ...getInputProps<T, S, F>(schema, type, options)
+      ...getInputProps<T, S, F>(schema, type, options),
    };
 
    let inputValue;
@@ -65,15 +65,15 @@ export default function BaseInputTemplate<
    const _onChange = useCallback(
       ({ target: { value } }: ChangeEvent<HTMLInputElement>) =>
          onChange(value === "" ? options.emptyValue : value),
-      [onChange, options]
+      [onChange, options],
    );
    const _onBlur = useCallback(
       ({ target }: FocusEvent<HTMLInputElement>) => onBlur(id, target && target.value),
-      [onBlur, id]
+      [onBlur, id],
    );
    const _onFocus = useCallback(
       ({ target }: FocusEvent<HTMLInputElement>) => onFocus(id, target && target.value),
-      [onFocus, id]
+      [onFocus, id],
    );
 
    const shouldHideLabel =
@@ -108,7 +108,7 @@ export default function BaseInputTemplate<
                   .concat(
                      schema.default && !schema.examples.includes(schema.default)
                         ? ([schema.default] as string[])
-                        : []
+                        : [],
                   )
                   .map((example: any) => {
                      return <option key={example} value={example} />;

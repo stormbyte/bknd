@@ -14,13 +14,13 @@ export async function serveStatic(server: Platform): Promise<MiddlewareHandler> 
          const m = await import("@hono/node-server/serve-static");
          return m.serveStatic({
             // somehow different for node
-            root: getRelativeDistPath() + "/static"
+            root: getRelativeDistPath() + "/static",
          });
       }
       case "bun": {
          const m = await import("hono/bun");
          return m.serveStatic({
-            root: path.resolve(getRelativeDistPath(), "static")
+            root: path.resolve(getRelativeDistPath(), "static"),
          });
       }
    }
@@ -30,7 +30,11 @@ export async function attachServeStatic(app: any, platform: Platform) {
    app.module.server.client.get(config.server.assets_path + "*", await serveStatic(platform));
 }
 
-export async function startServer(server: Platform, app: any, options: { port: number }) {
+export async function startServer(
+   server: Platform,
+   app: any,
+   options: { port: number; open?: boolean },
+) {
    const port = options.port;
    console.log(`Using ${server} serve`);
 
@@ -40,14 +44,14 @@ export async function startServer(server: Platform, app: any, options: { port: n
          const serve = await import("@hono/node-server").then((m) => m.serve);
          serve({
             fetch: (req) => app.fetch(req),
-            port
+            port,
          });
          break;
       }
       case "bun": {
          Bun.serve({
             fetch: (req) => app.fetch(req),
-            port
+            port,
          });
          break;
       }
@@ -55,7 +59,9 @@ export async function startServer(server: Platform, app: any, options: { port: n
 
    const url = `http://localhost:${port}`;
    console.info("Server listening on", url);
-   await open(url);
+   if (options.open) {
+      await open(url);
+   }
 }
 
 export async function getConfigPath(filePath?: string) {

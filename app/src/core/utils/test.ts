@@ -2,17 +2,17 @@ type ConsoleSeverity = "log" | "warn" | "error";
 const _oldConsoles = {
    log: console.log,
    warn: console.warn,
-   error: console.error
+   error: console.error,
 };
 
 export async function withDisabledConsole<R>(
    fn: () => Promise<R>,
-   severities: ConsoleSeverity[] = ["log", "warn", "error"]
+   severities: ConsoleSeverity[] = ["log", "warn", "error"],
 ): Promise<R> {
    const _oldConsoles = {
       log: console.log,
       warn: console.warn,
-      error: console.error
+      error: console.error,
    };
    disableConsoleLog(severities);
    const enable = () => {
@@ -57,6 +57,6 @@ export function formatMemoryUsage() {
       rss: usage.rss / 1024 / 1024,
       heapUsed: usage.heapUsed / 1024 / 1024,
       external: usage.external / 1024 / 1024,
-      arrayBuffers: usage.arrayBuffers / 1024 / 1024
+      arrayBuffers: usage.arrayBuffers / 1024 / 1024,
    };
 }

@@ -39,8 +39,8 @@ export class TaskConnection {
          target: this.target.name,
          config: {
             ...this.config,
-            condition: this.config.condition?.toJSON()
-         }
+            condition: this.config.condition?.toJSON(),
+         },
       });
    }
 }
@@ -49,7 +49,7 @@ export class Condition {
    private constructor(
       public type: "success" | "error" | "matches",
       public path: string = "",
-      public value: any = undefined
+      public value: any = undefined,
    ) {}
 
    static default() {
@@ -96,7 +96,7 @@ export class Condition {
       return {
          type: this.type,
          path: this.path.length === 0 ? undefined : this.path,
-         value: this.value
+         value: this.value,
       };
    }
 

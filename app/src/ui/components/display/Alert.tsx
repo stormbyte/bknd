@@ -22,11 +22,13 @@ const Base: React.FC<AlertProps> = ({
          {...props}
          className={twMerge(
             "flex flex-row items-center dark:bg-amber-300/20 bg-amber-200 p-4",
-            className
+            className,
          )}
       >
-         {title && <b className="mr-2">{title}:</b>}
-         {message || children}
+         <p>
+            {title && <b>{title}: </b>}
+            {message || children}
+         </p>
       </div>
    ) : null;
 
@@ -50,5 +52,5 @@ export const Alert = {
    Warning,
    Exception,
    Success,
-   Info
+   Info,
 };

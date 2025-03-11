@@ -12,7 +12,7 @@ export type D1ConnectionConfig = {
 class CustomD1Dialect extends D1Dialect {
    override createIntrospector(db: Kysely<any>): DatabaseIntrospector {
       return new SqliteIntrospector(db, {
-         excludeTables: ["_cf_KV"]
+         excludeTables: ["_cf_KV"],
       });
    }
 }
@@ -23,7 +23,7 @@ export class D1Connection extends SqliteConnection {
 
       const kysely = new Kysely({
          dialect: new CustomD1Dialect({ database: config.binding }),
-         plugins
+         plugins,
       });
       super(kysely, {}, plugins);
    }
@@ -37,7 +37,7 @@ export class D1Connection extends SqliteConnection {
    }
 
    protected override async batch<Queries extends QB[]>(
-      queries: [...Queries]
+      queries: [...Queries],
    ): Promise<{
       [K in keyof Queries]: Awaited<ReturnType<Queries[K]["execute"]>>;
    }> {
@@ -47,7 +47,7 @@ export class D1Connection extends SqliteConnection {
          queries.map((q) => {
             const { sql, parameters } = q.compile();
             return db.prepare(sql).bind(...parameters);
-         })
+         }),
       );
 
       // let it run through plugins

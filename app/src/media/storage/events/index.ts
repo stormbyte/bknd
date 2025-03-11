@@ -15,7 +15,7 @@ export class FileUploadedEvent extends Event<FileUploadedEventData, object> {
       return this.clone({
          // prepending result, so original is always kept
          ...data,
-         ...this.params
+         ...this.params,
       });
    }
 }

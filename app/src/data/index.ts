@@ -11,7 +11,7 @@ export {
    type RepoQueryIn,
    defaultQuerySchema,
    querySchema,
-   whereSchema
+   whereSchema,
 } from "./server/data-query-impl";
 
 export { Connection } from "./connection/Connection";
@@ -25,7 +25,7 @@ export { constructEntity, constructRelation } from "./schema/constructor";
 
 export const DatabaseEvents = {
    ...MutatorEvents,
-   ...RepositoryEvents
+   ...RepositoryEvents,
 };
 export { MutatorEvents, RepositoryEvents };
 

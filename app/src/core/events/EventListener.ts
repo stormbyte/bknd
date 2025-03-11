@@ -6,7 +6,7 @@ export type ListenerMode = (typeof ListenerModes)[number];
 
 export type ListenerHandler<E extends Event<any, any>> = (
    event: E,
-   slug: string
+   slug: string,
 ) => E extends Event<any, infer R> ? R | Promise<R | void> : never;
 
 export class EventListener<E extends Event = Event> {
@@ -20,7 +20,7 @@ export class EventListener<E extends Event = Event> {
       event: EventClass,
       handler: ListenerHandler<E>,
       mode: ListenerMode = "async",
-      id?: string
+      id?: string,
    ) {
       this.event = event;
       this.handler = handler;

@@ -11,7 +11,7 @@ export class SubFlowTask<Output extends Record<string, any>> extends Task<
    static override schema = Type.Object({
       flow: Type.Any(),
       input: Type.Optional(dynamic(Type.Any(), JSON.parse)),
-      loop: Type.Optional(Type.Boolean())
+      loop: Type.Optional(Type.Boolean()),
    });
 
    async execute() {

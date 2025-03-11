@@ -8,7 +8,7 @@ import {
    enumOptionsIsSelected,
    enumOptionsSelectValue,
    enumOptionsValueForIndex,
-   optionId
+   optionId,
 } from "@rjsf/utils";
 import { type ChangeEvent, type FocusEvent, useCallback } from "react";
 
@@ -20,7 +20,7 @@ import { type ChangeEvent, type FocusEvent, useCallback } from "react";
 function CheckboxesWidget<
    T = any,
    S extends StrictRJSFSchema = RJSFSchema,
-   F extends FormContextType = any
+   F extends FormContextType = any,
 >({
    id,
    disabled,
@@ -30,20 +30,20 @@ function CheckboxesWidget<
    readonly,
    onChange,
    onBlur,
-   onFocus
+   onFocus,
 }: WidgetProps<T, S, F>) {
    const checkboxesValues = Array.isArray(value) ? value : [value];
 
    const handleBlur = useCallback(
       ({ target }: FocusEvent<HTMLInputElement>) =>
          onBlur(id, enumOptionsValueForIndex<S>(target?.value, enumOptions, emptyValue)),
-      [onBlur, id]
+      [onBlur, id],
    );
 
    const handleFocus = useCallback(
       ({ target }: FocusEvent<HTMLInputElement>) =>
          onFocus(id, enumOptionsValueForIndex<S>(target?.value, enumOptions, emptyValue)),
-      [onFocus, id]
+      [onFocus, id],
    );
    return (
       <div className="checkboxes" id={id}>

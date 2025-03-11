@@ -9,7 +9,7 @@ import type {
    StrictRJSFSchema,
    UiSchema,
    ValidationData,
-   ValidatorType
+   ValidatorType,
 } from "@rjsf/utils";
 import { toErrorSchema } from "@rjsf/utils";
 
@@ -33,7 +33,7 @@ export class RJSFTypeboxValidator<T = any, S extends StrictRJSFSchema = RJSFSche
 
       return {
          errors: [...Errors(tbSchema, formData)],
-         validationError: null as any
+         validationError: null as any,
       };
    }
 
@@ -42,7 +42,7 @@ export class RJSFTypeboxValidator<T = any, S extends StrictRJSFSchema = RJSFSche
       schema: S,
       customValidate?: CustomValidator,
       transformErrors?: ErrorTransformer,
-      uiSchema?: UiSchema
+      uiSchema?: UiSchema,
    ): ValidationData<T> {
       const { errors } = this.rawValidation(schema, formData);
 
@@ -54,13 +54,13 @@ export class RJSFTypeboxValidator<T = any, S extends StrictRJSFSchema = RJSFSche
             message: error.message,
             property: "." + schemaLocation,
             schemaPath: error.path,
-            stack: error.message
+            stack: error.message,
          };
       });
 
       return {
          errors: transformedErrors,
-         errorSchema: toErrorSchema(transformedErrors)
+         errorSchema: toErrorSchema(transformedErrors),
       } as any;
    }
 

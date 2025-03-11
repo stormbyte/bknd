@@ -24,7 +24,7 @@ window.__vite_plugin_react_preamble_installed__ = true
 </script>
 <script type="module" src="/@vite/client"></script>
 ${addBkndContext ? "<!-- BKND_CONTEXT -->" : ""}
-</head>`
+</head>`,
    );
 }
 
@@ -39,12 +39,12 @@ async function createApp(config: ViteBkndConfig = {}, env?: any) {
                : {
                     html: config.html,
                     forceDev: config.forceDev ?? {
-                       mainPath: "/src/main.tsx"
-                    }
+                       mainPath: "/src/main.tsx",
+                    },
                  },
-         serveStatic: ["/assets/*", serveStatic({ root: config.distPath ?? "./" })]
+         serveStatic: ["/assets/*", serveStatic({ root: config.distPath ?? "./" })],
       },
-      env
+      env,
    );
 }
 
@@ -53,7 +53,7 @@ export function serveFresh(config: Omit<ViteBkndConfig, "mode"> = {}) {
       async fetch(request: Request, env: any, ctx: ExecutionContext) {
          const app = await createApp(config, env);
          return app.fetch(request, env, ctx);
-      }
+      },
    };
 }
 
@@ -66,7 +66,7 @@ export function serveCached(config: Omit<ViteBkndConfig, "mode"> = {}) {
          }
 
          return app.fetch(request, env, ctx);
-      }
+      },
    };
 }
 
@@ -77,6 +77,6 @@ export function serve({ mode, ...config }: ViteBkndConfig = {}) {
 export function devServer(options: DevServerOptions) {
    return honoViteDevServer({
       ...devServerConfig,
-      ...options
+      ...options,
    });
 }

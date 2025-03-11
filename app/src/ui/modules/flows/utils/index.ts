@@ -29,7 +29,7 @@ export function getFlowNodes(flow: Flow): Node[] {
       type: "trigger",
       position: { x: 0, y: 0 },
       data: { trigger: flow.trigger },
-      dragHandle: ".drag-handle"
+      dragHandle: ".drag-handle",
    });
    console.log("adding node", { id: "trigger" });
 
@@ -47,7 +47,7 @@ export function getFlowNodes(flow: Flow): Node[] {
             type: task.type,
             position: { x: xs[j]!, y: (i + 1) * spacing.y },
             data: { task, state: { i: 0, isRespondingTask, isStartTask, event: undefined } },
-            dragHandle: ".drag-handle"
+            dragHandle: ".drag-handle",
          });
       });
    });
@@ -63,7 +63,7 @@ export function getFlowEdges(flow: Flow): Edge[] {
    edges.push({
       id: `trigger-${startTask.name}${new Date().getTime()}`,
       source: "trigger",
-      target: startTask.name
+      target: startTask.name,
       //type: "",
    });
 
@@ -72,7 +72,7 @@ export function getFlowEdges(flow: Flow): Edge[] {
       edges.push({
          id: `${c.source.name}-${c.target.name}${new Date().getTime()}`,
          source: c.source.name,
-         target: c.target.name
+         target: c.target.name,
          //type: "",
       });
    });
@@ -84,6 +84,6 @@ export function getNodeTypes(flow: Flow) {
       trigger: TriggerComponent,
       render: RenderTaskComponent,
       log: TaskComponent,
-      fetch: TaskComponent
+      fetch: TaskComponent,
    };
 }

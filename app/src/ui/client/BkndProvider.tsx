@@ -24,14 +24,14 @@ export type { TSchemaActions };
 enum Fetching {
    None = 0,
    Schema = 1,
-   Secrets = 2
+   Secrets = 2,
 }
 
 export function BkndProvider({
    includeSecrets = false,
    adminOverride,
    children,
-   fallback = null
+   fallback = null,
 }: { includeSecrets?: boolean; children: any; fallback?: React.ReactNode } & Pick<
    BkndContext,
    "adminOverride"
@@ -41,25 +41,35 @@ export function BkndProvider({
       useState<Pick<BkndContext, "version" | "schema" | "config" | "permissions" | "fallback">>();
    const [fetched, setFetched] = useState(false);
    const [error, setError] = useState<boolean>();
-   const errorShown = useRef<boolean>();
+   const errorShown = useRef<boolean>(false);
    const fetching = useRef<Fetching>(Fetching.None);
    const [local_version, set_local_version] = useState(0);
    const api = useApi();
 
    async function reloadSchema() {
-      await fetchSchema(includeSecrets, true);
+      await fetchSchema(includeSecrets, {
+         force: true,
+         fresh: true,
+      });
    }
 
-   async function fetchSchema(_includeSecrets: boolean = false, force?: boolean) {
+   async function fetchSchema(
+      _includeSecrets: boolean = false,
+      opts?: {
+         force?: boolean;
+         fresh?: boolean;
+      },
+   ) {
       const requesting = withSecrets ? Fetching.Secrets : Fetching.Schema;
       if (fetching.current === requesting) return;
 
-      if (withSecrets && !force) return;
+      if (withSecrets && opts?.force !== true) return;
       fetching.current = requesting;
 
       const res = await api.system.readSchema({
          config: true,
-         secrets: _includeSecrets
+         secrets: _includeSecrets,
+         fresh: opts?.fresh,
       });
 
       if (!res.ok) {
@@ -80,22 +90,24 @@ export function BkndProvider({
               schema: getDefaultSchema(),
               config: getDefaultConfig(),
               permissions: [],
-              fallback: true
+              fallback: true,
            } as any);
 
       if (adminOverride) {
          newSchema.config.server.admin = {
             ...newSchema.config.server.admin,
-            ...adminOverride
+            ...adminOverride,
          };
       }
 
       startTransition(() => {
-         setSchema(newSchema);
-         setWithSecrets(_includeSecrets);
-         setFetched(true);
-         set_local_version((v) => v + 1);
-         fetching.current = Fetching.None;
+         document.startViewTransition(() => {
+            setSchema(newSchema);
+            setWithSecrets(_includeSecrets);
+            setFetched(true);
+            set_local_version((v) => v + 1);
+            fetching.current = Fetching.None;
+         });
       });
    }
 

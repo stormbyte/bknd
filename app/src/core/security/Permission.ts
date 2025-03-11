@@ -5,7 +5,7 @@ export class Permission<Name extends string = string> {
 
    toJSON() {
       return {
-         name: this.name
+         name: this.name,
       };
    }
 }

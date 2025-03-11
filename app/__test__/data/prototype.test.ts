@@ -12,7 +12,7 @@ import {
    NumberField,
    OneToOneRelation,
    PolymorphicRelation,
-   TextField
+   TextField,
 } from "../../src/data";
 import { DummyConnection } from "../../src/data/connection/DummyConnection";
 import {
@@ -31,7 +31,7 @@ import {
    medium,
    number,
    relation,
-   text
+   text,
 } from "../../src/data/prototype";
 import { MediaField } from "../../src/media/MediaField";
 
@@ -54,7 +54,7 @@ describe("prototype", () => {
          name: text(),
          bio: text(),
          age: number(),
-         some: number()
+         some: number(),
       });
       type db = {
          users: Schema<typeof users>;
@@ -70,7 +70,7 @@ describe("prototype", () => {
          name: text({ default_value: "hello" }).required(),
          bio: text(),
          age: number(),
-         some: number().required()
+         some: number().required(),
       });
 
       const obj: InsertSchema<typeof user> = { name: "yo", some: 1 };
@@ -83,12 +83,12 @@ describe("prototype", () => {
          new TextField("title", { required: true }),
          new TextField("content"),
          new DateField("created_at", {
-            type: "datetime"
+            type: "datetime",
          }),
          // @ts-ignore
          new MediaField("images", { entity: "posts" }),
          // @ts-ignore
-         new MediaField("cover", { entity: "posts", max_items: 1 })
+         new MediaField("cover", { entity: "posts", max_items: 1 }),
       ]);
 
       const posts2 = entity("posts", {
@@ -96,7 +96,7 @@ describe("prototype", () => {
          content: text(),
          created_at: datetime(),
          images: media(),
-         cover: medium()
+         cover: medium(),
       });
 
       type Posts = Schema<typeof posts2>;
@@ -117,11 +117,11 @@ describe("prototype", () => {
                type: "objects",
                values: [
                   { value: "active", label: "Active" },
-                  { value: "inactive", label: "Not active" }
-               ]
-            }
+                  { value: "inactive", label: "Not active" },
+               ],
+            },
          }),
-         new JsonField("json")
+         new JsonField("json"),
       ]);
 
       const test2 = entity("test", {
@@ -134,10 +134,10 @@ describe("prototype", () => {
          status: enumm<"active" | "inactive">({
             enum: [
                { value: "active", label: "Active" },
-               { value: "inactive", label: "Not active" }
-            ]
+               { value: "inactive", label: "Not active" },
+            ],
          }),
-         json: json<{ some: number }>()
+         json: json<{ some: number }>(),
       });
 
       expect(test.toJSON()).toEqual(test2.toJSON());
@@ -161,12 +161,12 @@ describe("prototype", () => {
          // category has single image
          new PolymorphicRelation(categories, _media, {
             mappedBy: "image",
-            targetCardinality: 1
+            targetCardinality: 1,
          }),
 
          // post has multiple images
          new PolymorphicRelation(posts, _media, { mappedBy: "images" }),
-         new PolymorphicRelation(posts, _media, { mappedBy: "cover", targetCardinality: 1 })
+         new PolymorphicRelation(posts, _media, { mappedBy: "cover", targetCardinality: 1 }),
       ];
 
       const relations2 = [
@@ -180,7 +180,7 @@ describe("prototype", () => {
          relation(categories).polyToOne(_media, { mappedBy: "image" }),
 
          relation(posts).polyToMany(_media, { mappedBy: "images" }),
-         relation(posts).polyToOne(_media, { mappedBy: "cover" })
+         relation(posts).polyToOne(_media, { mappedBy: "cover" }),
       ];
 
       expect(relations.map((r) => r.toJSON())).toEqual(relations2.map((r) => r.toJSON()));
@@ -194,21 +194,21 @@ describe("prototype", () => {
          posts,
          categories,
          {
-            connectionTableMappedName: "custom"
+            connectionTableMappedName: "custom",
          },
-         [new TextField("description")]
+         [new TextField("description")],
       );
 
       const fields = {
-         description: text()
+         description: text(),
       };
       let o: FieldSchema<typeof fields>;
       const rel2 = relation(posts).manyToMany(
          categories,
          {
-            connectionTableMappedName: "custom"
+            connectionTableMappedName: "custom",
          },
-         fields
+         fields,
       );
 
       expect(rel.toJSON()).toEqual(rel2.toJSON());
@@ -216,11 +216,11 @@ describe("prototype", () => {
 
    test("devexample", async () => {
       const users = entity("users", {
-         username: text()
+         username: text(),
       });
 
       const comments = entity("comments", {
-         content: text()
+         content: text(),
       });
 
       const posts = entity("posts", {
@@ -228,17 +228,17 @@ describe("prototype", () => {
          content: text(),
          created_at: datetime(),
          images: media(),
-         cover: medium()
+         cover: medium(),
       });
 
       const categories = entity("categories", {
          name: text(),
          description: text(),
-         image: medium()
+         image: medium(),
       });
 
       const settings = entity("settings", {
-         theme: text()
+         theme: text(),
       });
 
       const test = entity("test", {
@@ -251,10 +251,10 @@ describe("prototype", () => {
          status: enumm<"active" | "inactive">({
             enum: [
                { value: "active", label: "Active" },
-               { value: "inactive", label: "Not active" }
-            ]
+               { value: "inactive", label: "Not active" },
+            ],
          }),
-         json: json<{ some: number }>()
+         json: json<{ some: number }>(),
       });
 
       const _media = entity("media", {});
@@ -270,7 +270,7 @@ describe("prototype", () => {
          relation(users).oneToOne(settings),
 
          relation(comments).manyToOne(users, { required: true }),
-         relation(comments).manyToOne(posts, { required: true })
+         relation(comments).manyToOne(posts, { required: true }),
       ];
 
       const obj: Schema<typeof test> = {} as any;
@@ -281,12 +281,12 @@ describe("prototype", () => {
          {
             posts: entity("posts", { name: text(), slug: text().required() }),
             comments: entity("comments", { some: text() }),
-            users: entity("users", { email: text() })
+            users: entity("users", { email: text() }),
          },
          ({ relation, index }, { posts, comments, users }) => {
             relation(posts).manyToOne(comments).manyToOne(users);
             index(posts).on(["name"]).on(["slug"], true);
-         }
+         },
       );
 
       type LocalDb = (typeof _em)["DB"];
@@ -294,7 +294,7 @@ describe("prototype", () => {
       const es = [
          new Entity("posts", [new TextField("name"), new TextField("slug", { required: true })]),
          new Entity("comments", [new TextField("some")]),
-         new Entity("users", [new TextField("email")])
+         new Entity("users", [new TextField("email")]),
       ];
       const _em2 = new EntityManager(
          es,
@@ -302,8 +302,8 @@ describe("prototype", () => {
          [new ManyToOneRelation(es[0], es[1]), new ManyToOneRelation(es[0], es[2])],
          [
             new EntityIndex(es[0], [es[0].field("name")!]),
-            new EntityIndex(es[0], [es[0].field("slug")!], true)
-         ]
+            new EntityIndex(es[0], [es[0].field("slug")!], true),
+         ],
       );
 
       // @ts-ignore

@@ -5,7 +5,7 @@ import {
    type DraggableRubric,
    type DraggableStateSnapshot,
    Droppable,
-   type DroppableProps
+   type DroppableProps,
 } from "@hello-pangea/dnd";
 import { useListState } from "@mantine/hooks";
 import { IconGripVertical } from "@tabler/icons-react";
@@ -24,7 +24,7 @@ export default function SortableTest() {
                   { id: "N", name: "Nitrogen" },
                   { id: "Y", name: "Yttrium" },
                   { id: "Ba", name: "Barium" },
-                  { id: "Ce", name: "Cerium" }
+                  { id: "Ce", name: "Cerium" },
                ]}
                onReordered={(...args) => console.log("reordered", args)}
                onChange={(data) => console.log("changed", data)}
@@ -54,7 +54,7 @@ export function SortableList({
    renderItem,
    dndProps = { droppableId: "sortable-list", direction: "vertical" },
    onReordered,
-   onChange
+   onChange,
 }: SortableListProps) {
    const [state, handlers] = useListState(data);
 

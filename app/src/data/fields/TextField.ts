@@ -19,19 +19,19 @@ export const textFieldConfigSchema = Type.Composite(
                      {
                         additionalProperties: Type.Union([
                            Type.String({ title: "String" }),
-                           Type.Number({ title: "Number" })
-                        ])
-                     }
-                  )
-               )
-            })
-         )
+                           Type.Number({ title: "Number" }),
+                        ]),
+                     },
+                  ),
+               ),
+            }),
+         ),
       }),
-      baseFieldConfigSchema
+      baseFieldConfigSchema,
    ],
    {
-      additionalProperties: false
-   }
+      additionalProperties: false,
+   },
 );
 
 export type TextFieldConfig = Static<typeof textFieldConfigSchema>;
@@ -81,7 +81,7 @@ export class TextField<Required extends true | false = false> extends Field<
    override async transformPersist(
       _value: any,
       em: EntityManager<any>,
-      context: TActionContext
+      context: TActionContext,
    ): Promise<string | undefined> {
       let value = await super.transformPersist(_value, em, context);
 
@@ -94,19 +94,19 @@ export class TextField<Required extends true | false = false> extends Field<
 
       if (this.config.maxLength && value?.length > this.config.maxLength) {
          throw new TransformPersistFailedException(
-            `Field "${this.name}" must be at most ${this.config.maxLength} character(s)`
+            `Field "${this.name}" must be at most ${this.config.maxLength} character(s)`,
          );
       }
 
       if (this.config.minLength && value?.length < this.config.minLength) {
          throw new TransformPersistFailedException(
-            `Field "${this.name}" must be at least ${this.config.minLength} character(s)`
+            `Field "${this.name}" must be at least ${this.config.minLength} character(s)`,
          );
       }
 
       if (this.config.pattern && value && !new RegExp(this.config.pattern).test(value)) {
          throw new TransformPersistFailedException(
-            `Field "${this.name}" must match the pattern ${this.config.pattern}`
+            `Field "${this.name}" must match the pattern ${this.config.pattern}`,
          );
       }
 
@@ -119,8 +119,8 @@ export class TextField<Required extends true | false = false> extends Field<
             default: this.getDefault(),
             minLength: this.config?.minLength,
             maxLength: this.config?.maxLength,
-            pattern: this.config?.pattern
-         })
+            pattern: this.config?.pattern,
+         }),
       );
    }
 }

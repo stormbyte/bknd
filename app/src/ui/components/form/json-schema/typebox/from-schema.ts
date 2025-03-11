@@ -218,7 +218,7 @@ function FromConst<T extends SConst>(T: T) {
 // ------------------------------------------------------------------
 type TFromPropertiesIsOptional<
    K extends PropertyKey,
-   R extends string | unknown
+   R extends string | unknown,
 > = unknown extends R ? true : K extends R ? false : true;
 // prettier-ignore
 // biome-ignore format:
@@ -243,13 +243,13 @@ function FromObject<T extends SObject>(T: T): TFromObject<T> {
             // biome-ignore lint: reason
             T.required && T.required.includes(K)
                ? FromSchema(T.properties[K])
-               : Type.Optional(FromSchema(T.properties[K]))
+               : Type.Optional(FromSchema(T.properties[K])),
       };
    }, {} as Type.TProperties);
 
    if ("additionalProperties" in T) {
       return Type.Object(properties, {
-         additionalProperties: FromSchema(T.additionalProperties)
+         additionalProperties: FromSchema(T.additionalProperties),
       }) as never;
    }
 

@@ -9,33 +9,33 @@ export const dataFieldsUiSchema = {
    config: {
       fillable: {
          "ui:options": {
-            wrap: true
+            wrap: true,
          },
          anyOf: [
             {},
             {
-               "ui:widget": "checkboxes"
-            }
-         ]
+               "ui:widget": "checkboxes",
+            },
+         ],
       },
       hidden: {
          "ui:options": {
-            wrap: true
+            wrap: true,
          },
          anyOf: [
             {},
             {
-               "ui:widget": "checkboxes"
-            }
-         ]
+               "ui:widget": "checkboxes",
+            },
+         ],
       },
       schema: {
-         "ui:field": "JsonField"
+         "ui:field": "JsonField",
       },
       ui_schema: {
-         "ui:field": "JsonField"
-      }
-   }
+         "ui:field": "JsonField",
+      },
+   },
 };
 
 const fieldsAnyOfValues = fieldSpecs
@@ -43,29 +43,29 @@ const fieldsAnyOfValues = fieldSpecs
    .reduce((acc, s) => {
       acc[s.type] = {
          label: s.label,
-         icon: s.icon
+         icon: s.icon,
       };
       return acc;
    }, {});
 
 const relationAnyOfValues = {
    "1:1": {
-      label: "One-to-One"
+      label: "One-to-One",
    },
    "n:1": {
-      label: "Many-to-One"
+      label: "Many-to-One",
    },
    "m:n": {
-      label: "Many-to-Many"
+      label: "Many-to-Many",
    },
    poly: {
-      label: "Polymorphic"
-   }
+      label: "Polymorphic",
+   },
 };
 
 export const DataSettings = ({
    schema,
-   config
+   config,
 }: { schema: ModuleSchemas["data"]; config: ModuleConfigs["data"] }) => {
    const { app } = useBknd();
    const basepath = app.getAdminConfig().basepath;
@@ -110,7 +110,7 @@ export const DataSettings = ({
                                  return "Modifying the primary field may result in strange behaviors.";
                               }
                               return;
-                           }
+                           },
                         }}
                         uiSchema={dataFieldsUiSchema}
                      />
@@ -128,8 +128,8 @@ export const DataSettings = ({
 
                   const fieldsSchema = {
                      anyOf: editSchema.properties.fields.additionalProperties.anyOf.filter(
-                        (s) => s.properties.type.const !== "primary"
-                     )
+                        (s) => s.properties.type.const !== "primary",
+                     ),
                   } as any;
 
                   return (
@@ -142,7 +142,7 @@ export const DataSettings = ({
                                  return "Modifying the system entities may result in strange behaviors.";
                               }
                               return;
-                           }
+                           },
                         }}
                         properties={{
                            fields: {
@@ -154,17 +154,17 @@ export const DataSettings = ({
                                        acc.push({
                                           property: key,
                                           type: value.type,
-                                          required: value.config?.required ? "Yes" : "No"
+                                          required: value.config?.required ? "Yes" : "No",
                                        });
                                     },
-                                    [] as any[]
+                                    [] as any[],
                                  ),
                               new: {
                                  schema: fieldsSchema,
                                  uiSchema: dataFieldsUiSchema,
-                                 anyOfValues: fieldsAnyOfValues
-                              }
-                           }
+                                 anyOfValues: fieldsAnyOfValues,
+                              },
+                           },
                         }}
                         path={["data", "entities", entity]}
                         prefix={`${prefix}/data/entities/${entity}`}
@@ -247,22 +247,22 @@ export const DataSettings = ({
                                        acc.push({
                                           name: key,
                                           type: value.type,
-                                          fields: Object.keys(value.fields ?? {}).length
+                                          fields: Object.keys(value.fields ?? {}).length,
                                        });
                                     },
-                                    [] as any[]
+                                    [] as any[],
                                  ),
                               new: {
                                  schema: schema.properties.entities.additionalProperties as any,
                                  uiSchema: {
                                     fields: {
-                                       "ui:widget": "hidden"
+                                       "ui:widget": "hidden",
                                     },
                                     type: {
-                                       "ui:widget": "hidden"
-                                    }
-                                 }
-                              }
+                                       "ui:widget": "hidden",
+                                    },
+                                 },
+                              },
                            },
                            relations: {
                               extract: true,
@@ -276,12 +276,12 @@ export const DataSettings = ({
                                        data.config?.mappedBy,
                                        data.config?.inversedBy,
                                        data.config?.connectionTable,
-                                       data.config?.connectionTableMappedName
+                                       data.config?.connectionTableMappedName,
                                     ].filter(Boolean);
 
                                     return [...new Set(parts)].join("_");
                                  },
-                                 anyOfValues: relationAnyOfValues
+                                 anyOfValues: relationAnyOfValues,
                               },
                               tableValues: (config: any) =>
                                  transform(
@@ -291,11 +291,11 @@ export const DataSettings = ({
                                           name: key,
                                           type: value.type,
                                           source: value.source,
-                                          target: value.target
+                                          target: value.target,
                                        });
                                     },
-                                    [] as any[]
-                                 )
+                                    [] as any[],
+                                 ),
                            },
                            indices: {
                               extract: true,
@@ -307,32 +307,32 @@ export const DataSettings = ({
                                           name: key,
                                           entity: value.entity,
                                           fields: value.fields.join(", "),
-                                          unique: value.unique ? "Yes" : "No"
+                                          unique: value.unique ? "Yes" : "No",
                                        });
                                     },
-                                    [] as any[]
+                                    [] as any[],
                                  ),
                               new: {
                                  schema: newIndex,
                                  uiSchema: {
                                     fields: {
                                        "ui:options": {
-                                          orderable: false
-                                       }
-                                    }
+                                          orderable: false,
+                                       },
+                                    },
                                  },
                                  generateKey: (data: any) => {
                                     const parts = [
                                        "idx",
                                        data.entity,
                                        data.unique && "unique",
-                                       ...data.fields.filter(Boolean)
+                                       ...data.fields.filter(Boolean),
                                     ].filter(Boolean);
 
                                     return parts.join("_");
-                                 }
-                              }
-                           }
+                                 },
+                              },
+                           },
                         }}
                         prefix={`${prefix}/data`}
                         path={["data"]}

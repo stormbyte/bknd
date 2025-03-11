@@ -8,13 +8,13 @@ describe("Task", async () => {
       const result = await Task.resolveParams(
          Type.Object({ test: dynamic(Type.Number()) }),
          {
-            test: "{{ some.path }}"
+            test: "{{ some.path }}",
          },
          {
             some: {
-               path: 1
-            }
-         }
+               path: 1,
+            },
+         },
       );
 
       expect(result.test).toBe(1);
@@ -24,13 +24,13 @@ describe("Task", async () => {
       const result = await Task.resolveParams(
          Type.Object({ test: Type.String() }),
          {
-            test: "{{ some.path }}"
+            test: "{{ some.path }}",
          },
          {
             some: {
-               path: "1/1"
-            }
-         }
+               path: "1/1",
+            },
+         },
       );
 
       expect(result.test).toBe("1/1");
@@ -40,13 +40,13 @@ describe("Task", async () => {
       const result = await Task.resolveParams(
          Type.Object({ test: dynamic(Type.Object({ key: Type.String(), value: Type.String() })) }),
          {
-            test: { key: "path", value: "{{ some.path }}" }
+            test: { key: "path", value: "{{ some.path }}" },
          },
          {
             some: {
-               path: "1/1"
-            }
-         }
+               path: "1/1",
+            },
+         },
       );
 
       expect(result.test).toEqual({ key: "path", value: "1/1" });
@@ -55,17 +55,17 @@ describe("Task", async () => {
    test("resolveParams: with json", async () => {
       const result = await Task.resolveParams(
          Type.Object({
-            test: dynamic(Type.Object({ key: Type.String(), value: Type.String() }))
+            test: dynamic(Type.Object({ key: Type.String(), value: Type.String() })),
          }),
          {
-            test: "{{ some | json }}"
+            test: "{{ some | json }}",
          },
          {
             some: {
                key: "path",
-               value: "1/1"
-            }
-         }
+               value: "1/1",
+            },
+         },
       );
 
       expect(result.test).toEqual({ key: "path", value: "1/1" });
@@ -74,11 +74,11 @@ describe("Task", async () => {
    test("resolveParams: with array", async () => {
       const result = await Task.resolveParams(
          Type.Object({
-            test: dynamic(Type.Array(Type.String()))
+            test: dynamic(Type.Array(Type.String())),
          }),
          {
-            test: '{{ "1,2,3" | split: "," | json }}'
-         }
+            test: '{{ "1,2,3" | split: "," | json }}',
+         },
       );
 
       expect(result.test).toEqual(["1", "2", "3"]);
@@ -87,11 +87,11 @@ describe("Task", async () => {
    test("resolveParams: boolean", async () => {
       const result = await Task.resolveParams(
          Type.Object({
-            test: dynamic(Type.Boolean())
+            test: dynamic(Type.Boolean()),
          }),
          {
-            test: "{{ true }}"
-         }
+            test: "{{ true }}",
+         },
       );
 
       expect(result.test).toEqual(true);
@@ -100,11 +100,11 @@ describe("Task", async () => {
    test("resolveParams: float", async () => {
       const result = await Task.resolveParams(
          Type.Object({
-            test: dynamic(Type.Number(), Number.parseFloat)
+            test: dynamic(Type.Number(), Number.parseFloat),
          }),
          {
-            test: "{{ 3.14 }}"
-         }
+            test: "{{ 3.14 }}",
+         },
       );
 
       expect(result.test).toEqual(3.14);

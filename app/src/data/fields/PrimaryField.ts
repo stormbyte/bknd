@@ -5,8 +5,8 @@ import { Field, baseFieldConfigSchema } from "./Field";
 export const primaryFieldConfigSchema = Type.Composite([
    Type.Omit(baseFieldConfigSchema, ["required"]),
    Type.Object({
-      required: Type.Optional(Type.Literal(false))
-   })
+      required: Type.Optional(Type.Literal(false)),
+   }),
 ]);
 
 export type PrimaryFieldConfig = Static<typeof primaryFieldConfigSchema>;

@@ -3,7 +3,7 @@ import type { Task } from "../../tasks/Task";
 export class RuntimeExecutor {
    async run(
       nextTasks: () => Task[],
-      onDone?: (task: Task, result: Awaited<ReturnType<Task["run"]>>) => void
+      onDone?: (task: Task, result: Awaited<ReturnType<Task["run"]>>) => void,
    ) {
       const tasks = nextTasks();
       if (tasks.length === 0) {

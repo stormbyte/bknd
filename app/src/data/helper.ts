@@ -8,7 +8,7 @@ export function getDefaultValues(fields: Field[], data: EntityData): EntityData 
          // form fields don't like "null" or "undefined", so return empty string
          acc[field.name] = field.getValue(data?.[field.name], "form") ?? "";
       },
-      {} as EntityData
+      {} as EntityData,
    );
 }
 
@@ -16,7 +16,7 @@ export function getChangeSet(
    action: string,
    formData: EntityData,
    data: EntityData,
-   fields: Field[]
+   fields: Field[],
 ): EntityData {
    //console.log("getChangeSet", formData, data);
    return transform(
@@ -45,7 +45,7 @@ export function getChangeSet(
             //console.log("no change", key, value, data[key]);
          }
       },
-      {} as typeof formData
+      {} as typeof formData,
    );
 }
 
@@ -54,17 +54,17 @@ export function readableEmJson(_em: EntityManager) {
       entities: _em.entities.map((e) => ({
          name: e.name,
          fields: e.fields.map((f) => f.name),
-         type: e.type
+         type: e.type,
       })),
       indices: _em.indices.map((i) => ({
          name: i.name,
          entity: i.entity.name,
          fields: i.fields.map((f) => f.name),
-         unique: i.unique
+         unique: i.unique,
       })),
       relations: _em.relations.all.map((r) => ({
          name: r.getName(),
-         ...r.toJSON()
-      }))
+         ...r.toJSON(),
+      })),
    };
 }

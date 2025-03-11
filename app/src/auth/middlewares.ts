@@ -2,7 +2,7 @@ import type { Permission } from "core";
 import { patternMatch } from "core/utils";
 import type { Context } from "hono";
 import { createMiddleware } from "hono/factory";
-import type { ServerEnv } from "modules/Module";
+import type { ServerEnv } from "modules/Controller";
 
 function getPath(reqOrCtx: Request | Context) {
    const req = reqOrCtx instanceof Request ? reqOrCtx : reqOrCtx.req.raw;
@@ -36,7 +36,7 @@ export const auth = (options?: {
             registered: false,
             resolved: false,
             skip: false,
-            user: undefined
+            user: undefined,
          });
       }
 
@@ -77,7 +77,7 @@ export const permission = (
    options?: {
       onGranted?: (c: Context<ServerEnv>) => Promise<Response | void | undefined>;
       onDenied?: (c: Context<ServerEnv>) => Promise<Response | void | undefined>;
-   }
+   },
 ) =>
    // @ts-ignore
    createMiddleware<ServerEnv>(async (c, next) => {

@@ -12,7 +12,7 @@ const styles = {
    xs: { className: "p-0.5", size: 13 },
    sm: { className: "p-0.5", size: 15 },
    md: { className: "p-1", size: 18 },
-   lg: { className: "p-1.5", size: 22 }
+   lg: { className: "p-1.5", size: 22 },
 } as const;
 
 interface IconButtonProps extends ComponentPropsWithoutRef<"button"> {
@@ -38,5 +38,5 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
             disabled={disabled}
          />
       );
-   }
+   },
 );

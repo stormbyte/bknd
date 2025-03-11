@@ -5,29 +5,30 @@ import { type Static, StringRecord, Type, objectTransform } from "core/utils";
 export const Strategies = {
    password: {
       cls: PasswordStrategy,
-      schema: PasswordStrategy.prototype.getSchema()
+      schema: PasswordStrategy.prototype.getSchema(),
    },
    oauth: {
       cls: OAuthStrategy,
-      schema: OAuthStrategy.prototype.getSchema()
+      schema: OAuthStrategy.prototype.getSchema(),
    },
    custom_oauth: {
       cls: CustomOAuthStrategy,
-      schema: CustomOAuthStrategy.prototype.getSchema()
-   }
+      schema: CustomOAuthStrategy.prototype.getSchema(),
+   },
 } as const;
 
 export const STRATEGIES = Strategies;
 const strategiesSchemaObject = objectTransform(STRATEGIES, (strategy, name) => {
    return Type.Object(
       {
+         enabled: Type.Optional(Type.Boolean({ default: true })),
          type: Type.Const(name, { default: name, readOnly: true }),
-         config: strategy.schema
+         config: strategy.schema,
       },
       {
          title: name,
-         additionalProperties: false
-      }
+         additionalProperties: false,
+      },
    );
 });
 const strategiesSchema = Type.Union(Object.values(strategiesSchemaObject));
@@ -36,15 +37,15 @@ export type AppAuthOAuthStrategy = Static<typeof STRATEGIES.oauth.schema>;
 export type AppAuthCustomOAuthStrategy = Static<typeof STRATEGIES.custom_oauth.schema>;
 
 const guardConfigSchema = Type.Object({
-   enabled: Type.Optional(Type.Boolean({ default: false }))
+   enabled: Type.Optional(Type.Boolean({ default: false })),
 });
 export const guardRoleSchema = Type.Object(
    {
       permissions: Type.Optional(Type.Array(Type.String())),
       is_default: Type.Optional(Type.Boolean()),
-      implicit_allow: Type.Optional(Type.Boolean())
+      implicit_allow: Type.Optional(Type.Boolean()),
    },
-   { additionalProperties: false }
+   { additionalProperties: false },
 );
 
 export const authConfigSchema = Type.Object(
@@ -61,20 +62,21 @@ export const authConfigSchema = Type.Object(
             default: {
                password: {
                   type: "password",
+                  enabled: true,
                   config: {
-                     hashing: "sha256"
-                  }
-               }
-            }
-         })
+                     hashing: "sha256",
+                  },
+               },
+            },
+         }),
       ),
       guard: Type.Optional(guardConfigSchema),
-      roles: Type.Optional(StringRecord(guardRoleSchema, { default: {} }))
+      roles: Type.Optional(StringRecord(guardRoleSchema, { default: {} })),
    },
    {
       title: "Authentication",
-      additionalProperties: false
-   }
+      additionalProperties: false,
+   },
 );
 
 export type AppAuthSchema = Static<typeof authConfigSchema>;

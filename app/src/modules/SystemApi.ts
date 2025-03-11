@@ -12,7 +12,7 @@ export type ApiSchemaResponse = {
 export class SystemApi extends ModuleApi<any> {
    protected override getDefaultOptions(): Partial<any> {
       return {
-         basepath: "/api/system"
+         basepath: "/api/system",
       };
    }
 
@@ -20,21 +20,22 @@ export class SystemApi extends ModuleApi<any> {
       return this.get<{ version: number } & ModuleConfigs>("config");
    }
 
-   readSchema(options?: { config?: boolean; secrets?: boolean }) {
+   readSchema(options?: { config?: boolean; secrets?: boolean; fresh?: boolean }) {
       return this.get<ApiSchemaResponse>("schema", {
          config: options?.config ? 1 : 0,
-         secrets: options?.secrets ? 1 : 0
+         secrets: options?.secrets ? 1 : 0,
+         fresh: options?.fresh ? 1 : 0,
       });
    }
 
    setConfig<Module extends ModuleKey>(
       module: Module,
       value: ModuleConfigs[Module],
-      force?: boolean
+      force?: boolean,
    ) {
       return this.post<ConfigUpdateResponse>(
          ["config", "set", module].join("/") + `?force=${force ? 1 : 0}`,
-         value
+         value,
       );
    }
 

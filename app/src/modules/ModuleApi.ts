@@ -28,7 +28,7 @@ export abstract class ModuleApi<Options extends BaseModuleApiOptions = BaseModul
 
    constructor(
       protected readonly _options: Partial<Options> = {},
-      fetcher?: typeof fetch
+      fetcher?: typeof fetch,
    ) {
       this.fetcher = fetcher ?? fetch;
    }
@@ -42,7 +42,7 @@ export abstract class ModuleApi<Options extends BaseModuleApiOptions = BaseModul
          host: "http://localhost",
          token: undefined,
          ...this.getDefaultOptions(),
-         ...this._options
+         ...this._options,
       } as Options;
    }
 
@@ -61,7 +61,7 @@ export abstract class ModuleApi<Options extends BaseModuleApiOptions = BaseModul
    protected request<Data = any>(
       _input: TInput,
       _query?: Record<string, any> | URLSearchParams,
-      _init?: RequestInit
+      _init?: RequestInit,
    ): FetchPromise<ResponseObject<Data>> {
       const method = _init?.method ?? "GET";
       const input = Array.isArray(_input) ? _input.join("/") : _input;
@@ -104,23 +104,23 @@ export abstract class ModuleApi<Options extends BaseModuleApiOptions = BaseModul
          ..._init,
          method,
          body,
-         headers
+         headers,
       });
 
       return new FetchPromise(request, {
          fetcher: this.fetcher,
-         verbose: this.options.verbose
+         verbose: this.options.verbose,
       });
    }
 
    get<Data = any>(
       _input: TInput,
       _query?: Record<string, any> | URLSearchParams,
-      _init?: RequestInit
+      _init?: RequestInit,
    ) {
       return this.request<Data>(_input, _query, {
          ..._init,
-         method: "GET"
+         method: "GET",
       });
    }
 
@@ -128,7 +128,7 @@ export abstract class ModuleApi<Options extends BaseModuleApiOptions = BaseModul
       return this.request<Data>(_input, undefined, {
          ..._init,
          body,
-         method: "POST"
+         method: "POST",
       });
    }
 
@@ -136,7 +136,7 @@ export abstract class ModuleApi<Options extends BaseModuleApiOptions = BaseModul
       return this.request<Data>(_input, undefined, {
          ..._init,
          body,
-         method: "PATCH"
+         method: "PATCH",
       });
    }
 
@@ -144,14 +144,15 @@ export abstract class ModuleApi<Options extends BaseModuleApiOptions = BaseModul
       return this.request<Data>(_input, undefined, {
          ..._init,
          body,
-         method: "PUT"
+         method: "PUT",
       });
    }
 
-   delete<Data = any>(_input: TInput, _init?: RequestInit) {
+   delete<Data = any>(_input: TInput, body?: any, _init?: RequestInit) {
       return this.request<Data>(_input, undefined, {
          ..._init,
-         method: "DELETE"
+         body,
+         method: "DELETE",
       });
    }
 }
@@ -169,9 +170,9 @@ export type ResponseObject<Body = any, Data = Body extends { data: infer R } ? R
 export function createResponseProxy<Body = any, Data = any>(
    raw: Response,
    body: Body,
-   data?: Data
+   data?: Data,
 ): ResponseObject<Body, Data> {
-   let actualData: any = data ?? body;
+   let actualData: any = typeof data !== "undefined" ? data : body;
    const _props = ["raw", "body", "ok", "status", "res", "data", "toJSON"];
 
    // that's okay, since you have to check res.ok anyway
@@ -189,6 +190,7 @@ export function createResponseProxy<Body = any, Data = any>(
          if (prop === "toJSON") {
             return () => target;
          }
+
          return Reflect.get(target, prop, receiver);
       },
       has(target, prop) {
@@ -205,11 +207,11 @@ export function createResponseProxy<Body = any, Data = any>(
             return {
                configurable: true,
                enumerable: true,
-               value: Reflect.get({ raw, body, ok: raw.ok, status: raw.status }, prop)
+               value: Reflect.get({ raw, body, ok: raw.ok, status: raw.status }, prop),
             };
          }
          return Reflect.getOwnPropertyDescriptor(target, prop);
-      }
+      },
    }) as ResponseObject<Body, Data>;
 }
 
@@ -222,11 +224,19 @@ export class FetchPromise<T = ApiResponse<any>> implements Promise<T> {
       protected options?: {
          fetcher?: typeof fetch;
          verbose?: boolean;
-      }
+      },
+      // keep "any" here, it gets inferred correctly with the "refine" fn
+      protected refineData?: (data: any) => any,
    ) {}
 
    get verbose() {
       return this.options?.verbose ?? false;
+   }
+
+   refine<N>(fn: (data: T) => N) {
+      return new FetchPromise(this.request, this.options, fn) as unknown as FetchPromise<
+         ApiResponse<N>
+      >;
    }
 
    async execute(): Promise<ResponseObject<T>> {
@@ -237,7 +247,7 @@ export class FetchPromise<T = ApiResponse<any>> implements Promise<T> {
       if (this.verbose) {
          console.log("[FetchPromise] Request", {
             method: this.request.method,
-            url: this.request.url
+            url: this.request.url,
          });
       }
 
@@ -246,7 +256,7 @@ export class FetchPromise<T = ApiResponse<any>> implements Promise<T> {
          console.log("[FetchPromise] Response", {
             res: res,
             ok: res.ok,
-            status: res.status
+            status: res.status,
          });
       }
 
@@ -264,7 +274,15 @@ export class FetchPromise<T = ApiResponse<any>> implements Promise<T> {
       } else {
          resBody = res.body;
       }
-      console.groupEnd();
+
+      if (this.refineData) {
+         try {
+            resData = this.refineData(resData);
+         } catch (e) {
+            console.warn("[FetchPromise] Error in refineData", e);
+            resData = undefined;
+         }
+      }
 
       return createResponseProxy<T>(res, resBody, resData);
    }
@@ -272,13 +290,13 @@ export class FetchPromise<T = ApiResponse<any>> implements Promise<T> {
    // biome-ignore lint/suspicious/noThenProperty: it's a promise :)
    then<TResult1 = T, TResult2 = never>(
       onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | null | undefined,
-      onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null | undefined
+      onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null | undefined,
    ): Promise<TResult1 | TResult2> {
       return this.execute().then(onfulfilled as any, onrejected);
    }
 
    catch<TResult = never>(
-      onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | null | undefined
+      onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | null | undefined,
    ): Promise<T | TResult> {
       return this.then(undefined, onrejected);
    }
@@ -292,7 +310,7 @@ export class FetchPromise<T = ApiResponse<any>> implements Promise<T> {
          (reason) => {
             onfinally?.();
             throw reason;
-         }
+         },
       );
    }
 
@@ -310,7 +328,7 @@ export class FetchPromise<T = ApiResponse<any>> implements Promise<T> {
       const url = new URL(this.request.url);
       const path = this.path().split("/");
       return (options?.search !== false ? [...path, url.searchParams.toString()] : path).filter(
-         Boolean
+         Boolean,
       );
    }
 }

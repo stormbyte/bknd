@@ -14,7 +14,7 @@ export function isObject(value: unknown): value is Record<string, unknown> {
 
 export function omitKeys<T extends object, K extends keyof T>(
    obj: T,
-   keys_: readonly K[]
+   keys_: readonly K[],
 ): Omit<T, Extract<K, keyof T>> {
    const keys = new Set(keys_);
    const result = {} as Omit<T, Extract<K, keyof T>>;
@@ -47,7 +47,7 @@ export function keepChanged<T extends object>(origin: T, updated: T): Partial<T>
          }
          return acc;
       },
-      {} as Partial<T>
+      {} as Partial<T>,
    );
 }
 
@@ -66,13 +66,13 @@ export function objectKeysPascalToKebab(obj: any, ignoreKeys: string[] = []): an
          acc[kebabKey] = objectKeysPascalToKebab(obj[key], ignoreKeys);
          return acc;
       },
-      {} as Record<string, any>
+      {} as Record<string, any>,
    );
 }
 
 export function filterKeys<Object extends { [key: string]: any }>(
    obj: Object,
-   keysToFilter: string[]
+   keysToFilter: string[],
 ): Object {
    const result = {} as Object;
 
@@ -92,7 +92,7 @@ export function filterKeys<Object extends { [key: string]: any }>(
 
 export function transformObject<T extends Record<string, any>, U>(
    object: T,
-   transform: (value: T[keyof T], key: keyof T) => U | undefined
+   transform: (value: T[keyof T], key: keyof T) => U | undefined,
 ): { [K in keyof T]: U } {
    return Object.entries(object).reduce(
       (acc, [key, value]) => {
@@ -102,20 +102,20 @@ export function transformObject<T extends Record<string, any>, U>(
          }
          return acc;
       },
-      {} as { [K in keyof T]: U }
+      {} as { [K in keyof T]: U },
    );
 }
 export const objectTransform = transformObject;
 
 export function objectEach<T extends Record<string, any>, U>(
    object: T,
-   each: (value: T[keyof T], key: keyof T) => U
+   each: (value: T[keyof T], key: keyof T) => U,
 ): void {
    Object.entries(object).forEach(
       ([key, value]) => {
          each(value, key);
       },
-      {} as { [K in keyof T]: U }
+      {} as { [K in keyof T]: U },
    );
 }
 
@@ -291,7 +291,7 @@ export function isEqual(value1: any, value2: any): boolean {
          return "plainObject";
       if (value instanceof Function) return "function";
       throw new Error(
-         `deeply comparing an instance of type ${value1.constructor?.name} is not supported.`
+         `deeply comparing an instance of type ${value1.constructor?.name} is not supported.`,
       );
    };
 
@@ -336,7 +336,7 @@ export function isEqual(value1: any, value2: any): boolean {
 export function getPath(
    object: object,
    _path: string | (string | number)[],
-   defaultValue = undefined
+   defaultValue = undefined,
 ): any {
    const path = typeof _path === "string" ? _path.split(/[.\[\]\"]+/).filter((x) => x) : _path;
 

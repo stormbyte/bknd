@@ -10,7 +10,6 @@ import { getLabel, getMultiSchemaMatched } from "./utils";
 
 export type AnyOfFieldRootProps = {
    path?: string;
-   schema?: JsonSchema;
    children: ReactNode;
 };
 
@@ -34,14 +33,14 @@ export const useAnyOfContext = () => {
 
 const selectedAtom = atom<number | null>(null);
 
-const Root = ({ path = "", schema: _schema, children }: AnyOfFieldRootProps) => {
+const Root = ({ path = "", children }: AnyOfFieldRootProps) => {
    const {
       setValue,
       lib,
       pointer,
       value: { matchedIndex, schemas },
-      schema
-   } = useDerivedFieldContext(path, _schema, (ctx) => {
+      schema,
+   } = useDerivedFieldContext(path, (ctx) => {
       const [matchedIndex, schemas = []] = getMultiSchemaMatched(ctx.schema, ctx.value);
       return { matchedIndex, schemas };
    });
@@ -59,7 +58,7 @@ const Root = ({ path = "", schema: _schema, children }: AnyOfFieldRootProps) => 
       const options = schemas.map((s, i) => s.title ?? `Option ${i + 1}`);
       const selectSchema = {
          type: "string",
-         enum: options
+         enum: options,
       } satisfies JsonSchema;
 
       const selectedSchema = selected !== null ? (schemas[selected] as JsonSchema) : undefined;
@@ -70,7 +69,7 @@ const Root = ({ path = "", schema: _schema, children }: AnyOfFieldRootProps) => 
          selectedSchema,
          schema,
          schemas,
-         selected
+         selected,
       };
    }, [selected]);
 
@@ -81,7 +80,7 @@ const Root = ({ path = "", schema: _schema, children }: AnyOfFieldRootProps) => 
             ...context,
             select,
             path,
-            errors
+            errors,
          }}
       >
          {children}
@@ -115,7 +114,7 @@ const Select = () => {
 };
 
 // @todo: add local validation for AnyOf fields
-const Field = ({ name, label, schema, ...props }: Partial<FormFieldProps>) => {
+const Field = ({ name, label, ...props }: Partial<FormFieldProps>) => {
    const { selected, selectedSchema, path, errors } = useAnyOfContext();
    if (selected === null) return null;
    return (
@@ -131,7 +130,7 @@ export const AnyOf = {
    Root,
    Select,
    Field,
-   useContext: useAnyOfContext
+   useContext: useAnyOfContext,
 };
 
 export const AnyOfField = (props: Omit<AnyOfFieldRootProps, "children">) => {

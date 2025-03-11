@@ -50,7 +50,10 @@ export class RelationAccessor {
     */
    relationOf(entity: Entity, reference: string): EntityRelation | undefined {
       return this.relationsOf(entity).find((r) => {
-         return r.source.reference === reference || r.target.reference === reference;
+         return (
+            (r.target.entity.name === entity.name && r.source.reference === reference) ||
+            (r.source.entity.name === entity.name && r.target.reference === reference)
+         );
       });
    }
 

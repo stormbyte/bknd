@@ -1,4 +1,5 @@
-import type { FieldApi, FormApi } from "@tanstack/react-form";
+import type { FieldApi, ReactFormExtendedApi } from "@tanstack/react-form";
+import type { JSX } from "react";
 import {
    type Entity,
    type EntityData,
@@ -6,8 +7,9 @@ import {
    type Field,
    JsonField,
    JsonSchemaField,
-   RelationField
+   RelationField,
 } from "data";
+import { useStore } from "@tanstack/react-store";
 import { MediaField } from "media/MediaField";
 import { type ComponentProps, Suspense } from "react";
 import { JsonEditor } from "ui/components/code/JsonEditor";
@@ -17,6 +19,13 @@ import { Media } from "ui/elements";
 import { useEvent } from "ui/hooks/use-event";
 import { EntityJsonSchemaFormField } from "./fields/EntityJsonSchemaFormField";
 import { EntityRelationalFormField } from "./fields/EntityRelationalFormField";
+import ErrorBoundary from "ui/components/display/ErrorBoundary";
+import { Alert } from "ui/components/display/Alert";
+
+// simplify react form types 🤦
+export type FormApi = ReactFormExtendedApi<any, any, any, any, any, any, any, any, any, any>;
+// biome-ignore format: ...
+export type TFieldApi = FieldApi<any, any, any, any, any, any, any, any, any, any, any, any, any, any, any, any, any, any, any>;
 
 type EntityFormProps = {
    entity: Entity;
@@ -24,7 +33,7 @@ type EntityFormProps = {
    data?: EntityData;
    handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
    fieldsDisabled: boolean;
-   Form: FormApi<any>;
+   Form: FormApi;
    className?: string;
    action: "create" | "update";
 };
@@ -37,10 +46,9 @@ export function EntityForm({
    Form,
    data,
    className,
-   action
+   action,
 }: EntityFormProps) {
    const fields = entity.getFillableFields(action, true);
-   console.log("data", { data, fields });
 
    return (
       <form onSubmit={handleSubmit}>
@@ -94,20 +102,28 @@ export function EntityForm({
                const _key = `${entity.name}-${field.name}-${key}`;
 
                return (
-                  <Form.Field
+                  <ErrorBoundary
                      key={_key}
-                     name={field.name}
-                     children={(props) => (
-                        <EntityFormField
-                           field={field}
-                           fieldApi={props}
-                           disabled={fieldsDisabled}
-                           tabIndex={key + 1}
-                           action={action}
-                           data={data}
-                        />
-                     )}
-                  />
+                     fallback={
+                        <Alert.Exception className="font-mono">
+                           Field error: {field.name}
+                        </Alert.Exception>
+                     }
+                  >
+                     <Form.Field
+                        name={field.name}
+                        children={(props) => (
+                           <EntityFormField
+                              field={field}
+                              fieldApi={props}
+                              disabled={fieldsDisabled}
+                              tabIndex={key + 1}
+                              action={action}
+                              data={data}
+                           />
+                        )}
+                     />
+                  </ErrorBoundary>
                );
             })}
          </div>
@@ -120,9 +136,9 @@ export function EntityForm({
 
 type EntityFormFieldProps<
    T extends keyof JSX.IntrinsicElements = "input",
-   F extends Field = Field
+   F extends Field = Field,
 > = ComponentProps<T> & {
-   fieldApi: FieldApi<any, any>;
+   fieldApi: TFieldApi;
    field: F;
    action: "create" | "update";
    data?: EntityData;
@@ -203,9 +219,9 @@ function EntityMediaFormField({
    field,
    entity,
    entityId,
-   disabled
+   disabled,
 }: {
-   formApi: FormApi<any>;
+   formApi: FormApi;
    field: MediaField;
    entity: Entity;
    entityId?: number;
@@ -213,7 +229,7 @@ function EntityMediaFormField({
 }) {
    if (!entityId) return;
 
-   const value = formApi.useStore((state) => {
+   const value = useStore(formApi.store, (state) => {
       const val = state.values[field.name];
       if (!val || typeof val === "undefined") return [];
       if (Array.isArray(val)) return val;
@@ -232,7 +248,7 @@ function EntityMediaFormField({
             entity={{
                name: entity.name,
                id: entityId,
-               field: field.name
+               field: field.name,
             }}
          />
       </Formy.Group>
@@ -243,7 +259,7 @@ function EntityJsonFormField({
    fieldApi,
    field,
    ...props
-}: { fieldApi: FieldApi<any, any>; field: JsonField }) {
+}: { fieldApi: TFieldApi; field: JsonField }) {
    const handleUpdate = useEvent((value: any) => {
       fieldApi.handleChange(value);
    });
@@ -279,7 +295,7 @@ function EntityEnumFormField({
    fieldApi,
    field,
    ...props
-}: { fieldApi: FieldApi<any, any>; field: EnumField }) {
+}: { fieldApi: TFieldApi; field: EnumField }) {
    const handleUpdate = useEvent((e: React.ChangeEvent<HTMLTextAreaElement>) => {
       fieldApi.handleChange(e.target.value);
    });

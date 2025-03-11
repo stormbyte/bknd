@@ -127,7 +127,7 @@ export class Execution implements EmitsEvents {
             if (target_runs > max_retries) {
                //console.log("*** Task reached max retries", t.name);
                throw new Error(
-                  `Task "${t.name}" reached max retries (${target_runs}/${max_retries})`
+                  `Task "${t.name}" reached max retries (${target_runs}/${max_retries})`,
                );
             }
 
@@ -202,7 +202,7 @@ export class Execution implements EmitsEvents {
          output: input, // @todo: remove
          error: undefined,
          success: true,
-         params: input
+         params: input,
       });
 
       //graceful && (await new Promise((resolve) => setTimeout(resolve, 100)));

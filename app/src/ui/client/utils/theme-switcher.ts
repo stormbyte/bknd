@@ -14,9 +14,9 @@ export function useSetTheme(initialTheme: AppTheme = "light") {
       fetch("/api/system/config/patch/server/admin", {
          method: "PATCH",
          headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
          },
-         body: JSON.stringify({ color_scheme: newTheme })
+         body: JSON.stringify({ color_scheme: newTheme }),
       })
          .then((res) => res.json())
          .then((data) => {

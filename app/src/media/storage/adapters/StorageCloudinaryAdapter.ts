@@ -7,9 +7,9 @@ export const cloudinaryAdapterConfig = Type.Object(
       cloud_name: Type.String(),
       api_key: Type.String(),
       api_secret: Type.String(),
-      upload_preset: Type.Optional(Type.String())
+      upload_preset: Type.Optional(Type.String()),
    },
-   { title: "Cloudinary", description: "Cloudinary media storage" }
+   { title: "Cloudinary", description: "Cloudinary media storage" },
 );
 
 export type CloudinaryConfig = Static<typeof cloudinaryAdapterConfig>;
@@ -80,7 +80,7 @@ export class StorageCloudinaryAdapter implements StorageAdapter {
    private getAuthorizationHeader() {
       const credentials = btoa(`${this.config.api_key}:${this.config.api_secret}`);
       return {
-         Authorization: `Basic ${credentials}`
+         Authorization: `Basic ${credentials}`,
       };
    }
 
@@ -102,12 +102,12 @@ export class StorageCloudinaryAdapter implements StorageAdapter {
          {
             method: "POST",
             headers: {
-               Accept: "application/json"
+               Accept: "application/json",
                // content type must be undefined to use correct boundaries
                //"Content-Type": "multipart/form-data",
             },
-            body: formData
-         }
+            body: formData,
+         },
       );
 
       if (!result.ok) {
@@ -121,8 +121,8 @@ export class StorageCloudinaryAdapter implements StorageAdapter {
          etag: data.etag,
          meta: {
             type: this.getMimeType(data),
-            size: data.bytes
-         }
+            size: data.bytes,
+         },
       };
    }
 
@@ -133,9 +133,9 @@ export class StorageCloudinaryAdapter implements StorageAdapter {
             method: "GET",
             headers: {
                Accept: "application/json",
-               ...this.getAuthorizationHeader()
-            }
-         }
+               ...this.getAuthorizationHeader(),
+            },
+         },
       );
 
       if (!result.ok) {
@@ -146,7 +146,7 @@ export class StorageCloudinaryAdapter implements StorageAdapter {
       return data.resources.map((item) => ({
          key: item.public_id,
          last_modified: new Date(item.uploaded_at),
-         size: item.bytes
+         size: item.bytes,
       }));
    }
 
@@ -155,8 +155,8 @@ export class StorageCloudinaryAdapter implements StorageAdapter {
       return await fetch(url, {
          method: "GET",
          headers: {
-            Range: "bytes=0-1"
-         }
+            Range: "bytes=0-1",
+         },
       });
    }
 
@@ -172,7 +172,7 @@ export class StorageCloudinaryAdapter implements StorageAdapter {
          const size = Number(result.headers.get("content-range")?.split("/")[1]);
          return {
             type: type as string,
-            size: size
+            size: size,
          };
       }
 
@@ -182,7 +182,7 @@ export class StorageCloudinaryAdapter implements StorageAdapter {
    private guessType(key: string): string | undefined {
       const extensions = {
          image: ["jpg", "jpeg", "png", "gif", "webp", "svg"],
-         video: ["mp4", "webm", "ogg"]
+         video: ["mp4", "webm", "ogg"],
       };
 
       const ext = key.split(".").pop();
@@ -199,13 +199,13 @@ export class StorageCloudinaryAdapter implements StorageAdapter {
    async getObject(key: string, headers: Headers): Promise<Response> {
       const res = await fetch(this.getObjectUrl(key), {
          method: "GET",
-         headers: pickHeaders(headers, ["range"])
+         headers: pickHeaders(headers, ["range"]),
       });
 
       return new Response(res.body, {
          status: res.status,
          statusText: res.statusText,
-         headers: res.headers
+         headers: res.headers,
       });
    }
 
@@ -216,14 +216,14 @@ export class StorageCloudinaryAdapter implements StorageAdapter {
 
       await fetch(`https://res.cloudinary.com/${this.config.cloud_name}/${type}/upload/`, {
          method: "DELETE",
-         body: formData
+         body: formData,
       });
    }
 
    toJSON(secrets?: boolean) {
       return {
          type: "cloudinary",
-         config: secrets ? this.config : { cloud_name: this.config.cloud_name }
+         config: secrets ? this.config : { cloud_name: this.config.cloud_name },
       };
    }
 }

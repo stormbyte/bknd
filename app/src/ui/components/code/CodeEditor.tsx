@@ -1,8 +1,7 @@
 import { default as CodeMirror, type ReactCodeMirrorProps } from "@uiw/react-codemirror";
-import { useBknd } from "ui/client/bknd";
-
 import { json } from "@codemirror/lang-json";
 import { type LiquidCompletionConfig, liquid } from "@codemirror/lang-liquid";
+import { useTheme } from "ui/client/use-theme";
 
 export type CodeEditorProps = ReactCodeMirrorProps & {
    _extensions?: Partial<{
@@ -17,13 +16,12 @@ export default function CodeEditor({
    _extensions = {},
    ...props
 }: CodeEditorProps) {
-   const b = useBknd();
-   const theme = b.app.getAdminConfig().color_scheme;
+   const { theme } = useTheme();
    const _basicSetup: Partial<ReactCodeMirrorProps["basicSetup"]> = !editable
       ? {
            ...(typeof basicSetup === "object" ? basicSetup : {}),
            highlightActiveLine: false,
-           highlightActiveLineGutter: false
+           highlightActiveLineGutter: false,
         }
       : basicSetup;
 

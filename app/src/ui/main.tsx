@@ -4,14 +4,23 @@ import Admin from "./Admin";
 import "./main.css";
 import "./styles.css";
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
-   <React.StrictMode>
-      <Admin withProvider />
-   </React.StrictMode>
-);
+function render() {
+   ReactDOM.createRoot(document.getElementById("root")!).render(
+      <React.StrictMode>
+         <Admin withProvider />
+      </React.StrictMode>,
+   );
+}
+
+if ("startViewTransition" in document) {
+   document.startViewTransition(render);
+} else {
+   render();
+}
 
 // REGISTER ERROR OVERLAY
-if (process.env.NODE_ENV !== "production") {
+const showOverlay = true;
+if (process.env.NODE_ENV !== "production" && showOverlay) {
    const showErrorOverlay = (err) => {
       // must be within function call because that's when the element is defined for sure.
       const ErrorOverlay = customElements.get("vite-error-overlay");

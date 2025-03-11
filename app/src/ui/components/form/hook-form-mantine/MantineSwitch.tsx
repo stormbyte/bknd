@@ -15,13 +15,13 @@ export function MantineSwitch<T extends FieldValues>({
 }: SwitchProps<T>) {
    const {
       field: { value, onChange: fieldOnChange, ...field },
-      fieldState
+      fieldState,
    } = useController<T>({
       name,
       control,
       defaultValue,
       rules,
-      shouldUnregister
+      shouldUnregister,
    });
 
    return (

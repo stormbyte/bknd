@@ -16,7 +16,7 @@ import {
    flowToNodes,
    useFlowCanvas,
    useFlowCanvasState,
-   useFlowSelector
+   useFlowSelector,
 } from "ui/modules/flows/hooks/use-flow";
 import { JsonViewer } from "../../components/code/JsonViewer";
 import { routes, useGoBack, useNavigate } from "../../lib/routes";
@@ -59,7 +59,7 @@ function FlowsEditInner() {
    const viewport = {
       zoom: 1,
       x: rect?.width ? rect.width * 0.1 : 0,
-      y: rect?.height ? rect.height / 2 - triggerHeight / 2 - offset : 0
+      y: rect?.height ? rect.height / 2 - triggerHeight / 2 - offset : 0,
    };
 
    return (
@@ -79,18 +79,18 @@ function FlowsEditInner() {
                   onDropNewNode={(node) => ({
                      ...node,
                      type: "select",
-                     data: { label: "" }
+                     data: { label: "" },
                   })}
                   onDropNewEdge={(edge) => ({
                      ...edge,
                      style: {
-                        strokeWidth: 2
+                        strokeWidth: 2,
                      },
                      markerEnd: {
                         type: MarkerType.ArrowClosed,
                         width: 10,
-                        height: 10
-                     }
+                        height: 10,
+                     },
                   })}
                >
                   <FlowPanels />
@@ -202,7 +202,7 @@ const Debugger = () => {
                         title="Context"
                         json={{
                            name: $flow.name,
-                           ...$flow.data
+                           ...$flow.data,
                         }}
                         expand={expand}
                      />
@@ -211,7 +211,7 @@ const Debugger = () => {
                         title="State"
                         json={{
                            name: state.name,
-                           ...state.flow
+                           ...state.flow,
                         }}
                         expand={expand}
                      />
@@ -225,9 +225,9 @@ const Debugger = () => {
                         (n) =>
                            _setState((prev) => ({
                               ...prev,
-                              store: { ...prev.store, expand: n }
+                              store: { ...prev.store, expand: n },
                            })),
-                        250
+                        250,
                      )}
                   />
                </Tabs.Panel>

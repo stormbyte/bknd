@@ -1,5 +1,4 @@
 import { getHotkeyHandler, useHotkeys } from "@mantine/hooks";
-import type { FieldApi } from "@tanstack/react-form";
 import { ucFirst } from "core/utils";
 import type { EntityData, RelationField } from "data";
 import { useEffect, useRef, useState } from "react";
@@ -12,8 +11,11 @@ import { Popover } from "ui/components/overlay/Popover";
 import { Link } from "ui/components/wouter/Link";
 import { routes } from "ui/lib/routes";
 import { useLocation } from "wouter";
-import { EntityTable, type EntityTableProps } from "../EntityTable";
+import type { EntityTableProps } from "../EntityTable";
 import type { ResponseObject } from "modules/ModuleApi";
+import ErrorBoundary from "ui/components/display/ErrorBoundary";
+import { EntityTable2 } from "ui/modules/data/components/EntityTable2";
+import type { TFieldApi } from "ui/modules/data/components/EntityForm";
 
 // @todo: allow clear if not required
 export function EntityRelationalFormField({
@@ -23,7 +25,7 @@ export function EntityRelationalFormField({
    disabled,
    tabIndex,
 }: {
-   fieldApi: FieldApi<any, any>;
+   fieldApi: TFieldApi;
    field: RelationField;
    data?: EntityData;
    disabled?: boolean;
@@ -151,8 +153,13 @@ export function EntityRelationalFormField({
                                        <span className="opacity-60 text-nowrap">
                                           {field.getLabel()}:
                                        </span>{" "}
-                                       {_value !== null && typeof value !== "undefined" ? (
-                                          <span className="text-nowrap truncate">{_value}</span>
+                                       {_value !== null && typeof _value !== "undefined" ? (
+                                          <ErrorBoundary
+                                             fallback={JSON.stringify(_value)}
+                                             suppressError
+                                          >
+                                             <span className="text-nowrap truncate">{_value}</span>
+                                          </ErrorBoundary>
                                        ) : (
                                           <span className="opacity-30 text-nowrap font-mono mt-0.5">
                                              null
@@ -190,8 +197,15 @@ type PropoverTableProps = Omit<EntityTableProps, "data"> & {
    container: ResponseObject;
    query: any;
    toggle: () => void;
-}
-const PopoverTable = ({ container, entity, query, toggle, onClickRow, onClickPage }: PropoverTableProps) => {
+};
+const PopoverTable = ({
+   container,
+   entity,
+   query,
+   toggle,
+   onClickRow,
+   onClickPage,
+}: PropoverTableProps) => {
    function handleNext() {
       if (query.limit * query.page < container.meta?.count) {
          onClickPage?.(query.page + 1);
@@ -212,7 +226,7 @@ const PopoverTable = ({ container, entity, query, toggle, onClickRow, onClickPag
 
    return (
       <div>
-         <EntityTable
+         <EntityTable2
             classNames={{ value: "line-clamp-1 truncate max-w-52 text-nowrap" }}
             data={container ?? []}
             entity={entity}

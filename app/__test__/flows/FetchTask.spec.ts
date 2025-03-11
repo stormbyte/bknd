@@ -30,14 +30,14 @@ beforeAll(() =>
          method: init?.method ?? "GET",
          // @ts-ignore
          headers: Object.fromEntries(init?.headers?.entries() ?? []),
-         body: init?.body
+         body: init?.body,
       };
 
       return new Response(JSON.stringify({ todos: [1, 2], request }), {
          status: 200,
-         headers: { "Content-Type": "application/json" }
+         headers: { "Content-Type": "application/json" },
       });
-   })
+   }),
 );
 afterAll(unmockFetch);
 
@@ -46,7 +46,7 @@ describe("FetchTask", async () => {
       const task = new FetchTask("Fetch Something", {
          url: "https://jsonplaceholder.typicode.com/todos/1",
          method: "GET",
-         headers: [{ key: "Content-Type", value: "application/json" }]
+         headers: [{ key: "Content-Type", value: "application/json" }],
       });
 
       const result = await task.run();
@@ -62,18 +62,18 @@ describe("FetchTask", async () => {
 
       expect(
          // // @ts-expect-error
-         () => new FetchTask("", { url: "https://jsonplaceholder.typicode.com", method: 1 })
+         () => new FetchTask("", { url: "https://jsonplaceholder.typicode.com", method: 1 }),
       ).toThrow();
 
       expect(
          new FetchTask("", {
             url: "https://jsonplaceholder.typicode.com",
-            method: "invalid"
-         }).execute()
+            method: "invalid",
+         }).execute(),
       ).rejects.toThrow(/^Invalid method/);
 
       expect(
-         () => new FetchTask("", { url: "https://jsonplaceholder.typicode.com", method: "GET" })
+         () => new FetchTask("", { url: "https://jsonplaceholder.typicode.com", method: "GET" }),
       ).toBeDefined();
 
       expect(() => new FetchTask("", { url: "", method: "Invalid" })).toThrow();
@@ -85,17 +85,17 @@ describe("FetchTask", async () => {
          method: "{{ flow.output.method }}",
          headers: [
             { key: "Content-{{ flow.output.headerKey }}", value: "application/json" },
-            { key: "Authorization", value: "Bearer {{ flow.output.apiKey }}" }
+            { key: "Authorization", value: "Bearer {{ flow.output.apiKey }}" },
          ],
          body: JSON.stringify({
-            email: "{{ flow.output.email }}"
-         })
+            email: "{{ flow.output.email }}",
+         }),
       });
       const inputs = {
          headerKey: "Type",
          apiKey: 123,
          email: "what@else.com",
-         method: "PATCH"
+         method: "PATCH",
       };
 
       const flow = new Flow("", [task]);

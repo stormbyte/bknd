@@ -4,10 +4,10 @@ import type {
    HeadObjectRequest,
    ListObjectsV2Output,
    ListObjectsV2Request,
-   PutObjectRequest
+   PutObjectRequest,
 } from "@aws-sdk/client-s3";
 import { AwsClient, isDebug } from "core";
-import { type Static, Type, isFile, parse, pickHeaders } from "core/utils";
+import { type Static, Type, isFile, parse, pickHeaders, pickHeaders2 } from "core/utils";
 import { transform } from "lodash-es";
 import type { FileBody, FileListObject, StorageAdapter } from "../Storage";
 
@@ -20,14 +20,14 @@ export const s3AdapterConfig = Type.Object(
          description: "URL to S3 compatible endpoint without trailing slash",
          examples: [
             "https://{account_id}.r2.cloudflarestorage.com/{bucket}",
-            "https://{bucket}.s3.{region}.amazonaws.com"
-         ]
-      })
+            "https://{bucket}.s3.{region}.amazonaws.com",
+         ],
+      }),
    },
    {
       title: "AWS S3",
-      description: "AWS S3 or compatible storage"
-   }
+      description: "AWS S3 or compatible storage",
+   },
 );
 
 export type S3AdapterConfig = Static<typeof s3AdapterConfig>;
@@ -40,12 +40,12 @@ export class StorageS3Adapter extends AwsClient implements StorageAdapter {
          {
             accessKeyId: config.access_key,
             secretAccessKey: config.secret_access_key,
-            retries: isDebug() ? 0 : 10
+            retries: isDebug() ? 0 : 10,
          },
          {
             convertParams: "pascalToKebab",
-            responseType: "xml"
-         }
+            responseType: "xml",
+         },
       );
       this.#config = parse(s3AdapterConfig, config);
    }
@@ -78,12 +78,12 @@ export class StorageS3Adapter extends AwsClient implements StorageAdapter {
    async listObjects(key: string = ""): Promise<FileListObject[]> {
       const params: Omit<ListObjectsV2Request, "Bucket"> & { ListType: number } = {
          ListType: 2,
-         Prefix: key
+         Prefix: key,
       };
 
       const url = this.getUrl("", params);
       const res = await this.fetchJson<{ ListBucketResult: ListObjectsV2Output }>(url, {
-         method: "GET"
+         method: "GET",
       });
 
       // absolutely weird, but if only one object is there, it's an object, not an array
@@ -98,11 +98,11 @@ export class StorageS3Adapter extends AwsClient implements StorageAdapter {
                acc.push({
                   key: obj.Key,
                   last_modified: obj.LastModified,
-                  size: obj.Size
+                  size: obj.Size,
                });
             }
          },
-         [] as FileListObject[]
+         [] as FileListObject[],
       );
 
       return transformed;
@@ -112,12 +112,12 @@ export class StorageS3Adapter extends AwsClient implements StorageAdapter {
       key: string,
       body: FileBody,
       // @todo: params must be added as headers, skipping for now
-      params: Omit<PutObjectRequest, "Bucket" | "Key"> = {}
+      params: Omit<PutObjectRequest, "Bucket" | "Key"> = {},
    ) {
       const url = this.getUrl(key, {});
       const res = await this.fetch(url, {
          method: "PUT",
-         body
+         body,
       });
 
       if (res.ok) {
@@ -130,14 +130,14 @@ export class StorageS3Adapter extends AwsClient implements StorageAdapter {
 
    private async headObject(
       key: string,
-      params: Pick<HeadObjectRequest, "PartNumber" | "VersionId"> = {}
+      params: Pick<HeadObjectRequest, "PartNumber" | "VersionId"> = {},
    ) {
       const url = this.getUrl(key, {});
       return await this.fetch(url, {
          method: "HEAD",
          headers: {
-            Range: "bytes=0-1"
-         }
+            Range: "bytes=0-1",
+         },
       });
    }
 
@@ -148,7 +148,7 @@ export class StorageS3Adapter extends AwsClient implements StorageAdapter {
 
       return {
          type,
-         size
+         size,
       };
    }
 
@@ -159,7 +159,7 @@ export class StorageS3Adapter extends AwsClient implements StorageAdapter {
     */
    async objectExists(
       key: string,
-      params: Pick<HeadObjectRequest, "PartNumber" | "VersionId"> = {}
+      params: Pick<HeadObjectRequest, "PartNumber" | "VersionId"> = {},
    ) {
       return (await this.headObject(key)).ok;
    }
@@ -171,14 +171,20 @@ export class StorageS3Adapter extends AwsClient implements StorageAdapter {
       const url = this.getUrl(key);
       const res = await this.fetch(url, {
          method: "GET",
-         headers: pickHeaders(headers, ["range"])
+         headers: pickHeaders2(headers, [
+            "range",
+            "if-none-match",
+            "accept-encoding",
+            "accept",
+            "if-modified-since",
+         ]),
       });
 
       // Response has to be copied, because of middlewares that might set headers
       return new Response(res.body, {
          status: res.status,
          statusText: res.statusText,
-         headers: res.headers
+         headers: res.headers,
       });
    }
 
@@ -187,18 +193,18 @@ export class StorageS3Adapter extends AwsClient implements StorageAdapter {
     */
    async deleteObject(
       key: string,
-      params: Omit<DeleteObjectRequest, "Bucket" | "Key"> = {}
+      params: Omit<DeleteObjectRequest, "Bucket" | "Key"> = {},
    ): Promise<void> {
       const url = this.getUrl(key, params);
       const res = await this.fetch(url, {
-         method: "DELETE"
+         method: "DELETE",
       });
    }
 
    toJSON(secrets?: boolean) {
       return {
          type: this.getName(),
-         config: secrets ? this.#config : undefined
+         config: secrets ? this.#config : undefined,
       };
    }
 }

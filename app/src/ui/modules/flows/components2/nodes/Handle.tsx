@@ -6,18 +6,18 @@ export function Handle(props: Omit<HandleProps, "position">) {
       width: 10,
       height: 10,
       background: "transparent",
-      border: "2px solid #999"
+      border: "2px solid #999",
    };
    const offset = -10;
    const styles = {
       target: {
          ...base,
-         left: offset
+         left: offset,
       },
       source: {
          ...base,
-         right: offset
-      }
+         right: offset,
+      },
    };
    //console.log("type", props.type, styles[props.type]);
 

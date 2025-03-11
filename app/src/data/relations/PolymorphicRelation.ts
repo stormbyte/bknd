@@ -15,12 +15,12 @@ export class PolymorphicRelation extends EntityRelation<typeof PolymorphicRelati
       [
          EntityRelation.schema,
          Type.Object({
-            targetCardinality: Type.Optional(Type.Number())
-         })
+            targetCardinality: Type.Optional(Type.Number()),
+         }),
       ],
       {
-         additionalProperties: false
-      }
+         additionalProperties: false,
+      },
    );
 
    constructor(source: Entity, target: Entity, config: Partial<PolymorphicRelationConfig> = {}) {
@@ -63,7 +63,7 @@ export class PolymorphicRelation extends EntityRelation<typeof PolymorphicRelati
          reference_other,
          entityRef,
          otherRef,
-         groupBy
+         groupBy,
       };
    }
 
@@ -72,7 +72,7 @@ export class PolymorphicRelation extends EntityRelation<typeof PolymorphicRelati
 
       return qb
          .innerJoin(other.entity.name, (join) =>
-            join.onRef(entityRef, "=", otherRef).on(whereLhs, "=", reference)
+            join.onRef(entityRef, "=", otherRef).on(whereLhs, "=", reference),
          )
          .groupBy(groupBy);
    }
@@ -83,8 +83,8 @@ export class PolymorphicRelation extends EntityRelation<typeof PolymorphicRelati
       return {
          where: {
             [this.getReferenceField().name]: info.reference_other,
-            [this.getEntityIdField().name]: id
-         }
+            [this.getEntityIdField().name]: id,
+         },
       };
    }
 

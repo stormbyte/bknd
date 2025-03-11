@@ -19,7 +19,7 @@ export function makeCtx(overrides?: Partial<ModuleBuildContext>): ModuleBuildCon
       guard: new Guard(),
       flags: Module.ctx_flags,
       logger: new DebugLogger(false),
-      ...overrides
+      ...overrides,
    };
 }
 

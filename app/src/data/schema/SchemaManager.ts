@@ -58,7 +58,7 @@ export class SchemaManager {
 
    async introspect(): Promise<IntrospectedTable[]> {
       const tables = await this.getIntrospector().getTables({
-         withInternalKyselyTables: false
+         withInternalKyselyTables: false,
       });
 
       const indices = await this.getIntrospector().getIndices();
@@ -71,7 +71,7 @@ export class SchemaManager {
 
          cleanTables.push({
             ...table,
-            indices: indices.filter((index) => index.table === table.name)
+            indices: indices.filter((index) => index.table === table.name),
          });
       }
 
@@ -94,7 +94,7 @@ export class SchemaManager {
             isNullable: true, // managed by the field
             isAutoIncrementing: field instanceof PrimaryField,
             hasDefaultValue: false, // managed by the field
-            comment: undefined
+            comment: undefined,
          })),
          indices: indices.map((index) => ({
             name: index.name,
@@ -102,9 +102,9 @@ export class SchemaManager {
             isUnique: index.unique,
             columns: index.fields.map((f) => ({
                name: f.name,
-               order: 0 // doesn't matter
-            }))
-         })) as any
+               order: 0, // doesn't matter
+            })),
+         })) as any,
       };
    }
 
@@ -131,12 +131,12 @@ export class SchemaManager {
                columns: {
                   add: [],
                   drop: [],
-                  change: []
+                  change: [],
                },
                indices: {
                   add: [],
-                  drop: []
-               }
+                  drop: [],
+               },
             });
          });
 
@@ -151,22 +151,22 @@ export class SchemaManager {
                columns: {
                   add: entity.columns.map(namesFn),
                   drop: [],
-                  change: []
+                  change: [],
                },
                indices: {
                   add: entity.indices.map(namesFn),
-                  drop: []
-               }
+                  drop: [],
+               },
             });
          } else {
             // If the table exists, check for new columns
             const newColumns = entity.columns.filter(
-               (newColumn) => !table.columns.map(namesFn).includes(newColumn.name)
+               (newColumn) => !table.columns.map(namesFn).includes(newColumn.name),
             );
 
             // check for columns to drop
             const dropColumns = table.columns.filter(
-               (oldColumn) => !entity.columns.map(namesFn).includes(oldColumn.name)
+               (oldColumn) => !entity.columns.map(namesFn).includes(oldColumn.name),
             );
 
             // check for changed columns
@@ -179,25 +179,25 @@ export class SchemaManager {
                      col_diffs.push({
                         attribute: key,
                         prev: db_col[key],
-                        next: value
+                        next: value,
                      });
                   }
                }
                if (Object.keys(col_diffs).length > 0) {
                   columnDiffs.push({
                      name: entity_col.name,
-                     changes: col_diffs
+                     changes: col_diffs,
                   });
                }
             }
 
             // new indices
             const newIndices = entity.indices.filter(
-               (newIndex) => !table.indices.map((i) => i.name).includes(newIndex.name)
+               (newIndex) => !table.indices.map((i) => i.name).includes(newIndex.name),
             );
 
             const dropIndices = table.indices.filter(
-               (oldIndex) => !entity.indices.map((i) => i.name).includes(oldIndex.name)
+               (oldIndex) => !entity.indices.map((i) => i.name).includes(oldIndex.name),
             );
 
             const anythingChanged = [
@@ -205,7 +205,7 @@ export class SchemaManager {
                dropColumns,
                //columnDiffs, // ignored
                newIndices,
-               dropIndices
+               dropIndices,
             ].some((arr) => arr.length > 0);
 
             if (anythingChanged) {
@@ -217,12 +217,12 @@ export class SchemaManager {
                      drop: dropColumns.map(namesFn),
                      // @todo: this is ignored for now
                      //change: columnDiffs.map(namesFn),
-                     change: []
+                     change: [],
                   },
                   indices: {
                      add: newIndices.map(namesFn),
-                     drop: dropIndices.map(namesFn)
-                  }
+                     drop: dropIndices.map(namesFn),
+                  },
                });
             }
          }

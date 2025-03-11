@@ -8,7 +8,7 @@ export class WithBuilder {
       em: EntityManager<any>,
       qb: RepositoryQB,
       entity: Entity,
-      withs: RepoQuery["with"]
+      withs: RepoQuery["with"],
    ) {
       if (!withs || !isObject(withs)) {
          console.warn(`'withs' undefined or invalid, given: ${JSON.stringify(withs)}`);
@@ -36,8 +36,8 @@ export class WithBuilder {
             if (query) {
                subQuery = em.repo(other.entity).addOptionsToQueryBuilder(subQuery, query as any, {
                   ignore: ["with", "join", cardinality === 1 ? "limit" : undefined].filter(
-                     Boolean
-                  ) as any
+                     Boolean,
+                  ) as any,
                });
             }
 
@@ -64,7 +64,7 @@ export class WithBuilder {
          const related = em.relationOf(entity, ref);
          if (!related) {
             throw new InvalidSearchParamsException(
-               `WITH: "${ref}" is not a relation of "${entity}"`
+               `WITH: "${ref}" is not a relation of "${entity}"`,
             );
          }
          depth++;

@@ -15,7 +15,7 @@ export function getBindings<T extends GetBindingType>(env: any, type: T): Bindin
          if (env[key] && (env[key] as any).constructor.name === type) {
             bindings.push({
                key,
-               value: env[key] as BindingTypeMap[T]
+               value: env[key] as BindingTypeMap[T],
             });
          }
       } catch (e) {}

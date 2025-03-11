@@ -13,9 +13,7 @@ export class DeserializeJsonValuesPlugin implements KyselyPlugin {
    transformQuery(args: PluginTransformQueryArgs): RootOperationNode {
       return args.node;
    }
-   transformResult(
-      args: PluginTransformResultArgs
-   ): Promise<QueryResult<UnknownRow>> {
+   transformResult(args: PluginTransformResultArgs): Promise<QueryResult<UnknownRow>> {
       return Promise.resolve({
          ...args.result,
          rows: args.result.rows.map((row: KeyValueObject) => {

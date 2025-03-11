@@ -14,7 +14,7 @@ export function TaskForm({ task, onChange, ...props }: TaskFormProps) {
    const uiSchema = Object.fromEntries(
       Object.keys(schema.properties).map((key) => {
          return [key, { "ui:field": "template", "ui:fieldReplacesAnyOrOneOf": true }];
-      })
+      }),
    );
    //console.log("uiSchema", uiSchema);
 

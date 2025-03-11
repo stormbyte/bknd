@@ -2,9 +2,9 @@
 
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { createApp, registries } from "../../src";
-import { StorageLocalAdapter } from "../../src/adapter/node";
 import { mergeObject, randomString } from "../../src/core/utils";
 import type { TAppMediaConfig } from "../../src/media/media-schema";
+import { StorageLocalAdapter } from "../../src/media/storage/adapters/StorageLocalAdapter";
 import { assetsPath, assetsTmpPath, disableConsoleLog, enableConsoleLog } from "../helper";
 
 beforeAll(() => {
@@ -22,13 +22,13 @@ async function makeApp(mediaOverride: Partial<TAppMediaConfig> = {}) {
                adapter: {
                   type: "local",
                   config: {
-                     path: assetsTmpPath
-                  }
-               }
+                     path: assetsTmpPath,
+                  },
+               },
             },
-            mediaOverride
-         )
-      }
+            mediaOverride,
+         ),
+      },
    });
 
    await app.build();
@@ -43,16 +43,17 @@ beforeAll(disableConsoleLog);
 afterAll(enableConsoleLog);
 
 describe("MediaController", () => {
-   test("accepts direct", async () => {
+   test.only("accepts direct", async () => {
       const app = await makeApp();
 
       const file = Bun.file(path);
       const name = makeName("png");
       const res = await app.server.request("/api/media/upload/" + name, {
          method: "POST",
-         body: file
+         body: file,
       });
       const result = (await res.json()) as any;
+      console.log(result);
       expect(result.name).toBe(name);
 
       const destFile = Bun.file(assetsTmpPath + "/" + name);
@@ -70,7 +71,7 @@ describe("MediaController", () => {
 
       const res = await app.server.request("/api/media/upload/" + name, {
          method: "POST",
-         body: form
+         body: form,
       });
       const result = (await res.json()) as any;
       expect(result.name).toBe(name);
@@ -87,7 +88,7 @@ describe("MediaController", () => {
       const name = makeName("png");
       const res = await app.server.request("/api/media/upload/" + name, {
          method: "POST",
-         body: file
+         body: file,
       });
 
       expect(res.status).toBe(413);

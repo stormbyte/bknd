@@ -88,14 +88,32 @@ const { data } = await api.data.readMany("posts", {
    limit: 10,
    offset: 0,
    select: ["id", "title", "views"],
-   with: ["comments"],
+   with: {
+      // join last 2 comments
+      comments: {
+         with: {
+            // along with the comments' user
+            users: {}
+         },
+         limit: 2,
+         sort: "-id"
+      },
+      // also get the first 2 images, but only the path
+      images: {
+         select: ["path"],
+         limit: 2
+      }
+   },
    where: {
+      // same as '{ title: { $eg: "Hello, World!" } }'
       title: "Hello, World!",
+      // only with views greater than 100
       views: {
          $gt: 100
       }
    },
-   sort: { by: "views", order: "desc" }
+   // sort by views descending (without "-" would be ascending)
+   sort: "-views"
 });
 ```
 The `with` property automatically adds the related entries to the response.
@@ -116,6 +134,15 @@ const { data } = await api.data.createOne("posts", {
 });
 ```
 
+### `data.createMany([entity], [data])`
+To create many records of an entity, use the `createMany` method:
+```ts
+const { data } = await api.data.createMany("posts", [
+   { title: "Hello, World!" },
+   { title: "Again, Hello." },
+]);
+```
+
 ### `data.updateOne([entity], [id], [data])`
 To update a single record of an entity, use the `updateOne` method:
 ```ts
@@ -124,10 +151,24 @@ const { data } = await api.data.updateOne("posts", 1, {
 });
 ```
 
+### `data.updateMany([entity], [where], [update])`
+To update many records of an entity, use the `updateMany` method:
+```ts
+const { data } = await api.data.updateMany("posts", { views: { $gt: 1 } }, {
+   title: "viewed more than once"
+});
+```
+
 ### `data.deleteOne([entity], [id])`
 To delete a single record of an entity, use the `deleteOne` method:
 ```ts
 const { data } = await api.data.deleteOne("posts", 1);
+```
+
+### `data.deleteMany([entity], [where])`
+To delete many records of an entity, use the `deleteMany` method:
+```ts
+const { data } = await api.data.deleteMany("posts", { views: { $lte: 1 } });
 ```
 
 ## Auth (`api.auth`)

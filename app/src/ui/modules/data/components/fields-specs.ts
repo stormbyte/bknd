@@ -7,7 +7,7 @@ import {
    TbPhoto,
    TbSelector,
    TbTextCaption,
-   TbToggleLeft
+   TbToggleLeft,
 } from "react-icons/tb";
 
 export type TFieldSpec = {
@@ -26,55 +26,55 @@ export const fieldSpecs: TFieldSpec[] = [
       icon: TbTextCaption,
       addable: false,
       disabled: ["name"],
-      hidden: ["virtual"]
+      hidden: ["virtual"],
    },
    {
       type: "text",
       label: "Text",
-      icon: TbTextCaption
+      icon: TbTextCaption,
    },
    {
       type: "number",
       label: "Number",
-      icon: TbNumber123
+      icon: TbNumber123,
    },
    {
       type: "boolean",
       label: "Boolean",
-      icon: TbToggleLeft
+      icon: TbToggleLeft,
    },
    {
       type: "date",
       label: "Date",
-      icon: TbCalendar
+      icon: TbCalendar,
    },
    {
       type: "enum",
       label: "Enum",
-      icon: TbSelector
+      icon: TbSelector,
    },
    {
       type: "json",
       label: "JSON",
-      icon: TbBraces
+      icon: TbBraces,
    },
    {
       type: "jsonschema",
       label: "JSON Schema",
-      icon: TbCodePlus
+      icon: TbCodePlus,
    },
    {
       type: "relation",
       label: "Relation",
       icon: TbCirclesRelation,
       addable: false,
-      hidden: ["virtual"]
+      hidden: ["virtual"],
    },
    {
       type: "media",
       label: "Media",
       icon: TbPhoto,
       addable: false,
-      hidden: ["virtual"]
-   }
+      hidden: ["virtual"],
+   },
 ];

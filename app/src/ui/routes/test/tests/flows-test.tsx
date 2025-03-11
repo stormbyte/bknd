@@ -9,7 +9,7 @@ import {
    IconPlayerPlay,
    IconPlus,
    IconTrash,
-   IconWorld
+   IconWorld,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { TbPlayerPlayFilled } from "react-icons/tb";
@@ -30,9 +30,9 @@ const TRIGGERS = {
          mode: "sync",
          method: "GET",
          response_type: "json",
-         path: "/trigger_http"
-      }
-   }
+         path: "/trigger_http",
+      },
+   },
 };
 
 const TASKS = {
@@ -41,9 +41,9 @@ const TASKS = {
       params: {
          method: "GET",
          headers: [],
-         url: "https://jsonplaceholder.typicode.com/todos/1"
-      }
-   }
+         url: "https://jsonplaceholder.typicode.com/todos/1",
+      },
+   },
 };
 
 export default function FlowsTest() {
@@ -63,7 +63,7 @@ const NodeHeader = ({
    iconProps,
    rightSection,
    initialValue,
-   onChange
+   onChange,
 }: {
    Icon: React.FC<any>;
    iconProps?: ElementProps<"svg">;
@@ -100,7 +100,7 @@ const TriggerComponent = () => {
                   data={[
                      { label: "Manual", value: "manual" },
                      { label: "HTTP", value: "http" },
-                     { label: "Event", value: "event", disabled: true }
+                     { label: "Event", value: "event", disabled: true },
                   ]}
                />
                <SegmentedControl
@@ -108,7 +108,7 @@ const TriggerComponent = () => {
                   defaultValue="async"
                   data={[
                      { label: "Async", value: "async" },
-                     { label: "Sync", value: "sync" }
+                     { label: "Sync", value: "sync" },
                   ]}
                />
             </div>
@@ -134,7 +134,7 @@ const TriggerComponent = () => {
                   data={[
                      { label: "JSON", value: "json" },
                      { label: "HTML", value: "html" },
-                     { label: "Text", value: "text" }
+                     { label: "Text", value: "text" },
                   ]}
                />
             </div>

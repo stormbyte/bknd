@@ -7,7 +7,7 @@ import {
    StringEnum,
    StringIdentifier,
    Type,
-   registerCustomTypeboxKinds
+   registerCustomTypeboxKinds,
 } from "core/utils";
 import { ManyToOneRelation, type RelationType, RelationTypes } from "data";
 import { type ReactNode, startTransition, useEffect } from "react";
@@ -32,30 +32,30 @@ const Relations: {
    {
       type: RelationTypes.ManyToOne,
       label: "Many to One",
-      component: ManyToOne
+      component: ManyToOne,
    },
    {
       type: RelationTypes.OneToOne,
       label: "One to One",
-      component: OneToOne
+      component: OneToOne,
    },
    {
       type: RelationTypes.ManyToMany,
       label: "Many to Many",
-      component: ManyToMany
+      component: ManyToMany,
    },
    {
       type: RelationTypes.Polymorphic,
       label: "Polymorphic",
-      component: Polymorphic
-   }
+      component: Polymorphic,
+   },
 ];
 
 const schema = Type.Object({
    type: StringEnum(Relations.map((r) => r.type)),
    source: StringIdentifier,
    target: StringIdentifier,
-   config: Type.Object({})
+   config: Type.Object({}),
 });
 
 type ComponentCtx<T extends FieldValues = FieldValues> = {
@@ -75,10 +75,10 @@ export function StepRelation() {
       formState: { isValid },
       setValue,
       watch,
-      control
+      control,
    } = useForm({
       resolver: typeboxResolver(schema),
-      defaultValues: (state.relations?.create?.[0] ?? {}) as Static<typeof schema>
+      defaultValues: (state.relations?.create?.[0] ?? {}) as Static<typeof schema>,
    });
    const data = watch();
 
@@ -88,8 +88,8 @@ export function StepRelation() {
             return {
                ...prev,
                relations: {
-                  create: [data]
-               }
+                  create: [data],
+               },
             };
          });
          console.log("data", data);
@@ -131,7 +131,7 @@ export function StepRelation() {
                      data={Object.entries(entities ?? {}).map(([name, entity]) => ({
                         value: name,
                         label: entity.config?.name ?? name,
-                        disabled: data.target === name
+                        disabled: data.target === name,
                      }))}
                   />
                   <div className="flex flex-col gap-1">
@@ -159,7 +159,7 @@ export function StepRelation() {
                      data={Object.entries(entities ?? {}).map(([name, entity]) => ({
                         value: name,
                         label: entity.config?.name ?? name,
-                        disabled: data.source === name
+                        disabled: data.source === name,
                      }))}
                   />
                </div>
@@ -169,7 +169,7 @@ export function StepRelation() {
                      Relations.find((r) => r.type === data.type)?.component({
                         register,
                         control,
-                        data
+                        data,
                      })}
                </div>
             </ModalBody>
@@ -177,7 +177,7 @@ export function StepRelation() {
                next={{
                   type: "submit",
                   disabled: !isValid,
-                  onClick: handleNext
+                  onClick: handleNext,
                }}
                prev={{ onClick: stepBack }}
                debug={{ state, path, data }}
@@ -267,8 +267,8 @@ function OneToOne({
    data: {
       source,
       target,
-      config: { mappedBy, required }
-   }
+      config: { mappedBy, required },
+   },
 }: ComponentCtx) {
    return (
       <>

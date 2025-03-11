@@ -26,7 +26,7 @@ describe("SchemaManager tests", async () => {
                isNullable: true,
                isAutoIncrementing: true,
                hasDefaultValue: false,
-               comment: undefined
+               comment: undefined,
             },
             {
                name: "username",
@@ -34,7 +34,7 @@ describe("SchemaManager tests", async () => {
                isNullable: true,
                isAutoIncrementing: false,
                hasDefaultValue: false,
-               comment: undefined
+               comment: undefined,
             },
             {
                name: "email",
@@ -42,7 +42,7 @@ describe("SchemaManager tests", async () => {
                isNullable: true,
                isAutoIncrementing: false,
                hasDefaultValue: false,
-               comment: undefined
+               comment: undefined,
             },
             {
                name: "bio",
@@ -50,8 +50,8 @@ describe("SchemaManager tests", async () => {
                isNullable: true,
                isAutoIncrementing: false,
                hasDefaultValue: false,
-               comment: undefined
-            }
+               comment: undefined,
+            },
          ],
          indices: [
             {
@@ -61,11 +61,11 @@ describe("SchemaManager tests", async () => {
                columns: [
                   {
                      name: "email",
-                     order: 0
-                  }
-               ]
-            }
-         ]
+                     order: 0,
+                  },
+               ],
+            },
+         ],
       });
    });
 
@@ -77,10 +77,10 @@ describe("SchemaManager tests", async () => {
             new Entity(table, [
                new TextField("username"),
                new TextField("email"),
-               new TextField("bio")
-            ])
+               new TextField("bio"),
+            ]),
          ],
-         dummyConnection
+         dummyConnection,
       );
       const kysely = em.connection.kysely;
 
@@ -101,8 +101,8 @@ describe("SchemaManager tests", async () => {
             name: table,
             isNew: false,
             columns: { add: ["bio"], drop: [], change: [] },
-            indices: { add: [], drop: [index] }
-         }
+            indices: { add: [], drop: [index] },
+         },
       ]);
 
       // now sync
@@ -119,7 +119,7 @@ describe("SchemaManager tests", async () => {
       const table = "drop_column";
       const em = new EntityManager(
          [new Entity(table, [new TextField("username")])],
-         dummyConnection
+         dummyConnection,
       );
       const kysely = em.connection.kysely;
 
@@ -141,10 +141,10 @@ describe("SchemaManager tests", async () => {
             columns: {
                add: [],
                drop: ["email"],
-               change: []
+               change: [],
             },
-            indices: { add: [], drop: [] }
-         }
+            indices: { add: [], drop: [] },
+         },
       ]);
 
       // now sync
@@ -165,15 +165,15 @@ describe("SchemaManager tests", async () => {
             new Entity(usersTable, [
                new TextField("username"),
                new TextField("email"),
-               new TextField("bio")
+               new TextField("bio"),
             ]),
             new Entity(postsTable, [
                new TextField("title"),
                new TextField("content"),
-               new TextField("created_at")
-            ])
+               new TextField("created_at"),
+            ]),
          ],
-         dummyConnection
+         dummyConnection,
       );
       const kysely = em.connection.kysely;
 
@@ -192,7 +192,7 @@ describe("SchemaManager tests", async () => {
             name: usersTable,
             isNew: false,
             columns: { add: ["bio"], drop: [], change: [] },
-            indices: { add: [], drop: [] }
+            indices: { add: [], drop: [] },
          },
          {
             name: postsTable,
@@ -200,10 +200,10 @@ describe("SchemaManager tests", async () => {
             columns: {
                add: ["id", "title", "content", "created_at"],
                drop: [],
-               change: []
+               change: [],
             },
-            indices: { add: [], drop: [] }
-         }
+            indices: { add: [], drop: [] },
+         },
       ]);
 
       // now sync
@@ -228,8 +228,8 @@ describe("SchemaManager tests", async () => {
             name: entity.name,
             isNew: true,
             columns: { add: ["id", "email"], drop: [], change: [] },
-            indices: { add: [index.name!], drop: [] }
-         }
+            indices: { add: [index.name!], drop: [] },
+         },
       ]);
 
       // sync and then check again
@@ -256,8 +256,8 @@ describe("SchemaManager tests", async () => {
             name: entity.name,
             isNew: false,
             columns: { add: [], drop: [], change: [] },
-            indices: { add: [index.name!], drop: [] }
-         }
+            indices: { add: [index.name!], drop: [] },
+         },
       ]);
 
       // sync and then check again

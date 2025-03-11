@@ -15,11 +15,11 @@ const triggerSchemas = Object.values(
       Type.Object(
          {
             type: Const(name),
-            config: trigger.cls.schema
+            config: trigger.cls.schema,
          },
-         { title: String(name), additionalProperties: false }
-      )
-   )
+         { title: String(name), additionalProperties: false },
+      ),
+   ),
 );
 
 export function TriggerComponent({

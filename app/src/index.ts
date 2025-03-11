@@ -4,7 +4,8 @@ export {
    AppEvents,
    type AppConfig,
    type CreateAppConfig,
-   type AppPlugin
+   type AppPlugin,
+   type LocalApiOptions,
 } from "./App";
 
 export {
@@ -14,7 +15,7 @@ export {
    type ModuleSchemas,
    type ModuleManagerOptions,
    type ModuleBuildContext,
-   type InitialModuleConfigs
+   type InitialModuleConfigs,
 } from "./modules/ModuleManager";
 
 export * as middlewares from "modules/middlewares";

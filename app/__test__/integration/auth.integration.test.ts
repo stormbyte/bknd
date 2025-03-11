@@ -16,25 +16,25 @@ const roles = {
             "system.schema.read",
             "system.access.api",
             "system.config.read",
-            "data.entity.read"
+            "data.entity.read",
          ],
-         is_default: true
+         is_default: true,
       },
       admin: {
          is_default: true,
-         implicit_allow: true
-      }
+         implicit_allow: true,
+      },
    },
    strict: {
       guest: {
          permissions: ["system.access.api", "system.config.read", "data.entity.read"],
-         is_default: true
+         is_default: true,
       },
       admin: {
          is_default: true,
-         implicit_allow: true
-      }
-   }
+         implicit_allow: true,
+      },
+   },
 };
 const configs = {
    auth: {
@@ -42,31 +42,31 @@ const configs = {
       entity_name: "users",
       jwt: {
          secret: secureRandomString(20),
-         issuer: randomString(10)
+         issuer: randomString(10),
       },
       roles: roles.strict,
       guard: {
-         enabled: true
-      }
+         enabled: true,
+      },
    },
    users: {
       normal: {
          email: "normal@bknd.io",
-         password: "12345678"
+         password: "12345678",
       },
       admin: {
          email: "admin@bknd.io",
          password: "12345678",
-         role: "admin"
-      }
-   }
+         role: "admin",
+      },
+   },
 };
 
 function createAuthApp() {
    const app = createApp({
       initialConfig: {
-         auth: configs.auth
-      }
+         auth: configs.auth,
+      },
    });
 
    app.emgr.onEvent(
@@ -75,7 +75,7 @@ function createAuthApp() {
          await app.createUser(configs.users.normal);
          await app.createUser(configs.users.admin);
       },
-      "sync"
+      "sync",
    );
 
    return app;
@@ -94,14 +94,14 @@ const fns = <Mode extends "cookie" | "token" = "token">(app: App, mode?: Mode) =
       if (mode === "cookie") {
          return {
             cookie: `auth=${token};`,
-            ...additional
+            ...additional,
          };
       }
 
       return {
          Authorization: token ? `Bearer ${token}` : "",
          "Content-Type": "application/json",
-         ...additional
+         ...additional,
       };
    }
    function body(obj?: Record<string, any>) {
@@ -118,12 +118,12 @@ const fns = <Mode extends "cookie" | "token" = "token">(app: App, mode?: Mode) =
 
    return {
       login: async (
-         user: any
+         user: any,
       ): Promise<{ res: Response; data: Mode extends "token" ? AuthResponse : string }> => {
          const res = (await app.server.request("/api/auth/password/login", {
             method: "POST",
             headers: headers(),
-            body: body(user)
+            body: body(user),
          })) as Response;
 
          const data = mode === "cookie" ? getCookie(res, "auth") : await res.json();
@@ -133,10 +133,10 @@ const fns = <Mode extends "cookie" | "token" = "token">(app: App, mode?: Mode) =
       me: async (token?: string): Promise<Pick<AuthResponse, "user">> => {
          const res = (await app.server.request("/api/auth/me", {
             method: "GET",
-            headers: headers(token)
+            headers: headers(token),
          })) as Response;
          return await res.json();
-      }
+      },
    };
 };
 
@@ -219,7 +219,7 @@ describe("integration auth", () => {
 
       app.server.get("/get", auth(), async (c) => {
          return c.json({
-            user: c.get("auth").user ?? null
+            user: c.get("auth").user ?? null,
          });
       });
       app.server.get("/wait", auth(), async (c) => {
@@ -232,7 +232,7 @@ describe("integration auth", () => {
       expect(me.user.email).toBe(configs.users.normal.email);
 
       app.server.request("/wait", {
-         headers: { Authorization: `Bearer ${data.token}` }
+         headers: { Authorization: `Bearer ${data.token}` },
       });
 
       {

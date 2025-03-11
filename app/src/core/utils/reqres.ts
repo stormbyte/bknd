@@ -18,6 +18,16 @@ export function pickHeaders(headers: Headers, keys: string[]): Record<string, st
    return res;
 }
 
+export function pickHeaders2(headers: Headers, keys: string[]): Headers {
+   const newHeaders = new Headers();
+   for (const key of keys) {
+      if (headers.has(key)) {
+         newHeaders.set(key, headers.get(key)!);
+      }
+   }
+   return newHeaders;
+}
+
 export const replaceUrlParam = (urlString: string, params: Record<string, string>) => {
    let newString = urlString;
    for (const [k, v] of Object.entries(params)) {
@@ -161,11 +171,11 @@ const FILE_SIGNATURES: Record<string, string> = {
    FFF9: "audio/aac",
    "52494646????41564920": "audio/wav",
    "52494646????57415645": "audio/wave",
-   "52494646????415550": "audio/aiff"
+   "52494646????415550": "audio/aiff",
 };
 
 async function detectMimeType(
-   input: ReadableStream | ArrayBuffer | ArrayBufferView | string | Blob | File | null
+   input: ReadableStream | ArrayBuffer | ArrayBufferView | string | Blob | File | null,
 ): Promise<string | undefined> {
    if (!input) return;
 
@@ -202,7 +212,7 @@ async function detectMimeType(
 
 export async function blobToFile(
    blob: Blob | File | unknown,
-   overrides: FilePropertyBag & { name?: string } = {}
+   overrides: FilePropertyBag & { name?: string } = {},
 ): Promise<File> {
    if (isFile(blob)) return blob;
    if (!isBlob(blob)) throw new Error("Not a Blob");
@@ -215,7 +225,7 @@ export async function blobToFile(
 
    return new File([blob], name, {
       type: type || guess(name),
-      lastModified: Date.now()
+      lastModified: Date.now(),
    });
 }
 
@@ -340,5 +350,5 @@ export const enum HttpStatus {
    INSUFFICIENT_STORAGE = 507,
    LOOP_DETECTED = 508,
    NOT_EXTENDED = 510,
-   NETWORK_AUTHENTICATION_REQUIRED = 511
+   NETWORK_AUTHENTICATION_REQUIRED = 511,
 }

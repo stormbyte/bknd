@@ -16,7 +16,6 @@ import ModalTest from "../../routes/test/tests/modal-test";
 import QueryJsonFormTest from "../../routes/test/tests/query-jsonform";
 import DropdownTest from "./tests/dropdown-test";
 import DropzoneElementTest from "./tests/dropzone-element-test";
-import EntityFieldsForm from "./tests/entity-fields-form";
 import FlowsTest from "./tests/flows-test";
 import JsonSchemaForm3 from "./tests/json-schema-form3";
 import JsonFormTest from "./tests/jsonform-test";
@@ -27,9 +26,11 @@ import ReactFlowTest from "./tests/reactflow-test";
 import SchemaTest from "./tests/schema-test";
 import SortableTest from "./tests/sortable-test";
 import { SqlAiTest } from "./tests/sql-ai-test";
+import Themes from "./tests/themes";
 
 const tests = {
    DropdownTest,
+   Themes,
    ModalTest,
    JsonFormTest,
    FlowFormTest,
@@ -42,7 +43,6 @@ const tests = {
    SqlAiTest,
    SortableTest,
    ReactHookErrors,
-   EntityFieldsForm,
    FlowsTest,
    AppShellAccordionsTest,
    SwaggerTest,
@@ -52,7 +52,7 @@ const tests = {
    JsonSchemaFormReactTest,
    JsonSchemaForm3,
    FormyTest,
-   HtmlFormTest
+   HtmlFormTest,
 } as const;
 
 export default function TestRoutes() {

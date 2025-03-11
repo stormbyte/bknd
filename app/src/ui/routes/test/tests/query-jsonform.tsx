@@ -9,52 +9,52 @@ const schema: Schema = {
          anyOf: [
             {
                title: "String",
-               type: "string"
+               type: "string",
             },
             {
                title: "Number",
-               type: "number"
+               type: "number",
             },
             {
                title: "Boolean",
-               type: "boolean"
-            }
-         ]
+               type: "boolean",
+            },
+         ],
       },
       numeric: {
          anyOf: [
             {
                title: "Number",
-               type: "number"
+               type: "number",
             },
             {
                title: "Datetime",
                type: "string",
-               format: "date-time"
+               format: "date-time",
             },
             {
                title: "Date",
                type: "string",
-               format: "date"
+               format: "date",
             },
             {
                title: "Time",
                type: "string",
-               format: "time"
-            }
-         ]
+               format: "time",
+            },
+         ],
       },
       boolean: {
          title: "Boolean",
-         type: "boolean"
-      }
+         type: "boolean",
+      },
    },
    type: "object",
    properties: {
       operand: {
          enum: ["$and", "$or"],
          default: "$and",
-         type: "string"
+         type: "string",
       },
       conditions: {
          type: "array",
@@ -64,10 +64,10 @@ const schema: Schema = {
                operand: {
                   enum: ["$and", "$or"],
                   default: "$and",
-                  type: "string"
+                  type: "string",
                },
                key: {
-                  type: "string"
+                  type: "string",
                },
                operator: {
                   type: "array",
@@ -78,30 +78,30 @@ const schema: Schema = {
                            type: "object",
                            properties: {
                               $eq: {
-                                 $ref: "#/definitions/primitive"
-                              }
+                                 $ref: "#/definitions/primitive",
+                              },
                            },
-                           required: ["$eq"]
+                           required: ["$eq"],
                         },
                         {
                            title: "Lower than",
                            type: "object",
                            properties: {
                               $lt: {
-                                 $ref: "#/definitions/numeric"
-                              }
+                                 $ref: "#/definitions/numeric",
+                              },
                            },
-                           required: ["$lt"]
+                           required: ["$lt"],
                         },
                         {
                            title: "Greather than",
                            type: "object",
                            properties: {
                               $gt: {
-                                 $ref: "#/definitions/numeric"
-                              }
+                                 $ref: "#/definitions/numeric",
+                              },
                            },
-                           required: ["$gt"]
+                           required: ["$gt"],
                         },
                         {
                            title: "Between",
@@ -110,13 +110,13 @@ const schema: Schema = {
                               $between: {
                                  type: "array",
                                  items: {
-                                    $ref: "#/definitions/numeric"
+                                    $ref: "#/definitions/numeric",
                                  },
                                  minItems: 2,
-                                 maxItems: 2
-                              }
+                                 maxItems: 2,
+                              },
                            },
-                           required: ["$between"]
+                           required: ["$between"],
                         },
                         {
                            title: "In",
@@ -125,23 +125,23 @@ const schema: Schema = {
                               $in: {
                                  type: "array",
                                  items: {
-                                    $ref: "#/definitions/primitive"
+                                    $ref: "#/definitions/primitive",
                                  },
-                                 minItems: 1
-                              }
-                           }
-                        }
-                     ]
+                                 minItems: 1,
+                              },
+                           },
+                        },
+                     ],
                   },
-                  minItems: 1
-               }
+                  minItems: 1,
+               },
             },
-            required: ["key", "operator"]
+            required: ["key", "operator"],
          },
-         minItems: 1
-      }
+         minItems: 1,
+      },
    },
-   required: ["operand", "conditions"]
+   required: ["operand", "conditions"],
 };
 
 export default function QueryJsonFormTest() {

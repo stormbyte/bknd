@@ -52,7 +52,7 @@ export function DataEntityCreate({ params }) {
       action: "create",
       entity: entity,
       initialData: search.value,
-      onSubmitted
+      onSubmitted,
    });
 
    const fieldsDisabled = $q.isLoading || $q.isValidating || Form.state.isSubmitting;
@@ -83,7 +83,7 @@ export function DataEntityCreate({ params }) {
             <Breadcrumbs2
                path={[
                   { label: entity.label, href: routes.data.entity.list(entity.name) },
-                  { label: "Create" }
+                  { label: "Create" },
                ]}
             />
          </AppShell.SectionHeader>

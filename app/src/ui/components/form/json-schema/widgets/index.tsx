@@ -26,5 +26,5 @@ export const widgets = {
    CheckboxWidget: WithLabel(CheckboxWidget),
    SelectWidget: WithLabel(SelectWidget, "select"),
    CheckboxesWidget: WithLabel(CheckboxesWidget),
-   JsonWidget: WithLabel(JsonWidget)
+   JsonWidget: WithLabel(JsonWidget),
 };

@@ -30,11 +30,11 @@ export type LoginFormProps = Omit<ComponentPropsWithoutRef<"form">, "onSubmit" |
 const validator = new TypeboxValidator();
 const schema = Type.Object({
    email: Type.String({
-      pattern: "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$"
+      pattern: "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$",
    }),
    password: Type.String({
-      minLength: 8 // @todo: this should be configurable
-   })
+      minLength: 8, // @todo: this should be configurable
+   }),
 });
 
 export function AuthForm({
@@ -49,7 +49,7 @@ export function AuthForm({
    const basepath = auth?.basepath ?? "/api/auth";
    const password = {
       action: `${basepath}/password/${action}`,
-      strategy: auth?.strategies?.password ?? ({ type: "password" } as const)
+      strategy: auth?.strategies?.password ?? ({ type: "password" } as const),
    };
 
    const oauth = transform(
@@ -59,7 +59,7 @@ export function AuthForm({
             result[key] = value.config;
          }
       },
-      {}
+      {},
    ) as Record<string, AppAuthOAuthStrategy>;
    const has_oauth = Object.keys(oauth).length > 0;
 

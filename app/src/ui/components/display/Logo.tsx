@@ -11,7 +11,7 @@ export function Logo({
 
    const dim = {
       width: Math.round(578 * scale),
-      height: Math.round(188 * scale)
+      height: Math.round(188 * scale),
    } as const;
 
    return (

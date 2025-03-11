@@ -4,14 +4,15 @@ import {
    type ComponentPropsWithoutRef,
    Fragment,
    type ReactElement,
+   type ReactNode,
    cloneElement,
-   useState
+   useState,
 } from "react";
 import { twMerge } from "tailwind-merge";
 import { useEvent } from "ui/hooks/use-event";
 
 export type DropdownItem =
-   | (() => JSX.Element)
+   | (() => ReactNode)
    | {
         label: string | ReactElement;
         icon?: any;
@@ -36,7 +37,7 @@ export type DropdownProps = {
    onClickItem?: (item: DropdownItem) => void;
    renderItem?: (
       item: DropdownItem,
-      props: { key: number; onClick: () => void }
+      props: { key: number; onClick: () => void },
    ) => DropdownClickableChild;
 };
 
@@ -52,7 +53,7 @@ export function Dropdown({
    onClickItem,
    renderItem,
    itemsClassName,
-   className
+   className,
 }: DropdownProps) {
    const [open, setOpen] = useState(defaultOpen);
    const [position, setPosition] = useState(initialPosition);
@@ -61,7 +62,7 @@ export function Dropdown({
    const [_offset, _setOffset] = useState(0);
 
    const toggle = useEvent((delay: number = 50) =>
-      setTimeout(() => setOpen((prev) => !prev), typeof delay === "number" ? delay : 0)
+      setTimeout(() => setOpen((prev) => !prev), typeof delay === "number" ? delay : 0),
    );
 
    const onClickHandler = openEvent === "onClick" ? toggle : undefined;
@@ -106,7 +107,7 @@ export function Dropdown({
       "bottom-start": { top: "100%", left: _offset, marginTop: offset },
       "bottom-end": { right: _offset, top: "100%", marginTop: offset },
       "top-start": { bottom: "100%", marginBottom: offset },
-      "top-end": { bottom: "100%", right: _offset, marginBottom: offset }
+      "top-end": { bottom: "100%", right: _offset, marginBottom: offset },
    }[position];
 
    const internalOnClickItem = useEvent((item) => {
@@ -132,7 +133,7 @@ export function Dropdown({
                   "flex flex-row flex-nowrap text-nowrap items-center outline-none cursor-pointer px-2.5 rounded-md link leading-none h-8",
                   itemsClassName,
                   item.disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-primary/10",
-                  item.destructive && "text-red-500 hover:bg-red-600 hover:text-white"
+                  item.destructive && "text-red-500 hover:bg-red-600 hover:text-white",
                )}
                onClick={onClick}
             >
@@ -159,7 +160,7 @@ export function Dropdown({
                {...dropdownWrapperProps}
                className={twMerge(
                   "absolute z-30 flex flex-col bg-background border border-muted px-1 py-1 rounded-lg shadow-lg min-w-full",
-                  dropdownWrapperProps?.className
+                  dropdownWrapperProps?.className,
                )}
                style={dropdownStyle}
             >
@@ -167,7 +168,7 @@ export function Dropdown({
                   <div className="text-sm font-bold px-2.5 mb-1 mt-1 opacity-50">{title}</div>
                )}
                {menuItems.map((item, i) =>
-                  itemRenderer(item, { key: i, onClick: () => internalOnClickItem(item) })
+                  itemRenderer(item, { key: i, onClick: () => internalOnClickItem(item) }),
                )}
             </div>
          )}

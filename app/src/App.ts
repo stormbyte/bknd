@@ -1,4 +1,3 @@
-import { Api, type ApiOptions } from "Api";
 import type { CreateUserPayload } from "auth/AppAuth";
 import { $console } from "core";
 import { Event } from "core/events";
@@ -9,11 +8,14 @@ import {
    type ModuleBuildContext,
    ModuleManager,
    type ModuleManagerOptions,
-   type Modules
+   type Modules,
 } from "modules/ModuleManager";
 import * as SystemPermissions from "modules/permissions";
 import { AdminController, type AdminControllerOptions } from "modules/server/AdminController";
 import { SystemController } from "modules/server/SystemController";
+
+// biome-ignore format: must be there
+import { Api, type ApiOptions } from "Api";
 
 export type AppPlugin = (app: App) => Promise<void> | void;
 
@@ -31,7 +33,7 @@ export const AppEvents = { AppConfigUpdatedEvent, AppBuiltEvent, AppFirstBoot } 
 
 export type AppOptions = {
    plugins?: AppPlugin[];
-   seed?: (ctx: ModuleBuildContext) => Promise<void>;
+   seed?: (ctx: ModuleBuildContext & { app: App }) => Promise<void>;
    manager?: Omit<ModuleManagerOptions, "initial" | "onUpdated" | "seed">;
 };
 export type CreateAppConfig = {
@@ -48,6 +50,7 @@ export type CreateAppConfig = {
 };
 
 export type AppConfig = InitialModuleConfigs;
+export type LocalApiOptions = Request | ApiOptions;
 
 export class App {
    modules: ModuleManager;
@@ -55,17 +58,18 @@ export class App {
    adminController?: AdminController;
    private trigger_first_boot = false;
    private plugins: AppPlugin[];
+   private _id: string = crypto.randomUUID();
+   private _building: boolean = false;
 
    constructor(
       private connection: Connection,
       _initialConfig?: InitialModuleConfigs,
-      private options?: AppOptions
+      private options?: AppOptions,
    ) {
       this.plugins = options?.plugins ?? [];
       this.modules = new ModuleManager(connection, {
          ...(options?.manager ?? {}),
          initial: _initialConfig,
-         seed: options?.seed,
          onUpdated: async (key, config) => {
             // if the EventManager was disabled, we assume we shouldn't
             // respond to events, such as "onUpdated".
@@ -88,8 +92,13 @@ export class App {
             server.use(async (c, next) => {
                c.set("app", this);
                await next();
+
+               try {
+                  // gracefully add the app id
+                  c.res.headers.set("X-bknd-id", this._id);
+               } catch (e) {}
             });
-         }
+         },
       });
       this.modules.ctx().emgr.registerEvents(AppEvents);
    }
@@ -98,9 +107,18 @@ export class App {
       return this.modules.ctx().emgr;
    }
 
-   async build(options?: { sync?: boolean }) {
+   async build(options?: { sync?: boolean; fetch?: boolean; forceBuild?: boolean }) {
+      // prevent multiple concurrent builds
+      if (this._building) {
+         while (this._building) {
+            await new Promise((resolve) => setTimeout(resolve, 10));
+         }
+         if (!options?.forceBuild) return;
+      }
+      this._building = true;
+
       if (options?.sync) this.modules.ctx().flags.sync_required = true;
-      await this.modules.build();
+      await this.modules.build({ fetch: options?.fetch });
 
       const { guard, server } = this.modules.ctx();
 
@@ -113,13 +131,20 @@ export class App {
          await Promise.all(this.plugins.map((plugin) => plugin(this)));
       }
 
+      $console.log("App built");
       await this.emgr.emit(new AppBuiltEvent({ app: this }));
 
       // first boot is set from ModuleManager when there wasn't a config table
       if (this.trigger_first_boot) {
          this.trigger_first_boot = false;
          await this.emgr.emit(new AppFirstBoot({ app: this }));
+         await this.options?.seed?.({
+            ...this.modules.ctx(),
+            app: this,
+         });
       }
+
+      this._building = false;
    }
 
    mutateConfig<Module extends keyof Modules>(module: Module) {
@@ -144,8 +169,8 @@ export class App {
          {
             get: (_, module: keyof Modules) => {
                return this.modules.get(module);
-            }
-         }
+            },
+         },
       ) as Modules;
    }
 
@@ -180,13 +205,13 @@ export class App {
       return this.module.auth.createUser(p);
    }
 
-   getApi(options: Request | ApiOptions = {}) {
+   getApi(options?: LocalApiOptions) {
       const fetcher = this.server.request as typeof fetch;
-      if (options instanceof Request) {
+      if (options && options instanceof Request) {
          return new Api({ request: options, headers: options.headers, fetcher });
       }
 
-      return new Api({ host: "http://localhost", ...options, fetcher });
+      return new Api({ host: "http://localhost", ...(options ?? {}), fetcher });
    }
 }
 
@@ -199,7 +224,7 @@ export function createApp(config: CreateAppConfig = {}) {
       } else if (typeof config.connection === "object") {
          if ("type" in config.connection) {
             $console.warn(
-               "Using deprecated connection type 'libsql', use the 'config' object directly."
+               "Using deprecated connection type 'libsql', use the 'config' object directly.",
             );
             connection = new LibsqlConnection(config.connection.config);
          } else {

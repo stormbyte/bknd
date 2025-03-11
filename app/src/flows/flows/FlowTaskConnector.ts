@@ -22,7 +22,7 @@ export class FlowTaskConnector {
       const outConnections = this.getOutConnections();
       const definedOutConditions = outConnections.map((c) => c.condition);
       const hasOutGoingBack = outConnections.some(
-         (c) => this.task(c.target).getDepth() <= ownDepth
+         (c) => this.task(c.target).getDepth() <= ownDepth,
       );
 
       if (definedOutConditions.length > 0 && hasOutGoingBack) {
@@ -76,7 +76,7 @@ export class FlowTaskConnector {
       if (lower_only) {
          const depth = this.getDepth();
          return this.getInConnections().filter(
-            (c) => c.target === this.source && this.task(c.source).getDepth() < depth
+            (c) => c.target === this.source && this.task(c.source).getDepth() < depth,
          );
       }
 
@@ -97,7 +97,7 @@ export class FlowTaskConnector {
    getOutConnections(result?: TaskResult): TaskConnection[] {
       if (result) {
          return this.flow.connections.filter(
-            (c) => c.source === this.source && c.condition.isMet(result)
+            (c) => c.source === this.source && c.condition.isMet(result),
          );
       }
 

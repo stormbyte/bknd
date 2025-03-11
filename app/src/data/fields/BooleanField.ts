@@ -5,9 +5,9 @@ import { Field, type TActionContext, type TRenderContext, baseFieldConfigSchema 
 
 export const booleanFieldConfigSchema = Type.Composite([
    Type.Object({
-      default_value: Type.Optional(Type.Boolean({ default: false }))
+      default_value: Type.Optional(Type.Boolean({ default: false })),
    }),
-   baseFieldConfigSchema
+   baseFieldConfigSchema,
 ]);
 
 export type BooleanFieldConfig = Static<typeof booleanFieldConfigSchema>;
@@ -40,7 +40,7 @@ export class BooleanField<Required extends true | false = false> extends Field<
    override getHtmlConfig() {
       return {
          ...super.getHtmlConfig(),
-         element: "boolean"
+         element: "boolean",
       };
    }
 
@@ -64,7 +64,7 @@ export class BooleanField<Required extends true | false = false> extends Field<
    override async transformPersist(
       val: unknown,
       em: EntityManager<any>,
-      context: TActionContext
+      context: TActionContext,
    ): Promise<boolean | undefined> {
       const value = await super.transformPersist(val, em, context);
       if (this.nullish(value)) {

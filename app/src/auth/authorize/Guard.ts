@@ -1,7 +1,7 @@
 import { Exception, Permission } from "core";
 import { objectTransform } from "core/utils";
 import type { Context } from "hono";
-import type { ServerEnv } from "modules/Module";
+import type { ServerEnv } from "modules/Controller";
 import { Role } from "./Role";
 
 export type GuardUserContext = {
@@ -37,7 +37,7 @@ export class Guard {
             implicit_allow?: boolean;
          }
       >,
-      config?: GuardConfig
+      config?: GuardConfig,
    ) {
       const _roles = roles
          ? objectTransform(roles, ({ permissions = [], is_default, implicit_allow }, name) => {
@@ -103,7 +103,7 @@ export class Guard {
       debug &&
          console.log("guard: role not found", {
             user: user,
-            role: user?.role
+            role: user?.role,
          });
       return this.getDefaultRole();
    }
@@ -141,14 +141,14 @@ export class Guard {
       }
 
       const rolePermission = role.permissions.find(
-         (rolePermission) => rolePermission.permission.name === name
+         (rolePermission) => rolePermission.permission.name === name,
       );
 
       debug &&
          console.log("guard: rolePermission, allowing?", {
             permission: name,
             role: role.name,
-            allowing: !!rolePermission
+            allowing: !!rolePermission,
          });
       return !!rolePermission;
    }
@@ -162,7 +162,7 @@ export class Guard {
       if (!this.granted(permission, c)) {
          throw new Exception(
             `Permission "${typeof permission === "string" ? permission : permission.name}" not granted`,
-            403
+            403,
          );
       }
    }

@@ -1,5 +1,5 @@
 import { Guard } from "auth";
-import { BkndError, DebugLogger, withDisabledConsole } from "core";
+import { $console, BkndError, DebugLogger, env } from "core";
 import { EventManager } from "core/events";
 import { clone, diff } from "core/object/diff";
 import {
@@ -10,7 +10,7 @@ import {
    mark,
    objectEach,
    stripMark,
-   transformObject
+   transformObject,
 } from "core/utils";
 import {
    type Connection,
@@ -20,7 +20,7 @@ import {
    entity,
    enumm,
    jsonSchema,
-   number
+   number,
 } from "data";
 import { TransformPersistFailedException } from "data/errors";
 import { Hono } from "hono";
@@ -32,7 +32,8 @@ import { AppAuth } from "../auth/AppAuth";
 import { AppData } from "../data/AppData";
 import { AppFlows } from "../flows/AppFlows";
 import { AppMedia } from "../media/AppMedia";
-import { Module, type ModuleBuildContext, type ServerEnv } from "./Module";
+import type { ServerEnv } from "./Controller";
+import { Module, type ModuleBuildContext } from "./Module";
 
 export type { ModuleBuildContext };
 
@@ -41,7 +42,7 @@ export const MODULES = {
    data: AppData,
    auth: AppAuth,
    media: AppMedia,
-   flows: AppFlows
+   flows: AppFlows,
 } as const;
 
 // get names of MODULES as an array
@@ -70,7 +71,7 @@ export type InitialModuleConfigs =
 enum Verbosity {
    silent = 0,
    error = 1,
-   log = 2
+   log = 2,
 }
 
 export type ModuleManagerOptions = {
@@ -78,7 +79,7 @@ export type ModuleManagerOptions = {
    eventManager?: EventManager<any>;
    onUpdated?: <Module extends keyof Modules>(
       module: Module,
-      config: ModuleConfigs[Module]
+      config: ModuleConfigs[Module],
    ) => Promise<void>;
    // triggered when no config table existed
    onFirstBoot?: () => Promise<void>;
@@ -90,7 +91,7 @@ export type ModuleManagerOptions = {
    trustFetched?: boolean;
    // runs when initial config provided on a fresh database
    seed?: (ctx: ModuleBuildContext) => Promise<void>;
-   // wether
+   /** @deprecated */
    verbosity?: Verbosity;
 };
 
@@ -110,21 +111,23 @@ const configJsonSchema = Type.Union([
          t: StringEnum(["a", "r", "e"]),
          p: Type.Array(Type.Union([Type.String(), Type.Number()])),
          o: Type.Optional(Type.Any()),
-         n: Type.Optional(Type.Any())
-      })
-   )
+         n: Type.Optional(Type.Any()),
+      }),
+   ),
 ]);
 const __bknd = entity(TABLE_NAME, {
    version: number().required(),
    type: enumm({ enum: ["config", "diff", "backup"] }).required(),
    json: jsonSchema({ schema: configJsonSchema }).required(),
    created_at: datetime(),
-   updated_at: datetime()
+   updated_at: datetime(),
 });
 type ConfigTable2 = Schema<typeof __bknd>;
 interface T_INTERNAL_EM {
    __bknd: ConfigTable2;
 }
+
+const debug_modules = env("modules_debug");
 
 // @todo: cleanup old diffs on upgrade
 // @todo: cleanup multiple backups on upgrade
@@ -146,13 +149,12 @@ export class ModuleManager {
 
    constructor(
       private readonly connection: Connection,
-      private options?: Partial<ModuleManagerOptions>
+      private options?: Partial<ModuleManagerOptions>,
    ) {
       this.__em = new EntityManager([__bknd], this.connection);
       this.modules = {} as Modules;
       this.emgr = new EventManager();
-      this.logger = new DebugLogger(this.verbosity === Verbosity.log);
-      const context = this.ctx(true);
+      this.logger = new DebugLogger(debug_modules);
       let initial = {} as Partial<ModuleConfigs>;
 
       if (options?.initial) {
@@ -168,15 +170,29 @@ export class ModuleManager {
          }
       }
 
-      for (const key in MODULES) {
-         const moduleConfig = key in initial ? initial[key] : {};
-         const module = new MODULES[key](moduleConfig, context) as Module;
-         module.setListener(async (c) => {
-            await this.onModuleConfigUpdated(key, c);
-         });
+      this.createModules(initial);
+   }
 
-         this.modules[key] = module;
+   private createModules(initial: Partial<ModuleConfigs>) {
+      this.logger.context("createModules").log("creating modules");
+      try {
+         const context = this.ctx(true);
+
+         for (const key in MODULES) {
+            const moduleConfig = key in initial ? initial[key] : {};
+            const module = new MODULES[key](moduleConfig, context) as Module;
+            module.setListener(async (c) => {
+               await this.onModuleConfigUpdated(key, c);
+            });
+
+            this.modules[key] = module;
+         }
+         this.logger.log("modules created");
+      } catch (e) {
+         this.logger.log("failed to create modules", e);
+         throw e;
       }
+      this.logger.clear();
    }
 
    private get verbosity() {
@@ -196,12 +212,14 @@ export class ModuleManager {
       if (this.options?.onUpdated) {
          await this.options.onUpdated(key as any, config);
       } else {
-         this.buildModules();
+         await this.buildModules();
       }
    }
 
    private repo() {
-      return this.__em.repo(__bknd);
+      return this.__em.repo(__bknd, {
+         silent: !debug_modules,
+      });
    }
 
    private mutator() {
@@ -212,6 +230,7 @@ export class ModuleManager {
       return this.connection.kysely as Kysely<{ table: ConfigTable }>;
    }
 
+   // @todo: add indices for: version, type
    async syncConfigTable() {
       this.logger.context("sync").log("start");
       const result = await this.__em.schema().sync({ force: true });
@@ -248,7 +267,7 @@ export class ModuleManager {
          emgr: this.emgr,
          guard: this.guard,
          flags: Module.ctx_flags,
-         logger: this.logger
+         logger: this.logger,
       };
    }
 
@@ -257,31 +276,26 @@ export class ModuleManager {
       const startTime = performance.now();
 
       // disabling console log, because the table might not exist yet
-      const result = await withDisabledConsole(
-         async () => {
-            const { data: result } = await this.repo().findOne(
-               { type: "config" },
-               {
-                  sort: { by: "version", dir: "desc" }
-               }
-            );
-
-            if (!result) {
-               throw BkndError.with("no config");
-            }
-
-            return result as unknown as ConfigTable;
+      const { data: result } = await this.repo().findOne(
+         { type: "config" },
+         {
+            sort: { by: "version", dir: "desc" },
          },
-         this.verbosity > Verbosity.silent ? [] : ["log", "error", "warn"]
       );
+
+      if (!result) {
+         this.logger.log("error fetching").clear();
+         throw BkndError.with("no config");
+      }
 
       this.logger
          .log("took", performance.now() - startTime, "ms", {
             version: result.version,
-            id: result.id
+            id: result.id,
          })
          .clear();
-      return result;
+
+      return result as unknown as ConfigTable;
    }
 
    async save() {
@@ -299,12 +313,12 @@ export class ModuleManager {
             await this.mutator().insertOne({
                version: state.version,
                type: "backup",
-               json: configs
+               json: configs,
             });
             await this.mutator().insertOne({
                version: version,
                type: "config",
-               json: configs
+               json: configs,
             });
          } else {
             this.logger.log("version matches");
@@ -318,7 +332,7 @@ export class ModuleManager {
                await this.mutator().insertOne({
                   version,
                   type: "diff",
-                  json: clone(diffs)
+                  json: clone(diffs),
                });
 
                // store new version
@@ -326,12 +340,12 @@ export class ModuleManager {
                   {
                      version,
                      json: configs,
-                     updated_at: new Date()
+                     updated_at: new Date(),
                   } as any,
                   {
                      type: "config",
-                     version
-                  }
+                     version,
+                  },
                );
             } else {
                this.logger.log("no diff, not saving");
@@ -346,7 +360,7 @@ export class ModuleManager {
                version,
                json: configs,
                created_at: new Date(),
-               updated_at: new Date()
+               updated_at: new Date(),
             });
          } else if (e instanceof TransformPersistFailedException) {
             console.error("Cannot save invalid config");
@@ -367,26 +381,37 @@ export class ModuleManager {
    }
 
    private async migrate() {
+      const state = {
+         success: false,
+         migrated: false,
+         version: {
+            before: this.version(),
+            after: this.version(),
+         },
+      };
       this.logger.context("migrate").log("migrating?", this.version(), CURRENT_VERSION);
 
       if (this.version() < CURRENT_VERSION) {
+         state.version.before = this.version();
+
          this.logger.log("there are migrations, verify version");
          // sync __bknd table
          await this.syncConfigTable();
 
          // modules must be built before migration
+         this.logger.log("building modules");
          await this.buildModules({ graceful: true });
+         this.logger.log("modules built");
 
          try {
             const state = await this.fetch();
             if (state.version !== this.version()) {
                // @todo: potentially drop provided config and use database version
                throw new Error(
-                  `Given version (${this.version()}) and fetched version (${state.version}) do not match.`
+                  `Given version (${this.version()}) and fetched version (${state.version}) do not match.`,
                );
             }
          } catch (e: any) {
-            this.logger.clear(); // fetch couldn't clear
             throw new Error(`Version is ${this.version()}, fetch failed: ${e.message}`);
          }
 
@@ -399,22 +424,32 @@ export class ModuleManager {
          }
 
          const [_version, _configs] = await migrate(version, configs, {
-            db: this.db
+            db: this.db,
          });
          version = _version;
          configs = _configs;
 
-         this.setConfigs(configs);
-
          this._version = version;
+         state.version.after = version;
+         state.migrated = true;
+         this.ctx().flags.sync_required = true;
+
+         this.logger.log("setting configs");
+         this.createModules(configs);
+         await this.buildModules();
+
          this.logger.log("migrated to", version);
+         $console.log("Migrated config from", state.version.before, "to", state.version.after);
 
          await this.save();
       } else {
          this.logger.log("no migrations needed");
       }
 
+      state.success = true;
       this.logger.clear();
+
+      return state;
    }
 
    private setConfigs(configs: ModuleConfigs): void {
@@ -426,19 +461,24 @@ export class ModuleManager {
          } catch (e) {
             console.error(e);
             throw new Error(
-               `Failed to set config for module ${key}: ${JSON.stringify(config, null, 2)}`
+               `Failed to set config for module ${key}: ${JSON.stringify(config, null, 2)}`,
             );
          }
       });
    }
 
-   async build() {
+   async build(opts?: { fetch?: boolean }) {
       this.logger.context("build").log("version", this.version());
       this.logger.log("booted with", this._booted_with);
 
       // if no config provided, try fetch from db
-      if (this.version() === 0) {
-         this.logger.context("no version").log("version is 0");
+      if (this.version() === 0 || opts?.fetch === true) {
+         if (this.version() === 0) {
+            this.logger.context("no version").log("version is 0");
+         } else {
+            this.logger.context("force fetch").log("force fetch");
+         }
+
          try {
             const result = await this.fetch();
 
@@ -479,10 +519,16 @@ export class ModuleManager {
       }
 
       // migrate to latest if needed
-      await this.migrate();
+      this.logger.log("check migrate");
+      const migration = await this.migrate();
+      if (migration.success && migration.migrated) {
+         this.logger.log("skipping build after migration");
+      } else {
+         this.logger.log("trigger build modules");
+         await this.buildModules();
+      }
 
-      this.logger.log("building");
-      await this.buildModules();
+      this.logger.log("done");
       return this;
    }
 
@@ -492,10 +538,10 @@ export class ModuleManager {
          modules: [] as ModuleKey[],
          synced: false,
          saved: false,
-         reloaded: false
+         reloaded: false,
       };
 
-      this.logger.log("buildModules() triggered", options, this._built);
+      this.logger.context("buildModules").log("triggered", options, this._built);
       if (options?.graceful && this._built) {
          this.logger.log("skipping build (graceful)");
          return state;
@@ -535,8 +581,10 @@ export class ModuleManager {
       }
 
       // reset all falgs
+      this.logger.log("resetting flags");
       ctx.flags = Module.ctx_flags;
 
+      this.logger.clear();
       return state;
    }
 
@@ -544,7 +592,7 @@ export class ModuleManager {
       const ctx = {
          ...this.ctx(),
          // disable events for initial setup
-         em: this.ctx().em.fork()
+         em: this.ctx().em.fork(),
       };
 
       // perform a sync
@@ -556,7 +604,7 @@ export class ModuleManager {
    }
 
    mutateConfigSafe<Module extends keyof Modules>(
-      name: Module
+      name: Module,
    ): Pick<ReturnType<Modules[Module]["schema"]>, "set" | "patch" | "overwrite" | "remove"> {
       const module = this.modules[name];
       const copy = structuredClone(this.configs());
@@ -601,7 +649,7 @@ export class ModuleManager {
                   throw e;
                }
             };
-         }
+         },
       });
    }
 
@@ -629,7 +677,7 @@ export class ModuleManager {
 
       return {
          version: this.version(),
-         ...schemas
+         ...schemas,
       };
    }
 
@@ -645,7 +693,7 @@ export class ModuleManager {
 
       return {
          version: this.version(),
-         ...modules
+         ...modules,
       } as any;
    }
 }
@@ -653,7 +701,7 @@ export class ModuleManager {
 export function getDefaultSchema() {
    const schema = {
       type: "object",
-      ...transformObject(MODULES, (module) => module.prototype.getSchema())
+      ...transformObject(MODULES, (module) => module.prototype.getSchema()),
    };
 
    return schema as any;

@@ -9,9 +9,9 @@ export class EventTrigger extends Trigger<typeof EventTrigger.schema> {
    static override schema = Type.Composite([
       Trigger.schema,
       Type.Object({
-         event: Type.String()
+         event: Type.String(),
          // add match
-      })
+      }),
    ]);
 
    override async register(flow: Flow, emgr: EventManager<any>) {
@@ -35,7 +35,7 @@ export class EventTrigger extends Trigger<typeof EventTrigger.schema> {
                console.error(e);
             }
          },
-         this.config.mode
+         this.config.mode,
       );
    }
 }

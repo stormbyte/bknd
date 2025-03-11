@@ -4,7 +4,7 @@ FROM node:20 as builder
 WORKDIR /app
 
 # Install & copy required cli
-RUN npm install --omit=dev bknd
+RUN npm install --omit=dev bknd@0.9.1
 RUN mkdir /output && cp -r node_modules/bknd/dist /output/dist
 
 # Stage 2: Final minimal image
@@ -19,10 +19,10 @@ RUN npm install @libsql/client
 
 # Create volume and init args
 VOLUME /data
-ENV DEFAULT_ARGS "--db-url file:/data/data.db"
+ENV DEFAULT_ARGS="--db-url file:/data/data.db"
 
 # Copy output from builder
 COPY --from=builder /output/dist ./dist
 
 EXPOSE 1337
-CMD ["pm2-runtime", "dist/cli/index.js run ${ARGS:-${DEFAULT_ARGS}}"]
+CMD ["pm2-runtime", "dist/cli/index.js run ${ARGS:-${DEFAULT_ARGS}} --no-open"]

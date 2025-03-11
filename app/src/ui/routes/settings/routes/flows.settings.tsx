@@ -7,26 +7,26 @@ const uiSchema = {
    jwt: {
       basepath: {
          "ui:options": {
-            label: false
-         }
+            label: false,
+         },
       },
       fields: {
          "ui:options": {
-            orderable: false
-         }
-      }
+            orderable: false,
+         },
+      },
    },
    strategies: {
       additionalProperties: {
          "ui:widget": "select",
          type: {
-            "ui:widget": "hidden"
-         }
+            "ui:widget": "hidden",
+         },
       },
       type: {
-         "ui:widget": "hidden"
-      }
-   }
+         "ui:widget": "hidden",
+      },
+   },
 };
 
 export const FlowsSettings = ({ schema, config }) => {
@@ -91,9 +91,9 @@ export const FlowsSettings = ({ schema, config }) => {
                         uiSchema={{
                            params: {
                               render: {
-                                 "ui:field": "LiquidJsField"
-                              }
-                           }
+                                 "ui:field": "LiquidJsField",
+                              },
+                           },
                         }}
                      />
                   );
@@ -124,7 +124,7 @@ export const FlowsSettings = ({ schema, config }) => {
                            tasks: {
                               extract: true,
                               new: {
-                                 schema: newTask
+                                 schema: newTask,
                               },
                               tableValues: (config: any) =>
                                  transform(
@@ -132,17 +132,17 @@ export const FlowsSettings = ({ schema, config }) => {
                                     (acc, value, key) => {
                                        acc.push({
                                           name: key,
-                                          type: value.type
+                                          type: value.type,
                                        });
                                     },
-                                    [] as any[]
-                                 )
+                                    [] as any[],
+                                 ),
                            },
                            connections: {
                               extract: true,
                               new: {
                                  schema: newConnection,
-                                 generateKey: crypto.randomUUID() as string
+                                 generateKey: crypto.randomUUID() as string,
                               },
                               tableValues: (config: any) =>
                                  transform(
@@ -152,12 +152,12 @@ export const FlowsSettings = ({ schema, config }) => {
                                           id: key,
                                           source: value.source,
                                           target: value.target,
-                                          condition: value.config.condition?.type
+                                          condition: value.config.condition?.type,
                                        });
                                     },
-                                    [] as any[]
-                                 )
-                           }
+                                    [] as any[],
+                                 ),
+                           },
                         }}
                      />
                   );
@@ -176,7 +176,7 @@ export const FlowsSettings = ({ schema, config }) => {
                         flows: {
                            extract: true,
                            new: {
-                              schema: schema.properties.flows.additionalProperties as any
+                              schema: schema.properties.flows.additionalProperties as any,
 
                               /*uiSchema: {
                                  fields: {
@@ -193,12 +193,12 @@ export const FlowsSettings = ({ schema, config }) => {
                                        trigger: value.trigger.type,
                                        mode: value.trigger.config.mode,
                                        start_task: value.start_task,
-                                       responding_task: value.responding_task
+                                       responding_task: value.responding_task,
                                     });
                                  },
-                                 [] as any[]
-                              )
-                        }
+                                 [] as any[],
+                              ),
+                        },
                      }}
                      prefix={`${prefix}/flows`}
                      path={["flows"]}

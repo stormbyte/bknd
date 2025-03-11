@@ -80,7 +80,7 @@ const filters = [
    { label: "url_encode" },
    { label: "where" },
    { label: "where_exp" },
-   { label: "xml_escape" }
+   { label: "xml_escape" },
 ];
 
 const tags = [
@@ -103,7 +103,7 @@ const tags = [
    { label: "render" },
    { label: "tablerow" },
    { label: "unless" },
-   { label: "when" }
+   { label: "when" },
 ];
 
 export function LiquidJsEditor({ editable, ...props }: CodeEditorProps) {
@@ -112,11 +112,11 @@ export function LiquidJsEditor({ editable, ...props }: CodeEditorProps) {
          <CodeEditor
             className={twMerge(
                "flex w-full border border-muted bg-white rounded-lg",
-               !editable && "opacity-70"
+               !editable && "opacity-70",
             )}
             editable={editable}
             _extensions={{
-               liquid: { filters, tags }
+               liquid: { filters, tags },
             }}
             {...props}
          />

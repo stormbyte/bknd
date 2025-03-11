@@ -1,5 +1,4 @@
-import { afterAll, describe, expect, test } from "bun:test";
-import { _jsonp } from "../../../src/core/utils";
+import { describe, expect, test } from "bun:test";
 import {
    Entity,
    EntityManager,
@@ -7,10 +6,10 @@ import {
    ManyToOneRelation,
    PolymorphicRelation,
    TextField,
-   WithBuilder
+   WithBuilder,
 } from "../../../src/data";
 import * as proto from "../../../src/data/prototype";
-import { compileQb, prettyPrintQb, schemaToEm } from "../../helper";
+import { schemaToEm } from "../../helper";
 import { getDummyConnection } from "../helper";
 
 const { dummyConnection } = getDummyConnection();
@@ -21,32 +20,32 @@ describe("[data] WithBuilder", async () => {
          {
             posts: proto.entity("posts", {}),
             users: proto.entity("users", {}),
-            media: proto.entity("media", {})
+            media: proto.entity("media", {}),
          },
          ({ relation }, { posts, users, media }) => {
             relation(posts).manyToOne(users);
             relation(users).polyToOne(media, { mappedBy: "avatar" });
-         }
+         },
       );
       const em = schemaToEm(schema);
 
-      expect(WithBuilder.validateWiths(em, "posts", undefined)).toBe(0);
+      expect(WithBuilder.validateWiths(em, "posts", undefined as any)).toBe(0);
       expect(WithBuilder.validateWiths(em, "posts", {})).toBe(0);
       expect(WithBuilder.validateWiths(em, "posts", { users: {} })).toBe(1);
       expect(
          WithBuilder.validateWiths(em, "posts", {
             users: {
-               with: { avatar: {} }
-            }
-         })
+               with: { avatar: {} },
+            },
+         }),
       ).toBe(2);
       expect(() => WithBuilder.validateWiths(em, "posts", { author: {} })).toThrow();
       expect(() =>
          WithBuilder.validateWiths(em, "posts", {
             users: {
-               with: { glibberish: {} }
-            }
-         })
+               with: { glibberish: {} },
+            },
+         }),
       ).toThrow();
    });
 
@@ -56,8 +55,8 @@ describe("[data] WithBuilder", async () => {
 
       expect(() =>
          WithBuilder.addClause(em, em.connection.kysely.selectFrom("users"), users, {
-            posts: {}
-         })
+            posts: {},
+         }),
       ).toThrow('Relation "users<>posts" not found');
    });
 
@@ -68,13 +67,13 @@ describe("[data] WithBuilder", async () => {
       const em = new EntityManager([users, posts], dummyConnection, relations);
 
       const qb = WithBuilder.addClause(em, em.connection.kysely.selectFrom("users"), users, {
-         posts: {}
+         posts: {},
       });
 
       const res = qb.compile();
 
       expect(res.sql).toBe(
-         'select (select coalesce(json_group_array(json_object(\'id\', "agg"."id", \'content\', "agg"."content", \'author_id\', "agg"."author_id")), \'[]\') from (select "posts"."id" as "id", "posts"."content" as "content", "posts"."author_id" as "author_id" from "posts" as "posts" where "posts"."author_id" = "users"."id" order by "posts"."id" asc limit ? offset ?) as agg) as "posts" from "users"'
+         'select (select coalesce(json_group_array(json_object(\'id\', "agg"."id", \'content\', "agg"."content", \'author_id\', "agg"."author_id")), \'[]\') from (select "posts"."id" as "id", "posts"."content" as "content", "posts"."author_id" as "author_id" from "posts" as "posts" where "posts"."author_id" = "users"."id" order by "posts"."id" asc limit ? offset ?) as agg) as "posts" from "users"',
       );
       expect(res.parameters).toEqual([10, 0]);
 
@@ -83,14 +82,14 @@ describe("[data] WithBuilder", async () => {
          em.connection.kysely.selectFrom("posts"),
          posts, // @todo: try with "users", it gives output!
          {
-            author: {}
-         }
+            author: {},
+         },
       );
 
       const res2 = qb2.compile();
 
       expect(res2.sql).toBe(
-         'select (select json_object(\'id\', "obj"."id", \'username\', "obj"."username") from (select "users"."id" as "id", "users"."username" as "username" from "users" as "author" where "author"."id" = "posts"."author_id" order by "users"."id" asc limit ? offset ?) as obj) as "author" from "posts"'
+         'select (select json_object(\'id\', "obj"."id", \'username\', "obj"."username") from (select "users"."id" as "id", "users"."username" as "username" from "users" as "author" where "author"."id" = "posts"."author_id" order by "users"."id" asc limit ? offset ?) as obj) as "author" from "posts"',
       );
       expect(res2.parameters).toEqual([1, 0]);
    });
@@ -124,7 +123,7 @@ describe("[data] WithBuilder", async () => {
          .values([
             { posts_id: 1, categories_id: 1 },
             { posts_id: 2, categories_id: 2 },
-            { posts_id: 1, categories_id: 2 }
+            { posts_id: 1, categories_id: 2 },
          ])
          .execute();
 
@@ -138,14 +137,14 @@ describe("[data] WithBuilder", async () => {
             title: "fashion post",
             categories: [
                { id: 1, label: "fashion" },
-               { id: 2, label: "beauty" }
-            ]
+               { id: 2, label: "beauty" },
+            ],
          },
          {
             id: 2,
             title: "beauty post",
-            categories: [{ id: 2, label: "beauty" }]
-         }
+            categories: [{ id: 2, label: "beauty" }],
+         },
       ]);
 
       const res2 = await em.repository(categories).findMany({ with: { posts: {} } });
@@ -156,21 +155,21 @@ describe("[data] WithBuilder", async () => {
          {
             id: 1,
             label: "fashion",
-            posts: [{ id: 1, title: "fashion post" }]
+            posts: [{ id: 1, title: "fashion post" }],
          },
          {
             id: 2,
             label: "beauty",
             posts: [
                { id: 1, title: "fashion post" },
-               { id: 2, title: "beauty post" }
-            ]
+               { id: 2, title: "beauty post" },
+            ],
          },
          {
             id: 3,
             label: "tech",
-            posts: []
-         }
+            posts: [],
+         },
       ]);
    });
 
@@ -181,7 +180,7 @@ describe("[data] WithBuilder", async () => {
       const entities = [media, categories];
       const single = new PolymorphicRelation(categories, media, {
          mappedBy: "single",
-         targetCardinality: 1
+         targetCardinality: 1,
       });
       const multiple = new PolymorphicRelation(categories, media, { mappedBy: "multiple" });
 
@@ -191,11 +190,11 @@ describe("[data] WithBuilder", async () => {
          em,
          em.connection.kysely.selectFrom("categories"),
          categories,
-         { single: {} }
+         { single: {} },
       );
       const res = qb.compile();
       expect(res.sql).toBe(
-         'select (select json_object(\'id\', "obj"."id", \'path\', "obj"."path") from (select "media"."id" as "id", "media"."path" as "path" from "media" where "media"."reference" = ? and "categories"."id" = "media"."entity_id" order by "media"."id" asc limit ? offset ?) as obj) as "single" from "categories"'
+         'select (select json_object(\'id\', "obj"."id", \'path\', "obj"."path") from (select "media"."id" as "id", "media"."path" as "path" from "media" where "media"."reference" = ? and "categories"."id" = "media"."entity_id" order by "media"."id" asc limit ? offset ?) as obj) as "single" from "categories"',
       );
       expect(res.parameters).toEqual(["categories.single", 1, 0]);
 
@@ -203,11 +202,11 @@ describe("[data] WithBuilder", async () => {
          em,
          em.connection.kysely.selectFrom("categories"),
          categories,
-         { multiple: {} }
+         { multiple: {} },
       );
       const res2 = qb2.compile();
       expect(res2.sql).toBe(
-         'select (select coalesce(json_group_array(json_object(\'id\', "agg"."id", \'path\', "agg"."path")), \'[]\') from (select "media"."id" as "id", "media"."path" as "path" from "media" where "media"."reference" = ? and "categories"."id" = "media"."entity_id" order by "media"."id" asc limit ? offset ?) as agg) as "multiple" from "categories"'
+         'select (select coalesce(json_group_array(json_object(\'id\', "agg"."id", \'path\', "agg"."path")), \'[]\') from (select "media"."id" as "id", "media"."path" as "path" from "media" where "media"."reference" = ? and "categories"."id" = "media"."entity_id" order by "media"."id" asc limit ? offset ?) as agg) as "multiple" from "categories"',
       );
       expect(res2.parameters).toEqual(["categories.multiple", 10, 0]);
    });
@@ -240,16 +239,16 @@ describe("[data] WithBuilder", async () => {
             {
                posts: proto.entity("posts", {}),
                users: proto.entity("users", {
-                  username: proto.text()
+                  username: proto.text(),
                }),
                media: proto.entity("media", {
-                  path: proto.text()
-               })
+                  path: proto.text(),
+               }),
             },
             ({ relation }, { posts, users, media }) => {
                relation(posts).manyToOne(users);
                relation(users).polyToOne(media, { mappedBy: "avatar" });
-            }
+            },
          );
          const em = schemaToEm(schema);
 
@@ -265,16 +264,16 @@ describe("[data] WithBuilder", async () => {
                   with: {
                      avatar: {
                         select: ["id", "path"],
-                        limit: 2 // ignored
-                     }
-                  }
-               }
-            }
+                        limit: 2, // ignored
+                     },
+                  },
+               },
+            },
          );
 
          //prettyPrintQb(qb);
          expect(qb.compile().sql).toBe(
-            'select (select json_object(\'id\', "obj"."id", \'username\', "obj"."username", \'avatar\', "obj"."avatar") from (select "users"."id" as "id", "users"."username" as "username", (select json_object(\'id\', "obj"."id", \'path\', "obj"."path") from (select "media"."id" as "id", "media"."path" as "path" from "media" where "media"."reference" = ? and "users"."id" = "media"."entity_id" order by "media"."id" asc limit ? offset ?) as obj) as "avatar" from "users" as "users" where "users"."id" = "posts"."users_id" order by "users"."username" asc limit ? offset ?) as obj) as "users" from "posts"'
+            'select (select json_object(\'id\', "obj"."id", \'username\', "obj"."username", \'avatar\', "obj"."avatar") from (select "users"."id" as "id", "users"."username" as "username", (select json_object(\'id\', "obj"."id", \'path\', "obj"."path") from (select "media"."id" as "id", "media"."path" as "path" from "media" where "media"."reference" = ? and "users"."id" = "media"."entity_id" order by "media"."id" asc limit ? offset ?) as obj) as "avatar" from "users" as "users" where "users"."id" = "posts"."users_id" order by "users"."username" asc limit ? offset ?) as obj) as "users" from "posts"',
          );
          expect(qb.compile().parameters).toEqual(["users.avatar", 1, 0, 1, 0]);
       });
@@ -285,17 +284,17 @@ describe("[data] WithBuilder", async () => {
                posts: proto.entity("posts", {}),
                comments: proto.entity("comments", {}),
                users: proto.entity("users", {
-                  username: proto.text()
+                  username: proto.text(),
                }),
                media: proto.entity("media", {
-                  path: proto.text()
-               })
+                  path: proto.text(),
+               }),
             },
             ({ relation }, { posts, comments, users, media }) => {
                relation(posts).manyToOne(users).polyToOne(media, { mappedBy: "images" });
                relation(users).polyToOne(media, { mappedBy: "avatar" });
                relation(comments).manyToOne(posts).manyToOne(users);
-            }
+            },
          );
          const em = schemaToEm(schema);
 
@@ -308,15 +307,15 @@ describe("[data] WithBuilder", async () => {
                   limit: 12,
                   with: {
                      users: {
-                        select: ["username"]
-                     }
-                  }
-               }
-            }
+                        select: ["username"],
+                     },
+                  },
+               },
+            },
          );
 
          expect(qb.compile().sql).toBe(
-            'select (select coalesce(json_group_array(json_object(\'id\', "agg"."id", \'posts_id\', "agg"."posts_id", \'users_id\', "agg"."users_id", \'users\', "agg"."users")), \'[]\') from (select "comments"."id" as "id", "comments"."posts_id" as "posts_id", "comments"."users_id" as "users_id", (select json_object(\'username\', "obj"."username") from (select "users"."username" as "username" from "users" as "users" where "users"."id" = "comments"."users_id" order by "users"."id" asc limit ? offset ?) as obj) as "users" from "comments" as "comments" where "comments"."posts_id" = "posts"."id" order by "comments"."id" asc limit ? offset ?) as agg) as "comments" from "posts"'
+            'select (select coalesce(json_group_array(json_object(\'id\', "agg"."id", \'posts_id\', "agg"."posts_id", \'users_id\', "agg"."users_id", \'users\', "agg"."users")), \'[]\') from (select "comments"."id" as "id", "comments"."posts_id" as "posts_id", "comments"."users_id" as "users_id", (select json_object(\'username\', "obj"."username") from (select "users"."username" as "username" from "users" as "users" where "users"."id" = "comments"."users_id" order by "users"."id" asc limit ? offset ?) as obj) as "users" from "comments" as "comments" where "comments"."posts_id" = "posts"."id" order by "comments"."id" asc limit ? offset ?) as agg) as "comments" from "posts"',
          );
          expect(qb.compile().parameters).toEqual([1, 0, 12, 0]);
       });
@@ -325,23 +324,23 @@ describe("[data] WithBuilder", async () => {
          const schema = proto.em(
             {
                posts: proto.entity("posts", {
-                  title: proto.text()
+                  title: proto.text(),
                }),
                comments: proto.entity("comments", {
-                  content: proto.text()
+                  content: proto.text(),
                }),
                users: proto.entity("users", {
-                  username: proto.text()
+                  username: proto.text(),
                }),
                media: proto.entity("media", {
-                  path: proto.text()
-               })
+                  path: proto.text(),
+               }),
             },
             ({ relation }, { posts, comments, users, media }) => {
                relation(posts).manyToOne(users).polyToOne(media, { mappedBy: "images" });
                relation(users).polyToOne(media, { mappedBy: "avatar" });
                relation(comments).manyToOne(posts).manyToOne(users);
-            }
+            },
          );
          const em = schemaToEm(schema);
          await em.schema().sync({ force: true });
@@ -351,7 +350,7 @@ describe("[data] WithBuilder", async () => {
          await em.mutator("posts").insertMany([
             { title: "post1", users_id: 1 },
             { title: "post2", users_id: 1 },
-            { title: "post3", users_id: 2 }
+            { title: "post3", users_id: 2 },
          ]);
          await em.mutator("comments").insertMany([
             { content: "comment1", posts_id: 1, users_id: 1 },
@@ -360,7 +359,7 @@ describe("[data] WithBuilder", async () => {
             { content: "comment3", posts_id: 2, users_id: 1 },
             { content: "comment4", posts_id: 2, users_id: 2 },
             { content: "comment5", posts_id: 3, users_id: 1 },
-            { content: "comment6", posts_id: 3, users_id: 2 }
+            { content: "comment6", posts_id: 3, users_id: 2 },
          ]);
 
          const result = await em.repo("posts").findMany({
@@ -371,11 +370,11 @@ describe("[data] WithBuilder", async () => {
                   select: ["content"],
                   with: {
                      users: {
-                        select: ["username"]
-                     }
-                  }
-               }
-            }
+                        select: ["username"],
+                     },
+                  },
+               },
+            },
          });
 
          expect(result.data).toEqual([
@@ -385,16 +384,16 @@ describe("[data] WithBuilder", async () => {
                   {
                      content: "comment1",
                      users: {
-                        username: "user1"
-                     }
+                        username: "user1",
+                     },
                   },
                   {
                      content: "comment1-1",
                      users: {
-                        username: "user1"
-                     }
-                  }
-               ]
+                        username: "user1",
+                     },
+                  },
+               ],
             },
             {
                title: "post2",
@@ -402,16 +401,16 @@ describe("[data] WithBuilder", async () => {
                   {
                      content: "comment3",
                      users: {
-                        username: "user1"
-                     }
+                        username: "user1",
+                     },
                   },
                   {
                      content: "comment4",
                      users: {
-                        username: "user2"
-                     }
-                  }
-               ]
+                        username: "user2",
+                     },
+                  },
+               ],
             },
             {
                title: "post3",
@@ -419,17 +418,17 @@ describe("[data] WithBuilder", async () => {
                   {
                      content: "comment5",
                      users: {
-                        username: "user1"
-                     }
+                        username: "user1",
+                     },
                   },
                   {
                      content: "comment6",
                      users: {
-                        username: "user2"
-                     }
-                  }
-               ]
-            }
+                        username: "user2",
+                     },
+                  },
+               ],
+            },
          ]);
          //console.log(_jsonp(result.data));
       });

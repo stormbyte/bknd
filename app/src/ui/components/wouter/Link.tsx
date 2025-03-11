@@ -38,9 +38,21 @@ const useLocationFromRouter = (router) => {
    // (This is achieved via `useEvent`.)
    return [
       unescape(relativePath(router.base, location)),
-      useEvent((to, navOpts) => navigate(absolutePath(to, router.base), navOpts))
+      useEvent((to, navOpts) => navigate(absolutePath(to, router.base), navOpts)),
    ];
 };
+
+export function isLinkActive(href: string, strictness?: number) {
+   const path = window.location.pathname;
+
+   if (!strictness || strictness === 0) {
+      return path.includes(href);
+   } else if (strictness === 1) {
+      return path === href || path.endsWith(href) || path.includes(href + "/");
+   }
+
+   return path === href;
+}
 
 export function Link({
    className,
@@ -64,7 +76,7 @@ export function Link({
    const href = router
       .hrefs(
          _href[0] === "~" ? _href.slice(1) : router.base + _href,
-         router // pass router as a second argument for convinience
+         router, // pass router as a second argument for convinience
       )
       .replace("//", "/");
    const absPath = absolutePath(path, router.base).replace("//", "/");

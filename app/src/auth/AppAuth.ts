@@ -4,10 +4,10 @@ import {
    Authenticator,
    type ProfileExchange,
    Role,
-   type Strategy
+   type Strategy,
 } from "auth";
 import type { PasswordStrategy } from "auth/authenticate/strategies";
-import { type DB, Exception, type PrimaryFieldType } from "core";
+import { $console, type DB, Exception, type PrimaryFieldType } from "core";
 import { type Static, secureRandomString, transformObject } from "core/utils";
 import type { Entity, EntityManager } from "data";
 import { type FieldSchema, em, entity, enumm, text } from "data/prototype";
@@ -41,6 +41,12 @@ export class AppAuth extends Module<typeof authConfigSchema> {
          }
       }
 
+      // @todo: password strategy is required atm
+      if (!to.strategies?.password?.enabled) {
+         $console.warn("Password strategy cannot be disabled.");
+         to.strategies!.password!.enabled = true;
+      }
+
       return to;
    }
 
@@ -56,7 +62,6 @@ export class AppAuth extends Module<typeof authConfigSchema> {
 
       // register roles
       const roles = transformObject(this.config.roles ?? {}, (role, name) => {
-         //console.log("role", role, name);
          return Role.create({ name, ...role });
       });
       this.ctx.guard.setRoles(Object.values(roles));
@@ -69,15 +74,15 @@ export class AppAuth extends Module<typeof authConfigSchema> {
          } catch (e) {
             throw new Error(
                `Could not build strategy ${String(
-                  name
-               )} with config ${JSON.stringify(strategy.config)}`
+                  name,
+               )} with config ${JSON.stringify(strategy.config)}`,
             );
          }
       });
 
       this._authenticator = new Authenticator(strategies, this.resolveUser.bind(this), {
          jwt: this.config.jwt,
-         cookie: this.config.cookie
+         cookie: this.config.cookie,
       });
 
       this.registerEntities();
@@ -86,6 +91,14 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       this._controller = new AuthController(this);
       this.ctx.server.route(this.config.basepath, this._controller.getController());
       this.ctx.guard.registerPermissions(Object.values(AuthPermissions));
+   }
+
+   isStrategyEnabled(strategy: Strategy | string) {
+      const name = typeof strategy === "string" ? strategy : strategy.getName();
+      // for now, password is always active
+      if (name === "password") return true;
+
+      return this.config.strategies?.[name]?.enabled ?? false;
    }
 
    get controller(): AuthController {
@@ -113,14 +126,8 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       action: AuthAction,
       strategy: Strategy,
       identifier: string,
-      profile: ProfileExchange
+      profile: ProfileExchange,
    ): Promise<any> {
-      /*console.log("***** AppAuth:resolveUser", {
-         action,
-         strategy: strategy.getName(),
-         identifier,
-         profile
-      });*/
       if (!this.config.allow_register && action === "register") {
          throw new Exception("Registration is not allowed", 403);
       }
@@ -129,7 +136,7 @@ export class AppAuth extends Module<typeof authConfigSchema> {
          .getFillableFields("create")
          .map((f) => f.name);
       const filteredProfile = Object.fromEntries(
-         Object.entries(profile).filter(([key]) => fields.includes(key))
+         Object.entries(profile).filter(([key]) => fields.includes(key)),
       );
 
       switch (action) {
@@ -141,21 +148,10 @@ export class AppAuth extends Module<typeof authConfigSchema> {
    }
 
    private filterUserData(user: any) {
-      /*console.log(
-         "--filterUserData",
-         user,
-         this.config.jwt.fields,
-         pick(user, this.config.jwt.fields)
-      );*/
       return pick(user, this.config.jwt.fields);
    }
 
    private async login(strategy: Strategy, identifier: string, profile: ProfileExchange) {
-      /*console.log("--- trying to login", {
-         strategy: strategy.getName(),
-         identifier,
-         profile
-      });*/
       if (!("email" in profile)) {
          throw new Exception("Profile must have email");
       }
@@ -172,18 +168,14 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       if (!result.data) {
          throw new Exception("User not found", 404);
       }
-      //console.log("---login data", result.data, result);
 
       // compare strategy and identifier
-      //console.log("strategy comparison", result.data.strategy, strategy.getName());
       if (result.data.strategy !== strategy.getName()) {
          //console.log("!!! User registered with different strategy");
          throw new Exception("User registered with different strategy");
       }
 
-      //console.log("identifier comparison", result.data.strategy_value, identifier);
       if (result.data.strategy_value !== identifier) {
-         //console.log("!!! Invalid credentials");
          throw new Exception("Invalid credentials");
       }
 
@@ -207,7 +199,7 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       const payload: any = {
          ...profile,
          strategy: strategy.getName(),
-         strategy_value: identifier
+         strategy_value: identifier,
       };
 
       const mutator = this.em.mutator(users);
@@ -257,13 +249,13 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       email: text().required(),
       strategy: text({
          fillable: ["create"],
-         hidden: ["update", "form"]
+         hidden: ["update", "form"],
       }).required(),
       strategy_value: text({
          fillable: ["create"],
-         hidden: ["read", "table", "update", "form"]
+         hidden: ["read", "table", "update", "form"],
       }).required(),
-      role: text()
+      role: text(),
    };
 
    registerEntities() {
@@ -271,12 +263,12 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       this.ensureSchema(
          em(
             {
-               [users.name as "users"]: users
+               [users.name as "users"]: users,
             },
             ({ index }, { users }) => {
                index(users).on(["email"], true).on(["strategy"]).on(["strategy_value"]);
-            }
-         )
+            },
+         ),
       );
 
       try {
@@ -285,6 +277,7 @@ export class AppAuth extends Module<typeof authConfigSchema> {
       } catch (e) {}
 
       try {
+         // also keep disabled strategies as a choice
          const strategies = Object.keys(this.config.strategies ?? {});
          this.replaceEntityField(users, "strategy", enumm({ enum: strategies }));
       } catch (e) {}
@@ -304,7 +297,7 @@ export class AppAuth extends Module<typeof authConfigSchema> {
          ...(additional as any),
          email,
          strategy,
-         strategy_value
+         strategy_value,
       });
       mutator.__unstable_toggleSystemEntityCreation(true);
       return created;
@@ -315,9 +308,16 @@ export class AppAuth extends Module<typeof authConfigSchema> {
          return this.configDefault;
       }
 
+      const strategies = this.authenticator.getStrategies();
+
       return {
          ...this.config,
-         ...this.authenticator.toJSON(secrets)
+         ...this.authenticator.toJSON(secrets),
+         strategies: transformObject(strategies, (strategy) => ({
+            enabled: this.isStrategyEnabled(strategy),
+            type: strategy.getType(),
+            config: strategy.toJSON(secrets),
+         })),
       };
    }
 }

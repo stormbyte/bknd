@@ -39,10 +39,10 @@ describe("ModuleManager", async () => {
             basepath: "/api/data2",
             entities: {
                test: entity("test", {
-                  content: text()
-               }).toJSON()
-            }
-         }
+                  content: text(),
+               }).toJSON(),
+            },
+         },
       });
       //const { version, ...json } = mm.toJSON() as any;
 
@@ -69,10 +69,10 @@ describe("ModuleManager", async () => {
             basepath: "/api/data2",
             entities: {
                test: entity("test", {
-                  content: text()
-               }).toJSON()
-            }
-         }
+                  content: text(),
+               }).toJSON(),
+            },
+         },
       };
       //const { version, ...json } = mm.toJSON() as any;
 
@@ -105,7 +105,7 @@ describe("ModuleManager", async () => {
       const c2 = getDummyConnection();
       const db = c2.dummyConnection.kysely;
       const mm2 = new ModuleManager(c2.dummyConnection, {
-         initial: { version: version - 1, ...json }
+         initial: { version: version - 1, ...json },
       });
       await mm2.syncConfigTable();
 
@@ -129,7 +129,7 @@ describe("ModuleManager", async () => {
       const db = c2.dummyConnection.kysely;
 
       const mm2 = new ModuleManager(c2.dummyConnection, {
-         initial: { version: version - 1, ...json }
+         initial: { version: version - 1, ...json },
       });
       await mm2.syncConfigTable();
       await db
@@ -157,8 +157,8 @@ describe("ModuleManager", async () => {
          ...json,
          data: {
             ...json.data,
-            basepath: "/api/data2"
-         }
+            basepath: "/api/data2",
+         },
       };
       await db
          .insertInto(TABLE_NAME)
@@ -190,9 +190,9 @@ describe("ModuleManager", async () => {
             ...configs.server,
             admin: {
                ...configs.server.admin,
-               color_scheme: "dark"
-            }
-         }
+               color_scheme: "dark",
+            },
+         },
       });
    });
 
@@ -201,11 +201,11 @@ describe("ModuleManager", async () => {
 
       const partial = {
          auth: {
-            enabled: true
-         }
+            enabled: true,
+         },
       };
       const mm = new ModuleManager(dummyConnection, {
-         initial: partial
+         initial: partial,
       });
       await mm.build();
 
@@ -227,9 +227,9 @@ describe("ModuleManager", async () => {
       const mm2 = new ModuleManager(c2.dummyConnection, {
          initial: {
             auth: {
-               basepath: "/shouldnt/take/this"
-            }
-         }
+               basepath: "/shouldnt/take/this",
+            },
+         },
       });
       await mm2.syncConfigTable();
       const payload = {
@@ -237,15 +237,15 @@ describe("ModuleManager", async () => {
          auth: {
             ...json.auth,
             enabled: true,
-            basepath: "/api/auth2"
-         }
+            basepath: "/api/auth2",
+         },
       };
       await db
          .insertInto(TABLE_NAME)
          .values({
             type: "config",
             json: JSON.stringify(payload),
-            version: CURRENT_VERSION
+            version: CURRENT_VERSION,
          })
          .execute();
       await mm2.build();
@@ -256,7 +256,7 @@ describe("ModuleManager", async () => {
 
    describe("revert", async () => {
       const failingModuleSchema = Type.Object({
-         value: Type.Optional(Type.Number())
+         value: Type.Optional(Type.Number()),
       });
       class FailingModule extends Module<typeof failingModuleSchema> {
          getSchema() {
@@ -301,8 +301,8 @@ describe("ModuleManager", async () => {
          const mm = new TestModuleManager(dummyConnection, {
             initial: {
                // @ts-ignore
-               failing: { value: 2 }
-            }
+               failing: { value: 2 },
+            },
          });
          await mm.build();
          expect(mm.configs()["failing"].value).toBe(2);
@@ -313,8 +313,8 @@ describe("ModuleManager", async () => {
          const mm = new TestModuleManager(dummyConnection, {
             initial: {
                // @ts-ignore
-               failing: { value: -1 }
-            }
+               failing: { value: -1 },
+            },
          });
          expect(mm.build()).rejects.toThrow(/value must be positive/);
          expect(mm.configs()["failing"].value).toBe(-1);
@@ -326,7 +326,7 @@ describe("ModuleManager", async () => {
          const mm = new TestModuleManager(dummyConnection, {
             onUpdated: async () => {
                mockOnUpdated();
-            }
+            },
          });
          await mm.build();
          // @ts-ignore
@@ -342,11 +342,11 @@ describe("ModuleManager", async () => {
          const mm = new TestModuleManager(dummyConnection, {
             initial: {
                // @ts-ignore
-               failing: { value: 1 }
+               failing: { value: 1 },
             },
             onUpdated: async () => {
                mockOnUpdated();
-            }
+            },
          });
          await mm.build();
          expect(mm.configs()["failing"].value).toBe(1);
@@ -354,7 +354,7 @@ describe("ModuleManager", async () => {
          // now safe mutate
          // @ts-ignore
          expect(mm.mutateConfigSafe("failing").set({ value: -2 })).rejects.toThrow(
-            /value must be positive/
+            /value must be positive/,
          );
          expect(mm.configs()["failing"].value).toBe(1);
          expect(mockOnUpdated).toHaveBeenCalled();

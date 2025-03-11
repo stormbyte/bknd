@@ -11,13 +11,13 @@ export const numberFieldConfigSchema = Type.Composite(
          maximum: Type.Optional(Type.Number()),
          exclusiveMinimum: Type.Optional(Type.Number()),
          exclusiveMaximum: Type.Optional(Type.Number()),
-         multipleOf: Type.Optional(Type.Number())
+         multipleOf: Type.Optional(Type.Number()),
       }),
-      baseFieldConfigSchema
+      baseFieldConfigSchema,
    ],
    {
-      additionalProperties: false
-   }
+      additionalProperties: false,
+   },
 );
 
 export type NumberFieldConfig = Static<typeof numberFieldConfigSchema>;
@@ -39,8 +39,8 @@ export class NumberField<Required extends true | false = false> extends Field<
          props: {
             type: "number",
             pattern: "d*",
-            inputMode: "numeric"
-         } as any // @todo: react expects "inputMode", but type dictates "inputmode"
+            inputMode: "numeric",
+         } as any, // @todo: react expects "inputMode", but type dictates "inputmode"
       };
    }
 
@@ -62,7 +62,7 @@ export class NumberField<Required extends true | false = false> extends Field<
    override async transformPersist(
       _value: unknown,
       em: EntityManager<any>,
-      context: TActionContext
+      context: TActionContext,
    ): Promise<number | undefined> {
       const value = await super.transformPersist(_value, em, context);
 
@@ -72,13 +72,13 @@ export class NumberField<Required extends true | false = false> extends Field<
 
       if (this.config.maximum && (value as number) > this.config.maximum) {
          throw new TransformPersistFailedException(
-            `Field "${this.name}" cannot be greater than ${this.config.maximum}`
+            `Field "${this.name}" cannot be greater than ${this.config.maximum}`,
          );
       }
 
       if (this.config.minimum && (value as number) < this.config.minimum) {
          throw new TransformPersistFailedException(
-            `Field "${this.name}" cannot be less than ${this.config.minimum}`
+            `Field "${this.name}" cannot be less than ${this.config.minimum}`,
          );
       }
 
@@ -93,8 +93,8 @@ export class NumberField<Required extends true | false = false> extends Field<
             maximum: this.config?.maximum,
             exclusiveMinimum: this.config?.exclusiveMinimum,
             exclusiveMaximum: this.config?.exclusiveMaximum,
-            multipleOf: this.config?.multipleOf
-         })
+            multipleOf: this.config?.multipleOf,
+         }),
       );
    }
 }

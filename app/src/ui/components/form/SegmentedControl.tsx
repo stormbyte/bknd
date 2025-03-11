@@ -1,7 +1,7 @@
 import {
    Input,
    SegmentedControl as MantineSegmentedControl,
-   type SegmentedControlProps as MantineSegmentedControlProps
+   type SegmentedControlProps as MantineSegmentedControlProps,
 } from "@mantine/core";
 
 type SegmentedControlProps = MantineSegmentedControlProps & {

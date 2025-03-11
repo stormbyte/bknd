@@ -4,7 +4,7 @@ import { after, beforeEach, describe, test } from "node:test";
 import { Miniflare } from "miniflare";
 import {
    CloudflareKVCacheItem,
-   CloudflareKVCachePool
+   CloudflareKVCachePool,
 } from "../../../src/core/cache/adapters/CloudflareKvCache";
 import { runTests } from "./cache-test-suite";
 
@@ -26,7 +26,7 @@ describe("CloudflareKv", async () => {
          mf = new Miniflare({
             modules: true,
             script: "export default { async fetch() { return new Response(null); } }",
-            kvNamespaces: ["TEST"]
+            kvNamespaces: ["TEST"],
          });
          const kv = await mf.getKVNamespace("TEST");
          return new CloudflareKVCachePool(kv as any);
@@ -45,10 +45,10 @@ describe("CloudflareKv", async () => {
                },
                toBeUndefined() {
                   assert.equal(actual, undefined);
-               }
+               },
             };
-         }
-      }
+         },
+      },
    });
 
    after(async () => {

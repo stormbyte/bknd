@@ -1,5 +1,6 @@
 import type { Entity, EntityData } from "data";
 import { CellValue, DataTable, type DataTableProps } from "ui/components/table/DataTable";
+import ErrorBoundary from "ui/components/display/ErrorBoundary";
 
 type EntityTableProps<Data extends EntityData = EntityData> = Omit<
    DataTableProps<Data>,
@@ -37,11 +38,15 @@ export function EntityTable2({ entity, select, ...props }: EntityTableProps) {
          console.warn(
             "Couldn't render value",
             { value, property, entity, select, columns, ...props },
-            e
+            e,
          );
       }
 
-      return <CellValue value={_value} property={property} />;
+      return (
+         <ErrorBoundary fallback={String(_value)}>
+            <CellValue value={_value} property={property} />
+         </ErrorBoundary>
+      );
    }
 
    return (

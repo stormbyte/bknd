@@ -12,7 +12,7 @@ export class FetchTask<Output extends Record<string, any>> extends Task<
 
    static override schema = Type.Object({
       url: Type.String({
-         pattern: "^(http|https)://"
+         pattern: "^(http|https)://",
       }),
       //method: Type.Optional(Type.Enum(FetchMethodsEnum)),
       //method: Type.Optional(dynamic(Type.String({ enum: FetchMethods, default: "GET" }))),
@@ -22,14 +22,14 @@ export class FetchTask<Output extends Record<string, any>> extends Task<
             Type.Array(
                Type.Object({
                   key: Type.String(),
-                  value: Type.String()
-               })
+                  value: Type.String(),
+               }),
             ),
-            JSON.parse
-         )
+            JSON.parse,
+         ),
       ),
       body: Type.Optional(dynamic(Type.String())),
-      normal: Type.Optional(dynamic(Type.Number(), Number.parseInt))
+      normal: Type.Optional(dynamic(Type.Number(), Number.parseInt)),
    });
 
    protected getBody(): string | undefined {
@@ -46,7 +46,7 @@ export class FetchTask<Output extends Record<string, any>> extends Task<
       if (!FetchMethods.includes(this.params.method ?? "GET")) {
          throw this.error("Invalid method", {
             given: this.params.method,
-            valid: FetchMethods
+            valid: FetchMethods,
          });
       }
 
@@ -62,14 +62,14 @@ export class FetchTask<Output extends Record<string, any>> extends Task<
       const result = await fetch(this.params.url, {
          method: this.params.method ?? "GET",
          headers,
-         body
+         body,
       });
 
       //console.log("fetch:response", result);
       if (!result.ok) {
          throw this.error("Failed to fetch", {
             status: result.status,
-            statusText: result.statusText
+            statusText: result.statusText,
          });
       }
 

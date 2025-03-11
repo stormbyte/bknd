@@ -2,18 +2,14 @@
 title: Introduction
 ---
 
-import { cloudflare, nextjs, remix, astro, bun, node, docker, vite } from "/snippets/integration-icons.mdx"
+import { cloudflare, nextjs, remix, astro, bun, node, docker, vite, aws } from "/snippets/integration-icons.mdx"
 import { Stackblitz, examples } from "/snippets/stackblitz.mdx"
 
 Glad you're here! This is about **bknd**, a feature-rich backend that is so lightweight it could
 run on your toaster (probably).
 
-<Note>
-   The documentation is currently a work in progress and not complete. Updates will be made regularily.
-</Note>
-
 ## Preview
-**bknd** is so lightweight that it fully runs inside StackBlitz. Take a look at the preview below:
+Here is a preview of **bknd** in StackBlitz:
 <Stackblitz {...examples.adminRich} />
 
 <Accordion title="What's going on?" icon="lightbulb">
@@ -73,6 +69,11 @@ in the future, so stay tuned!
       href="/integration/bun"
    />
    <Card
+      title="AWS Lambda"
+      icon={<div className="text-primary-light">{aws}</div>}
+      href="/integration/aws"
+   />
+   <Card
       title="Vite"
       icon={<div className="text-primary-light">{vite}</div>}
       href="/integration/vite"
@@ -82,4 +83,11 @@ in the future, so stay tuned!
       icon={<div className="text-primary-light">{docker}</div>}
       href="/integration/docker"
    />
+   <Card
+      horizontal
+      title="Yours missing?"
+      href="https://github.com/bknd-io/bknd/issues/new"
+   >
+     Create a new issue to request a guide for your runtime or framework.
+   </Card>
 </CardGroup>

@@ -1,4 +1,4 @@
-import { IconSettings } from "@tabler/icons-react";
+import { IconRefresh, IconSettings } from "@tabler/icons-react";
 import { ucFirst } from "core/utils";
 import { useBknd } from "ui/client/bknd";
 import { Empty } from "ui/components/display/Empty";
@@ -12,21 +12,33 @@ import { AuthSettings } from "./routes/auth.settings";
 import { DataSettings } from "./routes/data.settings";
 import { FlowsSettings } from "./routes/flows.settings";
 import { ServerSettings } from "./routes/server.settings";
+import { IconButton } from "ui/components/buttons/IconButton";
 
 function SettingsSidebar() {
-   const { version, schema } = useBknd();
+   const { version, schema, actions } = useBknd();
    useBrowserTitle(["Settings"]);
+
+   async function handleRefresh() {
+      await actions.reload();
+   }
 
    const modules = Object.keys(schema).map((key) => {
       return {
          title: schema[key].title ?? ucFirst(key),
-         key
+         key,
       };
    });
 
    return (
       <AppShell.Sidebar>
-         <AppShell.SectionHeader right={<span className="font-mono">v{version}</span>}>
+         <AppShell.SectionHeader
+            right={
+               <div className="flex items-center gap-2">
+                  <span className="font-mono leading-none">v{version}</span>
+                  <IconButton Icon={IconRefresh} onClick={handleRefresh} />
+               </div>
+            }
+         >
             Settings
          </AppShell.SectionHeader>
          <AppShell.Scrollable initialOffset={96}>
@@ -86,25 +98,25 @@ const uiSchema = {
    server: {
       cors: {
          allow_methods: {
-            "ui:widget": "checkboxes"
+            "ui:widget": "checkboxes",
          },
          allow_headers: {
             "ui:options": {
-               orderable: false
-            }
-         }
-      }
+               orderable: false,
+            },
+         },
+      },
    },
    media: {
       adapter: {
          "ui:options": {
-            label: false
-         }
+            label: false,
+         },
          /*type: {
             "ui:widget": "hidden"
          }*/
-      }
-   }
+      },
+   },
 };
 
 const SettingRoutesRoutes = () => {
@@ -112,7 +124,7 @@ const SettingRoutesRoutes = () => {
 
    console.log("flows", {
       schema: schema.flows,
-      config: config.flows
+      config: config.flows,
    });
 
    return (

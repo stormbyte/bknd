@@ -9,7 +9,7 @@ export {
    type ModuleConfigs,
    type ModuleSchemas,
    MODULE_NAMES,
-   type ModuleKey
+   type ModuleKey,
 } from "./ModuleManager";
 export type { ModuleBuildContext } from "./Module";
 
@@ -17,5 +17,5 @@ export {
    type PrimaryFieldType,
    type BaseModuleApiOptions,
    type ApiResponse,
-   ModuleApi
+   ModuleApi,
 } from "./ModuleApi";

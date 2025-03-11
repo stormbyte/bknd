@@ -19,7 +19,7 @@ export function MediaIndex() {
             description="Please enable media in the settings to continue."
             primary={{
                children: "Manage Settings",
-               onClick: () => navigate("/settings")
+               onClick: () => navigate("/settings"),
             }}
          />
       );

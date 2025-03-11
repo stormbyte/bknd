@@ -10,12 +10,12 @@ describe("[data] EnumField", async () => {
    runBaseFieldTests(
       EnumField,
       { defaultValue: "a", schemaType: "text" },
-      { options: options(["a", "b", "c"]) }
+      { options: options(["a", "b", "c"]) },
    );
 
    test("yields if default value is not a valid option", async () => {
       expect(
-         () => new EnumField("test", { options: options(["a", "b"]), default_value: "c" })
+         () => new EnumField("test", { options: options(["a", "b"]), default_value: "c" }),
       ).toThrow();
    });
 
@@ -31,7 +31,7 @@ describe("[data] EnumField", async () => {
       const field = new EnumField("test", {
          options: options(["a", "b", "c"]),
          default_value: "a",
-         required: true
+         required: true,
       });
 
       expect(field.transformRetrieve(null)).toBe("a");

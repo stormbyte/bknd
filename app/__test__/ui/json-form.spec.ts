@@ -16,7 +16,7 @@ describe("json form", () => {
          ["0", { type: "boolean" }, false],
          ["on", { type: "boolean" }, true],
          ["off", { type: "boolean" }, false],
-         ["null", { type: "null" }, null]
+         ["null", { type: "null" }, null],
       ] satisfies [string, Exclude<JSONSchema, boolean>, any][];
 
       for (const [input, schema, output] of examples) {
@@ -35,7 +35,7 @@ describe("json form", () => {
          ["array", "array", true],
          ["object", "array", false],
          [["string", "number"], "number", true],
-         ["number", ["string", "number"], true]
+         ["number", ["string", "number"], true],
       ] satisfies [IsTypeType, IsTypeType, boolean][];
 
       for (const [type, schemaType, output] of examples) {
@@ -48,7 +48,7 @@ describe("json form", () => {
          ["#/nested/property/0/name", "#/nested/property/0"],
          ["#/nested/property/0", "#/nested/property"],
          ["#/nested/property", "#/nested"],
-         ["#/nested", "#"]
+         ["#/nested", "#"],
       ];
 
       for (const [input, output] of examples) {
@@ -61,16 +61,16 @@ describe("json form", () => {
          [
             "#/description",
             { type: "object", properties: { description: { type: "string" } } },
-            false
+            false,
          ],
          [
             "#/description",
             {
                type: "object",
                required: ["description"],
-               properties: { description: { type: "string" } }
+               properties: { description: { type: "string" } },
             },
-            true
+            true,
          ],
          [
             "#/nested/property",
@@ -79,11 +79,11 @@ describe("json form", () => {
                properties: {
                   nested: {
                      type: "object",
-                     properties: { property: { type: "string" } }
-                  }
-               }
+                     properties: { property: { type: "string" } },
+                  },
+               },
             },
-            false
+            false,
          ],
          [
             "#/nested/property",
@@ -93,12 +93,12 @@ describe("json form", () => {
                   nested: {
                      type: "object",
                      required: ["property"],
-                     properties: { property: { type: "string" } }
-                  }
-               }
+                     properties: { property: { type: "string" } },
+                  },
+               },
             },
-            true
-         ]
+            true,
+         ],
       ] satisfies [string, Exclude<JSONSchema, boolean>, boolean][];
 
       for (const [pointer, schema, output] of examples) {
@@ -113,7 +113,7 @@ describe("json form", () => {
          ["tags", "0", "0.tags"],
          ["tags", 0, "0.tags"],
          ["nested.property", "prefix", "prefix.nested.property"],
-         ["nested.property", "", "nested.property"]
+         ["nested.property", "", "nested.property"],
       ] satisfies [string, any, string][];
 
       for (const [path, prefix, output] of examples) {
@@ -128,7 +128,7 @@ describe("json form", () => {
          ["tags", "0", "tags.0"],
          ["tags", 0, "tags.0"],
          ["nested.property", "suffix", "nested.property.suffix"],
-         ["nested.property", "", "nested.property"]
+         ["nested.property", "", "nested.property"],
       ] satisfies [string, any, string][];
 
       for (const [path, suffix, output] of examples) {

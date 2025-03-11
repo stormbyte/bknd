@@ -6,7 +6,7 @@ export function mediaItemToFileState(
    options: {
       overrides?: Partial<FileState>;
       baseUrl?: string;
-   } = { overrides: {}, baseUrl: "" }
+   } = { overrides: {}, baseUrl: "" },
 ): FileState {
    return {
       body: `${options.baseUrl}/api/media/file/${item.path}`,
@@ -16,7 +16,7 @@ export function mediaItemToFileState(
       type: item.mime_type ?? "",
       state: "uploaded",
       progress: 0,
-      ...options.overrides
+      ...options.overrides,
    };
 }
 
@@ -25,7 +25,7 @@ export function mediaItemsToFileStates(
    options: {
       overrides?: Partial<FileState>;
       baseUrl?: string;
-   } = { overrides: {}, baseUrl: "" }
+   } = { overrides: {}, baseUrl: "" },
 ): FileState[] {
    return items.map((item) => mediaItemToFileState(item, options));
 }

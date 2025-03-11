@@ -13,8 +13,8 @@ describe("diff", () => {
             t: "a",
             p: ["b"],
             o: undefined,
-            n: 2
-         }
+            n: 2,
+         },
       ]);
 
       const appliedObj = apply(oldObj, diffs);
@@ -35,8 +35,8 @@ describe("diff", () => {
             t: "r",
             p: ["b"],
             o: 2,
-            n: undefined
-         }
+            n: undefined,
+         },
       ]);
 
       const appliedObj = apply(oldObj, diffs);
@@ -57,8 +57,8 @@ describe("diff", () => {
             t: "e",
             p: ["a"],
             o: 1,
-            n: 2
-         }
+            n: 2,
+         },
       ]);
 
       const appliedObj = apply(oldObj, diffs);
@@ -79,8 +79,8 @@ describe("diff", () => {
             t: "e",
             p: ["a", "b"],
             o: 1,
-            n: 2
-         }
+            n: 2,
+         },
       ]);
 
       const appliedObj = apply(oldObj, diffs);
@@ -101,14 +101,14 @@ describe("diff", () => {
             t: "e",
             p: ["a", 1],
             o: 2,
-            n: 4
+            n: 4,
          },
          {
             t: "a",
             p: ["a", 3],
             o: undefined,
-            n: 5
-         }
+            n: 5,
+         },
       ]);
 
       const appliedObj = apply(oldObj, diffs);
@@ -129,20 +129,20 @@ describe("diff", () => {
             t: "a",
             p: ["a", 0],
             o: undefined,
-            n: 1
+            n: 1,
          },
          {
             t: "a",
             p: ["a", 1],
             o: undefined,
-            n: 2
+            n: 2,
          },
          {
             t: "a",
             p: ["a", 2],
             o: undefined,
-            n: 3
-         }
+            n: 3,
+         },
       ]);
 
       const appliedObj = apply(oldObj, diffs);
@@ -163,14 +163,14 @@ describe("diff", () => {
             t: "e",
             p: ["a", 1],
             o: 2,
-            n: 3
+            n: 3,
          },
          {
             t: "r",
             p: ["a", 2],
             o: 3,
-            n: undefined
-         }
+            n: undefined,
+         },
       ]);
 
       const appliedObj = apply(oldObj, diffs);
@@ -183,14 +183,14 @@ describe("diff", () => {
    it("should handle complex nested changes", () => {
       const oldObj = {
          a: {
-            b: [1, 2, { c: 3 }]
-         }
+            b: [1, 2, { c: 3 }],
+         },
       };
 
       const newObj = {
          a: {
-            b: [1, 2, { c: 4 }, 5]
-         }
+            b: [1, 2, { c: 4 }, 5],
+         },
       };
 
       const diffs = diff(oldObj, newObj);
@@ -200,14 +200,14 @@ describe("diff", () => {
             t: "e",
             p: ["a", "b", 2, "c"],
             o: 3,
-            n: 4
+            n: 4,
          },
          {
             t: "a",
             p: ["a", "b", 3],
             o: undefined,
-            n: 5
-         }
+            n: 5,
+         },
       ]);
 
       const appliedObj = apply(oldObj, diffs);
@@ -228,14 +228,14 @@ describe("diff", () => {
             t: "e",
             p: ["a"],
             o: undefined,
-            n: null
+            n: null,
          },
          {
             t: "e",
             p: ["b"],
             o: null,
-            n: undefined
-         }
+            n: undefined,
+         },
       ]);
 
       const appliedObj = apply(oldObj, diffs);
@@ -256,8 +256,8 @@ describe("diff", () => {
             t: "e",
             p: ["a"],
             o: 1,
-            n: "1"
-         }
+            n: "1",
+         },
       ]);
 
       const appliedObj = apply(oldObj, diffs);
@@ -278,14 +278,14 @@ describe("diff", () => {
             t: "r",
             p: ["b"],
             o: 2,
-            n: undefined
+            n: undefined,
          },
          {
             t: "a",
             p: ["c"],
             o: undefined,
-            n: 3
-         }
+            n: 3,
+         },
       ]);
 
       const appliedObj = apply(oldObj, diffs);
@@ -306,8 +306,8 @@ describe("diff", () => {
             t: "e",
             p: ["a"],
             o: [1, 2, 3],
-            n: { b: 4 }
-         }
+            n: { b: 4 },
+         },
       ]);
 
       const appliedObj = apply(oldObj, diffs);
@@ -328,8 +328,8 @@ describe("diff", () => {
             t: "e",
             p: ["a"],
             o: { b: 1 },
-            n: 2
-         }
+            n: 2,
+         },
       ]);
 
       const appliedObj = apply(oldObj, diffs);
@@ -350,14 +350,14 @@ describe("diff", () => {
             t: "r",
             p: ["a"],
             o: 1,
-            n: undefined
+            n: undefined,
          },
          {
             t: "a",
             p: ["b"],
             o: undefined,
-            n: 2
-         }
+            n: 2,
+         },
       ]);
 
       const appliedObj = apply(oldObj, diffs);
@@ -408,8 +408,8 @@ describe("diff", () => {
             t: "a",
             p: ["a"],
             o: undefined,
-            n: 1
-         }
+            n: 1,
+         },
       ]);
 
       const appliedObj = apply(oldObj, diffs);
@@ -430,8 +430,8 @@ describe("diff", () => {
             t: "r",
             p: ["a"],
             o: 1,
-            n: undefined
-         }
+            n: undefined,
+         },
       ]);
 
       const appliedObj = apply(oldObj, diffs);

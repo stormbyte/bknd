@@ -5,8 +5,8 @@ import * as AppShell from "ui/layouts/AppShell/AppShell";
 
 const DataSchemaCanvas = lazy(() =>
    import("ui/modules/data/components/canvas/DataSchemaCanvas").then((m) => ({
-      default: m.DataSchemaCanvas
-   }))
+      default: m.DataSchemaCanvas,
+   })),
 );
 
 export function DataSchemaIndex() {

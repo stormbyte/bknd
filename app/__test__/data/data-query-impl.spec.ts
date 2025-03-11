@@ -30,7 +30,7 @@ describe("data-query-impl", () => {
          [{ val: { $isnull: 0 } }, '"val" is not null', []],
          [{ val: { $isnull: false } }, '"val" is not null', []],
          [{ val: { $like: "what" } }, '"val" like ?', ["what"]],
-         [{ val: { $like: "w*t" } }, '"val" like ?', ["w%t"]]
+         [{ val: { $like: "w*t" } }, '"val" like ?', ["w%t"]],
       ];
 
       for (const [query, expectedSql, expectedParams] of tests) {
@@ -51,22 +51,22 @@ describe("data-query-impl", () => {
          [
             { val1: { $eq: "foo" }, val2: { $eq: "bar" } },
             '("val1" = ? and "val2" = ?)',
-            ["foo", "bar"]
+            ["foo", "bar"],
          ],
          [
             { val1: { $eq: "foo" }, val2: { $eq: "bar" } },
             '("val1" = ? and "val2" = ?)',
-            ["foo", "bar"]
+            ["foo", "bar"],
          ],
 
          // or constructs
          [
             { $or: { val1: { $eq: "foo" }, val2: { $eq: "bar" } } },
             '("val1" = ? or "val2" = ?)',
-            ["foo", "bar"]
+            ["foo", "bar"],
          ],
          [{ val1: { $eq: 1 }, $or: { val1: { $eq: 2 } } }, '("val1" = ? or "val1" = ?)', [1, 2]],
-         [{ val1: { $eq: 1 }, $or: { val1: { $eq: 2 } } }, '("val1" = ? or "val1" = ?)', [1, 2]]
+         [{ val1: { $eq: 1 }, $or: { val1: { $eq: 2 } } }, '("val1" = ? or "val1" = ?)', [1, 2]],
       ];
 
       for (const [query, expectedSql, expectedParams] of tests) {
@@ -86,7 +86,7 @@ describe("data-query-impl", () => {
 
          // or constructs
          [{ $or: { val1: { $eq: "foo" }, val2: { $eq: "bar" } } }, ["val1", "val2"]],
-         [{ val1: { $eq: 1 }, $or: { val1: { $eq: 2 } } }, ["val1"]]
+         [{ val1: { $eq: 1 }, $or: { val1: { $eq: 2 } } }, ["val1"]],
       ];
 
       for (const [query, expectedKeys] of tests) {
@@ -105,23 +105,23 @@ describe("data-query-impl", () => {
                posts: {
                   with: {
                      images: {
-                        select: ["id"]
-                     }
-                  }
-               }
-            }
+                        select: ["id"],
+                     },
+                  },
+               },
+            },
          },
          {
             with: {
                posts: {
                   with: {
                      images: {
-                        select: ["id"]
-                     }
-                  }
-               }
-            }
-         }
+                        select: ["id"],
+                     },
+                  },
+               },
+            },
+         },
       );
 
       // over http
