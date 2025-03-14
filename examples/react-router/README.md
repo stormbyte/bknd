@@ -1,14 +1,15 @@
-# bknd starter: Remix
-A minimal Remix project with bknd integration.
+# bknd starter: React Router
+A minimal React Router project with bknd integration.
 
 ## Project Structure
 
-Inside of your Remix project, you'll see the following folders and files:
+Inside of your React Router project, you'll see the following folders and files:
 
 ```text
 /
 ├── public/
 ├── app/
+│   ├── bknd.ts
 │   ├── root.tsx
 │   └── routes/
 │       ├── _index.tsx

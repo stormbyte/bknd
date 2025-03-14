@@ -1,80 +1,55 @@
-import { type MetaFunction, useFetcher, useLoaderData, useOutletContext } from "@remix-run/react";
-import type { ActionFunctionArgs } from "@remix-run/server-runtime";
+import type { Route } from "./+types/_index";
+import {
+   type ActionFunctionArgs,
+   type LoaderFunctionArgs,
+   useFetcher,
+   useLoaderData,
+} from "react-router";
 import { getApi } from "~/bknd";
 
-export const meta: MetaFunction = () => {
+// biome-ignore lint/correctness/noEmptyPattern: <explanation>
+export function meta({}: Route.MetaArgs) {
    return [
-      { title: "New bknd-Remix App" },
-      { name: "description", content: "Welcome to bknd & Remix!" }
+      { title: "New bknd React Router App" },
+      { name: "description", content: "Welcome to bknd & React Router!" },
    ];
-};
+}
 
-export const loader = async () => {
-   const api = await getApi();
+export const loader = async (args: LoaderFunctionArgs) => {
+   const api = await getApi(args, { verify: true });
 
    const limit = 5;
    const {
       data: todos,
-      body: { meta }
+      body: { meta },
    } = await api.data.readMany("todos", {
       limit,
-      sort: "-id"
+      sort: "-id",
    });
 
-   return { todos: todos.reverse(), total: meta.total, limit };
-};
-
-export const action = async (args: ActionFunctionArgs) => {
-   const api = await getApi();
-   const formData = await args.request.formData();
-   const action = formData.get("action") as string;
-
-   switch (action) {
-      case "update": {
-         const id = Number(formData.get("id"));
-         const done = formData.get("done") === "on";
-
-         if (id > 0) {
-            await api.data.updateOne("todos", id, { done });
-         }
-         break;
-      }
-      case "add": {
-         const title = formData.get("title") as string;
-
-         if (title.length > 0) {
-            await api.data.createOne("todos", { title });
-         }
-         break;
-      }
-      case "delete": {
-         const id = Number(formData.get("id"));
-
-         if (id > 0) {
-            await api.data.deleteOne("todos", id);
-         }
-         break;
-      }
-   }
-
-   return null;
+   return { todos: todos.reverse(), total: meta.total, limit, user: api.getUser() };
 };
 
 export default function Index() {
-   const ctx = useOutletContext<any>();
-   const { todos, total, limit } = useLoaderData<typeof loader>();
+   const { todos, total, limit, user } = useLoaderData<typeof loader>();
    const fetcher = useFetcher();
 
    return (
       <div className="flex h-screen items-center justify-center">
          <div className="flex flex-col items-center gap-16">
             <header className="flex flex-col items-center gap-9">
-               <h1 className="leading text-2xl font-bold text-gray-800 dark:text-gray-100">
-                  bknd w/ <span className="sr-only">Remix</span>
-               </h1>
-               <div className="h-[144px] w-[434px]">
-                  <img src="/logo-light.png" alt="Remix" className="block w-full dark:hidden" />
-                  <img src="/logo-dark.png" alt="Remix" className="hidden w-full dark:block" />
+               <img src="/bknd.svg" alt="bknd" className="block w-48 dark:invert" />
+               <div className="h-[144px] w-96">
+                  <img
+                     src="/logo-light.svg"
+                     alt="React Router"
+                     className="block w-full dark:hidden"
+                  />
+                  <img
+                     src="/logo-dark.svg"
+                     alt="React Router"
+                     className="hidden w-full dark:block"
+                  />
                </div>
             </header>
             <nav className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-gray-200 p-6 dark:border-gray-700">
@@ -136,9 +111,9 @@ export default function Index() {
             <div className="flex flex-col items-center gap-4">
                <a href="/admin">Go to Admin ➝</a>
                <div className="opacity-50 text-xs">
-                  {ctx.user ? (
+                  {user ? (
                      <p>
-                        Authenticated as <b>{ctx.user.email}</b>
+                        Authenticated as <b>{user.email}</b>
                      </p>
                   ) : (
                      <a href="/admin/auth/login">Login</a>
@@ -149,3 +124,39 @@ export default function Index() {
       </div>
    );
 }
+
+export const action = async (args: ActionFunctionArgs) => {
+   const api = await getApi();
+   const formData = await args.request.formData();
+   const action = formData.get("action") as string;
+
+   switch (action) {
+      case "update": {
+         const id = Number(formData.get("id"));
+         const done = formData.get("done") === "on";
+
+         if (id > 0) {
+            await api.data.updateOne("todos", id, { done });
+         }
+         break;
+      }
+      case "add": {
+         const title = formData.get("title") as string;
+
+         if (title.length > 0) {
+            await api.data.createOne("todos", { title });
+         }
+         break;
+      }
+      case "delete": {
+         const id = Number(formData.get("id"));
+
+         if (id > 0) {
+            await api.data.deleteOne("todos", id);
+         }
+         break;
+      }
+   }
+
+   return null;
+};

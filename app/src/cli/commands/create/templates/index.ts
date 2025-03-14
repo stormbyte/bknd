@@ -1,6 +1,4 @@
 import { cloudflare } from "./cloudflare";
-import { nextjs } from "./nextjs";
-import { remix } from "./remix";
 
 export type TemplateSetupCtx = {
    template: Template;
@@ -13,7 +11,7 @@ export type Integration =
    | "bun"
    | "cloudflare"
    | "nextjs"
-   | "remix"
+   | "react-router"
    | "astro"
    | "aws"
    | "custom";
@@ -43,8 +41,6 @@ export type Template = {
 
 export const templates: Template[] = [
    cloudflare,
-   nextjs,
-   remix,
    {
       key: "node",
       title: "Node.js Basic",
@@ -62,11 +58,27 @@ export const templates: Template[] = [
       ref: true,
    },
    {
+      key: "nextjs",
+      title: "Next.js Basic",
+      integration: "nextjs",
+      description: "A basic bknd Next.js starter",
+      path: "gh:bknd-io/bknd/examples/nextjs",
+      ref: true,
+   },
+   {
       key: "astro",
       title: "Astro Basic",
       integration: "astro",
       description: "A basic bknd Astro starter",
       path: "gh:bknd-io/bknd/examples/astro",
+      ref: true,
+   },
+   {
+      key: "react-router",
+      title: "React Router Basic",
+      integration: "react-router",
+      description: "A basic bknd React Router starter",
+      path: "gh:bknd-io/bknd/examples/react-router",
       ref: true,
    },
    {

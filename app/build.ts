@@ -228,7 +228,7 @@ async function buildAdapters() {
    });
 
    // specific adatpers
-   await tsup.build(baseConfig("remix"));
+   await tsup.build(baseConfig("react-router"));
    await tsup.build(baseConfig("bun"));
    await tsup.build(baseConfig("astro"));
    await tsup.build(baseConfig("aws"));

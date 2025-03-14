@@ -24,7 +24,7 @@ const config = {
    },
    framework: {
       nextjs: "Next.js",
-      remix: "Remix",
+      "react-router": "React Router",
       astro: "Astro",
    },
 } as const;
