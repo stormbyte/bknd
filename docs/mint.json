@@ -82,7 +82,7 @@
           "group": "Frameworks",
           "pages": [
             "integration/nextjs",
-            "integration/remix",
+            "integration/react-router",
             "integration/astro",
             "integration/vite"
           ]

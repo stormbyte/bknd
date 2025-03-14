@@ -1,18 +1,17 @@
 import type { App } from "bknd";
 import { type FrameworkBkndConfig, createFrameworkApp } from "bknd/adapter";
 
-export type RemixBkndConfig<Args = RemixContext> = FrameworkBkndConfig<Args>;
-
-type RemixContext = {
+type ReactRouterContext = {
    request: Request;
 };
+export type ReactRouterBkndConfig<Args = ReactRouterContext> = FrameworkBkndConfig<Args>;
 
 let app: App;
 let building: boolean = false;
 
-export async function getApp<Args extends RemixContext = RemixContext>(
-   config: RemixBkndConfig<Args>,
-   args?: Args
+export async function getApp<Args extends ReactRouterContext = ReactRouterContext>(
+   config: ReactRouterBkndConfig<Args>,
+   args?: Args,
 ) {
    if (building) {
       while (building) {
@@ -30,8 +29,8 @@ export async function getApp<Args extends RemixContext = RemixContext>(
    return app;
 }
 
-export function serve<Args extends RemixContext = RemixContext>(
-   config: RemixBkndConfig<Args> = {},
+export function serve<Args extends ReactRouterContext = ReactRouterContext>(
+   config: ReactRouterBkndConfig<Args> = {},
 ) {
    return async (args: Args) => {
       app = await getApp(config, args);

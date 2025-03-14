@@ -37,7 +37,10 @@ const envs = {
    // cli telemetry
    cli_telemetry: {
       key: "BKND_CLI_TELEMETRY",
-      validate: (v: unknown) => {
+      validate: (v: unknown): boolean | undefined => {
+         if (typeof v === "undefined") {
+            return undefined;
+         }
          return is_toggled(v, true);
       },
    },

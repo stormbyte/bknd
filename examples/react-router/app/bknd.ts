@@ -1,6 +1,6 @@
-import { App, type LocalApiOptions } from "bknd";
+import { App } from "bknd";
 import { registerLocalMediaAdapter } from "bknd/adapter/node";
-import { type RemixBkndConfig, getApp as getBkndApp } from "bknd/adapter/remix";
+import { type ReactRouterBkndConfig, getApp as getBkndApp } from "bknd/adapter/react-router";
 import { boolean, em, entity, text } from "bknd/data";
 import { secureRandomString } from "bknd/utils";
 
@@ -70,13 +70,19 @@ const config = {
          "sync",
       );
    },
-} as const satisfies RemixBkndConfig;
+} as const satisfies ReactRouterBkndConfig;
 
 export async function getApp(args?: { request: Request }) {
    return await getBkndApp(config, args);
 }
 
-export async function getApi(options?: LocalApiOptions) {
+export async function getApi(args?: { request: Request }, opts?: { verify?: boolean }) {
    const app = await getApp();
-   return await app.getApi(options);
+   if (opts?.verify) {
+      const api = app.getApi({ headers: args?.request.headers });
+      await api.verifyAuth();
+      return api;
+   }
+
+   return app.getApi();
 }
