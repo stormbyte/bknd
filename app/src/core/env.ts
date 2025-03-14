@@ -1,7 +1,7 @@
 export type Env = {};
 
-export const is_toggled = (given: unknown): boolean => {
-   return typeof given === "string" ? [1, "1", "true"].includes(given) : Boolean(given);
+export const is_toggled = (given: unknown, fallback?: boolean): boolean => {
+   return typeof given === "string" ? [1, "1", "true"].includes(given) : Boolean(fallback);
 };
 
 export function isDebug(): boolean {
@@ -32,6 +32,13 @@ const envs = {
       key: "BKND_CLI_CREATE_REF",
       validate: (v: unknown) => {
          return typeof v === "string" ? v : undefined;
+      },
+   },
+   // cli telemetry
+   cli_telemetry: {
+      key: "BKND_CLI_TELEMETRY",
+      validate: (v: unknown) => {
+         return is_toggled(v, true);
       },
    },
    // module manager debug: {
