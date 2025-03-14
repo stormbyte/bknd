@@ -33,5 +33,5 @@
     "metafile": true,
     "external": ["bknd", "pg", "kysely"]
   },
-  "files": ["dist", "!*.map", "!metafile*.json"]
+  "files": ["dist", "README.md", "!*.map", "!metafile*.json"]
 }
