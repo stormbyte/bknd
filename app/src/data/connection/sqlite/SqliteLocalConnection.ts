@@ -1,5 +1,10 @@
-import { type DatabaseIntrospector, ParseJSONResultsPlugin, type SqliteDatabase } from "kysely";
-import { Kysely, SqliteDialect } from "kysely";
+import {
+   type DatabaseIntrospector,
+   Kysely,
+   ParseJSONResultsPlugin,
+   type SqliteDatabase,
+   SqliteDialect,
+} from "kysely";
 import { SqliteConnection } from "./SqliteConnection";
 import { SqliteIntrospector } from "./SqliteIntrospector";
 
@@ -22,9 +27,5 @@ export class SqliteLocalConnection extends SqliteConnection {
       });
 
       super(kysely, {}, plugins);
-   }
-
-   override supportsIndices(): boolean {
-      return true;
    }
 }

@@ -2,7 +2,6 @@ import {
    type AliasableExpression,
    type ColumnBuilderCallback,
    type ColumnDataType,
-   type DatabaseIntrospector,
    type Expression,
    type Kysely,
    type KyselyPlugin,
@@ -77,6 +76,9 @@ const CONN_SYMBOL = Symbol.for("bknd:connection");
 
 export abstract class Connection<DB = any> {
    kysely: Kysely<DB>;
+   protected readonly supported = {
+      batching: false,
+   };
 
    constructor(
       kysely: Kysely<DB>,
@@ -101,13 +103,8 @@ export abstract class Connection<DB = any> {
       return this.kysely.introspection as any;
    }
 
-   supportsBatching(): boolean {
-      return false;
-   }
-
-   // @todo: add if only first field is used in index
-   supportsIndices(): boolean {
-      return false;
+   supports(feature: keyof typeof this.supported): boolean {
+      return this.supported[feature] ?? false;
    }
 
    async ping(): Promise<boolean> {
@@ -129,7 +126,7 @@ export abstract class Connection<DB = any> {
       [K in keyof Queries]: Awaited<ReturnType<Queries[K]["execute"]>>;
    }> {
       // bypass if no client support
-      if (!this.supportsBatching()) {
+      if (!this.supports("batching")) {
          const data: any = [];
          for (const q of queries) {
             const result = await q.execute();
@@ -151,5 +148,8 @@ export abstract class Connection<DB = any> {
    }
 
    abstract getFieldSchema(spec: FieldSpec, strict?: boolean): SchemaResponse;
-   abstract close(): Promise<void>;
+
+   async close(): Promise<void> {
+      // no-op by default
+   }
 }

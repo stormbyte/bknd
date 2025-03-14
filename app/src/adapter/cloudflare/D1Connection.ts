@@ -18,6 +18,10 @@ class CustomD1Dialect extends D1Dialect {
 }
 
 export class D1Connection extends SqliteConnection {
+   protected override readonly supported = {
+      batching: true,
+   };
+
    constructor(private config: D1ConnectionConfig) {
       const plugins = [new ParseJSONResultsPlugin()];
 
@@ -26,14 +30,6 @@ export class D1Connection extends SqliteConnection {
          plugins,
       });
       super(kysely, {}, plugins);
-   }
-
-   override supportsBatching(): boolean {
-      return true;
-   }
-
-   override supportsIndices(): boolean {
-      return true;
    }
 
    protected override async batch<Queries extends QB[]>(

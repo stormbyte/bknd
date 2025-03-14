@@ -1,5 +1,5 @@
 import { type SchemaMetadata, sql } from "kysely";
-import { BaseIntrospector } from "data/connection/BaseIntrospector";
+import { BaseIntrospector } from "bknd/data";
 
 type PostgresSchemaSpec = {
    name: string;

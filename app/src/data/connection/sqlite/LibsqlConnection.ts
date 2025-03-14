@@ -1,8 +1,8 @@
 import { type Client, type Config, type InStatement, createClient } from "@libsql/client";
 import { LibsqlDialect } from "@libsql/kysely-libsql";
-import { type DatabaseIntrospector, Kysely, ParseJSONResultsPlugin } from "kysely";
 import { FilterNumericKeysPlugin } from "data/plugins/FilterNumericKeysPlugin";
 import { KyselyPluginRunner } from "data/plugins/KyselyPluginRunner";
+import { type DatabaseIntrospector, Kysely, ParseJSONResultsPlugin } from "kysely";
 import type { QB } from "../Connection";
 import { SqliteConnection } from "./SqliteConnection";
 import { SqliteIntrospector } from "./SqliteIntrospector";
@@ -25,6 +25,9 @@ class CustomLibsqlDialect extends LibsqlDialect {
 
 export class LibsqlConnection extends SqliteConnection {
    private client: Client;
+   protected override readonly supported = {
+      batching: true,
+   };
 
    constructor(client: Client);
    constructor(credentials: LibSqlCredentials);
@@ -51,14 +54,6 @@ export class LibsqlConnection extends SqliteConnection {
 
       super(kysely, {}, plugins);
       this.client = client;
-   }
-
-   override supportsBatching(): boolean {
-      return true;
-   }
-
-   override supportsIndices(): boolean {
-      return true;
    }
 
    getClient(): Client {

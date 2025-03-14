@@ -49,10 +49,6 @@ export class SchemaManager {
    constructor(private readonly em: EntityManager<any>) {}
 
    private getIntrospector() {
-      if (!this.em.connection.supportsIndices()) {
-         throw new Error("Indices are not supported by the current connection");
-      }
-
       return this.em.connection.getIntrospector();
    }
 

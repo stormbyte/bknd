@@ -1,31 +1,34 @@
+import { Connection, type FieldSpec, type SchemaResponse } from "bknd/data";
 import {
-   Kysely,
-   PostgresDialect,
-   type DatabaseIntrospector,
    type ColumnDataType,
    type ColumnDefinitionBuilder,
+   type DatabaseIntrospector,
+   Kysely,
    ParseJSONResultsPlugin,
+   PostgresDialect,
+   type SelectQueryBuilder,
 } from "kysely";
+import { jsonArrayFrom, jsonBuildObject, jsonObjectFrom } from "kysely/helpers/postgres";
 import pg from "pg";
 import { PostgresIntrospector } from "./PostgresIntrospector";
-import {
-   type FieldSpec,
-   type SchemaResponse,
-   Connection,
-   type QB,
-} from "data/connection/Connection";
 
 export type PostgresConnectionConfig = pg.PoolConfig;
+export type QB = SelectQueryBuilder<any, any, any>;
 
 const plugins = [new ParseJSONResultsPlugin()];
 
 class CustomPostgresDialect extends PostgresDialect {
    override createIntrospector(db: Kysely<any>): DatabaseIntrospector {
-      return new PostgresIntrospector(db);
+      return new PostgresIntrospector(db, {
+         excludeTables: [],
+      });
    }
 }
 
 export class PostgresConnection extends Connection {
+   protected override readonly supported = {
+      batching: true,
+   };
    private pool: pg.Pool;
 
    constructor(config: PostgresConnectionConfig) {
@@ -38,12 +41,16 @@ export class PostgresConnection extends Connection {
          //log: ["query", "error"],
       });
 
-      super(kysely, {}, plugins);
+      super(
+         kysely,
+         {
+            jsonArrayFrom,
+            jsonBuildObject,
+            jsonObjectFrom,
+         },
+         plugins,
+      );
       this.pool = pool;
-   }
-
-   override supportsIndices(): boolean {
-      return true;
    }
 
    override getFieldSchema(spec: FieldSpec): SchemaResponse {
@@ -81,10 +88,6 @@ export class PostgresConnection extends Connection {
             return spec.nullable ? col : col.notNull();
          },
       ];
-   }
-
-   override supportsBatching(): boolean {
-      return true;
    }
 
    override async close(): Promise<void> {

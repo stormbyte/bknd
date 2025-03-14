@@ -53,6 +53,9 @@ function banner(title: string) {
    console.log("-".repeat(40));
 }
 
+// collection of always-external packages
+const external = ["bun:test", "@libsql/client"] as const;
+
 /**
  * Building backend and general API
  */
@@ -64,7 +67,7 @@ async function buildApi() {
       watch,
       entry: ["src/index.ts", "src/data/index.ts", "src/core/index.ts", "src/core/utils/index.ts"],
       outDir: "dist",
-      external: ["bun:test", "@libsql/client"],
+      external: [...external],
       metafile: true,
       platform: "browser",
       format: ["esm"],
@@ -93,7 +96,7 @@ async function buildUi() {
       sourcemap,
       watch,
       external: [
-         "bun:test",
+         ...external,
          "react",
          "react-dom",
          "react/jsx-runtime",

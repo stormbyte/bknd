@@ -16,10 +16,6 @@ export class SqliteConnection extends Connection {
       );
    }
 
-   override supportsIndices(): boolean {
-      return true;
-   }
-
    override getFieldSchema(spec: FieldSpec): SchemaResponse {
       this.validateFieldSpecType(spec.type);
       let type: ColumnDataType = spec.type;
@@ -46,9 +42,5 @@ export class SqliteConnection extends Connection {
             return spec.nullable ? col : col.notNull();
          },
       ] as const;
-   }
-
-   override async close(): Promise<void> {
-      // no-op
    }
 }
