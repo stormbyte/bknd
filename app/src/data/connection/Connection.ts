@@ -1,15 +1,18 @@
 import {
    type AliasableExpression,
-   type DatabaseIntrospector,
+   type ColumnBuilderCallback,
+   type ColumnDataType,
    type Expression,
    type Kysely,
    type KyselyPlugin,
+   type OnModifyForeignAction,
    type RawBuilder,
    type SelectQueryBuilder,
    type SelectQueryNode,
    type Simplify,
    sql,
 } from "kysely";
+import type { BaseIntrospector } from "./BaseIntrospector";
 
 export type QB = SelectQueryBuilder<any, any, any>;
 
@@ -20,14 +23,42 @@ export type IndexMetadata = {
    columns: { name: string; order: number }[];
 };
 
-export interface ConnectionIntrospector extends DatabaseIntrospector {
-   getIndices(tbl_name?: string): Promise<IndexMetadata[]>;
-}
-
 export interface SelectQueryBuilderExpression<O> extends AliasableExpression<O> {
    get isSelectQueryBuilder(): true;
    toOperationNode(): SelectQueryNode;
 }
+
+export type SchemaResponse = [string, ColumnDataType, ColumnBuilderCallback] | undefined;
+
+const FieldSpecTypes = [
+   "text",
+   "integer",
+   "real",
+   "blob",
+   "date",
+   "datetime",
+   "timestamp",
+   "boolean",
+   "json",
+] as const;
+
+export type FieldSpec = {
+   type: (typeof FieldSpecTypes)[number];
+   name: string;
+   nullable?: boolean;
+   dflt?: any;
+   unique?: boolean;
+   primary?: boolean;
+   references?: string;
+   onDelete?: OnModifyForeignAction;
+   onUpdate?: OnModifyForeignAction;
+};
+
+export type IndexSpec = {
+   name: string;
+   columns: string[];
+   unique?: boolean;
+};
 
 export type DbFunctions = {
    jsonObjectFrom<O>(expr: SelectQueryBuilderExpression<O>): RawBuilder<Simplify<O> | null>;
@@ -45,6 +76,9 @@ const CONN_SYMBOL = Symbol.for("bknd:connection");
 
 export abstract class Connection<DB = any> {
    kysely: Kysely<DB>;
+   protected readonly supported = {
+      batching: false,
+   };
 
    constructor(
       kysely: Kysely<DB>,
@@ -65,17 +99,12 @@ export abstract class Connection<DB = any> {
       return conn[CONN_SYMBOL] === true;
    }
 
-   getIntrospector(): ConnectionIntrospector {
-      return this.kysely.introspection as ConnectionIntrospector;
+   getIntrospector(): BaseIntrospector {
+      return this.kysely.introspection as any;
    }
 
-   supportsBatching(): boolean {
-      return false;
-   }
-
-   // @todo: add if only first field is used in index
-   supportsIndices(): boolean {
-      return false;
+   supports(feature: keyof typeof this.supported): boolean {
+      return this.supported[feature] ?? false;
    }
 
    async ping(): Promise<boolean> {
@@ -97,7 +126,7 @@ export abstract class Connection<DB = any> {
       [K in keyof Queries]: Awaited<ReturnType<Queries[K]["execute"]>>;
    }> {
       // bypass if no client support
-      if (!this.supportsBatching()) {
+      if (!this.supports("batching")) {
          const data: any = [];
          for (const q of queries) {
             const result = await q.execute();
@@ -107,5 +136,20 @@ export abstract class Connection<DB = any> {
       }
 
       return await this.batch(queries);
+   }
+
+   protected validateFieldSpecType(type: string): type is FieldSpec["type"] {
+      if (!FieldSpecTypes.includes(type as any)) {
+         throw new Error(
+            `Invalid field type "${type}". Allowed types are: ${FieldSpecTypes.join(", ")}`,
+         );
+      }
+      return true;
+   }
+
+   abstract getFieldSchema(spec: FieldSpec, strict?: boolean): SchemaResponse;
+
+   async close(): Promise<void> {
+      // no-op by default
    }
 }

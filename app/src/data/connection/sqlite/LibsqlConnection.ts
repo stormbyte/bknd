@@ -1,9 +1,9 @@
 import { type Client, type Config, type InStatement, createClient } from "@libsql/client";
 import { LibsqlDialect } from "@libsql/kysely-libsql";
+import { FilterNumericKeysPlugin } from "data/plugins/FilterNumericKeysPlugin";
+import { KyselyPluginRunner } from "data/plugins/KyselyPluginRunner";
 import { type DatabaseIntrospector, Kysely, ParseJSONResultsPlugin } from "kysely";
-import { FilterNumericKeysPlugin } from "../plugins/FilterNumericKeysPlugin";
-import { KyselyPluginRunner } from "../plugins/KyselyPluginRunner";
-import type { QB } from "./Connection";
+import type { QB } from "../Connection";
 import { SqliteConnection } from "./SqliteConnection";
 import { SqliteIntrospector } from "./SqliteIntrospector";
 
@@ -12,21 +12,26 @@ export type LibSqlCredentials = Config & {
    protocol?: (typeof LIBSQL_PROTOCOLS)[number];
 };
 
+const plugins = [new FilterNumericKeysPlugin(), new ParseJSONResultsPlugin()];
+
 class CustomLibsqlDialect extends LibsqlDialect {
    override createIntrospector(db: Kysely<any>): DatabaseIntrospector {
       return new SqliteIntrospector(db, {
          excludeTables: ["libsql_wasm_func_table"],
+         plugins,
       });
    }
 }
 
 export class LibsqlConnection extends SqliteConnection {
    private client: Client;
+   protected override readonly supported = {
+      batching: true,
+   };
 
    constructor(client: Client);
    constructor(credentials: LibSqlCredentials);
    constructor(clientOrCredentials: Client | LibSqlCredentials) {
-      const plugins = [new FilterNumericKeysPlugin(), new ParseJSONResultsPlugin()];
       let client: Client;
       if (clientOrCredentials && "url" in clientOrCredentials) {
          let { url, authToken, protocol } = clientOrCredentials;
@@ -49,14 +54,6 @@ export class LibsqlConnection extends SqliteConnection {
 
       super(kysely, {}, plugins);
       this.client = client;
-   }
-
-   override supportsBatching(): boolean {
-      return true;
-   }
-
-   override supportsIndices(): boolean {
-      return true;
    }
 
    getClient(): Client {
