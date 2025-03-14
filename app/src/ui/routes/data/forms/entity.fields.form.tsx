@@ -1,5 +1,5 @@
 import { typeboxResolver } from "@hookform/resolvers/typebox";
-import { Tabs, TextInput, Textarea, Tooltip } from "@mantine/core";
+import { Tabs, TextInput, Textarea, Tooltip, Switch } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import {
    Default,
@@ -293,6 +293,7 @@ function EntityField({
    const hidden = fieldSpec.hidden || [];
    const dragDisabled = index === 0;
    const hasErrors = !!errors?.fields?.[index];
+   const is_primary = type === "primary";
 
    function handleDelete(index: number) {
       return () => {
@@ -351,7 +352,15 @@ function EntityField({
                )}
                <div className="flex-col gap-1 hidden md:flex">
                   <span className="text-xs text-primary/50 leading-none">Required</span>
-                  <MantineSwitch size="sm" name={`${prefix}.config.required`} control={control} />
+                  {is_primary ? (
+                     <Switch size="sm" defaultChecked disabled />
+                  ) : (
+                     <MantineSwitch
+                        size="sm"
+                        name={`${prefix}.config.required`}
+                        control={control}
+                     />
+                  )}
                </div>
             </div>
             <div className="flex items-end">
@@ -359,6 +368,7 @@ function EntityField({
                   <IconButton
                      size="lg"
                      Icon={TbSettings}
+                     disabled={is_primary}
                      iconProps={{ strokeWidth: 1.5 }}
                      onClick={handlers.toggle}
                      variant={opened ? "primary" : "ghost"}
