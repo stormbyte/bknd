@@ -1,32 +1,36 @@
 import { PostHog } from "posthog-js-lite";
 import { getVersion } from "cli/utils/sys";
-import { $console, env } from "core";
+import { $console, env, isDebug } from "core";
 
 type Properties = { [p: string]: any };
 
 let posthog: PostHog | null = null;
 let version: string | null = null;
 
-const enabled = env("cli_telemetry");
+const is_debug = isDebug() || !!process.env.LOCAL;
+const enabled = env("cli_telemetry", !is_debug);
 
-export async function init() {
+export async function init(): Promise<boolean> {
    try {
       if (!enabled) {
-         $console.debug("Telemetry disabled");
-         return;
+         $console.debug("telemetry disabled");
+         return false;
       }
 
-      $console.debug("Init telemetry");
+      $console.debug("init telemetry");
       if (!posthog) {
-         posthog = new PostHog(process.env.POSTHOG_KEY!, {
-            host: process.env.POSTHOG_HOST!,
+         posthog = new PostHog(process.env.PUBLIC_POSTHOG_KEY!, {
+            host: process.env.PUBLIC_POSTHOG_HOST!,
             disabled: !enabled,
          });
       }
       version = await getVersion();
+      return true;
    } catch (e) {
-      $console.debug("Failed to initialize telemetry", e);
+      $console.debug("failed to initialize telemetry", e);
    }
+
+   return false;
 }
 
 export function client(): PostHog {
@@ -46,10 +50,10 @@ export function capture(event: string, properties: Properties = {}): void {
          ...properties,
          version: version!,
       };
-      $console.debug("Capture", name, props);
+      $console.debug(`capture "${name}"`, props);
       client().capture(name, props);
    } catch (e) {
-      $console.debug("Failed to capture telemetry", e);
+      $console.debug("failed to capture telemetry", e);
    }
 }
 
@@ -65,11 +69,11 @@ export async function flush() {
    try {
       if (!enabled) return;
 
-      $console.debug("Flush telemetry");
+      $console.debug("flush telemetry");
       if (posthog) {
          await posthog.flush();
       }
    } catch (e) {
-      $console.debug("Failed to flush telemetry", e);
+      $console.debug("failed to flush telemetry", e);
    }
 }

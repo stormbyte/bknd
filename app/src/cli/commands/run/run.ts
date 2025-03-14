@@ -22,6 +22,7 @@ const isBun = typeof Bun !== "undefined";
 export const run: CliCommand = (program) => {
    program
       .command("run")
+      .description("run an instance")
       .addOption(
          new Option("-p, --port <port>", "port to run on")
             .env("PORT")
