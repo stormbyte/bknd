@@ -1,7 +1,7 @@
 export type Env = {};
 
 export const is_toggled = (given: unknown, fallback?: boolean): boolean => {
-   return typeof given === "string" ? [1, "1", "true"].includes(given) : Boolean(fallback);
+   return typeof given === "string" ? [1, "1", "true"].includes(given) : Boolean(given || fallback);
 };
 
 export function isDebug(): boolean {
