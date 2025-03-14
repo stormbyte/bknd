@@ -1,5 +1,7 @@
 import { getApi } from "@/bknd";
-import { Buttons, List } from "../layout";
+import { Buttons } from "@/components/Buttons";
+import { List } from "@/components/List";
+import Link from "next/link";
 
 export default async function SSRPage() {
    const api = await getApi({ verify: true });
@@ -11,21 +13,21 @@ export default async function SSRPage() {
          <List items={data.map((todo) => todo.title)} />
          <Buttons />
 
-         <p>
+         <div>
             {user ? (
                <>
                   Logged in as {user.email}.{" "}
-                  <a className="font-medium underline" href="/api/auth/logout">
+                  <Link className="font-medium underline" href="/api/auth/logout">
                      Logout
-                  </a>
+                  </Link>
                </>
             ) : (
                <div className="flex flex-col gap-1">
                   <p>
                      Not logged in.{" "}
-                     <a className="font-medium underline" href="/admin/auth/login">
+                     <Link className="font-medium underline" href="/admin/auth/login">
                         Login
-                     </a>
+                     </Link>
                   </p>
                   <p className="text-xs opacity-50">
                      Sign in with:{" "}
@@ -39,7 +41,7 @@ export default async function SSRPage() {
                   </p>
                </div>
             )}
-         </p>
+         </div>
       </>
    );
 }

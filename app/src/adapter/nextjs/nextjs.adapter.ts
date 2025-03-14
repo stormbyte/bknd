@@ -1,15 +1,22 @@
 import type { App } from "bknd";
 import { type FrameworkBkndConfig, createFrameworkApp } from "bknd/adapter";
-import { getRuntimeKey, isNode } from "core/utils";
+import { isNode } from "core/utils";
 
 export type NextjsBkndConfig = FrameworkBkndConfig & {
    cleanRequest?: { searchParams?: string[] };
 };
 
+type NextjsContext = {
+   env: Record<string, string | undefined>;
+};
+
 let app: App;
 let building: boolean = false;
 
-export async function getApp(config: NextjsBkndConfig) {
+export async function getApp<Args extends NextjsContext = NextjsContext>(
+   config: NextjsBkndConfig,
+   args?: Args,
+) {
    if (building) {
       while (building) {
          await new Promise((resolve) => setTimeout(resolve, 5));
@@ -19,7 +26,7 @@ export async function getApp(config: NextjsBkndConfig) {
 
    building = true;
    if (!app) {
-      app = await createFrameworkApp(config);
+      app = await createFrameworkApp(config, args);
       await app.build();
    }
    building = false;
@@ -52,7 +59,7 @@ function getCleanRequest(req: Request, cleanRequest: NextjsBkndConfig["cleanRequ
 export function serve({ cleanRequest, ...config }: NextjsBkndConfig = {}) {
    return async (req: Request) => {
       if (!app) {
-         app = await getApp(config);
+         app = await getApp(config, { env: process.env ?? {} });
       }
       const request = getCleanRequest(req, cleanRequest);
       return app.fetch(request);
