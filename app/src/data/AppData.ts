@@ -19,8 +19,6 @@ export class AppData extends Module<typeof dataConfigSchema> {
          indices: _indices = {},
       } = this.config;
 
-      this.ctx.logger.context("AppData").log("building with entities", Object.keys(_entities));
-
       const entities = transformObject(_entities, (entityConfig, name) => {
          return constructEntity(name, entityConfig);
       });
@@ -60,7 +58,6 @@ export class AppData extends Module<typeof dataConfigSchema> {
       );
       this.ctx.guard.registerPermissions(Object.values(DataPermissions));
 
-      this.ctx.logger.clear();
       this.setBuilt();
    }
 

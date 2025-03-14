@@ -1,1 +1,1 @@
-export { BkndProvider, useBknd } from "./BkndProvider";
+export { BkndProvider, type BkndAdminOptions, useBknd } from "./BkndProvider";

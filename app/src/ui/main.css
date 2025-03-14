@@ -23,6 +23,7 @@
 }
 
 .dark,
+.dark .bknd-admin /* currently used for elements, drop after making headless */,
 #bknd-admin.dark,
 .bknd-admin.dark {
    --color-primary: rgb(250 250 250); /* zinc-50 */

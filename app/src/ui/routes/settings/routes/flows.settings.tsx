@@ -31,8 +31,7 @@ const uiSchema = {
 
 export const FlowsSettings = ({ schema, config }) => {
    const { app } = useBknd();
-   const { basepath } = app.getAdminConfig();
-   const prefix = `~/${basepath}/settings`.replace(/\/+/g, "/");
+   const prefix = app.getAbsolutePath("settings");
 
    function fillTasks(schema: any, flow: any, key: string) {
       const tasks = Object.keys(flow.tasks ?? {});
