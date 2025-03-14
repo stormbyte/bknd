@@ -1,6 +1,7 @@
 import { _jsonp, transformObject } from "core/utils";
 import { type Kysely, sql } from "kysely";
 import { set } from "lodash-es";
+import type { InitialModuleConfigs } from "modules/ModuleManager";
 
 export type MigrationContext = {
    db: Kysely<any>;
@@ -88,6 +89,17 @@ export const migrations: Migration[] = [
                ...config.auth,
                strategies: strategies,
             },
+         };
+      },
+   },
+   {
+      // remove admin config
+      version: 9,
+      up: async (config) => {
+         const { admin, ...server } = config.server;
+         return {
+            ...config,
+            server,
          };
       },
    },

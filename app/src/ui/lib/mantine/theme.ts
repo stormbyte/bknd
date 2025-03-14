@@ -107,8 +107,11 @@ export function createMantineTheme(scheme: "light" | "dark"): {
                }),
             }),
             Tabs: Tabs.extend({
-               classNames: (theme, props) => ({
-                  tab: "data-[active=true]:border-primary",
+               vars: (theme, props) => ({
+                  // https://mantine.dev/styles/styles-api/
+                  root: {
+                     "--tabs-color": "border-primary",
+                  },
                }),
             }),
             Menu: Menu.extend({

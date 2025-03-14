@@ -30,7 +30,11 @@ export async function attachServeStatic(app: any, platform: Platform) {
    app.module.server.client.get(config.server.assets_path + "*", await serveStatic(platform));
 }
 
-export async function startServer(server: Platform, app: any, options: { port: number }) {
+export async function startServer(
+   server: Platform,
+   app: any,
+   options: { port: number; open?: boolean },
+) {
    const port = options.port;
    console.log(`Using ${server} serve`);
 
@@ -55,7 +59,9 @@ export async function startServer(server: Platform, app: any, options: { port: n
 
    const url = `http://localhost:${port}`;
    console.info("Server listening on", url);
-   await open(url);
+   if (options.open) {
+      await open(url);
+   }
 }
 
 export async function getConfigPath(filePath?: string) {

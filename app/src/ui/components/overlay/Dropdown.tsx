@@ -4,6 +4,7 @@ import {
    type ComponentPropsWithoutRef,
    Fragment,
    type ReactElement,
+   type ReactNode,
    cloneElement,
    useState,
 } from "react";
@@ -11,7 +12,7 @@ import { twMerge } from "tailwind-merge";
 import { useEvent } from "ui/hooks/use-event";
 
 export type DropdownItem =
-   | (() => JSX.Element)
+   | (() => ReactNode)
    | {
         label: string | ReactElement;
         icon?: any;

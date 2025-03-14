@@ -39,8 +39,8 @@ function makeName(ext: string) {
    return randomString(10) + "." + ext;
 }
 
-/*beforeAll(disableConsoleLog);
-afterAll(enableConsoleLog);*/
+beforeAll(disableConsoleLog);
+afterAll(enableConsoleLog);
 
 describe("MediaController", () => {
    test.only("accepts direct", async () => {
@@ -56,9 +56,9 @@ describe("MediaController", () => {
       console.log(result);
       expect(result.name).toBe(name);
 
-      /*const destFile = Bun.file(assetsTmpPath + "/" + name);
+      const destFile = Bun.file(assetsTmpPath + "/" + name);
       expect(destFile.exists()).resolves.toBe(true);
-      await destFile.delete();*/
+      await destFile.delete();
    });
 
    test("accepts form data", async () => {

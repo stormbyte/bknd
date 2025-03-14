@@ -47,6 +47,7 @@ export const run: CliCommand = (program) => {
             .choices(PLATFORMS)
             .default(isBun ? "bun" : "node"),
       )
+      .addOption(new Option("--no-open", "don't open browser window on start"))
       .action(action);
 };
 
@@ -110,6 +111,7 @@ async function action(options: {
    dbUrl?: string;
    dbToken?: string;
    server: Platform;
+   open?: boolean;
 }) {
    colorizeConsole(console);
    const configFilePath = await getConfigPath(options.config);
@@ -145,5 +147,5 @@ async function action(options: {
       });
    }
 
-   await startServer(options.server, app, { port: options.port });
+   await startServer(options.server, app, { port: options.port, open: options.open });
 }

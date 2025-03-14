@@ -17,15 +17,11 @@ const uiSchema = {
 };
 
 export const ServerSettings = ({ schema: _unsafe_copy, config }) => {
-   const { app, adminOverride } = useBknd();
-   const { basepath } = app.getAdminConfig();
+   const { app } = useBknd();
    const _schema = cloneDeep(_unsafe_copy);
-   const prefix = `~/${basepath}/settings`.replace(/\/+/g, "/");
+   const prefix = app.getAbsolutePath("settings");
 
    const schema = _schema;
-   if (adminOverride) {
-      schema.properties.admin.readOnly = true;
-   }
 
    return (
       <Route path="/server" nest>
@@ -33,14 +29,6 @@ export const ServerSettings = ({ schema: _unsafe_copy, config }) => {
             path="/"
             component={() => (
                <Setting
-                  options={{
-                     showAlert: () => {
-                        if (adminOverride) {
-                           return "The admin settings are read-only as they are overriden. Remaining server configuration can be edited.";
-                        }
-                        return;
-                     },
-                  }}
                   schema={schema}
                   uiSchema={uiSchema}
                   config={config}

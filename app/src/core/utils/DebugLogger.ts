@@ -30,7 +30,7 @@ export class DebugLogger {
 
       const now = performance.now();
       const time = this.last === 0 ? 0 : Number.parseInt(String(now - this.last));
-      const indents = "  ".repeat(this._context.length);
+      const indents = "  ".repeat(Math.max(this._context.length - 1, 0));
       const context =
          this._context.length > 0 ? `[${this._context[this._context.length - 1]}]` : "";
       console.log(indents, context, time, ...args);

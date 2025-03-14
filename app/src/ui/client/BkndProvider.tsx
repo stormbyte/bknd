@@ -4,7 +4,13 @@ import { createContext, startTransition, useContext, useEffect, useRef, useState
 import { useApi } from "ui/client";
 import { type TSchemaActions, getSchemaActions } from "./schema/actions";
 import { AppReduced } from "./utils/AppReduced";
+import type { AppTheme } from "ui/client/use-theme";
 
+export type BkndAdminOptions = {
+   logo_return_path?: string;
+   basepath?: string;
+   theme?: AppTheme;
+};
 type BkndContext = {
    version: number;
    schema: ModuleSchemas;
@@ -14,7 +20,7 @@ type BkndContext = {
    requireSecrets: () => Promise<void>;
    actions: ReturnType<typeof getSchemaActions>;
    app: AppReduced;
-   adminOverride?: ModuleConfigs["server"]["admin"];
+   options: BkndAdminOptions;
    fallback: boolean;
 };
 
@@ -29,19 +35,21 @@ enum Fetching {
 
 export function BkndProvider({
    includeSecrets = false,
-   adminOverride,
+   options,
    children,
    fallback = null,
-}: { includeSecrets?: boolean; children: any; fallback?: React.ReactNode } & Pick<
-   BkndContext,
-   "adminOverride"
->) {
+}: {
+   includeSecrets?: boolean;
+   children: any;
+   fallback?: React.ReactNode;
+   options?: BkndAdminOptions;
+}) {
    const [withSecrets, setWithSecrets] = useState<boolean>(includeSecrets);
    const [schema, setSchema] =
       useState<Pick<BkndContext, "version" | "schema" | "config" | "permissions" | "fallback">>();
    const [fetched, setFetched] = useState(false);
    const [error, setError] = useState<boolean>();
-   const errorShown = useRef<boolean>();
+   const errorShown = useRef<boolean>(false);
    const fetching = useRef<Fetching>(Fetching.None);
    const [local_version, set_local_version] = useState(0);
    const api = useApi();
@@ -93,19 +101,14 @@ export function BkndProvider({
               fallback: true,
            } as any);
 
-      if (adminOverride) {
-         newSchema.config.server.admin = {
-            ...newSchema.config.server.admin,
-            ...adminOverride,
-         };
-      }
-
       startTransition(() => {
-         setSchema(newSchema);
-         setWithSecrets(_includeSecrets);
-         setFetched(true);
-         set_local_version((v) => v + 1);
-         fetching.current = Fetching.None;
+         document.startViewTransition(() => {
+            setSchema(newSchema);
+            setWithSecrets(_includeSecrets);
+            setFetched(true);
+            set_local_version((v) => v + 1);
+            fetching.current = Fetching.None;
+         });
       });
    }
 
@@ -120,13 +123,13 @@ export function BkndProvider({
    }, []);
 
    if (!fetched || !schema) return fallback;
-   const app = new AppReduced(schema?.config as any);
+   const app = new AppReduced(schema?.config as any, options);
    const actions = getSchemaActions({ api, setSchema, reloadSchema });
    const hasSecrets = withSecrets && !error;
 
    return (
       <BkndContext.Provider
-         value={{ ...schema, actions, requireSecrets, app, adminOverride, hasSecrets }}
+         value={{ ...schema, actions, requireSecrets, app, options: app.options, hasSecrets }}
          key={local_version}
       >
          {/*{error && (
@@ -150,4 +153,13 @@ export function useBknd({ withSecrets }: { withSecrets?: boolean } = {}): BkndCo
    if (withSecrets) ctx.requireSecrets();
 
    return ctx;
+}
+
+export function useBkndOptions(): BkndAdminOptions {
+   const ctx = useContext(BkndContext);
+   return (
+      ctx.options ?? {
+         basepath: "/",
+      }
+   );
 }

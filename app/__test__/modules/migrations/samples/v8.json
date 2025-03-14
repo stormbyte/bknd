@@ -1,0 +1,598 @@
+{
+  "version": 8,
+  "server": {
+    "admin": {
+      "basepath": "",
+      "logo_return_path": "/",
+      "color_scheme": "dark"
+    },
+    "cors": {
+      "origin": "*",
+      "allow_methods": ["GET", "POST", "PATCH", "PUT", "DELETE"],
+      "allow_headers": [
+        "Content-Type",
+        "Content-Length",
+        "Authorization",
+        "Accept"
+      ]
+    }
+  },
+  "data": {
+    "basepath": "/api/data",
+    "entities": {
+      "posts": {
+        "type": "regular",
+        "fields": {
+          "id": {
+            "type": "primary",
+            "config": {
+              "fillable": false,
+              "required": false,
+              "hidden": false
+            }
+          },
+          "title": {
+            "type": "text",
+            "config": {
+              "required": true,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "slug": {
+            "type": "text",
+            "config": {
+              "html_config": {
+                "element": "input"
+              },
+              "pattern": "^[a-z\\-\\_0-9]+$",
+              "required": false,
+              "fillable": true,
+              "hidden": false,
+              "label": "Slug"
+            }
+          },
+          "content": {
+            "type": "text",
+            "config": {
+              "html_config": {
+                "element": "textarea",
+                "props": {
+                  "rows": 5
+                }
+              },
+              "required": false,
+              "fillable": true,
+              "hidden": ["form"]
+            }
+          },
+          "active": {
+            "type": "boolean",
+            "config": {
+              "required": false,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "images": {
+            "type": "media",
+            "config": {
+              "required": false,
+              "fillable": ["update"],
+              "hidden": false,
+              "mime_types": [],
+              "virtual": true,
+              "entity": "posts"
+            }
+          },
+          "tags": {
+            "type": "jsonschema",
+            "config": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "ui_schema": {
+                "ui:options": {
+                  "orderable": false
+                }
+              },
+              "required": false,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "users_id": {
+            "type": "relation",
+            "config": {
+              "label": "Users",
+              "required": false,
+              "reference": "users",
+              "target": "users",
+              "target_field": "id",
+              "fillable": true,
+              "hidden": false,
+              "on_delete": "set null"
+            }
+          }
+        },
+        "config": {
+          "sort_field": "title",
+          "sort_dir": "desc"
+        }
+      },
+      "comments": {
+        "type": "regular",
+        "fields": {
+          "id": {
+            "type": "primary",
+            "config": {
+              "fillable": false,
+              "required": false,
+              "hidden": false
+            }
+          },
+          "content": {
+            "type": "text",
+            "config": {
+              "required": false,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "created_at": {
+            "type": "date",
+            "config": {
+              "type": "date",
+              "required": false,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "posts_id": {
+            "type": "relation",
+            "config": {
+              "label": "Posts",
+              "required": true,
+              "reference": "posts",
+              "target": "posts",
+              "target_field": "id",
+              "fillable": true,
+              "hidden": false,
+              "on_delete": "set null"
+            }
+          },
+          "users_id": {
+            "type": "relation",
+            "config": {
+              "label": "Users",
+              "required": true,
+              "reference": "users",
+              "target": "users",
+              "target_field": "id",
+              "fillable": true,
+              "hidden": false,
+              "on_delete": "set null"
+            }
+          }
+        },
+        "config": {
+          "sort_field": "id",
+          "sort_dir": "asc"
+        }
+      },
+      "media": {
+        "type": "system",
+        "fields": {
+          "id": {
+            "type": "primary",
+            "config": {
+              "fillable": false,
+              "required": false,
+              "hidden": false
+            }
+          },
+          "path": {
+            "type": "text",
+            "config": {
+              "required": true,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "folder": {
+            "type": "boolean",
+            "config": {
+              "default_value": false,
+              "hidden": true,
+              "fillable": ["create"],
+              "required": false
+            }
+          },
+          "mime_type": {
+            "type": "text",
+            "config": {
+              "required": false,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "size": {
+            "type": "number",
+            "config": {
+              "required": false,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "scope": {
+            "type": "text",
+            "config": {
+              "hidden": true,
+              "fillable": ["create"],
+              "required": false
+            }
+          },
+          "etag": {
+            "type": "text",
+            "config": {
+              "required": false,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "modified_at": {
+            "type": "date",
+            "config": {
+              "type": "datetime",
+              "required": false,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "reference": {
+            "type": "text",
+            "config": {
+              "required": false,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "entity_id": {
+            "type": "number",
+            "config": {
+              "required": false,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "metadata": {
+            "type": "json",
+            "config": {
+              "required": false,
+              "fillable": true,
+              "hidden": false
+            }
+          }
+        },
+        "config": {
+          "sort_field": "id",
+          "sort_dir": "asc"
+        }
+      },
+      "users": {
+        "type": "system",
+        "fields": {
+          "id": {
+            "type": "primary",
+            "config": {
+              "fillable": false,
+              "required": false,
+              "hidden": false
+            }
+          },
+          "email": {
+            "type": "text",
+            "config": {
+              "required": true,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "strategy": {
+            "type": "enum",
+            "config": {
+              "options": {
+                "type": "strings",
+                "values": ["password", "google"]
+              },
+              "required": true,
+              "fillable": ["create"],
+              "hidden": ["update", "form"]
+            }
+          },
+          "strategy_value": {
+            "type": "text",
+            "config": {
+              "fillable": ["create"],
+              "hidden": ["read", "table", "update", "form"],
+              "required": true
+            }
+          },
+          "role": {
+            "type": "enum",
+            "config": {
+              "options": {
+                "type": "strings",
+                "values": ["guest", "admin", "editor"]
+              },
+              "required": false,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "avatar": {
+            "type": "media",
+            "config": {
+              "required": false,
+              "fillable": ["update"],
+              "hidden": false,
+              "mime_types": [],
+              "virtual": true,
+              "entity": "users",
+              "max_items": 1
+            }
+          }
+        },
+        "config": {
+          "sort_field": "id",
+          "sort_dir": "asc"
+        }
+      },
+      "test": {
+        "type": "regular",
+        "fields": {
+          "id": {
+            "type": "primary",
+            "config": {
+              "fillable": false,
+              "required": false,
+              "hidden": false
+            }
+          },
+          "title": {
+            "type": "text",
+            "config": {
+              "required": false,
+              "fillable": true,
+              "hidden": false
+            }
+          },
+          "number": {
+            "type": "number",
+            "config": {
+              "required": false,
+              "fillable": true,
+              "hidden": false
+            }
+          }
+        },
+        "config": {
+          "sort_field": "id",
+          "sort_dir": "asc"
+        }
+      }
+    },
+    "relations": {
+      "n1_comments_posts": {
+        "type": "n:1",
+        "source": "comments",
+        "target": "posts",
+        "config": {
+          "required": true,
+          "with_limit": 5
+        }
+      },
+      "poly_posts_media_images": {
+        "type": "poly",
+        "source": "posts",
+        "target": "media",
+        "config": {
+          "mappedBy": "images"
+        }
+      },
+      "n1_posts_users": {
+        "type": "n:1",
+        "source": "posts",
+        "target": "users",
+        "config": {
+          "with_limit": 5
+        }
+      },
+      "n1_comments_users": {
+        "type": "n:1",
+        "source": "comments",
+        "target": "users",
+        "config": {
+          "required": true,
+          "with_limit": 5
+        }
+      },
+      "poly_users_media_avatar": {
+        "type": "poly",
+        "source": "users",
+        "target": "media",
+        "config": {
+          "mappedBy": "avatar",
+          "targetCardinality": 1
+        }
+      }
+    },
+    "indices": {
+      "idx_unique_media_path": {
+        "entity": "media",
+        "fields": ["path"],
+        "unique": true
+      },
+      "idx_unique_users_email": {
+        "entity": "users",
+        "fields": ["email"],
+        "unique": true
+      },
+      "idx_users_strategy": {
+        "entity": "users",
+        "fields": ["strategy"],
+        "unique": false
+      },
+      "idx_users_strategy_value": {
+        "entity": "users",
+        "fields": ["strategy_value"],
+        "unique": false
+      },
+      "idx_media_reference": {
+        "entity": "media",
+        "fields": ["reference"],
+        "unique": false
+      },
+      "idx_media_entity_id": {
+        "entity": "media",
+        "fields": ["entity_id"],
+        "unique": false
+      }
+    }
+  },
+  "auth": {
+    "enabled": true,
+    "basepath": "/api/auth",
+    "entity_name": "users",
+    "jwt": {
+      "secret": "A%3jk*wD!Zruj123123123j$Wm8qS8m8qS8",
+      "alg": "HS256",
+      "fields": ["id", "email", "role"],
+      "issuer": "showoff"
+    },
+    "guard": {
+      "enabled": true
+    },
+    "strategies": {
+      "password": {
+        "enabled": true,
+        "type": "password",
+        "config": {
+          "hashing": "sha256"
+        }
+      },
+      "google": {
+        "enabled": true,
+        "type": "oauth",
+        "config": {
+          "type": "oidc",
+          "client": {
+            "client_id": "545948917277-123ieuifrag.apps.googleusercontent.com",
+            "client_secret": "123-123hTTZfDDGPDPp"
+          },
+          "name": "google"
+        }
+      }
+    },
+    "roles": {
+      "guest": {
+        "permissions": [
+          "data.entity.read",
+          "system.access.api",
+          "system.config.read"
+        ],
+        "is_default": true
+      },
+      "admin": {
+        "is_default": false,
+        "implicit_allow": true
+      },
+      "editor": {
+        "permissions": [
+          "system.access.admin",
+          "system.config.read",
+          "system.schema.read",
+          "system.config.read.secrets",
+          "system.access.api",
+          "data.entity.read",
+          "data.entity.update",
+          "data.entity.delete",
+          "data.entity.create"
+        ]
+      }
+    },
+    "allow_register": true,
+    "cookie": {
+      "path": "/",
+      "sameSite": "lax",
+      "secure": true,
+      "httpOnly": true,
+      "expires": 604800,
+      "renew": true,
+      "pathSuccess": "/",
+      "pathLoggedOut": "/"
+    }
+  },
+  "media": {
+    "enabled": true,
+    "basepath": "/api/media",
+    "entity_name": "media",
+    "storage": {},
+    "adapter": {
+      "type": "s3",
+      "config": {
+        "access_key": "123",
+        "secret_access_key": "123",
+        "url": "https://123.r2.cloudflarestorage.com/bknd-123"
+      }
+    }
+  },
+  "flows": {
+    "basepath": "/api/flows",
+    "flows": {
+      "test": {
+        "trigger": {
+          "type": "http",
+          "config": {
+            "mode": "sync",
+            "method": "GET",
+            "response_type": "html",
+            "path": "/json-posts"
+          }
+        },
+        "tasks": {
+          "fetching": {
+            "type": "fetch",
+            "params": {
+              "method": "GET",
+              "headers": [],
+              "url": "https://jsonplaceholder.typicode.com/posts"
+            }
+          },
+          "render": {
+            "type": "render",
+            "params": {
+              "render": "<h1>Posts</h1>\n<ul>\n  {% for post in fetching.output %}\n    <li>{{ post.title }}</li>\n  {% endfor %}\n</ul>"
+            }
+          }
+        },
+        "connections": {
+          "5cce66b5-57c6-4541-88ac-b298794c6c52": {
+            "source": "fetching",
+            "target": "render",
+            "config": {
+              "condition": {
+                "type": "success"
+              }
+            }
+          }
+        },
+        "start_task": "fetching",
+        "responding_task": "render"
+      }
+    }
+  }
+}

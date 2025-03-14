@@ -12,7 +12,6 @@ import {
 } from "react-icons/tb";
 import { useAuth, useBkndWindowContext } from "ui/client";
 import { useBknd } from "ui/client/bknd";
-import { useBkndSystemTheme } from "ui/client/schema/system/use-bknd-system";
 import { useTheme } from "ui/client/use-theme";
 import { Button } from "ui/components/buttons/Button";
 import { IconButton } from "ui/components/buttons/IconButton";
@@ -24,6 +23,7 @@ import { useAppShell } from "ui/layouts/AppShell/use-appshell";
 import { useNavigate } from "ui/lib/routes";
 import { useLocation } from "wouter";
 import { NavLink } from "./AppShell";
+import { autoFormatString } from "core/utils";
 
 export function HeaderNavigation() {
    const [location, navigate] = useLocation();
@@ -114,7 +114,7 @@ function SidebarToggler() {
 export function Header({ hasSidebar = true }) {
    const { app } = useBknd();
    const { theme } = useTheme();
-   const { logo_return_path = "/" } = app.getAdminConfig();
+   const { logo_return_path = "/" } = app.options;
 
    return (
       <header
@@ -142,7 +142,7 @@ export function Header({ hasSidebar = true }) {
 }
 
 function UserMenu() {
-   const { adminOverride, config } = useBknd();
+   const { config, options } = useBknd();
    const auth = useAuth();
    const [navigate] = useNavigate();
    const { logout_route } = useBkndWindowContext();
@@ -173,7 +173,7 @@ function UserMenu() {
       }
    }
 
-   if (!adminOverride) {
+   if (!options.theme) {
       items.push(() => <UserMenuThemeToggler />);
    }
 
@@ -193,17 +193,15 @@ function UserMenu() {
 }
 
 function UserMenuThemeToggler() {
-   const { theme, toggle } = useBkndSystemTheme();
+   const { value, themes, setTheme } = useTheme();
    return (
       <div className="flex flex-col items-center mt-1 pt-1 border-t border-primary/5">
          <SegmentedControl
+            withItemsBorders={false}
             className="w-full"
-            data={[
-               { value: "light", label: "Light" },
-               { value: "dark", label: "Dark" },
-            ]}
-            value={theme}
-            onChange={toggle}
+            data={themes.map((t) => ({ value: t, label: autoFormatString(t) }))}
+            value={value}
+            onChange={setTheme}
             size="xs"
          />
       </div>

@@ -1,4 +1,3 @@
-import { ucFirstAllSnakeToPascalWithSpaces } from "core/utils";
 import { useMemo } from "react";
 import { TbArrowLeft, TbDots } from "react-icons/tb";
 import { Link, useLocation } from "wouter";
@@ -7,7 +6,7 @@ import { Dropdown } from "../../components/overlay/Dropdown";
 import { useEvent } from "../../hooks/use-event";
 
 type Breadcrumb = {
-   label: string | JSX.Element;
+   label: string | Element;
    onClick?: () => void;
    href?: string;
 };

@@ -115,7 +115,7 @@ const configJsonSchema = Type.Union([
       }),
    ),
 ]);
-const __bknd = entity(TABLE_NAME, {
+export const __bknd = entity(TABLE_NAME, {
    version: number().required(),
    type: enumm({ enum: ["config", "diff", "backup"] }).required(),
    json: jsonSchema({ schema: configJsonSchema }).required(),
@@ -170,6 +170,8 @@ export class ModuleManager {
          }
       }
 
+      this.logger.log("booted with", this._booted_with);
+
       this.createModules(initial);
    }
 
@@ -218,7 +220,8 @@ export class ModuleManager {
 
    private repo() {
       return this.__em.repo(__bknd, {
-         silent: !debug_modules,
+         // to prevent exceptions when table doesn't exist
+         silent: true,
       });
    }
 
@@ -271,7 +274,7 @@ export class ModuleManager {
       };
    }
 
-   private async fetch(): Promise<ConfigTable> {
+   private async fetch(): Promise<ConfigTable | undefined> {
       this.logger.context("fetch").log("fetching");
       const startTime = performance.now();
 
@@ -285,7 +288,7 @@ export class ModuleManager {
 
       if (!result) {
          this.logger.log("error fetching").clear();
-         throw BkndError.with("no config");
+         return undefined;
       }
 
       this.logger
@@ -305,6 +308,7 @@ export class ModuleManager {
 
       try {
          const state = await this.fetch();
+         if (!state) throw new BkndError("save: no config found");
          this.logger.log("fetched version", state.version);
 
          if (state.version !== version) {
@@ -321,11 +325,11 @@ export class ModuleManager {
                json: configs,
             });
          } else {
-            this.logger.log("version matches");
+            this.logger.log("version matches", state.version);
 
             // clean configs because of Diff() function
             const diffs = diff(state.json, clone(configs));
-            this.logger.log("checking diff", diffs);
+            this.logger.log("checking diff", [diffs.length]);
 
             if (diff.length > 0) {
                // store diff
@@ -380,78 +384,6 @@ export class ModuleManager {
       return this;
    }
 
-   private async migrate() {
-      const state = {
-         success: false,
-         migrated: false,
-         version: {
-            before: this.version(),
-            after: this.version(),
-         },
-      };
-      this.logger.context("migrate").log("migrating?", this.version(), CURRENT_VERSION);
-
-      if (this.version() < CURRENT_VERSION) {
-         state.version.before = this.version();
-
-         this.logger.log("there are migrations, verify version");
-         // sync __bknd table
-         await this.syncConfigTable();
-
-         // modules must be built before migration
-         this.logger.log("building modules");
-         await this.buildModules({ graceful: true });
-         this.logger.log("modules built");
-
-         try {
-            const state = await this.fetch();
-            if (state.version !== this.version()) {
-               // @todo: potentially drop provided config and use database version
-               throw new Error(
-                  `Given version (${this.version()}) and fetched version (${state.version}) do not match.`,
-               );
-            }
-         } catch (e: any) {
-            throw new Error(`Version is ${this.version()}, fetch failed: ${e.message}`);
-         }
-
-         this.logger.log("now migrating");
-         let version = this.version();
-         let configs: any = this.configs();
-         //console.log("migrating with", version, configs);
-         if (Object.keys(configs).length === 0) {
-            throw new Error("No config to migrate");
-         }
-
-         const [_version, _configs] = await migrate(version, configs, {
-            db: this.db,
-         });
-         version = _version;
-         configs = _configs;
-
-         this._version = version;
-         state.version.after = version;
-         state.migrated = true;
-         this.ctx().flags.sync_required = true;
-
-         this.logger.log("setting configs");
-         this.createModules(configs);
-         await this.buildModules();
-
-         this.logger.log("migrated to", version);
-         $console.log("Migrated config from", state.version.before, "to", state.version.after);
-
-         await this.save();
-      } else {
-         this.logger.log("no migrations needed");
-      }
-
-      state.success = true;
-      this.logger.clear();
-
-      return state;
-   }
-
    private setConfigs(configs: ModuleConfigs): void {
       this.logger.log("setting configs");
       objectEach(configs, (config, key) => {
@@ -469,66 +401,66 @@ export class ModuleManager {
 
    async build(opts?: { fetch?: boolean }) {
       this.logger.context("build").log("version", this.version());
-      this.logger.log("booted with", this._booted_with);
 
       // if no config provided, try fetch from db
       if (this.version() === 0 || opts?.fetch === true) {
-         if (this.version() === 0) {
-            this.logger.context("no version").log("version is 0");
-         } else {
-            this.logger.context("force fetch").log("force fetch");
+         if (opts?.fetch) {
+            this.logger.log("force fetch");
          }
 
-         try {
-            const result = await this.fetch();
+         const result = await this.fetch();
 
+         // if no version, and nothing found, go with initial
+         if (!result) {
+            this.logger.log("nothing in database, go initial");
+            await this.setupInitial();
+         } else {
+            this.logger.log("db has", result.version);
             // set version and config from fetched
             this._version = result.version;
-
-            if (this.version() !== CURRENT_VERSION) {
-               await this.syncConfigTable();
-            }
 
             if (this.options?.trustFetched === true) {
                this.logger.log("trusting fetched config (mark)");
                mark(result.json);
             }
 
-            this.setConfigs(result.json);
-         } catch (e: any) {
-            this.logger.clear(); // fetch couldn't clear
+            // if version doesn't match, migrate before building
+            if (this.version() !== CURRENT_VERSION) {
+               this.logger.log("now migrating");
 
-            this.logger.context("error handler").log("fetch failed", e.message);
+               await this.syncConfigTable();
 
-            // we can safely build modules, since config version is up to date
-            // it's up to date because we use default configs (no fetch result)
-            this._version = CURRENT_VERSION;
-            await this.syncConfigTable();
-            const state = await this.buildModules();
-            if (!state.saved) {
-               await this.save();
+               const version_before = this.version();
+               const [_version, _configs] = await migrate(version_before, result.json, {
+                  db: this.db,
+               });
+
+               this._version = _version;
+               this.ctx().flags.sync_required = true;
+
+               this.logger.log("migrated to", _version);
+               $console.log("Migrated config from", version_before, "to", this.version());
+
+               this.createModules(_configs);
+               await this.buildModules();
+            } else {
+               this.logger.log("version is current", this.version());
+               this.createModules(result.json);
+               await this.buildModules();
             }
-
-            // run initial setup
-            await this.setupInitial();
-
-            this.logger.clear();
-            return this;
          }
-         this.logger.clear();
-      }
-
-      // migrate to latest if needed
-      this.logger.log("check migrate");
-      const migration = await this.migrate();
-      if (migration.success && migration.migrated) {
-         this.logger.log("skipping build after migration");
       } else {
-         this.logger.log("trigger build modules");
+         if (this.version() !== CURRENT_VERSION) {
+            throw new Error(
+               `Given version (${this.version()}) and current version (${CURRENT_VERSION}) do not match.`,
+            );
+         }
+         this.logger.log("current version is up to date", this.version());
          await this.buildModules();
       }
 
       this.logger.log("done");
+      this.logger.clear();
       return this;
    }
 
@@ -589,6 +521,14 @@ export class ModuleManager {
    }
 
    protected async setupInitial() {
+      this.logger.context("initial").log("start");
+      this._version = CURRENT_VERSION;
+      await this.syncConfigTable();
+      const state = await this.buildModules();
+      if (!state.saved) {
+         await this.save();
+      }
+
       const ctx = {
          ...this.ctx(),
          // disable events for initial setup
@@ -601,6 +541,7 @@ export class ModuleManager {
 
       // run first boot event
       await this.options?.onFirstBoot?.();
+      this.logger.clear();
    }
 
    mutateConfigSafe<Module extends keyof Modules>(

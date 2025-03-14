@@ -68,8 +68,7 @@ export const DataSettings = ({
    config,
 }: { schema: ModuleSchemas["data"]; config: ModuleConfigs["data"] }) => {
    const { app } = useBknd();
-   const basepath = app.getAdminConfig().basepath;
-   const prefix = `~/${basepath}/settings`.replace(/\/+/g, "/");
+   const prefix = app.getAbsolutePath("settings");
    const entities = Object.keys(config.entities ?? {});
 
    function fillEntities(schema: any, key: string = "entity") {
