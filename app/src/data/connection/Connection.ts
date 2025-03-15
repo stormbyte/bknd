@@ -75,6 +75,7 @@ export type DbFunctions = {
 const CONN_SYMBOL = Symbol.for("bknd:connection");
 
 export abstract class Connection<DB = any> {
+   protected initialized = false;
    kysely: Kysely<DB>;
    protected readonly supported = {
       batching: false,
@@ -87,6 +88,11 @@ export abstract class Connection<DB = any> {
    ) {
       this.kysely = kysely;
       this[CONN_SYMBOL] = true;
+   }
+
+   // @todo: consider moving constructor logic here, required by sqlocal
+   async init(): Promise<void> {
+      this.initialized = true;
    }
 
    /**
