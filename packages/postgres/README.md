@@ -1,5 +1,5 @@
 # Postgres adapter for `bknd` (experimental)
-This packages adds an adapter to use a Postgres database with `bknd`. It is based on `pg` and the driver included in `kysely`.
+This packages adds an adapter to use a Postgres database with [`bknd`](https://github.com/bknd-io/bknd). It is based on [`pg`](https://github.com/brianc/node-postgres) and the driver included in [`kysely`](https://github.com/kysely-org/kysely).
 
 ## Installation
 Install the adapter with:

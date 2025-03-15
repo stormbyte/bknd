@@ -1,9 +1,13 @@
-import { useEffect, useState } from "react";
+import { createContext, lazy, useEffect, useState, Suspense, Fragment } from "react";
 import { App } from "bknd";
-import { Admin } from "bknd/ui";
-import { checksum } from "bknd/utils";
-import { em, entity, text } from "bknd/data";
+import { checksum, secureRandomString } from "bknd/utils";
+import { boolean, em, entity, text } from "bknd/data";
 import { SQLocalConnection } from "@bknd/sqlocal";
+import { Route, Router, Switch } from "wouter";
+import IndexPage from "~/routes/_index";
+const Admin = lazy(() => import("~/routes/admin"));
+import { Center } from "~/components/Center";
+import { ClientProvider } from "bknd/client";
 import "bknd/dist/styles.css";
 
 export default function () {
@@ -11,28 +15,65 @@ export default function () {
    const [hash, setHash] = useState<string>("");
 
    async function onBuilt(app: App) {
-      setApp(app);
-      setHash(await checksum(app.toJSON()));
+      document.startViewTransition(async () => {
+         setApp(app);
+         setHash(await checksum(app.toJSON()));
+      });
    }
 
    useEffect(() => {
-      setup({
-         onBuilt,
-      })
+      setup({ onBuilt })
          .then((app) => console.log("setup", app?.version()))
          .catch(console.error);
    }, []);
 
-   if (!app) return null;
+   if (!app)
+      return (
+         <Center>
+            <span className="opacity-20">Loading...</span>
+         </Center>
+      );
 
    return (
-      // @ts-ignore
-      <Admin key={hash} withProvider={{ api: app.getApi() }} />
+      <Router key={hash}>
+         <Switch>
+            <Route
+               path="/"
+               component={() => (
+                  <ClientProvider api={app.getApi()}>
+                     <IndexPage app={app} />
+                  </ClientProvider>
+               )}
+            />
+
+            <Route path="/admin/*?">
+               <Suspense>
+                  <Admin config={{ basepath: "/admin", logo_return_path: "/../" }} app={app} />
+               </Suspense>
+            </Route>
+            <Route path="*">
+               <Center className="font-mono text-4xl">404</Center>
+            </Route>
+         </Switch>
+      </Router>
    );
 }
 
+const schema = em({
+   todos: entity("todos", {
+      title: text(),
+      done: boolean(),
+   }),
+});
+
+// register your schema to get automatic type completion
+type Database = (typeof schema)["DB"];
+declare module "bknd/core" {
+   interface DB extends Database {}
+}
+
 let initialized = false;
-export async function setup(opts?: {
+async function setup(opts?: {
    beforeBuild?: (app: App) => Promise<void>;
    onBuilt?: (app: App) => Promise<void>;
 }) {
@@ -40,17 +81,30 @@ export async function setup(opts?: {
    initialized = true;
 
    const connection = new SQLocalConnection({
+      databasePath: ":localStorage:",
       verbose: true,
    });
 
    const app = App.create({
       connection,
+      // an initial config is only applied if the database is empty
       initialConfig: {
-         data: em({
-            test: entity("test", {
-               name: text(),
-            }),
-         }).toJSON(),
+         data: schema.toJSON(),
+      },
+      options: {
+         // the seed option is only executed if the database was empty
+         seed: async (ctx) => {
+            await ctx.em.mutator("todos").insertMany([
+               { title: "Learn bknd", done: true },
+               { title: "Build something cool", done: false },
+            ]);
+
+            // @todo: auth is currently not working due to POST request
+            /*await ctx.app.module.auth.createUser({
+               email: "test@bknd.io",
+               password: "12345678",
+            });*/
+         },
       },
    });
 

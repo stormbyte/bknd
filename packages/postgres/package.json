@@ -5,14 +5,20 @@
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup",
     "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "updater": "bun x npm-check-updates -ui",
+    "prepublishOnly": "bun run typecheck && bun run test && bun run build",
     "docker:start": "docker run --rm --name bknd-test-postgres -d -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_DB=bknd -p 5430:5432 postgres:17",
     "docker:stop": "docker stop bknd-test-postgres"
   },
   "dependencies": {
-    "pg": "^8.12.0",
+    "pg": "^8.14.0",
     "kysely": "^0.27.6"
   },
   "devDependencies": {
@@ -21,7 +27,7 @@
     "@types/pg": "^8.11.11",
     "bknd": "workspace:*",
     "tsup": "^8.4.0",
-    "typescript": "^5.6.3"
+    "typescript": "^5.8.2"
   },
   "tsup": {
     "entry": ["src/index.ts"],
@@ -30,7 +36,6 @@
     "clean": true,
     "minify": true,
     "dts": true,
-    "metafile": true,
     "external": ["bknd", "pg", "kysely"]
   },
   "files": ["dist", "README.md", "!*.map", "!metafile*.json"]
