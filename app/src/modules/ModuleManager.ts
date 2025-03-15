@@ -401,6 +401,7 @@ export class ModuleManager {
 
    async build(opts?: { fetch?: boolean }) {
       this.logger.context("build").log("version", this.version());
+      await this.ctx().connection.init();
 
       // if no config provided, try fetch from db
       if (this.version() === 0 || opts?.fetch === true) {

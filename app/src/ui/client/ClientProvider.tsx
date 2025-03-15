@@ -1,38 +1,48 @@
 import { Api, type ApiOptions, type TApiUser } from "Api";
 import { isDebug } from "core";
-import { createContext, useContext } from "react";
+import { createContext, type ReactNode, useContext } from "react";
 
 const ClientContext = createContext<{ baseUrl: string; api: Api }>({
    baseUrl: undefined,
 } as any);
 
 export type ClientProviderProps = {
-   children?: any;
-   baseUrl?: string;
-   user?: TApiUser | null | undefined;
-};
+   children?: ReactNode;
+} & (
+   | { baseUrl?: string; user?: TApiUser | null | undefined }
+   | {
+        api: Api;
+     }
+);
 
-export const ClientProvider = ({ children, baseUrl, user }: ClientProviderProps) => {
-   const winCtx = useBkndWindowContext();
-   const _ctx_baseUrl = useBaseUrl();
-   let actualBaseUrl = baseUrl ?? _ctx_baseUrl ?? "";
+export const ClientProvider = ({ children, ...props }: ClientProviderProps) => {
+   let api: Api;
 
-   try {
-      if (!baseUrl) {
-         if (_ctx_baseUrl) {
-            actualBaseUrl = _ctx_baseUrl;
-            console.warn("wrapped many times, take from context", actualBaseUrl);
-         } else if (typeof window !== "undefined") {
-            actualBaseUrl = window.location.origin;
-            //console.log("setting from window", actualBaseUrl);
+   if (props && "api" in props) {
+      api = props.api;
+   } else {
+      const winCtx = useBkndWindowContext();
+      const _ctx_baseUrl = useBaseUrl();
+      const { baseUrl, user } = props;
+      let actualBaseUrl = baseUrl ?? _ctx_baseUrl ?? "";
+
+      try {
+         if (!baseUrl) {
+            if (_ctx_baseUrl) {
+               actualBaseUrl = _ctx_baseUrl;
+               console.warn("wrapped many times, take from context", actualBaseUrl);
+            } else if (typeof window !== "undefined") {
+               actualBaseUrl = window.location.origin;
+               //console.log("setting from window", actualBaseUrl);
+            }
          }
+      } catch (e) {
+         console.error("Error in ClientProvider", e);
       }
-   } catch (e) {
-      console.error("Error in ClientProvider", e);
-   }
 
-   //console.log("api init", { host: actualBaseUrl, user: user ?? winCtx.user });
-   const api = new Api({ host: actualBaseUrl, user: user ?? winCtx.user, verbose: isDebug() });
+      //console.log("api init", { host: actualBaseUrl, user: user ?? winCtx.user });
+      api = new Api({ host: actualBaseUrl, user: user ?? winCtx.user, verbose: isDebug() });
+   }
 
    return (
       <ClientContext.Provider value={{ baseUrl: api.baseUrl, api }}>
