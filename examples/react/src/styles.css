@@ -1,25 +1,28 @@
-/* @todo: currently not working nicely */
-#app {
-   @import "tailwindcss";
+@import "tailwindcss";
+
+:root {
+   --background: #ffffff;
+   --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
    :root {
-      --background: #ffffff;
-      --foreground: #171717;
+      --background: #0a0a0a;
+      --foreground: #ededed;
    }
+}
 
-   @media (prefers-color-scheme: dark) {
-      :root {
-         --background: #0a0a0a;
-         --foreground: #ededed;
-      }
-   }
+@theme {
+   --color-background: var(--background);
+   --color-foreground: var(--foreground);
+}
 
-   @theme {
-      --color-background: var(--background);
-      --color-foreground: var(--foreground);
-   }
-
-   width: 100%;
-   min-height: 100dvh;
+body {
    @apply bg-background text-foreground flex;
    font-family: Arial, Helvetica, sans-serif;
+}
+
+#root {
+   width: 100%;
+   min-height: 100dvh;
 }

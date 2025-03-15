@@ -8,7 +8,6 @@ import IndexPage from "~/routes/_index";
 const Admin = lazy(() => import("~/routes/admin"));
 import { Center } from "~/components/Center";
 import { ClientProvider } from "bknd/client";
-import "bknd/dist/styles.css";
 
 export default function () {
    const [app, setApp] = useState<App | undefined>(undefined);

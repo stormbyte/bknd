@@ -1,5 +1,6 @@
 import { Admin, type BkndAdminProps } from "bknd/ui";
 import type { App } from "bknd";
+import "bknd/dist/styles.css";
 
 export default function AdminPage({
    app,
