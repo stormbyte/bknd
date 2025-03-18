@@ -1,5 +1,6 @@
 import { useClickOutside, useHotkeys } from "@mantine/hooks";
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
+import { clampNumber } from "core/utils/numbers";
 import { throttle } from "lodash-es";
 import { ScrollArea } from "radix-ui";
 import {
@@ -12,13 +13,20 @@ import {
 import type { IconType } from "react-icons";
 import { twMerge } from "tailwind-merge";
 import { IconButton } from "ui/components/buttons/IconButton";
-import { useEvent } from "ui/hooks/use-event";
 import { AppShellProvider, useAppShell } from "ui/layouts/AppShell/use-appshell";
+import { appShellStore } from "ui/store";
+import { useLocation } from "wouter";
 
-export function Root({ children }) {
+export function Root({ children }: { children: React.ReactNode }) {
+   const sidebarWidth = appShellStore((store) => store.sidebarWidth);
    return (
       <AppShellProvider>
-         <div data-shell="root" className="flex flex-1 flex-col select-none h-dvh">
+         <div
+            id="app-shell"
+            data-shell="root"
+            className="flex flex-1 flex-col select-none h-dvh"
+            style={{ "--sidebar-width": `${sidebarWidth}px` } as React.CSSProperties}
+         >
             {children}
          </div>
       </AppShellProvider>
@@ -80,7 +88,7 @@ export function Main({ children }) {
          data-shell="main"
          className={twMerge(
             "flex flex-col flex-grow w-1 flex-shrink-1",
-            sidebar.open && "md:max-w-[calc(100%-350px)]",
+            sidebar.open && "md:max-w-[calc(100%-var(--sidebar-width))]",
          )}
       >
          {children}
@@ -89,47 +97,38 @@ export function Main({ children }) {
 }
 
 export function Sidebar({ children }) {
-   const ctx = useAppShell();
+   const open = appShellStore((store) => store.sidebarOpen);
+   const close = appShellStore((store) => store.closeSidebar);
+   const ref = useClickOutside(close, null, [document.getElementById("header")]);
+   const [location] = useLocation();
 
-   const ref = useClickOutside(ctx.sidebar?.handler?.close);
+   const closeHandler = () => {
+      open && close();
+   };
 
-   const onClickBackdrop = useEvent((e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      ctx?.sidebar?.handler.close();
-   });
-
-   const onEscape = useEvent(() => {
-      if (ctx?.sidebar?.open) {
-         ctx?.sidebar?.handler.close();
-      }
-   });
+   // listen for window location change
+   useEffect(closeHandler, [location]);
 
    // @todo: potentially has to be added to the root, as modals could be opened
-   useHotkeys([["Escape", onEscape]]);
-
-   if (!ctx) {
-      console.warn("AppShell.Sidebar: missing AppShellContext");
-      return null;
-   }
+   useHotkeys([["Escape", closeHandler]]);
 
    return (
       <>
          <aside
             data-shell="sidebar"
-            className="hidden md:flex flex-col basis-[350px] flex-shrink-0 flex-grow-0 h-full border-muted border-r bg-muted/10"
+            className="hidden md:flex flex-col basis-[var(--sidebar-width)] flex-shrink-0 flex-grow-0 h-full bg-muted/10"
          >
             {children}
          </aside>
+         <SidebarResize />
          <div
-            data-open={ctx?.sidebar?.open}
+            data-open={open}
             className="absolute w-full md:hidden data-[open=true]:translate-x-0 translate-x-[-100%] transition-transform z-10 backdrop-blur-sm"
-            onClick={onClickBackdrop}
          >
             <aside
-               /*ref={ref}*/
+               ref={ref}
                data-shell="sidebar"
-               className="flex-col w-[350px] flex-shrink-0 flex-grow-0 h-full border-muted border-r bg-background"
+               className="flex-col w-[var(--sidebar-width)] flex-shrink-0 flex-grow-0 h-full border-muted border-r bg-background"
             >
                {children}
             </aside>
@@ -137,6 +136,59 @@ export function Sidebar({ children }) {
       </>
    );
 }
+
+const SidebarResize = () => {
+   const setSidebarWidth = appShellStore((store) => store.setSidebarWidth);
+   const [isResizing, setIsResizing] = useState(false);
+   const [startX, setStartX] = useState(0);
+   const [startWidth, setStartWidth] = useState(0);
+
+   const handleMouseDown = (e: React.MouseEvent) => {
+      e.preventDefault();
+      setIsResizing(true);
+      setStartX(e.clientX);
+      setStartWidth(
+         Number.parseInt(
+            getComputedStyle(document.getElementById("app-shell")!)
+               .getPropertyValue("--sidebar-width")
+               .replace("px", ""),
+         ),
+      );
+   };
+
+   const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing) return;
+
+      const diff = e.clientX - startX;
+      const newWidth = clampNumber(startWidth + diff, 250, window.innerWidth * 0.5);
+      setSidebarWidth(newWidth);
+   };
+
+   const handleMouseUp = () => {
+      setIsResizing(false);
+   };
+
+   useEffect(() => {
+      if (isResizing) {
+         window.addEventListener("mousemove", handleMouseMove);
+         window.addEventListener("mouseup", handleMouseUp);
+      }
+
+      return () => {
+         window.removeEventListener("mousemove", handleMouseMove);
+         window.removeEventListener("mouseup", handleMouseUp);
+      };
+   }, [isResizing, startX, startWidth]);
+
+   return (
+      <div
+         data-active={isResizing ? 1 : undefined}
+         className="w-px h-full hidden md:flex bg-muted after:transition-colors relative after:absolute after:inset-0 after:-left-px after:w-[2px] select-none data-[active]:after:bg-sky-400 data-[active]:cursor-col-resize hover:after:bg-sky-400 hover:cursor-col-resize after:z-2"
+         onMouseDown={handleMouseDown}
+         style={{ touchAction: "none" }}
+      />
+   );
+};
 
 export function SectionHeaderTitle({ children, className, ...props }: ComponentProps<"h2">) {
    return (

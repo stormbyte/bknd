@@ -19,11 +19,11 @@ import { Logo } from "ui/components/display/Logo";
 import { Dropdown, type DropdownItem } from "ui/components/overlay/Dropdown";
 import { Link } from "ui/components/wouter/Link";
 import { useEvent } from "ui/hooks/use-event";
-import { useAppShell } from "ui/layouts/AppShell/use-appshell";
 import { useNavigate } from "ui/lib/routes";
 import { useLocation } from "wouter";
 import { NavLink } from "./AppShell";
 import { autoFormatString } from "core/utils";
+import { appShellStore } from "ui/store";
 
 export function HeaderNavigation() {
    const [location, navigate] = useLocation();
@@ -105,10 +105,9 @@ export function HeaderNavigation() {
 }
 
 function SidebarToggler() {
-   const { sidebar } = useAppShell();
-   return (
-      <IconButton size="lg" Icon={sidebar.open ? TbX : TbMenu2} onClick={sidebar.handler.toggle} />
-   );
+   const toggle = appShellStore((store) => store.toggleSidebar);
+   const open = appShellStore((store) => store.sidebarOpen);
+   return <IconButton size="lg" Icon={open ? TbX : TbMenu2} onClick={toggle} />;
 }
 
 export function Header({ hasSidebar = true }) {
@@ -118,6 +117,7 @@ export function Header({ hasSidebar = true }) {
 
    return (
       <header
+         id="header"
          data-shell="header"
          className="flex flex-row w-full h-16 gap-2.5 border-muted border-b justify-start bg-muted/10"
       >

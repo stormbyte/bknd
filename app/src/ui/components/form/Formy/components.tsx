@@ -3,7 +3,6 @@ import { getBrowser } from "core/utils";
 import type { Field } from "data";
 import { Switch as RadixSwitch } from "radix-ui";
 import {
-   type ChangeEventHandler,
    type ComponentPropsWithoutRef,
    type ElementType,
    forwardRef,
@@ -12,7 +11,7 @@ import {
    useRef,
    useState,
 } from "react";
-import { TbCalendar, TbChevronDown, TbInfoCircle } from "react-icons/tb";
+import { TbCalendar, TbChevronDown, TbEye, TbEyeOff, TbInfoCircle } from "react-icons/tb";
 import { twMerge } from "tailwind-merge";
 import { IconButton } from "ui/components/buttons/IconButton";
 import { useEvent } from "ui/hooks/use-event";
@@ -89,7 +88,7 @@ export const Input = forwardRef<HTMLInputElement, React.ComponentProps<"input">>
          {...props}
          ref={ref}
          className={twMerge(
-            "bg-muted/40 h-11 rounded-md py-2.5 px-4 outline-none",
+            "bg-muted/40 h-11 rounded-md py-2.5 px-4 outline-none w-full",
             disabledOrReadonly && "bg-muted/50 text-primary/50",
             !disabledOrReadonly &&
                "focus:bg-muted focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:border-transparent transition-all",
@@ -98,6 +97,40 @@ export const Input = forwardRef<HTMLInputElement, React.ComponentProps<"input">>
       />
    );
 });
+
+export const TypeAwareInput = forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
+   (props, ref) => {
+      if (props.type === "password") {
+         return <Password {...props} ref={ref} />;
+      }
+
+      return <Input {...props} ref={ref} />;
+   },
+);
+
+export const Password = forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
+   (props, ref) => {
+      const [visible, setVisible] = useState(false);
+
+      function handleToggle() {
+         setVisible((v) => !v);
+      }
+
+      return (
+         <div className="relative w-full">
+            <Input {...props} type={visible ? "text" : "password"} className="w-full" ref={ref} />
+            <div className="absolute right-3 top-0 bottom-0 flex items-center">
+               <IconButton
+                  Icon={visible ? TbEyeOff : TbEye}
+                  onClick={handleToggle}
+                  variant="ghost"
+                  className="opacity-70"
+               />
+            </div>
+         </div>
+      );
+   },
+);
 
 export const Textarea = forwardRef<HTMLTextAreaElement, React.ComponentProps<"textarea">>(
    (props, ref) => {
