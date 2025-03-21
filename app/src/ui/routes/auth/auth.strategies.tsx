@@ -240,8 +240,8 @@ const StrategyPasswordForm = () => {
 const StrategyOAuthForm = () => {
    return (
       <>
-         <Field name="config.client.client_id" required />
-         <Field name="config.client.client_secret" required />
+         <Field name="config.client.client_id" required inputProps={{ type: "password" }} />
+         <Field name="config.client.client_secret" required inputProps={{ type: "password" }} />
       </>
    );
 };
