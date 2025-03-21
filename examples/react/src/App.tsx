@@ -1,13 +1,14 @@
-import { createContext, lazy, useEffect, useState, Suspense, Fragment } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { App } from "bknd";
-import { checksum, secureRandomString } from "bknd/utils";
+import { checksum } from "bknd/utils";
 import { boolean, em, entity, text } from "bknd/data";
 import { SQLocalConnection } from "@bknd/sqlocal";
 import { Route, Router, Switch } from "wouter";
 import IndexPage from "~/routes/_index";
-const Admin = lazy(() => import("~/routes/admin"));
 import { Center } from "~/components/Center";
 import { ClientProvider } from "bknd/client";
+
+const Admin = lazy(() => import("~/routes/admin"));
 
 export default function () {
    const [app, setApp] = useState<App | undefined>(undefined);

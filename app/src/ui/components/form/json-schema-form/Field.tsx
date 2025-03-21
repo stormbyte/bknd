@@ -1,5 +1,5 @@
 import type { JsonSchema } from "json-schema-library";
-import type { ChangeEvent, ComponentPropsWithoutRef } from "react";
+import type { ChangeEvent, ComponentPropsWithoutRef, ReactNode } from "react";
 import ErrorBoundary from "ui/components/display/ErrorBoundary";
 import * as Formy from "ui/components/form/Formy";
 import { useEvent } from "ui/hooks/use-event";
@@ -13,6 +13,7 @@ export type FieldProps = {
    onChange?: (e: ChangeEvent<any>) => void;
    placeholder?: string;
    disabled?: boolean;
+   inputProps?: Partial<FieldComponentProps>;
 } & Omit<FieldwrapperProps, "children" | "schema">;
 
 export const Field = (props: FieldProps) => {
@@ -31,7 +32,14 @@ const fieldErrorBoundary =
       </Pre>
    );
 
-const FieldImpl = ({ name, onChange, placeholder, required: _required, ...props }: FieldProps) => {
+const FieldImpl = ({
+   name,
+   onChange,
+   placeholder,
+   required: _required,
+   inputProps,
+   ...props
+}: FieldProps) => {
    const { path, setValue, schema, ...ctx } = useDerivedFieldContext(name);
    const required = typeof _required === "boolean" ? _required : ctx.required;
    //console.log("Field", { name, path, schema });
@@ -64,6 +72,7 @@ const FieldImpl = ({ name, onChange, placeholder, required: _required, ...props 
    return (
       <FieldWrapper name={name} required={required} schema={schema} {...props}>
          <FieldComponent
+            {...inputProps}
             schema={schema}
             name={name}
             required={required}
@@ -81,10 +90,12 @@ export const Pre = ({ children }) => (
    </pre>
 );
 
-export const FieldComponent = ({
-   schema,
-   ..._props
-}: { schema: JsonSchema } & ComponentPropsWithoutRef<"input">) => {
+export type FieldComponentProps = {
+   schema: JsonSchema;
+   render?: (props: Omit<FieldComponentProps, "render">) => ReactNode;
+} & ComponentPropsWithoutRef<"input">;
+
+export const FieldComponent = ({ schema, render, ..._props }: FieldComponentProps) => {
    const { value } = useFormValue(_props.name!, { strict: true });
    if (!isTypeSchema(schema)) return null;
    const props = {
@@ -96,6 +107,8 @@ export const FieldComponent = ({
             ? String(schema.default)
             : "",
    };
+
+   if (render) return render({ schema, ...props });
 
    if (schema.enum) {
       return <Formy.Select id={props.name} options={schema.enum} {...(props as any)} />;
@@ -158,5 +171,7 @@ export const FieldComponent = ({
       }
    }
 
-   return <Formy.Input id={props.name} {...props} value={props.value ?? ""} {...additional} />;
+   return (
+      <Formy.TypeAwareInput id={props.name} {...props} value={props.value ?? ""} {...additional} />
+   );
 };

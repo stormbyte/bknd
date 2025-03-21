@@ -85,8 +85,6 @@ export function DataSchemaCanvas() {
       },
    }));
 
-   console.log("-", data, { nodes, edges });
-
    const nodeLayout = layoutWithDagre({
       nodes: nodes.map((n) => ({
          id: n.id,
