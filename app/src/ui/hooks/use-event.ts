@@ -4,15 +4,12 @@
 // there is no lifecycle or Hook in React that we can use to switch
 // .current at the right timing."
 // So we will have to make do with this "close enough" approach for now.
-import { useEffect, useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
+import { isDebug } from "core";
 
-export const useEvent = <Fn>(fn: Fn | ((...args: any[]) => any) | undefined): Fn => {
-   const ref = useRef([fn, (...args) => ref[0](...args)]).current;
-   // Per Dan Abramov: useInsertionEffect executes marginally closer to the
-   // correct timing for ref synchronization than useLayoutEffect on React 18.
-   // See: https://github.com/facebook/react/pull/25881#issuecomment-1356244360
-   useEffect(() => {
-      ref[0] = fn;
-   }, []);
-   return ref[1];
+export const useEvent = <Fn>(fn: Fn): Fn => {
+   if (isDebug()) {
+      console.warn("useEvent() is deprecated");
+   }
+   return fn;
 };
