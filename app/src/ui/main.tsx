@@ -4,11 +4,19 @@ import Admin from "./Admin";
 import "./main.css";
 import "./styles.css";
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
-   <React.StrictMode>
-      <Admin withProvider />
-   </React.StrictMode>,
-);
+function render() {
+   ReactDOM.createRoot(document.getElementById("root")!).render(
+      <React.StrictMode>
+         <Admin withProvider />
+      </React.StrictMode>,
+   );
+}
+
+if ("startViewTransition" in document) {
+   document.startViewTransition(render);
+} else {
+   render();
+}
 
 // REGISTER ERROR OVERLAY
 const showOverlay = true;

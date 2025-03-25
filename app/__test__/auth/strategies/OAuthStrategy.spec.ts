@@ -7,8 +7,8 @@ describe("OAuthStrategy", async () => {
    const strategy = new OAuthStrategy({
       type: "oidc",
       client: {
-         client_id: process.env.OAUTH_CLIENT_ID,
-         client_secret: process.env.OAUTH_CLIENT_SECRET,
+         client_id: process.env.OAUTH_CLIENT_ID!,
+         client_secret: process.env.OAUTH_CLIENT_SECRET!,
       },
       name: "google",
    });
@@ -18,11 +18,6 @@ describe("OAuthStrategy", async () => {
    test.skipIf(ALL_TESTS)("...", async () => {
       const config = await strategy.getConfig();
       console.log("config", JSON.stringify(config, null, 2));
-
-      const request = await strategy.request({
-         redirect_uri,
-         state,
-      });
 
       const server = Bun.serve({
          fetch: async (req) => {
@@ -38,6 +33,11 @@ describe("OAuthStrategy", async () => {
             }
             return new Response("Bun!");
          },
+      });
+
+      const request = await strategy.request({
+         redirect_uri,
+         state,
       });
       console.log("request", request);
 

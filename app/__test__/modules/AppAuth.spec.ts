@@ -4,6 +4,7 @@ import { AuthController } from "../../src/auth/api/AuthController";
 import { em, entity, make, text } from "../../src/data";
 import { AppAuth, type ModuleBuildContext } from "../../src/modules";
 import { disableConsoleLog, enableConsoleLog } from "../helper";
+// @ts-ignore
 import { makeCtx, moduleTestSuite } from "./module-test-suite";
 
 describe("AppAuth", () => {
@@ -22,7 +23,7 @@ describe("AppAuth", () => {
 
       const config = auth.toJSON();
       expect(config.jwt).toBeUndefined();
-      expect(config.strategies.password.config).toBeUndefined();
+      expect(config.strategies?.password?.config).toBeUndefined();
    });
 
    test("enabling auth: generate secret", async () => {
@@ -42,6 +43,7 @@ describe("AppAuth", () => {
       const auth = new AppAuth(
          {
             enabled: true,
+            // @ts-ignore
             jwt: {
                secret: "123456",
             },
@@ -75,7 +77,7 @@ describe("AppAuth", () => {
 
          const { data: users } = await ctx.em.repository("users").findMany();
          expect(users.length).toBe(1);
-         expect(users[0].email).toBe("some@body.com");
+         expect(users[0]?.email).toBe("some@body.com");
       }
    });
 
@@ -157,7 +159,7 @@ describe("AppAuth", () => {
          const authField = make(name, _authFieldProto as any);
          const field = users.field(name)!;
          for (const prop of props) {
-            expect(field.config[prop]).toBe(authField.config[prop]);
+            expect(field.config[prop]).toEqual(authField.config[prop]);
          }
       }
    });

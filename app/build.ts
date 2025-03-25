@@ -46,17 +46,28 @@ if (types && !watch) {
    buildTypes();
 }
 
+function banner(title: string) {
+   console.log("");
+   console.log("=".repeat(40));
+   console.log(title.toUpperCase());
+   console.log("-".repeat(40));
+}
+
+// collection of always-external packages
+const external = ["bun:test", "@libsql/client"] as const;
+
 /**
  * Building backend and general API
  */
 async function buildApi() {
+   banner("Building API");
    await tsup.build({
       minify,
       sourcemap,
       watch,
       entry: ["src/index.ts", "src/data/index.ts", "src/core/index.ts", "src/core/utils/index.ts"],
       outDir: "dist",
-      external: ["bun:test", "@libsql/client"],
+      external: [...external],
       metafile: true,
       platform: "browser",
       format: ["esm"],
@@ -85,7 +96,7 @@ async function buildUi() {
       sourcemap,
       watch,
       external: [
-         "bun:test",
+         ...external,
          "react",
          "react-dom",
          "react/jsx-runtime",
@@ -109,6 +120,7 @@ async function buildUi() {
       },
    } satisfies tsup.Options;
 
+   banner("Building UI");
    await tsup.build({
       ...base,
       entry: ["src/ui/index.ts", "src/ui/main.css", "src/ui/styles.css"],
@@ -119,6 +131,7 @@ async function buildUi() {
       },
    });
 
+   banner("Building Client");
    await tsup.build({
       ...base,
       entry: ["src/ui/client/index.ts"],
@@ -136,6 +149,7 @@ async function buildUi() {
  * - ui/client is external, and after built replaced with "bknd/client"
  */
 async function buildUiElements() {
+   banner("Building UI Elements");
    await tsup.build({
       minify,
       sourcemap,
@@ -205,6 +219,7 @@ function baseConfig(adapter: string, overrides: Partial<tsup.Options> = {}): tsu
 }
 
 async function buildAdapters() {
+   banner("Building Adapters");
    // base adapter handles
    await tsup.build({
       ...baseConfig(""),
@@ -213,7 +228,7 @@ async function buildAdapters() {
    });
 
    // specific adatpers
-   await tsup.build(baseConfig("remix"));
+   await tsup.build(baseConfig("react-router"));
    await tsup.build(baseConfig("bun"));
    await tsup.build(baseConfig("astro"));
    await tsup.build(baseConfig("aws"));

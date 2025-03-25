@@ -32,7 +32,7 @@ describe("MediaApi", () => {
          host,
          basepath,
       });
-      expect(api.getFileUploadUrl({ path: "path" })).toBe(`${host}${basepath}/upload/path`);
+      expect(api.getFileUploadUrl({ path: "path" } as any)).toBe(`${host}${basepath}/upload/path`);
    });
 
    it("should have correct upload headers", () => {

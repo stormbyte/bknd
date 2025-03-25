@@ -1,25 +1,23 @@
 import {
    Background,
    BackgroundVariant,
-   MarkerType,
    MiniMap,
    type MiniMapProps,
    ReactFlow,
    type ReactFlowProps,
-   ReactFlowProvider,
    addEdge,
    useEdgesState,
    useNodesState,
    useReactFlow,
 } from "@xyflow/react";
 import { type ReactNode, useCallback, useEffect, useState } from "react";
-import { useBkndSystemTheme } from "ui/client/schema/system/use-bknd-system";
+import { useTheme } from "ui/client/use-theme";
 
 type CanvasProps = ReactFlowProps & {
    externalProvider?: boolean;
    backgroundStyle?: "lines" | "dots";
    minimap?: boolean | MiniMapProps;
-   children?: JSX.Element | ReactNode;
+   children?: Element | ReactNode;
    onDropNewNode?: (base: any) => any;
    onDropNewEdge?: (base: any) => any;
 };
@@ -38,7 +36,7 @@ export function Canvas({
    const [nodes, setNodes, onNodesChange] = useNodesState(_nodes ?? []);
    const [edges, setEdges, onEdgesChange] = useEdgesState(_edges ?? []);
    const { screenToFlowPosition } = useReactFlow();
-   const { theme } = useBkndSystemTheme();
+   const { theme } = useTheme();
 
    const [isCommandPressed, setIsCommandPressed] = useState(false);
    const [isSpacePressed, setIsSpacePressed] = useState(false);

@@ -18,13 +18,7 @@ const Base: React.FC<AlertProps> = ({
    ...props
 }) =>
    visible ? (
-      <div
-         {...props}
-         className={twMerge(
-            "flex flex-row items-center dark:bg-amber-300/20 bg-amber-200 p-4",
-            className,
-         )}
-      >
+      <div {...props} className={twMerge("flex flex-row items-center p-4", className)}>
          <p>
             {title && <b>{title}: </b>}
             {message || children}
@@ -33,19 +27,19 @@ const Base: React.FC<AlertProps> = ({
    ) : null;
 
 const Warning: React.FC<AlertProps> = ({ className, ...props }) => (
-   <Base {...props} className={twMerge("dark:bg-amber-300/20 bg-amber-200", className)} />
+   <Base {...props} className={twMerge("bg-warning text-warning-foreground", className)} />
 );
 
 const Exception: React.FC<AlertProps> = ({ className, ...props }) => (
-   <Base {...props} className={twMerge("dark:bg-red-950 bg-red-100", className)} />
+   <Base {...props} className={twMerge("bg-error text-error-foreground", className)} />
 );
 
 const Success: React.FC<AlertProps> = ({ className, ...props }) => (
-   <Base {...props} className={twMerge("dark:bg-green-950 bg-green-100", className)} />
+   <Base {...props} className={twMerge("bg-success text-success-foreground", className)} />
 );
 
 const Info: React.FC<AlertProps> = ({ className, ...props }) => (
-   <Base {...props} className={twMerge("dark:bg-blue-950 bg-blue-100", className)} />
+   <Base {...props} className={twMerge("bg-info text-info-foreground", className)} />
 );
 
 export const Alert = {

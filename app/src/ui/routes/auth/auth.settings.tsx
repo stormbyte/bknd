@@ -129,6 +129,7 @@ function AuthSettingsInternal() {
                      name="jwt.secret"
                      description="The secret used to sign the JWT token. If not set, a random key will be generated after enabling authentication."
                      advanced="jwt"
+                     inputProps={{ type: "password" }}
                   />
                   <AuthField name="jwt.alg" advanced="jwt" />
                   <AuthField name="jwt.expires" advanced="jwt" />

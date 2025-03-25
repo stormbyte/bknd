@@ -1,27 +1,12 @@
-import { Exception } from "core";
+import { Exception, isDebug } from "core";
 import { type Static, StringEnum, Type } from "core/utils";
 import { cors } from "hono/cors";
 import { Module } from "modules/Module";
 
 const serverMethods = ["GET", "POST", "PATCH", "PUT", "DELETE"];
-const appThemes = ["dark", "light", "system"] as const;
-export type AppTheme = (typeof appThemes)[number];
 
 export const serverConfigSchema = Type.Object(
    {
-      admin: Type.Object(
-         {
-            basepath: Type.Optional(Type.String({ default: "", pattern: "^(/.+)?$" })),
-            color_scheme: Type.Optional(StringEnum(["dark", "light", "system"])),
-            logo_return_path: Type.Optional(
-               Type.String({
-                  default: "/",
-                  description: "Path to return to after *clicking* the logo",
-               }),
-            ),
-         },
-         { default: {}, additionalProperties: false },
-      ),
       cors: Type.Object(
          {
             origin: Type.String({ default: "*" }),
@@ -42,12 +27,6 @@ export const serverConfigSchema = Type.Object(
 );
 
 export type AppServerConfig = Static<typeof serverConfigSchema>;
-
-/*declare global {
-   interface Request {
-      cf: IncomingRequestCfProperties;
-   }
-}*/
 
 export class AppServer extends Module<typeof serverConfigSchema> {
    //private admin_html?: string;
@@ -100,6 +79,12 @@ export class AppServer extends Module<typeof serverConfigSchema> {
          if (err instanceof Exception) {
             console.log("---is exception", err.code);
             return c.json(err.toJSON(), err.code as any);
+         }
+
+         if (err instanceof Error) {
+            if (isDebug()) {
+               return c.json({ error: err.message, stack: err.stack }, 500);
+            }
          }
 
          return c.json({ error: err.message }, 500);

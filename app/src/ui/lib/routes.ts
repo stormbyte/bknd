@@ -49,8 +49,7 @@ export function withQuery(url: string, query: object) {
 
 export function withAbsolute(url: string) {
    const { app } = useBknd();
-   const basepath = app.getAdminConfig().basepath;
-   return `~/${basepath}/${url}`.replace(/\/+/g, "/");
+   return app.getAbsolutePath(url);
 }
 
 export function useRouteNavigate() {
@@ -65,7 +64,7 @@ export function useNavigate() {
    const [location, navigate] = useLocation();
    const router = useRouter();
    const { app } = useBknd();
-   const basepath = app.getAdminConfig().basepath;
+   const basepath = app.options.basepath;
    return [
       (
          url: string,
@@ -121,7 +120,6 @@ export function useGoBack(
    },
 ) {
    const { app } = useBknd();
-   const basepath = app.getAdminConfig().basepath;
    const [navigate] = useNavigate();
    const referrer = document.referrer;
    const history_length = window.history.length;
@@ -142,9 +140,7 @@ export function useGoBack(
       } else {
          //console.log("used fallback");
          if (typeof fallback === "string") {
-            const _fallback = options?.absolute
-               ? `~/${basepath}${fallback}`.replace(/\/+/g, "/")
-               : fallback;
+            const _fallback = options?.absolute ? app.getAbsolutePath(fallback) : fallback;
             //console.log("fallback", _fallback);
 
             if (options?.native) {

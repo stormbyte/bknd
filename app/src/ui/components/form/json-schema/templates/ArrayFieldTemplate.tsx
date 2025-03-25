@@ -74,6 +74,7 @@ export default function ArrayFieldTemplate<
                {items.map(
                   ({ key, children, ...itemProps }: ArrayFieldTemplateItemType<T, S, F>) => {
                      const newChildren = cloneElement(children, {
+                        // @ts-ignore
                         ...children.props,
                         name: undefined,
                         title: undefined,

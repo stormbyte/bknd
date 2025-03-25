@@ -118,14 +118,20 @@ export class StorageS3Adapter extends AwsClient implements StorageAdapter {
       const res = await this.fetch(url, {
          method: "PUT",
          body,
+         headers: isFile(body)
+            ? {
+                 // required for node environments
+                 "Content-Length": String(body.size),
+              }
+            : {},
       });
 
-      if (res.ok) {
-         // "df20fcb574dba1446cf5ec997940492b"
-         return String(res.headers.get("etag"));
+      if (!res.ok) {
+         throw new Error(`Failed to upload object: ${res.status} ${res.statusText}`);
       }
 
-      return undefined;
+      // "df20fcb574dba1446cf5ec997940492b"
+      return String(res.headers.get("etag"));
    }
 
    private async headObject(

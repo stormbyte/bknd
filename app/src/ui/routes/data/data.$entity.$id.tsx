@@ -1,5 +1,5 @@
 import { ucFirst } from "core/utils";
-import type { Entity, EntityData, EntityRelation, RepoQuery } from "data";
+import type { Entity, EntityData, EntityRelation } from "data";
 import { Fragment, useState } from "react";
 import { TbDots } from "react-icons/tb";
 import { useApiQuery, useEntityQuery } from "ui/client";

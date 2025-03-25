@@ -1,5 +1,4 @@
 import { getHotkeyHandler, useHotkeys } from "@mantine/hooks";
-import type { FieldApi } from "@tanstack/react-form";
 import { ucFirst } from "core/utils";
 import type { EntityData, RelationField } from "data";
 import { useEffect, useRef, useState } from "react";
@@ -12,10 +11,11 @@ import { Popover } from "ui/components/overlay/Popover";
 import { Link } from "ui/components/wouter/Link";
 import { routes } from "ui/lib/routes";
 import { useLocation } from "wouter";
-import { EntityTable, type EntityTableProps } from "../EntityTable";
+import type { EntityTableProps } from "../EntityTable";
 import type { ResponseObject } from "modules/ModuleApi";
 import ErrorBoundary from "ui/components/display/ErrorBoundary";
 import { EntityTable2 } from "ui/modules/data/components/EntityTable2";
+import type { TFieldApi } from "ui/modules/data/components/EntityForm";
 
 // @todo: allow clear if not required
 export function EntityRelationalFormField({
@@ -25,7 +25,7 @@ export function EntityRelationalFormField({
    disabled,
    tabIndex,
 }: {
-   fieldApi: FieldApi<any, any>;
+   fieldApi: TFieldApi;
    field: RelationField;
    data?: EntityData;
    disabled?: boolean;

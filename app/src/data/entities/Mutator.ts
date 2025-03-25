@@ -167,7 +167,9 @@ export class Mutator<
 
       const res = await this.single(query);
 
-      await this.emgr.emit(new Mutator.Events.MutatorInsertAfter({ entity, data: res.data }));
+      await this.emgr.emit(
+         new Mutator.Events.MutatorInsertAfter({ entity, data: res.data, changed: validatedData }),
+      );
 
       return res as any;
    }
@@ -198,7 +200,12 @@ export class Mutator<
       const res = await this.single(query);
 
       await this.emgr.emit(
-         new Mutator.Events.MutatorUpdateAfter({ entity, entityId: id, data: res.data }),
+         new Mutator.Events.MutatorUpdateAfter({
+            entity,
+            entityId: id,
+            data: res.data,
+            changed: validatedData,
+         }),
       );
 
       return res as any;

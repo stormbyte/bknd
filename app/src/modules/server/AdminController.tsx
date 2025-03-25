@@ -5,9 +5,9 @@ import { config, isDebug } from "core";
 import { addFlashMessage } from "core/server/flash";
 import { html } from "hono/html";
 import { Fragment } from "hono/jsx";
+import { css, Style } from "hono/css";
 import { Controller } from "modules/Controller";
 import * as SystemPermissions from "modules/permissions";
-import type { AppTheme } from "modules/server/AppServer";
 
 const htmlBkndContextReplace = "<!-- BKND_CONTEXT -->";
 
@@ -73,7 +73,6 @@ export class AdminController extends Controller {
          const obj = {
             user: c.get("auth")?.user,
             logout_route: this.withBasePath(authRoutes.logout),
-            color_scheme: configs.server.admin.color_scheme,
          };
          const html = await this.getHtml(obj);
          if (!html) {
@@ -183,14 +182,13 @@ export class AdminController extends Controller {
          assets.css = manifest["src/ui/main.tsx"].css[0] as any;
       }
 
-      const theme = configs.server.admin.color_scheme ?? "light";
       const favicon = isProd ? this.options.assets_path + "favicon.ico" : "/favicon.ico";
 
       return (
          <Fragment>
             {/* dnd complains otherwise */}
             {html`<!DOCTYPE html>`}
-            <html lang="en" class={theme}>
+            <html lang="en">
                <head>
                   <meta charset="UTF-8" />
                   <meta
@@ -229,10 +227,9 @@ export class AdminController extends Controller {
                </head>
                <body>
                   <div id="root">
-                     <div id="loading" style={style(theme)}>
-                        <span style={{ opacity: 0.3, fontSize: 14, fontFamily: "monospace" }}>
-                           Initializing...
-                        </span>
+                     <Style />
+                     <div id="loading" className={wrapperStyle}>
+                        <span className={loaderStyle}>Initializing...</span>
                      </div>
                   </div>
                   <script
@@ -248,31 +245,27 @@ export class AdminController extends Controller {
    }
 }
 
-const style = (theme: AppTheme) => {
-   const base = {
-      margin: 0,
-      padding: 0,
-      height: "100vh",
-      width: "100vw",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      "-webkit-font-smoothing": "antialiased",
-      "-moz-osx-font-smoothing": "grayscale",
-   };
-   const styles = {
-      light: {
-         color: "rgb(9,9,11)",
-         backgroundColor: "rgb(250,250,250)",
-      },
-      dark: {
-         color: "rgb(250,250,250)",
-         backgroundColor: "rgb(30,31,34)",
-      },
-   };
+const wrapperStyle = css`
+   margin: 0;
+   padding: 0;
+   height: 100vh;
+   width: 100vw;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   -webkit-font-smoothing: antialiased;
+   -moz-osx-font-smoothing: grayscale;
+   color: rgb(9,9,11);
+   background-color: rgb(250,250,250);
+   
+   @media (prefers-color-scheme: dark) {
+      color: rgb(250,250,250);
+      background-color: rgb(30,31,34);
+   }
+`;
 
-   return {
-      ...base,
-      ...styles[theme === "light" ? "light" : "dark"],
-   };
-};
+const loaderStyle = css`
+   opacity: 0.3;
+   font-size: 14px;
+   font-family: monospace;
+`;

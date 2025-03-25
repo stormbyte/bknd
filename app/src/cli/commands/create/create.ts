@@ -9,6 +9,7 @@ import { env } from "core";
 import color from "picocolors";
 import { overridePackageJson, updateBkndPackages } from "./npm";
 import { type Template, templates } from "./templates";
+import { createScoped, flush } from "cli/utils/telemetry";
 
 const config = {
    types: {
@@ -23,7 +24,7 @@ const config = {
    },
    framework: {
       nextjs: "Next.js",
-      remix: "Remix",
+      "react-router": "React Router",
       astro: "Astro",
    },
 } as const;
@@ -48,8 +49,16 @@ function errorOutro() {
    process.exit(1);
 }
 
+async function onExit() {
+   await flush();
+}
+
 async function action(options: { template?: string; dir?: string; integration?: string }) {
    console.log("");
+   const $t = createScoped("create");
+   $t.capture("start", {
+      options,
+   });
 
    const downloadOpts = {
       dir: options.dir || "./",
@@ -68,6 +77,7 @@ async function action(options: { template?: string; dir?: string; integration?: 
       })(),
    );
 
+   $t.properties.at = "dir";
    if (!options.dir) {
       const dir = await $p.text({
          message: "Where to create your project?",
@@ -75,24 +85,29 @@ async function action(options: { template?: string; dir?: string; integration?: 
          initialValue: downloadOpts.dir,
       });
       if ($p.isCancel(dir)) {
+         await onExit();
          process.exit(1);
       }
 
       downloadOpts.dir = dir || "./";
    }
 
+   $t.properties.at = "dir";
    if (fs.existsSync(downloadOpts.dir)) {
       const clean = await $p.confirm({
          message: `Directory ${color.cyan(downloadOpts.dir)} exists. Clean it?`,
          initialValue: false,
       });
       if ($p.isCancel(clean)) {
+         await onExit();
          process.exit(1);
       }
 
       downloadOpts.clean = clean;
+      $t.properties.clean = clean;
    }
 
+   // don't track name for privacy
    let name = downloadOpts.dir.includes("/")
       ? downloadOpts.dir.split("/").pop()
       : downloadOpts.dir.replace(/[./]/g, "");
@@ -100,13 +115,17 @@ async function action(options: { template?: string; dir?: string; integration?: 
    if (!name || name.length === 0) name = "bknd";
 
    let template: Template | undefined;
+
    if (options.template) {
+      $t.properties.at = "template";
       template = templates.find((t) => t.key === options.template) as Template;
       if (!template) {
+         await onExit();
          $p.log.error(`Template ${color.cyan(options.template)} not found`);
          process.exit(1);
       }
    } else {
+      $t.properties.at = "integration";
       let integration: string | undefined = options.integration;
       if (!integration) {
          await $p.stream.info(
@@ -128,8 +147,10 @@ async function action(options: { template?: string; dir?: string; integration?: 
          });
 
          if ($p.isCancel(type)) {
+            await onExit();
             process.exit(1);
          }
+         $t.properties.type = type;
 
          const _integration = await $p.select({
             message: `Which ${color.cyan(config.types[type])} do you want to continue with?`,
@@ -139,11 +160,14 @@ async function action(options: { template?: string; dir?: string; integration?: 
             })) as any,
          });
          if ($p.isCancel(_integration)) {
+            await onExit();
             process.exit(1);
          }
          integration = String(_integration);
+         $t.properties.integration = integration;
       }
       if (!integration) {
+         await onExit();
          $p.log.error("No integration selected");
          process.exit(1);
       }
@@ -152,15 +176,18 @@ async function action(options: { template?: string; dir?: string; integration?: 
 
       const choices = templates.filter((t) => t.integration === integration);
       if (choices.length === 0) {
+         await onExit();
          $p.log.error(`No templates found for "${color.cyan(String(integration))}"`);
          process.exit(1);
       } else if (choices.length > 1) {
+         $t.properties.at = "template";
          const selected_template = await $p.select({
             message: "Pick a template",
             options: choices.map((t) => ({ value: t.key, label: t.title, hint: t.description })),
          });
 
          if ($p.isCancel(selected_template)) {
+            await onExit();
             process.exit(1);
          }
 
@@ -170,10 +197,12 @@ async function action(options: { template?: string; dir?: string; integration?: 
       }
    }
    if (!template) {
+      await onExit();
       $p.log.error("No template selected");
       process.exit(1);
    }
 
+   $t.properties.template = template.key;
    const ctx = { template, dir: downloadOpts.dir, name };
 
    {
@@ -182,6 +211,8 @@ async function action(options: { template?: string; dir?: string; integration?: 
             $p.log.warn(color.dim("[DEV] Using local ref: ") + color.yellow(given));
          },
       });
+      $t.properties.ref = ref;
+      $t.capture("used");
 
       const prefix =
          template.ref === true
@@ -191,7 +222,6 @@ async function action(options: { template?: string; dir?: string; integration?: 
               : "";
       const url = `${template.path}${prefix}`;
 
-      //console.log("url", url);
       const s = $p.spinner();
       await s.start("Downloading template...");
       try {
@@ -234,8 +264,10 @@ async function action(options: { template?: string; dir?: string; integration?: 
       });
 
       if ($p.isCancel(install)) {
+         await onExit();
          process.exit(1);
       } else if (install) {
+         $t.properties.install = true;
          const install_cmd = template.scripts?.install || "npm install";
 
          const s = $p.spinner();
@@ -259,6 +291,7 @@ async function action(options: { template?: string; dir?: string; integration?: 
             await template.postinstall(ctx);
          }
       } else {
+         $t.properties.install = false;
          await $p.stream.warn(
             (async function* () {
                yield* typewriter(
@@ -291,5 +324,6 @@ If you need help, check ${color.cyan("https://docs.bknd.io")} or join our Discor
       })(),
    );
 
+   $t.capture("complete");
    $p.outro(color.green("Setup complete."));
 }

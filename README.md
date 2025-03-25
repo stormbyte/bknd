@@ -42,7 +42,7 @@ Creating digital products always requires developing both the backend (the logic
 * 🏃‍♂️ Multiple run modes
   * standalone using the CLI
   * using a JavaScript runtime (Node, Bun, workerd)
-  * using a React framework (Astro, Remix, Next.js)
+  * using a React framework (Next.js, React Router, Astro)
 * 📦 Official API and React SDK with type-safety
 * ⚛️ React elements for auto-configured authentication and media components
 

@@ -7,10 +7,10 @@ import type { ComponentPropsWithoutRef } from "react";
 import { Button } from "ui/components/buttons/Button";
 import { Group, Input, Label } from "ui/components/form/Formy/components";
 import { SocialLink } from "./SocialLink";
-
 import type { ValueError } from "@sinclair/typebox/value";
 import { type TSchema, Value } from "core/utils";
 import type { Validator } from "json-schema-form-react";
+import { useTheme } from "ui/client/use-theme";
 
 class TypeboxValidator implements Validator<ValueError> {
    async validate(schema: TSchema, data: any) {
@@ -46,6 +46,7 @@ export function AuthForm({
    buttonLabel = action === "login" ? "Sign in" : "Sign up",
    ...props
 }: LoginFormProps) {
+   const { theme } = useTheme();
    const basepath = auth?.basepath ?? "/api/auth";
    const password = {
       action: `${basepath}/password/${action}`,

@@ -14,6 +14,7 @@ describe("env", () => {
       expect(is_toggled(1)).toBe(true);
       expect(is_toggled(0)).toBe(false);
       expect(is_toggled("anything else")).toBe(false);
+      expect(is_toggled(undefined, true)).toBe(true);
    });
 
    test("env()", () => {

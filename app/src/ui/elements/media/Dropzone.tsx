@@ -2,6 +2,7 @@ import type { DB } from "core";
 import {
    type ComponentPropsWithRef,
    type ComponentPropsWithoutRef,
+   type ReactNode,
    type RefObject,
    memo,
    useEffect,
@@ -27,7 +28,7 @@ export type FileState = {
 export type FileStateWithData = FileState & { data: DB["media"] };
 
 export type DropzoneRenderProps = {
-   wrapperRef: RefObject<HTMLDivElement>;
+   wrapperRef: RefObject<HTMLDivElement | null>;
    inputProps: ComponentPropsWithRef<"input">;
    state: {
       files: FileState[];
@@ -59,7 +60,7 @@ export type DropzoneProps = {
       show?: boolean;
       text?: string;
    };
-   children?: (props: DropzoneRenderProps) => JSX.Element;
+   children?: (props: DropzoneRenderProps) => ReactNode;
 };
 
 function handleUploadError(e: unknown) {
@@ -459,7 +460,7 @@ const UploadPlaceholder = ({ onClick, text = "Upload files" }) => {
 
 export type PreviewComponentProps = {
    file: FileState;
-   fallback?: (props: { file: FileState }) => JSX.Element;
+   fallback?: (props: { file: FileState }) => ReactNode;
    className?: string;
    onClick?: () => void;
    onTouchStart?: () => void;
@@ -486,7 +487,7 @@ type PreviewProps = {
    handleUpload: (file: FileState) => Promise<void>;
    handleDelete: (file: FileState) => Promise<void>;
 };
-const Preview: React.FC<PreviewProps> = ({ file, handleUpload, handleDelete }) => {
+const Preview = ({ file, handleUpload, handleDelete }: PreviewProps) => {
    const dropdownItems = [
       ["initial", "uploaded"].includes(file.state) && {
          label: "Delete",

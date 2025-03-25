@@ -1,7 +1,7 @@
 import { getApi } from "@/bknd";
 import { revalidatePath } from "next/cache";
 import { Fragment } from "react";
-import { List } from "@/app/(main)/layout";
+import { List } from "@/components/List";
 
 export default async function Home() {
    // without "{ verify: true }", this page can be static

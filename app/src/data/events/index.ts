@@ -18,7 +18,11 @@ export class MutatorInsertBefore extends Event<{ entity: Entity; data: EntityDat
       });
    }
 }
-export class MutatorInsertAfter extends Event<{ entity: Entity; data: EntityData }> {
+export class MutatorInsertAfter extends Event<{
+   entity: Entity;
+   data: EntityData;
+   changed: EntityData;
+}> {
    static override slug = "mutator-insert-after";
 }
 export class MutatorUpdateBefore extends Event<
@@ -48,6 +52,7 @@ export class MutatorUpdateAfter extends Event<{
    entity: Entity;
    entityId: PrimaryFieldType;
    data: EntityData;
+   changed: EntityData;
 }> {
    static override slug = "mutator-update-after";
 }

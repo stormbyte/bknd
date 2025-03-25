@@ -1,11 +1,11 @@
 import { MarkerType, type Node, Position, ReactFlowProvider } from "@xyflow/react";
 import type { AppDataConfig, TAppDataEntity } from "data/data-schema";
 import { useBknd } from "ui/client/BkndProvider";
-import { useBkndSystemTheme } from "ui/client/schema/system/use-bknd-system";
 import { Canvas } from "ui/components/canvas/Canvas";
 import { layoutWithDagre } from "ui/components/canvas/layouts";
 import { Panels } from "ui/components/canvas/panels";
 import { EntityTableNode } from "./EntityTableNode";
+import { useTheme } from "ui/client/use-theme";
 
 function entitiesToNodes(entities: AppDataConfig["entities"]): Node<TAppDataEntity>[] {
    return Object.entries(entities ?? {}).map(([name, entity]) => {
@@ -69,7 +69,7 @@ export function DataSchemaCanvas() {
    const {
       config: { data },
    } = useBknd();
-   const { theme } = useBkndSystemTheme();
+   const { theme } = useTheme();
    const nodes = entitiesToNodes(data.entities);
    const edges = relationsToEdges(data.relations).map((e) => ({
       ...e,
@@ -84,8 +84,6 @@ export function DataSchemaCanvas() {
          color: theme === "light" ? "#aaa" : "#777",
       },
    }));
-
-   console.log("-", data, { nodes, edges });
 
    const nodeLayout = layoutWithDagre({
       nodes: nodes.map((n) => ({

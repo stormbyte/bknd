@@ -3,6 +3,8 @@ import { serveStatic } from "@hono/node-server/serve-static";
 import { showRoutes } from "hono/dev";
 import { App, registries } from "./src";
 import { StorageLocalAdapter } from "./src/media/storage/adapters/StorageLocalAdapter";
+import { EntityManager, LibsqlConnection } from "data";
+import { __bknd } from "modules/ModuleManager";
 
 registries.media.register("local", StorageLocalAdapter);
 
@@ -21,10 +23,30 @@ const credentials = example
           url: ":memory:",
        };
 
-let initialConfig: any = undefined;
 if (example) {
    const { version, ...config } = JSON.parse(await readFile(`.configs/${example}.json`, "utf-8"));
-   initialConfig = config;
+
+   // create db with config
+   const conn = new LibsqlConnection(credentials);
+   const em = new EntityManager([__bknd], conn);
+   try {
+      await em.schema().sync({ force: true });
+   } catch (e) {}
+   const { data: existing } = await em.repo(__bknd).findOne({ type: "config" });
+
+   if (!existing || existing.version !== version) {
+      if (existing) await em.mutator(__bknd).deleteOne(existing.id);
+      await em.mutator(__bknd).insertOne({
+         version,
+         json: config,
+         created_at: new Date(),
+         type: "config",
+      });
+   } else {
+      await em.mutator(__bknd).updateOne(existing.id, {
+         json: config,
+      });
+   }
 }
 
 let app: App;
@@ -35,7 +57,6 @@ export default {
       if (!app || recreate) {
          app = App.create({
             connection: credentials,
-            initialConfig,
          });
          app.emgr.onEvent(
             App.Events.AppBuiltEvent,
