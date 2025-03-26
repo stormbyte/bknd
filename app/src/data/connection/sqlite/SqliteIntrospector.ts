@@ -28,6 +28,10 @@ export class SqliteIntrospector extends BaseIntrospector {
    }
 
    async getSchemaSpec() {
+      const ext = this.getExcludedTableNames()
+         .map((it) => `'${it}'`)
+         .join(", ");
+
       const query = sql`
          SELECT m.name, m.type, m.sql,
             (SELECT json_group_array(
@@ -56,7 +60,7 @@ export class SqliteIntrospector extends BaseIntrospector {
          FROM sqlite_master m
          WHERE m.type IN ('table', 'view')
            and m.name not like 'sqlite_%'
-           and m.name not in (${this.getExcludedTableNames().join(", ")})
+           and m.name not in (${sql.raw(ext)})
       `;
 
       const tables = await this.executeWithPlugins<SqliteSchemaSpec[]>(query);
