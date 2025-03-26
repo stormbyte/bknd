@@ -12,7 +12,7 @@ export type D1ConnectionConfig = {
 class CustomD1Dialect extends D1Dialect {
    override createIntrospector(db: Kysely<any>): DatabaseIntrospector {
       return new SqliteIntrospector(db, {
-         excludeTables: ["_cf_KV"],
+         excludeTables: ["_cf_KV", "_cf_METADATA"],
       });
    }
 }
@@ -30,6 +30,10 @@ export class D1Connection extends SqliteConnection {
          plugins,
       });
       super(kysely, {}, plugins);
+   }
+
+   get client(): D1Database {
+      return this.config.binding;
    }
 
    protected override async batch<Queries extends QB[]>(
