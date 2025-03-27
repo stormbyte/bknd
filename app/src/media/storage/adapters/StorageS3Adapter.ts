@@ -7,7 +7,7 @@ import type {
    PutObjectRequest,
 } from "@aws-sdk/client-s3";
 import { AwsClient, isDebug } from "core";
-import { type Static, Type, isFile, parse, pickHeaders, pickHeaders2 } from "core/utils";
+import { type Static, Type, isFile, parse, pickHeaders2 } from "core/utils";
 import { transform } from "lodash-es";
 import type { FileBody, FileListObject, StorageAdapter } from "../Storage";
 
@@ -178,7 +178,6 @@ export class StorageS3Adapter extends AwsClient implements StorageAdapter {
       const res = await this.fetch(url, {
          method: "GET",
          headers: pickHeaders2(headers, [
-            "range",
             "if-none-match",
             "accept-encoding",
             "accept",
