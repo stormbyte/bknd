@@ -9,11 +9,12 @@ import {
    useRef,
    useState,
 } from "react";
-import { TbDots } from "react-icons/tb";
+import { TbDots, TbExternalLink, TbTrash, TbUpload } from "react-icons/tb";
 import { twMerge } from "tailwind-merge";
 import { IconButton } from "ui/components/buttons/IconButton";
-import { Dropdown } from "ui/components/overlay/Dropdown";
+import { Dropdown, type DropdownItem } from "ui/components/overlay/Dropdown";
 import { type FileWithPath, useDropzone } from "./use-dropzone";
+import { formatNumber } from "core/utils";
 
 export type FileState = {
    body: FileWithPath | string;
@@ -41,6 +42,8 @@ export type DropzoneRenderProps = {
       deleteFile: (file: FileState) => Promise<void>;
       openFileInput: () => void;
    };
+   onClick?: (file: FileState) => void;
+   footer?: ReactNode;
    dropzoneProps: Pick<DropzoneProps, "maxItems" | "placeholder" | "autoUpload" | "flow">;
 };
 
@@ -56,10 +59,12 @@ export type DropzoneProps = {
    onRejected?: (files: FileWithPath[]) => void;
    onDeleted?: (file: FileState) => void;
    onUploaded?: (files: FileStateWithData[]) => void;
+   onClick?: (file: FileState) => void;
    placeholder?: {
       show?: boolean;
       text?: string;
    };
+   footer?: ReactNode;
    children?: (props: DropzoneRenderProps) => ReactNode;
 };
 
@@ -86,6 +91,8 @@ export function Dropzone({
    onDeleted,
    onUploaded,
    children,
+   onClick,
+   footer,
 }: DropzoneProps) {
    const [files, setFiles] = useState<FileState[]>(initialItems);
    const [uploading, setUploading] = useState<boolean>(false);
@@ -393,6 +400,8 @@ export function Dropzone({
          autoUpload,
          flow,
       },
+      onClick,
+      footer,
    };
 
    return children ? children(renderProps) : <DropzoneInner {...renderProps} />;
@@ -404,6 +413,8 @@ const DropzoneInner = ({
    state: { files, isOver, isOverAccepted, showPlaceholder },
    actions: { uploadFile, deleteFile, openFileInput },
    dropzoneProps: { placeholder, flow },
+   onClick,
+   footer,
 }: DropzoneRenderProps) => {
    const Placeholder = showPlaceholder && (
       <UploadPlaceholder onClick={openFileInput} text={placeholder?.text} />
@@ -438,9 +449,11 @@ const DropzoneInner = ({
                      file={file}
                      handleUpload={uploadHandler}
                      handleDelete={deleteFile}
+                     onClick={onClick}
                   />
                ))}
                {flow === "end" && Placeholder}
+               {footer}
             </div>
          </div>
       </div>
@@ -486,26 +499,43 @@ type PreviewProps = {
    file: FileState;
    handleUpload: (file: FileState) => Promise<void>;
    handleDelete: (file: FileState) => Promise<void>;
+   onClick?: (file: FileState) => void;
 };
-const Preview = ({ file, handleUpload, handleDelete }: PreviewProps) => {
+const Preview = ({ file, handleUpload, handleDelete, onClick }: PreviewProps) => {
    const dropdownItems = [
+      file.state === "uploaded" &&
+         typeof file.body === "string" && {
+            label: "Open",
+            icon: TbExternalLink,
+            onClick: () => {
+               window.open(file.body as string, "_blank");
+            },
+         },
       ["initial", "uploaded"].includes(file.state) && {
          label: "Delete",
+         destructive: true,
+         icon: TbTrash,
          onClick: () => handleDelete(file),
       },
       ["initial", "pending"].includes(file.state) && {
          label: "Upload",
+         icon: TbUpload,
          onClick: () => handleUpload(file),
       },
-   ];
+   ] satisfies (DropdownItem | boolean)[];
 
    return (
       <div
          className={twMerge(
-            "w-[49%] md:w-60 flex flex-col border border-muted relative",
+            "w-[49%] md:w-60 flex flex-col border border-muted relative hover:bg-primary/5 cursor-pointer transition-colors",
             file.state === "failed" && "border-red-500 bg-red-200/20",
             file.state === "deleting" && "opacity-70",
          )}
+         onClick={() => {
+            if (onClick) {
+               onClick(file);
+            }
+         }}
       >
          <div className="absolute top-2 right-2">
             <Dropdown items={dropdownItems} position="bottom-end">
@@ -531,7 +561,7 @@ const Preview = ({ file, handleUpload, handleDelete }: PreviewProps) => {
             <p className="truncate select-text">{file.name}</p>
             <div className="flex flex-row justify-between text-sm font-mono opacity-50 text-nowrap gap-2">
                <span className="truncate select-text">{file.type}</span>
-               <span>{(file.size / 1024).toFixed(1)} KB</span>
+               <span>{formatNumber.fileSize(file.size)}</span>
             </div>
          </div>
       </div>
