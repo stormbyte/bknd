@@ -99,33 +99,31 @@ export function DropzoneContainer({
 
    const key = id + JSON.stringify(_initialItems);
    return (
-      <div className="flex flex-col gap-4">
-         <Dropzone
-            key={id + key}
-            getUploadInfo={getUploadInfo}
-            handleDelete={handleDelete}
-            onUploaded={refresh}
-            onDeleted={refresh}
-            autoUpload
-            initialItems={_initialItems}
-            footer={
-               <Footer
-                  items={_initialItems.length}
-                  length={$q._data?.[0]?.body.meta.count ?? 0}
-                  onFirstVisible={() => $q.setSize($q.size + 1)}
-               />
-            }
-            {...props}
-         >
-            {children
-               ? (props) => (
-                    <DropzoneContainerContext.Provider value={props}>
-                       {children}
-                    </DropzoneContainerContext.Provider>
-                 )
-               : undefined}
-         </Dropzone>
-      </div>
+      <Dropzone
+         key={id + key}
+         getUploadInfo={getUploadInfo}
+         handleDelete={handleDelete}
+         onUploaded={refresh}
+         onDeleted={refresh}
+         autoUpload
+         initialItems={_initialItems}
+         footer={
+            <Footer
+               items={_initialItems.length}
+               length={$q._data?.[0]?.body.meta.count ?? 0}
+               onFirstVisible={() => $q.setSize($q.size + 1)}
+            />
+         }
+         {...props}
+      >
+         {children
+            ? (props) => (
+                 <DropzoneContainerContext.Provider value={props}>
+                    {children}
+                 </DropzoneContainerContext.Provider>
+              )
+            : undefined}
+      </Dropzone>
    );
 }
 

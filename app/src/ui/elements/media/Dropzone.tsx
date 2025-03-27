@@ -463,7 +463,7 @@ const DropzoneInner = ({
 const UploadPlaceholder = ({ onClick, text = "Upload files" }) => {
    return (
       <div
-         className="w-[49%] aspect-[1/0.9] md:w-60 flex flex-col border-2 border-dashed border-muted relative justify-center items-center text-primary/30 hover:border-primary/30 hover:text-primary/50 hover:cursor-pointer hover:bg-muted/20 transition-colors duration-200"
+         className="w-[49%] aspect-square md:w-60 flex flex-col border-2 border-dashed border-muted relative justify-center items-center text-primary/30 hover:border-primary/30 hover:text-primary/50 hover:cursor-pointer hover:bg-muted/20 transition-colors duration-200"
          onClick={onClick}
       >
          <span className="">{text}</span>
@@ -527,7 +527,7 @@ const Preview = ({ file, handleUpload, handleDelete, onClick }: PreviewProps) =>
    return (
       <div
          className={twMerge(
-            "w-[49%] md:w-60 flex flex-col border border-muted relative hover:bg-primary/5 cursor-pointer transition-colors",
+            "w-[49%] md:w-60 aspect-square flex flex-col border border-muted relative hover:bg-primary/5 cursor-pointer transition-colors",
             file.state === "failed" && "border-red-500 bg-red-200/20",
             file.state === "deleting" && "opacity-70",
          )}
@@ -550,7 +550,7 @@ const Preview = ({ file, handleUpload, handleDelete, onClick }: PreviewProps) =>
                />
             </div>
          )}
-         <div className="flex bg-primary/5 aspect-[1/0.8] overflow-hidden items-center justify-center">
+         <div className="flex bg-primary/5 aspect-[1/0.78] overflow-hidden items-center justify-center">
             <PreviewWrapperMemoized
                file={file}
                fallback={FallbackPreview}
