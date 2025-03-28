@@ -98,7 +98,13 @@ If you're using `npx bknd run`, make sure to create a file in a file format that
 }
 ```
 
-If you still want to use a `.ts` extension, you can start the CLI e.g. using `tsx`:
+If you still want to use a `.ts` extension, you can start the CLI e.g. using `node` (>=v22.6.0):
+
+```sh
+node --experimental-strip-types node_modules/.bin/bknd run
+```
+
+Or with `tsx`:
 
 ```sh
 npx tsx node_modules/.bin/bknd run
