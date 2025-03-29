@@ -124,52 +124,52 @@
     ".": {
       "types": "./dist/types/index.d.ts",
       "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "require": "./dist/index.js"
     },
     "./ui": {
       "types": "./dist/types/ui/index.d.ts",
       "import": "./dist/ui/index.js",
-      "require": "./dist/ui/index.cjs"
+      "require": "./dist/ui/index.js"
     },
     "./elements": {
       "types": "./dist/types/ui/elements/index.d.ts",
       "import": "./dist/ui/elements/index.js",
-      "require": "./dist/ui/elements/index.cjs"
+      "require": "./dist/ui/elements/index.js"
     },
     "./client": {
       "types": "./dist/types/ui/client/index.d.ts",
       "import": "./dist/ui/client/index.js",
-      "require": "./dist/ui/client/index.cjs"
+      "require": "./dist/ui/client/index.js"
     },
     "./data": {
       "types": "./dist/types/data/index.d.ts",
       "import": "./dist/data/index.js",
-      "require": "./dist/data/index.cjs"
+      "require": "./dist/data/index.js"
     },
     "./core": {
       "types": "./dist/types/core/index.d.ts",
       "import": "./dist/core/index.js",
-      "require": "./dist/core/index.cjs"
+      "require": "./dist/core/index.js"
     },
     "./utils": {
       "types": "./dist/types/core/utils/index.d.ts",
       "import": "./dist/core/utils/index.js",
-      "require": "./dist/core/utils/index.cjs"
+      "require": "./dist/core/utils/index.js"
     },
     "./cli": {
       "types": "./dist/types/cli/index.d.ts",
       "import": "./dist/cli/index.js",
-      "require": "./dist/cli/index.cjs"
+      "require": "./dist/cli/index.js"
     },
     "./media": {
       "types": "./dist/types/media/index.d.ts",
       "import": "./dist/media/index.js",
-      "require": "./dist/media/index.cjs"
+      "require": "./dist/media/index.js"
     },
     "./adapter/cloudflare": {
       "types": "./dist/types/adapter/cloudflare/index.d.ts",
       "import": "./dist/adapter/cloudflare/index.js",
-      "require": "./dist/adapter/cloudflare/index.cjs"
+      "require": "./dist/adapter/cloudflare/index.js"
     },
     "./adapter": {
       "types": "./dist/types/adapter/index.d.ts",
@@ -178,37 +178,37 @@
     "./adapter/vite": {
       "types": "./dist/types/adapter/vite/index.d.ts",
       "import": "./dist/adapter/vite/index.js",
-      "require": "./dist/adapter/vite/index.cjs"
+      "require": "./dist/adapter/vite/index.js"
     },
     "./adapter/nextjs": {
       "types": "./dist/types/adapter/nextjs/index.d.ts",
       "import": "./dist/adapter/nextjs/index.js",
-      "require": "./dist/adapter/nextjs/index.cjs"
+      "require": "./dist/adapter/nextjs/index.js"
     },
     "./adapter/react-router": {
       "types": "./dist/types/adapter/react-router/index.d.ts",
       "import": "./dist/adapter/react-router/index.js",
-      "require": "./dist/adapter/react-router/index.cjs"
+      "require": "./dist/adapter/react-router/index.js"
     },
     "./adapter/bun": {
       "types": "./dist/types/adapter/bun/index.d.ts",
       "import": "./dist/adapter/bun/index.js",
-      "require": "./dist/adapter/bun/index.cjs"
+      "require": "./dist/adapter/bun/index.js"
     },
     "./adapter/node": {
       "types": "./dist/types/adapter/node/index.d.ts",
       "import": "./dist/adapter/node/index.js",
-      "require": "./dist/adapter/node/index.cjs"
+      "require": "./dist/adapter/node/index.js"
     },
     "./adapter/astro": {
       "types": "./dist/types/adapter/astro/index.d.ts",
       "import": "./dist/adapter/astro/index.js",
-      "require": "./dist/adapter/astro/index.cjs"
+      "require": "./dist/adapter/astro/index.js"
     },
     "./adapter/aws": {
       "types": "./dist/types/adapter/aws/index.d.ts",
       "import": "./dist/adapter/aws/index.js",
-      "require": "./dist/adapter/aws/index.cjs"
+      "require": "./dist/adapter/aws/index.js"
     },
     "./dist/main.css": "./dist/ui/main.css",
     "./dist/styles.css": "./dist/ui/styles.css",
