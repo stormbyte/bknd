@@ -1,8 +1,12 @@
 import { App } from "bknd";
 import { createRuntimeApp } from "bknd/adapter";
-import { type CloudflareBkndConfig, constants, type Context, makeCfConfig } from "../index";
+import type { CloudflareBkndConfig, Context, CloudflareEnv } from "../index";
+import { makeConfig, registerAsyncsExecutionContext, constants } from "../config";
 
-export async function getCached(config: CloudflareBkndConfig, { env, ctx, ...args }: Context) {
+export async function getCached<Env extends CloudflareEnv = CloudflareEnv>(
+   config: CloudflareBkndConfig<Env>,
+   { env, ctx, ...args }: Context<Env>,
+) {
    const { kv } = config.bindings?.(env)!;
    if (!kv) throw new Error("kv namespace is not defined in cloudflare.bindings");
    const key = config.key ?? "app";
@@ -16,9 +20,10 @@ export async function getCached(config: CloudflareBkndConfig, { env, ctx, ...arg
 
    const app = await createRuntimeApp(
       {
-         ...makeCfConfig(config, { env, ctx, ...args }),
+         ...makeConfig(config, env),
          initialConfig,
          onBuilt: async (app) => {
+            registerAsyncsExecutionContext(app, ctx);
             app.module.server.client.get(constants.cache_endpoint, async (c) => {
                await kv.delete(key);
                return c.json({ message: "Cache cleared" });
@@ -26,16 +31,6 @@ export async function getCached(config: CloudflareBkndConfig, { env, ctx, ...arg
             await config.onBuilt?.(app);
          },
          beforeBuild: async (app) => {
-            app.emgr.onEvent(
-               App.Events.AppBeforeResponse,
-               async (event) => {
-                  ctx.waitUntil(event.params.app.emgr.executeAsyncs());
-               },
-               {
-                  mode: "sync",
-                  id: constants.exec_async_event_id,
-               },
-            );
             app.emgr.onEvent(
                App.Events.AppConfigUpdatedEvent,
                async ({ params: { app } }) => {
