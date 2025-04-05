@@ -11,7 +11,7 @@ import {
    useRef,
    useState,
 } from "react";
-import { useApi, useApiInfiniteQuery, useInvalidate } from "ui/client";
+import { useApi, useApiInfiniteQuery, useApiQuery, useInvalidate } from "ui/client";
 import { useEvent } from "ui/hooks/use-event";
 import { Dropzone, type DropzoneProps, type DropzoneRenderProps, type FileState } from "./Dropzone";
 import { mediaItemsToFileStates } from "./helper";
@@ -20,6 +20,7 @@ import { useInViewport } from "@mantine/hooks";
 export type DropzoneContainerProps = {
    children?: ReactNode;
    initialItems?: MediaFieldSchema[] | false;
+   infinite?: boolean;
    entity?: {
       name: string;
       id: number;
@@ -39,6 +40,7 @@ export function DropzoneContainer({
    query,
    children,
    randomFilename,
+   infinite = false,
    ...props
 }: DropzoneContainerProps) {
    const id = useId();
@@ -54,7 +56,7 @@ export function DropzoneContainer({
    const entity_name = (media?.entity_name ?? "media") as "media";
    //console.log("dropzone:baseUrl", baseUrl);
 
-   const selectApi = (api: Api, page: number) =>
+   const selectApi = (api: Api, page: number = 0) =>
       entity
          ? api.data.readManyByReference(entity.name, entity.id, entity.field, {
               ...query,
@@ -70,7 +72,11 @@ export function DropzoneContainer({
               ...defaultQuery(page),
            });
 
-   const $q = useApiInfiniteQuery(selectApi, {});
+   const $q = infinite
+      ? useApiInfiniteQuery(selectApi, {})
+      : useApiQuery(selectApi, {
+           enabled: initialItems !== false && !initialItems,
+        });
 
    const getUploadInfo = useEvent((file) => {
       const url = entity
@@ -108,11 +114,17 @@ export function DropzoneContainer({
          autoUpload
          initialItems={_initialItems}
          footer={
-            <Footer
-               items={_initialItems.length}
-               length={$q._data?.[0]?.body.meta.count ?? 0}
-               onFirstVisible={() => $q.setSize($q.size + 1)}
-            />
+            infinite &&
+            "setSize" in $q && (
+               <Footer
+                  items={_initialItems.length}
+                  length={Math.min(
+                     $q._data?.[0]?.body.meta.count ?? 0,
+                     _initialItems.length + pageSize,
+                  )}
+                  onFirstVisible={() => $q.setSize($q.size + 1)}
+               />
+            )
          }
          {...props}
       >
@@ -142,15 +154,15 @@ const Footer = ({ items = 0, length = 0, onFirstVisible }) => {
    const _len = length - items;
    if (_len <= 0) return null;
 
-   return new Array(Math.max(length - items, 0)).fill(0).map((_, i) => (
-      <div
-         key={i}
-         ref={i === 0 ? ref : undefined}
-         className="w-[49%] md:w-60 bg-muted aspect-square"
-      >
-         {i === 0 ? (inViewport ? `load ${visible}` : "first") : "other"}
-      </div>
-   ));
+   return new Array(Math.max(length - items, 0))
+      .fill(0)
+      .map((_, i) => (
+         <div
+            key={i}
+            ref={i === 0 ? ref : undefined}
+            className="w-[49%] md:w-60 bg-muted aspect-square"
+         />
+      ));
 };
 
 export function useDropzone() {

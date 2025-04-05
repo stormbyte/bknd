@@ -66,7 +66,9 @@ export default {
             },
             "sync",
          );
-         await app.build();
+         await app.build({
+            sync: !!(firstStart && example),
+         });
 
          // log routes
          if (firstStart) {
