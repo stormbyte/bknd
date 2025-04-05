@@ -43,7 +43,7 @@ export async function createApp<Env extends AwsLambdaEnv = AwsLambdaEnv>(
          case "url":
             additional.adminOptions = {
                ...(typeof adminOptions === "object" ? adminOptions : {}),
-               assets_path: assets.url,
+               assetsPath: assets.url,
             };
             break;
          default:

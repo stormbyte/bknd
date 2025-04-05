@@ -25,9 +25,7 @@ export async function getDurable<Env extends CloudflareEnv = CloudflareEnv>(
 
    const res = await stub.fire(ctx.request, {
       config: create_config,
-      html: config.html,
       keepAliveSeconds: config.keepAliveSeconds,
-      setAdminHtml: config.setAdminHtml,
    });
 
    const headers = new Headers(res.headers);
@@ -110,6 +108,7 @@ export class DurableBkndApp extends DurableObject {
    }
 
    async onBuilt(app: App) {}
+
    async beforeBuild(app: App) {}
 
    protected keepAlive(seconds: number) {

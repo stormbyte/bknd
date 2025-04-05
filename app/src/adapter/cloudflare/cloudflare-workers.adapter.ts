@@ -1,14 +1,15 @@
 /// <reference types="@cloudflare/workers-types" />
 
-import type { FrameworkBkndConfig } from "bknd/adapter";
+import type { RuntimeBkndConfig } from "bknd/adapter";
 import { Hono } from "hono";
 import { serveStatic } from "hono/cloudflare-workers";
+import { getFresh } from "./modes/fresh";
 import { getCached } from "./modes/cached";
 import { getDurable } from "./modes/durable";
-import { getFresh, getWarm } from "./modes/fresh";
+import type { App } from "bknd";
 
 export type CloudflareEnv = object;
-export type CloudflareBkndConfig<Env = CloudflareEnv> = FrameworkBkndConfig<Env> & {
+export type CloudflareBkndConfig<Env = CloudflareEnv> = RuntimeBkndConfig<Env> & {
    mode?: "warm" | "fresh" | "cache" | "durable";
    bindings?: (args: Env) => {
       kv?: KVNamespace;
@@ -20,8 +21,6 @@ export type CloudflareBkndConfig<Env = CloudflareEnv> = FrameworkBkndConfig<Env>
    keepAliveSeconds?: number;
    forceHttps?: boolean;
    manifest?: string;
-   setAdminHtml?: boolean;
-   html?: string;
 };
 
 export type Context<Env = CloudflareEnv> = {
@@ -43,7 +42,7 @@ export function serve<Env extends CloudflareEnv = CloudflareEnv>(
             throw new Error("manifest is required with static 'kv'");
          }
 
-         if (config.manifest && config.static !== "assets") {
+         if (config.manifest && config.static === "kv") {
             const pathname = url.pathname.slice(1);
             const assetManifest = JSON.parse(config.manifest);
             if (pathname && pathname in assetManifest) {
@@ -70,18 +69,24 @@ export function serve<Env extends CloudflareEnv = CloudflareEnv>(
          const context = { request, env, ctx } as Context<Env>;
          const mode = config.mode ?? "warm";
 
+         let app: App;
          switch (mode) {
             case "fresh":
-               return await getFresh(config, context);
+               app = await getFresh(config, context, { force: true });
+               break;
             case "warm":
-               return await getWarm(config, context);
+               app = await getFresh(config, context);
+               break;
             case "cache":
-               return await getCached(config, context);
+               app = await getCached(config, context);
+               break;
             case "durable":
                return await getDurable(config, context);
             default:
                throw new Error(`Unknown mode ${mode}`);
          }
+
+         return app.fetch(request, env, ctx);
       },
    };
 }

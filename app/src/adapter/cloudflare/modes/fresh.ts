@@ -7,22 +7,15 @@ export async function makeApp<Env extends CloudflareEnv = CloudflareEnv>(
    args: Env = {} as Env,
    opts?: RuntimeOptions,
 ) {
-   return await createRuntimeApp<Env>(
-      {
-         ...makeConfig(config, args),
-         adminOptions: config.html ? { html: config.html } : undefined,
-      },
-      args,
-      opts,
-   );
+   return await createRuntimeApp<Env>(makeConfig(config, args), args, opts);
 }
 
-export async function getWarm<Env extends CloudflareEnv = CloudflareEnv>(
+export async function getFresh<Env extends CloudflareEnv = CloudflareEnv>(
    config: CloudflareBkndConfig<Env>,
    ctx: Context<Env>,
    opts: RuntimeOptions = {},
 ) {
-   const app = await makeApp(
+   return await makeApp(
       {
          ...config,
          onBuilt: async (app) => {
@@ -33,16 +26,4 @@ export async function getWarm<Env extends CloudflareEnv = CloudflareEnv>(
       ctx.env,
       opts,
    );
-   return app.fetch(ctx.request);
-}
-
-export async function getFresh<Env extends CloudflareEnv = CloudflareEnv>(
-   config: CloudflareBkndConfig<Env>,
-   ctx: Context<Env>,
-   opts: RuntimeOptions = {},
-) {
-   return await getWarm(config, ctx, {
-      ...opts,
-      force: true,
-   });
 }

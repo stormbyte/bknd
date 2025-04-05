@@ -14,10 +14,11 @@ const htmlBkndContextReplace = "<!-- BKND_CONTEXT -->";
 // @todo: add migration to remove admin path from config
 export type AdminControllerOptions = {
    basepath?: string;
-   assets_path?: string;
+   adminBasepath?: string;
+   assetsPath?: string;
    html?: string;
    forceDev?: boolean | { mainPath: string };
-   debug_rerenders?: boolean;
+   debugRerenders?: boolean;
 };
 
 export class AdminController extends Controller {
@@ -36,7 +37,8 @@ export class AdminController extends Controller {
       return {
          ...this._options,
          basepath: this._options.basepath ?? "/",
-         assets_path: this._options.assets_path ?? config.server.assets_path,
+         adminBasepath: this._options.adminBasepath ?? "",
+         assetsPath: this._options.assetsPath ?? config.server.assets_path,
       };
    }
 
@@ -46,6 +48,10 @@ export class AdminController extends Controller {
 
    private withBasePath(route: string = "") {
       return (this.basepath + route).replace(/(?<!:)\/+/g, "/");
+   }
+
+   private withAdminBasePath(route: string = "") {
+      return this.withBasePath(this.options.adminBasepath + route);
    }
 
    override getController() {
@@ -63,16 +69,16 @@ export class AdminController extends Controller {
 
       const authRoutes = {
          root: "/",
-         success: configs.auth.cookie.pathSuccess ?? "/",
-         loggedOut: configs.auth.cookie.pathLoggedOut ?? "/",
-         login: "/auth/login",
-         logout: "/auth/logout",
+         success: configs.auth.cookie.pathSuccess ?? this.withAdminBasePath("/"),
+         loggedOut: configs.auth.cookie.pathLoggedOut ?? this.withAdminBasePath("/"),
+         login: this.withAdminBasePath("/auth/login"),
+         logout: this.withAdminBasePath("/auth/logout"),
       };
 
       hono.use("*", async (c, next) => {
          const obj = {
             user: c.get("auth")?.user,
-            logout_route: this.withBasePath(authRoutes.logout),
+            logout_route: this.withAdminBasePath(authRoutes.logout),
          };
          const html = await this.getHtml(obj);
          if (!html) {
@@ -164,8 +170,8 @@ export class AdminController extends Controller {
 
       if (isProd) {
          let manifest: any;
-         if (this.options.assets_path.startsWith("http")) {
-            manifest = await fetch(this.options.assets_path + "manifest.json", {
+         if (this.options.assetsPath.startsWith("http")) {
+            manifest = await fetch(this.options.assetsPath + "manifest.json", {
                headers: {
                   Accept: "application/json",
                },
@@ -182,7 +188,7 @@ export class AdminController extends Controller {
          assets.css = manifest["src/ui/main.tsx"].css[0] as any;
       }
 
-      const favicon = isProd ? this.options.assets_path + "favicon.ico" : "/favicon.ico";
+      const favicon = isProd ? this.options.assetsPath + "favicon.ico" : "/favicon.ico";
 
       return (
          <Fragment>
@@ -197,7 +203,7 @@ export class AdminController extends Controller {
                   />
                   <link rel="icon" href={favicon} type="image/x-icon" />
                   <title>BKND</title>
-                  {this.options.debug_rerenders && (
+                  {this.options.debugRerenders && (
                      <script
                         crossOrigin="anonymous"
                         src="//unpkg.com/react-scan/dist/auto.global.js"
@@ -205,8 +211,8 @@ export class AdminController extends Controller {
                   )}
                   {isProd ? (
                      <Fragment>
-                        <script type="module" src={this.options.assets_path + assets?.js} />
-                        <link rel="stylesheet" href={this.options.assets_path + assets?.css} />
+                        <script type="module" src={this.options.assetsPath + assets?.js} />
+                        <link rel="stylesheet" href={this.options.assetsPath + assets?.css} />
                      </Fragment>
                   ) : (
                      <Fragment>

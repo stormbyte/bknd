@@ -40,7 +40,6 @@ export async function getCached<Env extends CloudflareEnv = CloudflareEnv>(
             );
             await config.beforeBuild?.(app);
          },
-         adminOptions: { html: config.html },
       },
       { env, ctx, ...args },
    );

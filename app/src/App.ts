@@ -180,7 +180,10 @@ export class App {
    registerAdminController(config?: AdminControllerOptions) {
       // register admin
       this.adminController = new AdminController(this, config);
-      this.modules.server.route(config?.basepath ?? "/", this.adminController.getController());
+      this.modules.server.route(
+         this.adminController.basepath,
+         this.adminController.getController(),
+      );
       return this;
    }
 
