@@ -29,13 +29,15 @@ export const cloudflare = {
          { dir: ctx.dir },
       );
 
-      const db = ctx.skip ? "d1" : await $p.select({
-         message: "What database do you want to use?",
-         options: [
-            { label: "Cloudflare D1", value: "d1" },
-            { label: "LibSQL", value: "libsql" },
-         ],
-      });
+      const db = ctx.skip
+         ? "d1"
+         : await $p.select({
+              message: "What database do you want to use?",
+              options: [
+                 { label: "Cloudflare D1", value: "d1" },
+                 { label: "LibSQL", value: "libsql" },
+              ],
+           });
       if ($p.isCancel(db)) {
          process.exit(1);
       }
@@ -64,17 +66,19 @@ export const cloudflare = {
 
 async function createD1(ctx: TemplateSetupCtx) {
    const default_db = "data";
-   const name = ctx.skip ? default_db : await $p.text({
-      message: "Enter database name",
-      initialValue: default_db,
-      placeholder: default_db,
-      validate: (v) => {
-         if (!v) {
-            return "Invalid name";
-         }
-         return;
-      },
-   });
+   const name = ctx.skip
+      ? default_db
+      : await $p.text({
+           message: "Enter database name",
+           initialValue: default_db,
+           placeholder: default_db,
+           validate: (v) => {
+              if (!v) {
+                 return "Invalid name";
+              }
+              return;
+           },
+        });
    if ($p.isCancel(name)) {
       process.exit(1);
    }
@@ -153,13 +157,16 @@ async function createLibsql(ctx: TemplateSetupCtx) {
 }
 
 async function createR2(ctx: TemplateSetupCtx) {
-   const create = ctx.skip ?? await $p.confirm({
-      message: "Do you want to use a R2 bucket?",
-      initialValue: true,
-   });
+   const create = ctx.skip
+      ? false
+      : await $p.confirm({
+           message: "Do you want to use a R2 bucket?",
+           initialValue: true,
+        });
    if ($p.isCancel(create)) {
       process.exit(1);
    }
+
    if (!create) {
       await overrideJson(
          WRANGLER_FILE,
@@ -173,17 +180,19 @@ async function createR2(ctx: TemplateSetupCtx) {
    }
 
    const default_bucket = "bucket";
-   const name = ctx.skip ? default_bucket : await $p.text({
-      message: "Enter bucket name",
-      initialValue: default_bucket,
-      placeholder: default_bucket,
-      validate: (v) => {
-         if (!v) {
-            return "Invalid name";
-         }
-         return;
-      },
-   });
+   const name = ctx.skip
+      ? default_bucket
+      : await $p.text({
+           message: "Enter bucket name",
+           initialValue: default_bucket,
+           placeholder: default_bucket,
+           validate: (v) => {
+              if (!v) {
+                 return "Invalid name";
+              }
+              return;
+           },
+        });
    if ($p.isCancel(name)) {
       process.exit(1);
    }

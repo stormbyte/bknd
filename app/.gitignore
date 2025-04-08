@@ -1,4 +1,4 @@
 playwright-report
 test-results
 bknd.config.*
-app/__test__/helper.d.ts
+__test__/helper.d.ts
