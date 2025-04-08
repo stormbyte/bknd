@@ -38,6 +38,7 @@
     "test:vitest:watch": "vitest",
     "test:vitest:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
+    "test:e2e:adapters": "bun run e2e/adapters.ts",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:report": "playwright show-report"

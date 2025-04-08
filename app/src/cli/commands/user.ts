@@ -1,17 +1,17 @@
 import {
+   isCancel as $isCancel,
+   log as $log,
    password as $password,
    text as $text,
-   log as $log,
-   isCancel as $isCancel,
 } from "@clack/prompts";
 import type { App } from "App";
 import type { PasswordStrategy } from "auth/authenticate/strategies";
-import { makeConfigApp } from "cli/commands/run";
-import { getConfigPath } from "cli/commands/run/platform";
-import type { CliBkndConfig, CliCommand } from "cli/types";
+import { makeAppFromEnv } from "cli/commands/run";
+import type { CliCommand } from "cli/types";
 import { Argument } from "commander";
 import { $console } from "core";
 import c from "picocolors";
+import { isBun } from "cli/utils/sys";
 
 export const user: CliCommand = (program) => {
    program
@@ -24,14 +24,9 @@ export const user: CliCommand = (program) => {
 };
 
 async function action(action: "create" | "update" | "token", options: any) {
-   const configFilePath = await getConfigPath();
-   if (!configFilePath) {
-      console.error("config file not found");
-      return;
-   }
-
-   const config = (await import(configFilePath).then((m) => m.default)) as CliBkndConfig;
-   const app = await makeConfigApp(config, options.server);
+   const app = await makeAppFromEnv({
+      server: "node",
+   });
 
    switch (action) {
       case "create":
@@ -147,6 +142,11 @@ async function update(app: App, options: any) {
 }
 
 async function token(app: App, options: any) {
+   if (isBun()) {
+      $log.error("Please use node to generate tokens");
+      process.exit(1);
+   }
+
    const config = app.module.auth.toJSON(true);
    const users_entity = config.entity_name as "users";
    const em = app.modules.ctx().em;
