@@ -1,18 +1,17 @@
 /// <reference types="@cloudflare/workers-types" />
 
-import { type FrameworkBkndConfig, makeConfig } from "bknd/adapter";
+import type { RuntimeBkndConfig } from "bknd/adapter";
 import { Hono } from "hono";
 import { serveStatic } from "hono/cloudflare-workers";
-import { D1Connection } from "./D1Connection";
-import { registerMedia } from "./StorageR2Adapter";
-import { getBinding } from "./bindings";
+import { getFresh } from "./modes/fresh";
 import { getCached } from "./modes/cached";
 import { getDurable } from "./modes/durable";
-import { getFresh, getWarm } from "./modes/fresh";
+import type { App } from "bknd";
 
-export type CloudflareBkndConfig<Env = any> = FrameworkBkndConfig<Context<Env>> & {
+export type CloudflareEnv = object;
+export type CloudflareBkndConfig<Env = CloudflareEnv> = RuntimeBkndConfig<Env> & {
    mode?: "warm" | "fresh" | "cache" | "durable";
-   bindings?: (args: Context<Env>) => {
+   bindings?: (args: Env) => {
       kv?: KVNamespace;
       dobj?: DurableObjectNamespace;
       db?: D1Database;
@@ -22,49 +21,17 @@ export type CloudflareBkndConfig<Env = any> = FrameworkBkndConfig<Context<Env>> 
    keepAliveSeconds?: number;
    forceHttps?: boolean;
    manifest?: string;
-   setAdminHtml?: boolean;
-   html?: string;
 };
 
-export type Context<Env = any> = {
+export type Context<Env = CloudflareEnv> = {
    request: Request;
    env: Env;
    ctx: ExecutionContext;
 };
 
-let media_registered: boolean = false;
-export function makeCfConfig(config: CloudflareBkndConfig, context: Context) {
-   if (!media_registered) {
-      registerMedia(context.env as any);
-      media_registered = true;
-   }
-
-   const appConfig = makeConfig(config, context);
-   const bindings = config.bindings?.(context);
-   if (!appConfig.connection) {
-      let db: D1Database | undefined;
-      if (bindings?.db) {
-         console.log("Using database from bindings");
-         db = bindings.db;
-      } else if (Object.keys(context.env ?? {}).length > 0) {
-         const binding = getBinding(context.env, "D1Database");
-         if (binding) {
-            console.log(`Using database from env "${binding.key}"`);
-            db = binding.value;
-         }
-      }
-
-      if (db) {
-         appConfig.connection = new D1Connection({ binding: db });
-      } else {
-         throw new Error("No database connection given");
-      }
-   }
-
-   return appConfig;
-}
-
-export function serve<Env = any>(config: CloudflareBkndConfig<Env> = {}) {
+export function serve<Env extends CloudflareEnv = CloudflareEnv>(
+   config: CloudflareBkndConfig<Env> = {},
+) {
    return {
       async fetch(request: Request, env: Env, ctx: ExecutionContext) {
          const url = new URL(request.url);
@@ -75,7 +42,7 @@ export function serve<Env = any>(config: CloudflareBkndConfig<Env> = {}) {
             throw new Error("manifest is required with static 'kv'");
          }
 
-         if (config.manifest && config.static !== "assets") {
+         if (config.manifest && config.static === "kv") {
             const pathname = url.pathname.slice(1);
             const assetManifest = JSON.parse(config.manifest);
             if (pathname && pathname in assetManifest) {
@@ -99,21 +66,27 @@ export function serve<Env = any>(config: CloudflareBkndConfig<Env> = {}) {
             }
          }
 
-         const context = { request, env, ctx } as Context;
+         const context = { request, env, ctx } as Context<Env>;
          const mode = config.mode ?? "warm";
 
+         let app: App;
          switch (mode) {
             case "fresh":
-               return await getFresh(config, context);
+               app = await getFresh(config, context, { force: true });
+               break;
             case "warm":
-               return await getWarm(config, context);
+               app = await getFresh(config, context);
+               break;
             case "cache":
-               return await getCached(config, context);
+               app = await getCached(config, context);
+               break;
             case "durable":
                return await getDurable(config, context);
             default:
                throw new Error(`Unknown mode ${mode}`);
          }
+
+         return app.fetch(request, env, ctx);
       },
    };
 }

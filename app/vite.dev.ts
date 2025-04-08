@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { showRoutes } from "hono/dev";
 import { App, registries } from "./src";
-import { StorageLocalAdapter } from "./src/media/storage/adapters/StorageLocalAdapter";
+import { StorageLocalAdapter } from "./src/adapter/node";
 import { EntityManager, LibsqlConnection } from "data";
 import { __bknd } from "modules/ModuleManager";
 
@@ -66,7 +66,9 @@ export default {
             },
             "sync",
          );
-         await app.build();
+         await app.build({
+            sync: !!(firstStart && example),
+         });
 
          // log routes
          if (firstStart) {

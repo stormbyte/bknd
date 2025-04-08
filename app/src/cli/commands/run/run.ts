@@ -7,6 +7,7 @@ import { colorizeConsole, config } from "core";
 import dotenv from "dotenv";
 import { registries } from "modules/registries";
 import c from "picocolors";
+import path from "node:path";
 import {
    PLATFORMS,
    type Platform,
@@ -15,9 +16,14 @@ import {
    getConnectionCredentialsFromEnv,
    startServer,
 } from "./platform";
+import { makeConfig } from "adapter";
+import { isBun as $isBun } from "cli/utils/sys";
 
-dotenv.config();
-const isBun = typeof Bun !== "undefined";
+const env_files = [".env", ".dev.vars"];
+dotenv.config({
+   path: env_files.map((file) => path.resolve(process.cwd(), file)),
+});
+const isBun = $isBun();
 
 export const run: CliCommand = (program) => {
    program
@@ -85,27 +91,15 @@ async function makeApp(config: MakeAppConfig) {
    return app;
 }
 
-export async function makeConfigApp(config: CliBkndConfig, platform?: Platform) {
-   const appConfig = typeof config.app === "function" ? config.app(process.env) : config.app;
-   const app = App.create(appConfig);
-
-   app.emgr.onEvent(
-      App.Events.AppBuiltEvent,
-      async () => {
-         await attachServeStatic(app, platform ?? "node");
-         app.registerAdminController();
-
-         await config.onBuilt?.(app);
-      },
-      "sync",
-   );
-
-   await config.beforeBuild?.(app);
-   await app.build(config.buildConfig);
-   return app;
+export async function makeConfigApp(_config: CliBkndConfig, platform?: Platform) {
+   const config = makeConfig(_config, { env: process.env });
+   return makeApp({
+      ...config,
+      server: { platform },
+   });
 }
 
-async function action(options: {
+type RunOptions = {
    port: number;
    memory?: boolean;
    config?: string;
@@ -113,24 +107,37 @@ async function action(options: {
    dbToken?: string;
    server: Platform;
    open?: boolean;
-}) {
-   colorizeConsole(console);
+};
+
+export async function makeAppFromEnv(options: Partial<RunOptions> = {}) {
    const configFilePath = await getConfigPath(options.config);
 
    let app: App | undefined = undefined;
+   // first start from arguments if given
    if (options.dbUrl) {
       console.info("Using connection from", c.cyan("--db-url"));
       const connection = options.dbUrl
          ? { url: options.dbUrl, authToken: options.dbToken }
          : undefined;
       app = await makeApp({ connection, server: { platform: options.server } });
+
+      // check configuration file to be present
    } else if (configFilePath) {
       console.info("Using config from", c.cyan(configFilePath));
-      const config = (await import(configFilePath).then((m) => m.default)) as CliBkndConfig;
-      app = await makeConfigApp(config, options.server);
+      try {
+         const config = (await import(configFilePath).then((m) => m.default)) as CliBkndConfig;
+         app = await makeConfigApp(config, options.server);
+      } catch (e) {
+         console.error("Failed to load config:", e);
+         process.exit(1);
+      }
+
+      // try to use an in-memory connection
    } else if (options.memory) {
       console.info("Using", c.cyan("in-memory"), "connection");
       app = await makeApp({ server: { platform: options.server } });
+
+      // finally try to use env variables
    } else {
       const credentials = getConnectionCredentialsFromEnv();
       if (credentials) {
@@ -139,14 +146,22 @@ async function action(options: {
       }
    }
 
+   // if nothing helps, create a file based app
    if (!app) {
       const connection = { url: "file:data.db" } as Config;
-      console.info("Using connection", c.cyan(connection.url));
+      console.info("Using fallback connection", c.cyan(connection.url));
       app = await makeApp({
          connection,
          server: { platform: options.server },
       });
    }
 
+   return app;
+}
+
+async function action(options: RunOptions) {
+   colorizeConsole(console);
+
+   const app = await makeAppFromEnv(options);
    await startServer(options.server, app, { port: options.port, open: options.open });
 }

@@ -3,7 +3,7 @@
   "type": "module",
   "sideEffects": false,
   "bin": "./dist/cli/index.js",
-  "version": "0.10.2",
+  "version": "0.11.0",
   "description": "Lightweight Firebase/Supabase alternative built to run anywhere — incl. Next.js, React Router, Astro, Cloudflare, Bun, Node, AWS Lambda & more.",
   "homepage": "https://bknd.io",
   "repository": {
@@ -15,10 +15,9 @@
   },
   "scripts": {
     "dev": "vite",
-    "test": "ALL_TESTS=1 bun test --bail",
-    "test:coverage": "ALL_TESTS=1 bun test --bail --coverage",
     "build": "NODE_ENV=production bun run build.ts --minify --types",
     "build:all": "rm -rf dist && bun run build:static && NODE_ENV=production bun run build.ts --minify --types --clean && bun run build:cli",
+    "build:ci": "mkdir -p dist/static/.vite && echo '{}' > dist/static/.vite/manifest.json && NODE_ENV=production bun run build.ts",
     "build:cli": "bun build src/cli/index.ts --target node --outdir dist/cli --env PUBLIC_* --minify",
     "build:static": "vite build",
     "watch": "bun run build.ts --types --watch",
@@ -27,8 +26,22 @@
     "build:types": "tsc -p tsconfig.build.json --emitDeclarationOnly && tsc-alias",
     "updater": "bun x npm-check-updates -ui",
     "cli": "LOCAL=1 bun src/cli/index.ts",
-    "prepublishOnly": "bun run types && bun run test && bun run build:all && cp ../README.md ./",
-    "postpublish": "rm -f README.md"
+    "prepublishOnly": "bun run types && bun run test && bun run test:node && bun run build:all && cp ../README.md ./",
+    "postpublish": "rm -f README.md",
+    "test": "ALL_TESTS=1 bun test --bail",
+    "test:all": "bun run test && bun run test:node",
+    "test:bun": "ALL_TESTS=1 bun test --bail",
+    "test:node": "tsx --test $(find . -type f -name '*.native-spec.ts')",
+    "test:adapters": "bun test src/adapter/**/*.adapter.spec.ts --bail",
+    "test:coverage": "ALL_TESTS=1 bun test --bail --coverage",
+    "test:vitest": "vitest run",
+    "test:vitest:watch": "vitest",
+    "test:vitest:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:adapters": "bun run e2e/adapters.ts",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:report": "playwright show-report"
   },
   "license": "FSL-1.1-MIT",
   "dependencies": {
@@ -37,7 +50,7 @@
     "@codemirror/lang-json": "^6.0.1",
     "@codemirror/lang-liquid": "^6.2.2",
     "@hello-pangea/dnd": "^18.0.1",
-    "@libsql/client": "^0.14.0",
+    "@libsql/client": "^0.15.2",
     "@mantine/core": "^7.17.1",
     "@mantine/hooks": "^7.17.1",
     "@sinclair/typebox": "^0.34.30",
@@ -58,7 +71,8 @@
     "object-path-immutable": "^4.1.2",
     "picocolors": "^1.1.1",
     "radix-ui": "^1.1.3",
-    "swr": "^2.3.3"
+    "swr": "^2.3.3",
+    "wrangler": "^4.4.1"
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.758.0",
@@ -70,18 +84,23 @@
     "@libsql/kysely-libsql": "^0.4.1",
     "@mantine/modals": "^7.17.1",
     "@mantine/notifications": "^7.17.1",
+    "@playwright/test": "^1.51.1",
     "@rjsf/core": "5.22.2",
     "@tabler/icons-react": "3.18.0",
     "@tailwindcss/postcss": "^4.0.12",
     "@tailwindcss/vite": "^4.0.12",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
     "@types/node": "^22.13.10",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/coverage-v8": "^3.0.9",
     "autoprefixer": "^10.4.21",
     "clsx": "^2.1.1",
     "dotenv": "^16.4.7",
     "jotai": "^2.12.2",
+    "jsdom": "^26.0.0",
     "kysely-d1": "^0.3.0",
     "open": "^10.1.0",
     "openapi-types": "^12.1.3",
@@ -100,8 +119,10 @@
     "tailwindcss-animate": "^1.0.7",
     "tsc-alias": "^1.8.11",
     "tsup": "^8.4.0",
+    "tsx": "^4.19.3",
     "vite": "^6.2.1",
     "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^3.0.9",
     "wouter": "^3.6.0"
   },
   "optionalDependencies": {
@@ -118,47 +139,52 @@
     ".": {
       "types": "./dist/types/index.d.ts",
       "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "require": "./dist/index.js"
     },
     "./ui": {
       "types": "./dist/types/ui/index.d.ts",
       "import": "./dist/ui/index.js",
-      "require": "./dist/ui/index.cjs"
+      "require": "./dist/ui/index.js"
     },
     "./elements": {
       "types": "./dist/types/ui/elements/index.d.ts",
       "import": "./dist/ui/elements/index.js",
-      "require": "./dist/ui/elements/index.cjs"
+      "require": "./dist/ui/elements/index.js"
     },
     "./client": {
       "types": "./dist/types/ui/client/index.d.ts",
       "import": "./dist/ui/client/index.js",
-      "require": "./dist/ui/client/index.cjs"
+      "require": "./dist/ui/client/index.js"
     },
     "./data": {
       "types": "./dist/types/data/index.d.ts",
       "import": "./dist/data/index.js",
-      "require": "./dist/data/index.cjs"
+      "require": "./dist/data/index.js"
     },
     "./core": {
       "types": "./dist/types/core/index.d.ts",
       "import": "./dist/core/index.js",
-      "require": "./dist/core/index.cjs"
+      "require": "./dist/core/index.js"
     },
     "./utils": {
       "types": "./dist/types/core/utils/index.d.ts",
       "import": "./dist/core/utils/index.js",
-      "require": "./dist/core/utils/index.cjs"
+      "require": "./dist/core/utils/index.js"
     },
     "./cli": {
       "types": "./dist/types/cli/index.d.ts",
       "import": "./dist/cli/index.js",
-      "require": "./dist/cli/index.cjs"
+      "require": "./dist/cli/index.js"
+    },
+    "./media": {
+      "types": "./dist/types/media/index.d.ts",
+      "import": "./dist/media/index.js",
+      "require": "./dist/media/index.js"
     },
     "./adapter/cloudflare": {
       "types": "./dist/types/adapter/cloudflare/index.d.ts",
       "import": "./dist/adapter/cloudflare/index.js",
-      "require": "./dist/adapter/cloudflare/index.cjs"
+      "require": "./dist/adapter/cloudflare/index.js"
     },
     "./adapter": {
       "types": "./dist/types/adapter/index.d.ts",
@@ -167,37 +193,37 @@
     "./adapter/vite": {
       "types": "./dist/types/adapter/vite/index.d.ts",
       "import": "./dist/adapter/vite/index.js",
-      "require": "./dist/adapter/vite/index.cjs"
+      "require": "./dist/adapter/vite/index.js"
     },
     "./adapter/nextjs": {
       "types": "./dist/types/adapter/nextjs/index.d.ts",
       "import": "./dist/adapter/nextjs/index.js",
-      "require": "./dist/adapter/nextjs/index.cjs"
+      "require": "./dist/adapter/nextjs/index.js"
     },
     "./adapter/react-router": {
       "types": "./dist/types/adapter/react-router/index.d.ts",
       "import": "./dist/adapter/react-router/index.js",
-      "require": "./dist/adapter/react-router/index.cjs"
+      "require": "./dist/adapter/react-router/index.js"
     },
     "./adapter/bun": {
       "types": "./dist/types/adapter/bun/index.d.ts",
       "import": "./dist/adapter/bun/index.js",
-      "require": "./dist/adapter/bun/index.cjs"
+      "require": "./dist/adapter/bun/index.js"
     },
     "./adapter/node": {
       "types": "./dist/types/adapter/node/index.d.ts",
       "import": "./dist/adapter/node/index.js",
-      "require": "./dist/adapter/node/index.cjs"
+      "require": "./dist/adapter/node/index.js"
     },
     "./adapter/astro": {
       "types": "./dist/types/adapter/astro/index.d.ts",
       "import": "./dist/adapter/astro/index.js",
-      "require": "./dist/adapter/astro/index.cjs"
+      "require": "./dist/adapter/astro/index.js"
     },
     "./adapter/aws": {
       "types": "./dist/types/adapter/aws/index.d.ts",
       "import": "./dist/adapter/aws/index.js",
-      "require": "./dist/adapter/aws/index.cjs"
+      "require": "./dist/adapter/aws/index.js"
     },
     "./dist/main.css": "./dist/ui/main.css",
     "./dist/styles.css": "./dist/ui/styles.css",

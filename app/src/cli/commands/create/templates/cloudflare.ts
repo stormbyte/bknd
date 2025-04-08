@@ -4,6 +4,7 @@ import { typewriter, wait } from "cli/utils/cli";
 import { uuid } from "core/utils";
 import c from "picocolors";
 import type { Template, TemplateSetupCtx } from ".";
+import { exec } from "cli/utils/sys";
 
 const WRANGLER_FILE = "wrangler.json";
 
@@ -28,13 +29,15 @@ export const cloudflare = {
          { dir: ctx.dir },
       );
 
-      const db = await $p.select({
-         message: "What database do you want to use?",
-         options: [
-            { label: "Cloudflare D1", value: "d1" },
-            { label: "LibSQL", value: "libsql" },
-         ],
-      });
+      const db = ctx.skip
+         ? "d1"
+         : await $p.select({
+              message: "What database do you want to use?",
+              options: [
+                 { label: "Cloudflare D1", value: "d1" },
+                 { label: "LibSQL", value: "libsql" },
+              ],
+           });
       if ($p.isCancel(db)) {
          process.exit(1);
       }
@@ -56,23 +59,44 @@ export const cloudflare = {
             "Couldn't add database. You can add it manually later. Error: " + c.red(message),
          );
       }
+
+      await createR2(ctx);
    },
 } as const satisfies Template;
 
 async function createD1(ctx: TemplateSetupCtx) {
-   const name = await $p.text({
-      message: "Enter database name",
-      initialValue: "data",
-      placeholder: "data",
-      validate: (v) => {
-         if (!v) {
-            return "Invalid name";
-         }
-         return;
-      },
-   });
+   const default_db = "data";
+   const name = ctx.skip
+      ? default_db
+      : await $p.text({
+           message: "Enter database name",
+           initialValue: default_db,
+           placeholder: default_db,
+           validate: (v) => {
+              if (!v) {
+                 return "Invalid name";
+              }
+              return;
+           },
+        });
    if ($p.isCancel(name)) {
       process.exit(1);
+   }
+
+   await $p.stream.info(
+      (async function* () {
+         yield* typewriter("Now running wrangler to create a D1 database...");
+      })(),
+   );
+
+   if (!ctx.skip) {
+      exec(`npx wrangler d1 create ${name}`);
+
+      await $p.stream.info(
+         (async function* () {
+            yield* typewriter("Please update your wrangler configuration with the output above.");
+         })(),
+      );
    }
 
    await overrideJson(
@@ -88,17 +112,6 @@ async function createD1(ctx: TemplateSetupCtx) {
          ],
       }),
       { dir: ctx.dir },
-   );
-
-   await $p.stream.info(
-      (async function* () {
-         yield* typewriter(`Database added to ${c.cyan("wrangler.json")}`);
-         await wait();
-         yield* typewriter(
-            `\nNote that if you deploy, you have to create a real database using ${c.cyan("npx wrangler d1 create <name>")} and update your wrangler configuration.`,
-            c.dim,
-         );
-      })(),
    );
 }
 
@@ -140,5 +153,65 @@ async function createLibsql(ctx: TemplateSetupCtx) {
             c.dim,
          );
       })(),
+   );
+}
+
+async function createR2(ctx: TemplateSetupCtx) {
+   const create = ctx.skip
+      ? false
+      : await $p.confirm({
+           message: "Do you want to use a R2 bucket?",
+           initialValue: true,
+        });
+   if ($p.isCancel(create)) {
+      process.exit(1);
+   }
+
+   if (!create) {
+      await overrideJson(
+         WRANGLER_FILE,
+         (json) => ({
+            ...json,
+            r2_buckets: undefined,
+         }),
+         { dir: ctx.dir },
+      );
+      return;
+   }
+
+   const default_bucket = "bucket";
+   const name = ctx.skip
+      ? default_bucket
+      : await $p.text({
+           message: "Enter bucket name",
+           initialValue: default_bucket,
+           placeholder: default_bucket,
+           validate: (v) => {
+              if (!v) {
+                 return "Invalid name";
+              }
+              return;
+           },
+        });
+   if ($p.isCancel(name)) {
+      process.exit(1);
+   }
+
+   if (!ctx.skip) {
+      exec(`npx wrangler r2 bucket create ${name}`);
+   }
+
+   await overrideJson(
+      WRANGLER_FILE,
+      (json) => ({
+         ...json,
+         r2_buckets: [
+            {
+               binding: "BUCKET",
+               bucket_name: name,
+            },
+         ],
+      }),
+      { dir: ctx.dir },
    );
 }

@@ -1,6 +1,7 @@
 import type { App } from "App";
 import { type Context, Hono } from "hono";
 import * as middlewares from "modules/middlewares";
+import type { SafeUser } from "auth";
 
 export type ServerEnv = {
    Variables: {
@@ -10,7 +11,7 @@ export type ServerEnv = {
          resolved: boolean;
          registered: boolean;
          skip: boolean;
-         user?: { id: any; role?: string; [key: string]: any };
+         user?: SafeUser;
       };
       html?: string;
    };
