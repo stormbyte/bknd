@@ -61,7 +61,7 @@
   "navigation": [
     {
       "group": "Getting Started",
-      "pages": ["introduction", "motivation"]
+      "pages": ["start", "motivation"]
     },
     {
       "group": "Usage",
