@@ -1,6 +1,9 @@
 import { config } from "core";
-import { type Static, Type } from "core/utils";
+import type { Static } from "core/utils";
 import { Field, baseFieldConfigSchema } from "./Field";
+import * as tbbox from "@sinclair/typebox";
+import type { TFieldTSType } from "data/entities/EntityTypescript";
+const { Type } = tbbox;
 
 export const primaryFieldConfigSchema = Type.Composite([
    Type.Omit(baseFieldConfigSchema, ["required"]),
@@ -45,5 +48,14 @@ export class PrimaryField<Required extends true | false = false> extends Field<
 
    override toJsonSchema() {
       return this.toSchemaWrapIfRequired(Type.Number({ writeOnly: undefined }));
+   }
+
+   override toType(): TFieldTSType {
+      return {
+         ...super.toType(),
+         required: true,
+         import: [{ package: "kysely", name: "Generated" }],
+         type: "Generated<number>",
+      };
    }
 }

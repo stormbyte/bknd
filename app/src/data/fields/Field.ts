@@ -4,13 +4,15 @@ import {
    type Static,
    StringEnum,
    type TSchema,
-   Type,
    TypeInvalidError,
 } from "core/utils";
 import type { HTMLInputTypeAttribute, InputHTMLAttributes } from "react";
 import type { EntityManager } from "../entities";
 import { InvalidFieldConfigException, TransformPersistFailedException } from "../errors";
 import type { FieldSpec } from "data/connection/Connection";
+import * as tbbox from "@sinclair/typebox";
+import type { TFieldTSType } from "data/entities/EntityTypescript";
+const { Type } = tbbox;
 
 // @todo: contexts need to be reworked
 // e.g. "table" is irrelevant, because if read is not given, it fails
@@ -184,12 +186,14 @@ export abstract class Field<
       };
    }
 
+   // @todo: add field level validation
    isValid(value: any, context: TActionContext): boolean {
-      if (value) {
+      if (typeof value !== "undefined") {
          return this.isFillable(context);
-      } else {
+      } else if (context === "create") {
          return !this.isRequired();
       }
+      return true;
    }
 
    /**
@@ -230,6 +234,14 @@ export abstract class Field<
 
    toJsonSchema(): TSchema {
       return this.toSchemaWrapIfRequired(Type.Any());
+   }
+
+   toType(): TFieldTSType {
+      return {
+         required: this.isRequired(),
+         comment: this.getDescription(),
+         type: "any",
+      };
    }
 
    toJSON() {

@@ -1,7 +1,10 @@
-import { type Static, Type } from "core/utils";
+import type { Static } from "core/utils";
 import type { EntityManager } from "data";
 import { TransformPersistFailedException } from "../errors";
 import { Field, type TActionContext, type TRenderContext, baseFieldConfigSchema } from "./Field";
+import * as tbbox from "@sinclair/typebox";
+import type { TFieldTSType } from "data/entities/EntityTypescript";
+const { Type } = tbbox;
 
 export const jsonFieldConfigSchema = Type.Composite([baseFieldConfigSchema, Type.Object({})]);
 
@@ -82,7 +85,6 @@ export class JsonField<Required extends true | false = false, TypeOverride = obj
       context: TActionContext,
    ): Promise<string | undefined> {
       const value = await super.transformPersist(_value, em, context);
-      //console.log("value", value);
       if (this.nullish(value)) return value;
 
       if (!this.isSerializable(value)) {
@@ -96,5 +98,12 @@ export class JsonField<Required extends true | false = false, TypeOverride = obj
       }
 
       return JSON.stringify(value);
+   }
+
+   override toType(): TFieldTSType {
+      return {
+         ...super.toType(),
+         type: "any",
+      };
    }
 }

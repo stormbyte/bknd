@@ -1,7 +1,9 @@
-import { type Static, Type } from "core/utils";
 import type { EntityManager } from "data";
+import type { Static } from "core/utils";
 import { TransformPersistFailedException } from "../errors";
 import { Field, type TActionContext, baseFieldConfigSchema } from "./Field";
+import * as tb from "@sinclair/typebox";
+const { Type } = tb;
 
 export const textFieldConfigSchema = Type.Composite(
    [
@@ -118,5 +120,12 @@ export class TextField<Required extends true | false = false> extends Field<
             pattern: this.config?.pattern,
          }),
       );
+   }
+
+   override toType() {
+      return {
+         ...super.toType(),
+         type: "string",
+      };
    }
 }

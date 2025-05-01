@@ -4,7 +4,6 @@ import type { App } from "App";
 import { $console, tbValidator as tb } from "core";
 import {
    StringEnum,
-   Type,
    TypeInvalidError,
    datetimeStringLocal,
    datetimeStringUTC,
@@ -14,6 +13,8 @@ import {
 import { getRuntimeKey } from "core/utils";
 import type { Context, Hono } from "hono";
 import { Controller } from "modules/Controller";
+import * as tbbox from "@sinclair/typebox";
+const { Type } = tbbox;
 
 import {
    MODULE_NAMES,
@@ -99,7 +100,7 @@ export class SystemController extends Controller {
          try {
             return c.json(await cb(), { status: 202 });
          } catch (e) {
-            console.error(e);
+            $console.error("config update error", e);
 
             if (e instanceof TypeInvalidError) {
                return c.json(

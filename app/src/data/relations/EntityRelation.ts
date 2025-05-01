@@ -1,4 +1,4 @@
-import { type Static, Type, parse } from "core/utils";
+import { type Static, parse } from "core/utils";
 import type { ExpressionBuilder, SelectQueryBuilder } from "kysely";
 import type { Entity, EntityData, EntityManager } from "../entities";
 import {
@@ -8,18 +8,14 @@ import {
 } from "../relations";
 import type { RepoQuery } from "../server/data-query-impl";
 import type { RelationType } from "./relation-types";
+import * as tbbox from "@sinclair/typebox";
+const { Type } = tbbox;
+
+const directions = ["source", "target"] as const;
+export type TDirection = (typeof directions)[number];
 
 export type KyselyJsonFrom = any;
 export type KyselyQueryBuilder = SelectQueryBuilder<any, any, any>;
-
-/*export type RelationConfig = {
-   mappedBy?: string;
-   inversedBy?: string;
-   sourceCardinality?: number;
-   connectionTable?: string;
-   connectionTableMappedName?: string;
-   required?: boolean;
-};*/
 
 export type BaseRelationConfig = Static<typeof EntityRelation.schema>;
 
@@ -34,7 +30,7 @@ export abstract class EntityRelation<
 
    // @todo: add unit tests
    // allowed directions, used in RelationAccessor for visibility
-   directions: ("source" | "target")[] = ["source", "target"];
+   directions: TDirection[] = ["source", "target"];
 
    static schema = Type.Object({
       mappedBy: Type.Optional(Type.String()),
@@ -109,6 +105,10 @@ export abstract class EntityRelation<
       );
    }
 
+   self(entity: Entity | string): EntityRelationAnchor {
+      return this.other(entity).entity.name === this.source.entity.name ? this.target : this.source;
+   }
+
    ref(reference: string): EntityRelationAnchor {
       return this.source.reference === reference ? this.source : this.target;
    }
@@ -165,7 +165,6 @@ export abstract class EntityRelation<
     * @param entity
     */
    isListableFor(entity: Entity): boolean {
-      //console.log("isListableFor", entity.name, this.source.entity.name, this.target.entity.name);
       return this.target.entity.name === entity.name;
    }
 

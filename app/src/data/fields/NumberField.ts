@@ -1,7 +1,10 @@
-import { type Static, Type } from "core/utils";
+import type { Static } from "core/utils";
 import type { EntityManager } from "data";
 import { TransformPersistFailedException } from "../errors";
 import { Field, type TActionContext, type TRenderContext, baseFieldConfigSchema } from "./Field";
+import * as tbbox from "@sinclair/typebox";
+import type { TFieldTSType } from "data/entities/EntityTypescript";
+const { Type } = tbbox;
 
 export const numberFieldConfigSchema = Type.Composite(
    [
@@ -99,5 +102,12 @@ export class NumberField<Required extends true | false = false> extends Field<
             multipleOf: this.config?.multipleOf,
          }),
       );
+   }
+
+   override toType(): TFieldTSType {
+      return {
+         ...super.toType(),
+         type: "number",
+      };
    }
 }

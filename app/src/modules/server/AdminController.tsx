@@ -1,15 +1,22 @@
 /** @jsxImportSource hono/jsx */
 
 import type { App } from "App";
-import { config, isDebug } from "core";
+import { $console, config, isDebug } from "core";
 import { addFlashMessage } from "core/server/flash";
 import { html } from "hono/html";
 import { Fragment } from "hono/jsx";
 import { css, Style } from "hono/css";
 import { Controller } from "modules/Controller";
 import * as SystemPermissions from "modules/permissions";
+import type { TApiUser } from "Api";
 
 const htmlBkndContextReplace = "<!-- BKND_CONTEXT -->";
+
+export type AdminBkndWindowContext = {
+   user?: TApiUser;
+   logout_route: string;
+   admin_basepath: string;
+};
 
 // @todo: add migration to remove admin path from config
 export type AdminControllerOptions = {
@@ -80,6 +87,7 @@ export class AdminController extends Controller {
          const obj = {
             user: c.get("auth")?.user,
             logout_route: this.withAdminBasePath(authRoutes.logout),
+            admin_basepath: this.options.adminBasepath,
          };
          const html = await this.getHtml(obj);
          if (!html) {
@@ -99,7 +107,7 @@ export class AdminController extends Controller {
                onGranted: async (c) => {
                   // @todo: add strict test to permissions middleware?
                   if (c.get("auth")?.user) {
-                     console.log("redirecting to success");
+                     $console.log("redirecting to success");
                      return c.redirect(authRoutes.success);
                   }
                },
@@ -125,7 +133,7 @@ export class AdminController extends Controller {
             onDenied: async (c) => {
                addFlashMessage(c, "You are not authorized to access the Admin UI", "error");
 
-               console.log("redirecting");
+               $console.log("redirecting");
                return c.redirect(authRoutes.login);
             },
          }),
@@ -142,7 +150,7 @@ export class AdminController extends Controller {
       return hono;
    }
 
-   private async getHtml(obj: any = {}) {
+   private async getHtml(obj: AdminBkndWindowContext) {
       const bknd_context = `window.__BKND__ = JSON.parse('${JSON.stringify(obj)}');`;
 
       if (this.options.html) {
@@ -153,7 +161,7 @@ export class AdminController extends Controller {
             );
          }
 
-         console.warn(
+         $console.warn(
             `Custom HTML needs to include '${htmlBkndContextReplace}' to inject BKND context`,
          );
          return this.options.html as string;

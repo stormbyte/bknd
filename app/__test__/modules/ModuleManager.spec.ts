@@ -1,9 +1,10 @@
 import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
-import { disableConsoleLog, enableConsoleLog, stripMark, Type } from "../../src/core/utils";
-import { Connection, entity, text } from "../../src/data";
-import { Module } from "../../src/modules/Module";
-import { type ConfigTable, getDefaultConfig, ModuleManager } from "../../src/modules/ModuleManager";
-import { CURRENT_VERSION, TABLE_NAME } from "../../src/modules/migrations";
+import { disableConsoleLog, enableConsoleLog, stripMark } from "core/utils";
+import { Type } from "@sinclair/typebox";
+import { Connection, entity, text } from "data";
+import { Module } from "modules/Module";
+import { type ConfigTable, getDefaultConfig, ModuleManager } from "modules/ModuleManager";
+import { CURRENT_VERSION, TABLE_NAME } from "modules/migrations";
 import { getDummyConnection } from "../helper";
 import { diff } from "core/object/diff";
 import type { Static } from "@sinclair/typebox";

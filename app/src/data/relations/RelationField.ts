@@ -1,8 +1,11 @@
-import { type Static, StringEnum, Type } from "core/utils";
+import { type Static, StringEnum } from "core/utils";
 import type { EntityManager } from "../entities";
 import { Field, baseFieldConfigSchema } from "../fields";
 import type { EntityRelation } from "./EntityRelation";
 import type { EntityRelationAnchor } from "./EntityRelationAnchor";
+import * as tbbox from "@sinclair/typebox";
+import type { TFieldTSType } from "data/entities/EntityTypescript";
+const { Type } = tbbox;
 
 const CASCADES = ["cascade", "set null", "set default", "restrict", "no action"] as const;
 
@@ -15,11 +18,6 @@ export const relationFieldConfigSchema = Type.Composite([
       on_delete: Type.Optional(StringEnum(CASCADES, { default: "set null" })),
    }),
 ]);
-/*export const relationFieldConfigSchema = baseFieldConfigSchema.extend({
-   reference: z.string(),
-   target: z.string(),
-   target_field: z.string().catch("id"),
-});*/
 
 export type RelationFieldConfig = Static<typeof relationFieldConfigSchema>;
 export type RelationFieldBaseConfig = { label?: string };
@@ -31,16 +29,6 @@ export class RelationField extends Field<RelationFieldConfig> {
       return relationFieldConfigSchema;
    }
 
-   /*constructor(name: string, config?: Partial<RelationFieldConfig>) {
-      //relation_name = relation_name || target.name;
-      //const name = [relation_name, target.getPrimaryField().name].join("_");
-      super(name, config);
-
-      //console.log(this.config);
-      //this.relation.target = target;
-      //this.relation.name = relation_name;
-   }*/
-
    static create(
       relation: EntityRelation,
       target: EntityRelationAnchor,
@@ -50,7 +38,7 @@ export class RelationField extends Field<RelationFieldConfig> {
          target.reference ?? target.entity.name,
          target.entity.getPrimaryField().name,
       ].join("_");
-      //console.log('name', name);
+
       return new RelationField(name, {
          ...config,
          required: relation.required,
@@ -95,5 +83,12 @@ export class RelationField extends Field<RelationFieldConfig> {
             $ref: `${this.config?.target}#/properties/${this.config?.target_field}`,
          }),
       );
+   }
+
+   override toType(): TFieldTSType {
+      return {
+         ...super.toType(),
+         type: "number",
+      };
    }
 }
