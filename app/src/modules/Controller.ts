@@ -1,9 +1,11 @@
 import type { App } from "App";
-import { type Context, Hono } from "hono";
+import { type Context, type Env, Hono } from "hono";
 import * as middlewares from "modules/middlewares";
 import type { SafeUser } from "auth";
+import type { EntityManager } from "data";
+import { s } from "core/object/schema";
 
-export type ServerEnv = {
+export type ServerEnv = Env & {
    Variables: {
       app: App;
       // to prevent resolving auth multiple times
@@ -45,5 +47,10 @@ export class Controller {
       }
 
       return c.notFound();
+   }
+
+   protected getEntitiesEnum(em: EntityManager<any>) {
+      const entities = em.entities.map((e) => e.name);
+      return entities.length > 0 ? s.string({ enum: entities }) : s.string();
    }
 }

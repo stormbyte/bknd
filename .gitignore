@@ -30,3 +30,5 @@ packages/media/.env
 .vscode
 .git_old
 docker/tmp
+.debug
+.history
