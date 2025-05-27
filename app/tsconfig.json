@@ -39,6 +39,7 @@
     "./src/**/*.tsx",
     "vite.dev.ts",
     "build.ts",
+    "build.cli.ts",
     "__test__",
     "e2e/**/*.ts"
   ],

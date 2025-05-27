@@ -9,6 +9,11 @@ const types = args.includes("--types");
 const sourcemap = args.includes("--sourcemap");
 const clean = args.includes("--clean");
 
+const define = {
+   __isDev: "0",
+   __version: JSON.stringify(pkg.version),
+};
+
 if (clean) {
    console.info("Cleaning dist (w/o static)");
    await $`find dist -mindepth 1 ! -path "dist/static/*" ! -path "dist/static" -exec rm -rf {} +`;
@@ -66,9 +71,7 @@ async function buildApi() {
       minify,
       sourcemap,
       watch,
-      define: {
-         __version: JSON.stringify(pkg.version),
-      },
+      define,
       entry: [
          "src/index.ts",
          "src/core/index.ts",
@@ -105,6 +108,7 @@ async function buildUi() {
       minify,
       sourcemap,
       watch,
+      define,
       external: [
          ...external,
          "react",
@@ -164,6 +168,7 @@ async function buildUiElements() {
       minify,
       sourcemap,
       watch,
+      define,
       entry: ["src/ui/elements/index.ts"],
       outDir: "dist/ui/elements",
       external: [
@@ -215,7 +220,7 @@ function baseConfig(adapter: string, overrides: Partial<tsup.Options> = {}): tsu
       },
       ...overrides,
       define: {
-         __isDev: "0",
+         ...define,
          ...overrides.define,
       },
       external: [
