@@ -23,7 +23,10 @@ export default defineConfig({
    },
    plugins: [
       react(),
-      tsconfigPaths(),
+      tsconfigPaths({
+         // otherwise it'll throw an error because of examples/astro
+         ignoreConfigErrors: true,
+      }),
       devServer({
          ...devServerConfig,
          entry: "./vite.dev.ts",
