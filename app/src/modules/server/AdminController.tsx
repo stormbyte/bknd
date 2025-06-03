@@ -83,22 +83,45 @@ export class AdminController extends Controller {
          logout: this.withAdminBasePath("/auth/logout"),
       };
 
-      hono.use("*", async (c, next) => {
-         const obj = {
-            user: c.get("auth")?.user,
-            logout_route: authRoutes.logout,
-            admin_basepath: this.options.adminBasepath,
-         };
-         const html = await this.getHtml(obj);
-         if (!html) {
-            console.warn("Couldn't generate HTML for admin UI");
-            // re-casting to void as a return is not required
-            return c.notFound() as unknown as void;
-         }
-         c.set("html", html);
+      const paths = ["/", "/data/*", "/auth/*", "/media/*", "/flows/*", "/settings/*"];
+      if (isDebug()) {
+         paths.push("/test/*");
+      }
 
-         await next();
-      });
+      for (const path of paths) {
+         hono.get(
+            path,
+            permission(SystemPermissions.accessAdmin, {
+               onDenied: async (c) => {
+                  addFlashMessage(c, "You are not authorized to access the Admin UI", "error");
+
+                  $console.log("redirecting");
+                  return c.redirect(authRoutes.login);
+               },
+            }),
+            permission(SystemPermissions.schemaRead, {
+               onDenied: async (c) => {
+                  addFlashMessage(c, "You not allowed to read the schema", "warning");
+               },
+            }),
+            async (c) => {
+               const obj = {
+                  user: c.get("auth")?.user,
+                  logout_route: authRoutes.logout,
+                  admin_basepath: this.options.adminBasepath,
+               };
+               const html = await this.getHtml(obj);
+               if (!html) {
+                  console.warn("Couldn't generate HTML for admin UI");
+                  // re-casting to void as a return is not required
+                  return c.notFound() as unknown as void;
+               }
+
+               await auth.authenticator?.requestCookieRefresh(c);
+               return c.html(html);
+            },
+         );
+      }
 
       if (auth_enabled) {
          const redirectRouteParams = [
@@ -125,27 +148,6 @@ export class AdminController extends Controller {
             return c.redirect(authRoutes.loggedOut);
          });
       }
-
-      // @todo: only load known paths
-      hono.get(
-         "/*",
-         permission(SystemPermissions.accessAdmin, {
-            onDenied: async (c) => {
-               addFlashMessage(c, "You are not authorized to access the Admin UI", "error");
-
-               $console.log("redirecting");
-               return c.redirect(authRoutes.login);
-            },
-         }),
-         permission(SystemPermissions.schemaRead, {
-            onDenied: async (c) => {
-               addFlashMessage(c, "You not allowed to read the schema", "warning");
-            },
-         }),
-         async (c) => {
-            return c.html(c.get("html")!);
-         },
-      );
 
       return hono;
    }
