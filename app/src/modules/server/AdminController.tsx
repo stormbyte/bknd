@@ -196,9 +196,13 @@ export class AdminController extends Controller {
             }).then((res) => res.default);
          }
 
-         // @todo: load all marked as entry (incl. css)
-         assets.js = manifest["src/ui/main.tsx"].file;
-         assets.css = manifest["src/ui/main.tsx"].css[0] as any;
+         try {
+            // @todo: load all marked as entry (incl. css)
+            assets.js = manifest["src/ui/main.tsx"].file;
+            assets.css = manifest["src/ui/main.tsx"].css[0] as any;
+         } catch (e) {
+            $console.warn("Couldn't find assets in manifest", e);
+         }
       }
 
       const favicon = isProd ? this.options.assetsPath + "favicon.ico" : "/favicon.ico";
