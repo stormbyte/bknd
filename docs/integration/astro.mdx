@@ -28,14 +28,14 @@ To get started with Astro and bknd you can either install the package manually, 
          npx astro add react
          ```
 
-         You also need to make sure to set the output to `hybrid` in your Astro config:
+         You also need to make sure to set the output to `server` in your Astro config:
          ```js {6}
          // astro.config.mjs
          import { defineConfig } from "astro/config";
          import react from "@astrojs/react";
 
          export default defineConfig({
-            output: "hybrid",
+            output: "server",
             integrations: [react()]
          });
          ```
@@ -48,8 +48,58 @@ To get started with Astro and bknd you can either install the package manually, 
    </Tab>
 </Tabs>
 
+
+## Configuration
+Now create a `bknd.config.ts` file in the root of your project. If you created the project using the CLI starter, this file is already created for you.
+
+```typescript bknd.config.ts
+import type { AstroBkndConfig } from "bknd/adapter/astro";
+
+export default {
+   connection: {
+      url: "file:data.db"
+   }, 
+} satisfies AstroBkndConfig;
+```
+
+See [bknd.config.ts](/extending/config) for more information on how to configure bknd. The `AstroBkndConfig` type extends the `BkndConfig` type with the following additional properties:
+
+```typescript
+type AstroEnv = NodeJS.ProcessEnv;
+export type AstroBkndConfig<Env = AstroEnv> = FrameworkBkndConfig<Env>;
+```
+
 ## Serve the API
-Create a new catch-all route at `src/pages/api/[...api].ts`:
+Create a helper file to instantiate the bknd instance and retrieve the API, importing the configurationfrom the `bknd.config.ts` file:
+
+```ts src/bknd.ts
+import type { AstroGlobal } from "astro";
+import { getApp as getBkndApp } from "bknd/adapter/astro";
+import config from "../bknd.config";
+
+export { config };
+
+export async function getApp() {
+   return await getBkndApp(config);
+}
+
+export async function getApi(
+   astro: AstroGlobal,
+   opts?: { mode: "static" } | { mode?: "dynamic"; verify?: boolean },
+) {
+   const app = await getApp();
+   if (opts?.mode !== "static" && opts?.verify) {
+      const api = app.getApi({ headers: astro.request.headers });
+      await api.verifyAuth();
+      return api;
+   }
+
+   return app.getApi();
+}
+```
+
+Create a new catch-all route at `src/pages/api/[...api].ts`.
+
 ```ts src/pages/api/[...api].ts
 import { serve } from "bknd/adapter/astro";
 
@@ -63,6 +113,7 @@ export const ALL = serve({
    }
 });
 ```
+
 For more information about the connection object, refer to the [Database](/usage/database) guide. In the
 special case of astro, you may also use your Astro DB credentials since it's also using LibSQL
 under the hood. Refer to the [Astro DB documentation](https://docs.astro.build/en/guides/astro-db/) for more information.

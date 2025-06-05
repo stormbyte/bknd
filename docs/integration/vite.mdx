@@ -16,24 +16,41 @@ Additionally, install required dependencies:
 npm install @hono/vite-dev-server
 ```
 
+## Configuration
+Now create a `bknd.config.ts` file in the root of your project.
+
+```typescript bknd.config.ts
+import type { ViteBkndConfig } from "bknd/adapter/vite";
+
+export default {
+   connection: {
+      url: "file:data.db"
+   }
+} satisfies ViteBkndConfig;
+```
+
+See [bknd.config.ts](/extending/config) for more information on how to configure bknd.
+The `ViteBkndConfig` type extends the `BkndConfig` type with the following additional properties:
+
+```typescript
+export type ViteEnv = NodeJS.ProcessEnv;
+export type ViteBkndConfig<Env = ViteEnv> = RuntimeBkndConfig<Env> & {};
+```
+
 ## Serve the API
 To serve the **bknd** API, you first have to create a local server file for you vite environment.
 Create a `server.ts` file:
-```ts
+
+```typescript
 import { serve } from "bknd/adapter/vite";
+import config from "./bknd.config";
 
-// the configuration given is optional
-export default serve({
-   mode: "cached", // that's the default
-   connection: {
-      url: ":memory:"
-   }
-})
+export default serve(config)
 ```
-For more information about the connection object, refer to the [Database](/usage/database) guide.
-
 You can also run your vite server in `mode: "fresh"`, this will re-create the app on every fetch.
 This is only useful for when working on the `bknd` repository directly.
+
+For more information about the connection object, refer to the [Database](/usage/database) guide.
 
 Next, adjust your `vite.config.ts` to look like the following:
 ```ts
@@ -82,17 +99,22 @@ options you can make use of to adjust it according to your setup.
 There might be cases you want to be sure to be in control over the HTML that is being used.
 `bknd` generates it automatically, but you use your own one as follows:
 
-```ts server.ts
+```typescript server.ts
 import { serve, addViteScript } from "bknd/adapter/vite";
 import { readFile } from "node:fs/promises"
+import config from "./bknd.config";
 
 let html = await readFile("./index.html", "utf-8");
 
-// add vite scripts
-html = addViteScript(html);
-
 // then add it as an option
-export default serve({ html })
+export default serve({ 
+   ...config, 
+   adminOptions: { 
+      html: addViteScript(html),
+      // optionally, you can change the base path for the admin UI
+      adminBasePath: "/admin"
+   } 
+})
 ```
 
 The vite scripts has to be added manually currently, as adding them automatically with
@@ -101,13 +123,18 @@ The vite scripts has to be added manually currently, as adding them automaticall
 ### Use a custom entry point
 By default, the entry point `/src/main.tsx` is used and should fit most cases. If that's not you,
 you can supply a different one like so:
-```ts server.ts
+
+```typescript server.ts
 import { serve } from "bknd/adapter/vite";
+import config from "./bknd.config";
 
 // the configuration given is optional
 export default serve({
-  forceDev: {
-     mainPath: "/src/special.tsx"
-  }
+   ...config,
+   adminOptions: {
+      forceDev: {
+         mainPath: "/src/special.tsx"
+      }
+   }
 });
 ```

@@ -14,20 +14,21 @@ Here is the output:
 $ npx bknd
 Usage: bknd [options] [command]
 
-⚡ bknd cli v0.10.3-rc.1
+⚡ bknd cli v0.13.0
 
 Options:
   -V, --version          output the version number
   -h, --help             display help for command
 
 Commands:
-  config [options]       get default config
-  copy-assets [options]  copy static assets
-  create [options]       create a new project
-  debug <subject>        debug bknd
-  run [options]          run an instance
+  user <action>          create/update users, or generate a token (auth)
+  types [options]        generate types
   schema [options]       get schema
-  user <action>          create and update user (auth)
+  run [options]          run an instance
+  debug <subject>        debug bknd
+  create [options]       create a new project
+  copy-assets [options]  copy static assets
+  config [options]       get default config
   help [command]         display help for command
 ```
 
@@ -124,3 +125,70 @@ To start an instance with an ephemeral in-memory database, run the following:
 npx bknd run --memory
 ```
 Keep in mind that the database is not persisted and will be lost when the process is terminated.
+
+## Generating types (`types`)
+To see all available `types` options, execute `npx bknd types --help`.
+
+```
+$ npx bknd types --help
+Usage: bknd types [options]
+
+generate types
+
+Options:
+  -o, --outfile <outfile>  output file (default: "bknd-types.d.ts")
+  --no-write               do not write to file
+  -h, --help               display help for command
+```
+
+To generate types for the database, run the following:
+```
+npx bknd types
+```
+
+This will generate types for your database schema in `bknd-types.d.ts`. The generated file could look like this:
+
+```typescript bknd-types.d.ts
+import type { DB } from "bknd/core";
+import type { Insertable, Selectable, Updateable, Generated } from "kysely";
+
+declare global {
+  type BkndEntity<T extends keyof DB> = Selectable<DB[T]>;
+  type BkndEntityCreate<T extends keyof DB> = Insertable<DB[T]>;
+  type BkndEntityUpdate<T extends keyof DB> = Updateable<DB[T]>;
+}
+
+export interface Todos {
+  id: Generated<number>;
+  title?: string;
+  done?: boolean;
+}
+
+interface Database {
+  todos: Todos;
+}
+
+declare module "bknd/core" {
+  interface DB extends Database {}
+}
+```
+
+Make sure to add the generated file in your `tsconfig.json` file:
+
+```json tsconfig.json
+{
+   "include": [
+      "bknd-types.d.ts"
+   ]
+}
+```
+
+You can then use the types by importing them from `bknd/core`:
+
+```typescript
+import type { DB } from "bknd/core";
+
+type Todo = DB["todos"];
+```
+
+All bknd methods that involve your database schema will be automatically typed.

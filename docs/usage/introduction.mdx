@@ -18,7 +18,7 @@ There is also a fourth option, which is running it inside a
 Regardless of the method you choose, at the end all adapters come down to the actual
 instantiation of the `App`, which in raw looks like this:
 
-```ts
+```typescript
 import { createApp, type CreateAppConfig } from "bknd";
 
 // create the app
@@ -38,7 +38,7 @@ implements the `Fetch` API.
 ## Configuration (`CreateAppConfig`)
 The `CreateAppConfig` type is the main configuration object for the `createApp` function. It has
 the following properties:
-```ts
+```typescript
 import type { App, InitialModuleConfigs, ModuleBuildContext } from "bknd";
 import type { Connection } from "bknd/data";
 import type { Config } from "@libsql/client";

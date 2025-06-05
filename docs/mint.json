@@ -75,6 +75,10 @@
       ]
     },
     {
+      "group": "Extending",
+      "pages": ["extending/config", "extending/events"]
+    },
+    {
       "group": "Integration",
       "pages": [
         "integration/introduction",
