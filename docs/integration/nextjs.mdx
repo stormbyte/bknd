@@ -22,21 +22,42 @@ To get started with Next.js and bknd you can either install the package manually
    </Tab>
 </Tabs>
 
+## Configuration
+Now create a `bknd.config.ts` file in the root of your project. If you created the project using the CLI starter, this file is already created for you.
+
+
+
+```typescript bknd.config.ts
+import type { NextjsBkndConfig } from "bknd/adapter/nextjs";
+
+export default {
+   connection: {
+      url: "file:data.db"
+   }, 
+} satisfies NextjsBkndConfig;
+```
+
+See [bknd.config.ts](/extending/config) for more information on how to configure bknd. The `NextjsBkndConfig` type extends the `BkndConfig` type with the following additional properties:
+
+```typescript
+type NextjsEnv = NextApiRequest["env"];
+export type NextjsBkndConfig<Env = NextjsEnv> = FrameworkBkndConfig<Env> & {
+   cleanRequest?: { searchParams?: string[] };
+};
+```
+
 ## Serve the API
-Create a helper file to instantiate the bknd instance and retrieve the API:
+Create a helper file to instantiate the bknd instance and retrieve the API, importing the configurationfrom the `bknd.config.ts` file:
 
 ```ts src/bknd.ts
 import { type NextjsBkndConfig, getApp as getBkndApp } from "bknd/adapter/nextjs";
 import { headers } from "next/headers";
+import config from "../bknd.config";
 
-export const config = {
-   connection: {
-      url: "file:data.db"
-   },
-} as const satisfies NextjsBkndConfig;
+export { config };
 
 export async function getApp() {
-   return await getBkndApp(config);
+   return await getBkndApp(config, process.env);
 }
 
 export async function getApi(opts?: { verify?: boolean }) {
