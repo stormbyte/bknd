@@ -1,4 +1,4 @@
-import { D1Connection, type D1ConnectionConfig } from "./D1Connection";
+import { D1Connection, type D1ConnectionConfig } from "./connection/D1Connection";
 
 export * from "./cloudflare-workers.adapter";
 export { makeApp, getFresh } from "./modes/fresh";

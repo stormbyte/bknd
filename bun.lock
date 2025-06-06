@@ -6,7 +6,6 @@
       "devDependencies": {
         "@biomejs/biome": "1.9.4",
         "@clack/prompts": "^0.10.0",
-        "@cloudflare/workers-types": "^4.20240620.0",
         "@tsconfig/strictest": "^2.0.5",
         "@types/lodash-es": "^4.17.12",
         "bun-types": "^1.1.18",
@@ -27,7 +26,7 @@
     },
     "app": {
       "name": "bknd",
-      "version": "0.12.0",
+      "version": "0.13.0",
       "bin": "./dist/cli/index.js",
       "dependencies": {
         "@cfworker/json-schema": "^4.1.1",
@@ -60,6 +59,7 @@
       "devDependencies": {
         "@aws-sdk/client-s3": "^3.758.0",
         "@bluwy/giget-core": "^0.1.2",
+        "@cloudflare/workers-types": "^4.20250606.0",
         "@dagrejs/dagre": "^1.1.4",
         "@hono/typebox-validator": "^0.3.2",
         "@hono/vite-dev-server": "^0.19.0",
@@ -523,7 +523,7 @@
 
     "@cloudflare/workerd-windows-64": ["@cloudflare/workerd-windows-64@1.20250224.0", "", { "os": "win32", "cpu": "x64" }, "sha512-x2iF1CsmYmmPEorWb1GRpAAouX5rRjmhuHMC259ojIlozR4G0LarlB9XfmeLEvtw537Ea0kJ6SOhjvUcWzxSvA=="],
 
-    "@cloudflare/workers-types": ["@cloudflare/workers-types@4.20250310.0", "", {}, "sha512-SNE2ohlL9/VxFbcHQc28n3Nj70FiS1Ea0wrUhCXUIbR2lsr4ceRVndNxhuzhcF9EZd2UXm2wwow34RIS1mm+Mg=="],
+    "@cloudflare/workers-types": ["@cloudflare/workers-types@4.20250606.0", "", {}, "sha512-9T/Y/Mxe57UVzqgfjJKheiMplnStj/3CmCHlgoZNLU8JW2waRbXvpY3EEeliiYAJfeHZTjeAaKO2pCabxAoyCw=="],
 
     "@cnakazawa/watch": ["@cnakazawa/watch@1.0.4", "", { "dependencies": { "exec-sh": "^0.3.2", "minimist": "^1.2.0" }, "bin": { "watch": "cli.js" } }, "sha512-v9kIhKwjeZThiWrLmj0y17CWoyddASLj9O2yvbZkbvw/N3rWOYy9zkV66ursAoVr0mV15bL8g0c4QZUE6cdDoQ=="],
 
