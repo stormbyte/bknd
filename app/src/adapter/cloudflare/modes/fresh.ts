@@ -4,10 +4,10 @@ import { makeConfig, registerAsyncsExecutionContext, type CfMakeConfigArgs } fro
 
 export async function makeApp<Env extends CloudflareEnv = CloudflareEnv>(
    config: CloudflareBkndConfig<Env>,
-   args: CfMakeConfigArgs<Env>,
+   args?: CfMakeConfigArgs<Env>,
    opts?: RuntimeOptions,
 ) {
-   return await createRuntimeApp<Env>(makeConfig(config, args), args.env, opts);
+   return await createRuntimeApp<Env>(makeConfig(config, args), args?.env, opts);
 }
 
 export async function getFresh<Env extends CloudflareEnv = CloudflareEnv>(

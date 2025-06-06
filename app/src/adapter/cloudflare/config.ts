@@ -85,58 +85,61 @@ export function d1SessionHelper(config: CloudflareBkndConfig<any>) {
 let media_registered: boolean = false;
 export function makeConfig<Env extends CloudflareEnv = CloudflareEnv>(
    config: CloudflareBkndConfig<Env>,
-   args: CfMakeConfigArgs<Env>,
+   args?: CfMakeConfigArgs<Env>,
 ) {
    if (!media_registered) {
       registerMedia(args as any);
       media_registered = true;
    }
 
-   const appConfig = makeAdapterConfig(config, args.env);
-   const bindings = config.bindings?.(args.env);
+   const appConfig = makeAdapterConfig(config, args?.env);
 
-   const sessionHelper = d1SessionHelper(config);
-   const sessionId = sessionHelper.get(args.request);
-   let session: D1DatabaseSession | undefined;
+   if (args?.env) {
+      const bindings = config.bindings?.(args?.env);
 
-   if (!appConfig.connection) {
-      let db: D1Database | undefined;
-      if (bindings?.db) {
-         $console.log("Using database from bindings");
-         db = bindings.db;
-      } else if (Object.keys(args).length > 0) {
-         const binding = getBinding(args.env, "D1Database");
-         if (binding) {
-            $console.log(`Using database from env "${binding.key}"`);
-            db = binding.value;
+      const sessionHelper = d1SessionHelper(config);
+      const sessionId = sessionHelper.get(args.request);
+      let session: D1DatabaseSession | undefined;
+
+      if (!appConfig.connection) {
+         let db: D1Database | undefined;
+         if (bindings?.db) {
+            $console.log("Using database from bindings");
+            db = bindings.db;
+         } else if (Object.keys(args).length > 0) {
+            const binding = getBinding(args.env, "D1Database");
+            if (binding) {
+               $console.log(`Using database from env "${binding.key}"`);
+               db = binding.value;
+            }
          }
-      }
 
-      if (db) {
-         if (config.d1?.session) {
-            session = db.withSession(sessionId ?? config.d1?.first);
-            appConfig.connection = new D1Connection({ binding: session });
+         if (db) {
+            if (config.d1?.session) {
+               session = db.withSession(sessionId ?? config.d1?.first);
+               appConfig.connection = new D1Connection({ binding: session });
+            } else {
+               appConfig.connection = new D1Connection({ binding: db });
+            }
          } else {
-            appConfig.connection = new D1Connection({ binding: db });
+            throw new Error("No database connection given");
          }
-      } else {
-         throw new Error("No database connection given");
       }
-   }
 
-   if (config.d1?.session) {
-      appConfig.options = {
-         ...appConfig.options,
-         manager: {
-            ...appConfig.options?.manager,
-            onServerInit: (server) => {
-               server.use(async (c, next) => {
-                  sessionHelper.set(c, session);
-                  await next();
-               });
+      if (config.d1?.session) {
+         appConfig.options = {
+            ...appConfig.options,
+            manager: {
+               ...appConfig.options?.manager,
+               onServerInit: (server) => {
+                  server.use(async (c, next) => {
+                     sessionHelper.set(c, session);
+                     await next();
+                  });
+               },
             },
-         },
-      };
+         };
+      }
    }
 
    return appConfig;
