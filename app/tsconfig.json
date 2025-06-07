@@ -32,7 +32,12 @@
     "paths": {
       "*": ["./src/*"],
       "bknd": ["./src/index.ts"],
-      "bknd/*": ["./src/*"]
+      "bknd/core": ["./src/core/index.ts"],
+      "bknd/adapter": ["./src/adapter/index.ts"],
+      "bknd/client": ["./src/ui/client/index.ts"],
+      "bknd/data": ["./src/data/index.ts"],
+      "bknd/media": ["./src/media/index.ts"],
+      "bknd/auth": ["./src/auth/index.ts"]
     }
   },
   "include": [
