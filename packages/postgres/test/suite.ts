@@ -151,5 +151,47 @@ export function testSuite(config: TestSuiteConfig) {
          expect(result[0].comments[0].content).toBe("Hello");
          expect(result[1].comments.length).toBe(0);
       });
+
+      it("should support uuid", async () => {
+         const schema = proto.em(
+            {
+               posts: proto.entity(
+                  "posts",
+                  {
+                     title: proto.text().required(),
+                     content: proto.text(),
+                  },
+                  {
+                     primary_format: "uuid",
+                  },
+               ),
+               comments: proto.entity("comments", {
+                  content: proto.text(),
+               }),
+            },
+            (fns, s) => {
+               fns.relation(s.comments).manyToOne(s.posts);
+               fns.index(s.posts).on(["title"], true);
+            },
+         );
+
+         const app = createApp({
+            connection,
+            initialConfig: {
+               data: schema.toJSON(),
+            },
+         });
+
+         await app.build();
+         const config = app.toJSON();
+         // @ts-expect-error
+         expect(config.data.entities?.posts.fields?.id.config?.format).toBe("uuid");
+
+         const em = app.em;
+         const mutator = em.mutator(em.entity("posts"));
+         const data = await mutator.insertOne({ title: "Hello", content: "World" });
+         expect(data.data.id).toBeString();
+         expect(String(data.data.id).length).toBe(36);
+      });
    });
 }

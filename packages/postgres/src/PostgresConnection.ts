@@ -32,7 +32,13 @@ export abstract class PostgresConnection<DB = any> extends Connection<DB> {
 
    override getFieldSchema(spec: FieldSpec): SchemaResponse {
       this.validateFieldSpecType(spec.type);
-      let type: ColumnDataType = spec.primary ? "serial" : spec.type;
+      let type: ColumnDataType = spec.type;
+
+      if (spec.primary) {
+         if (spec.type === "integer") {
+            type = "serial";
+         }
+      }
 
       switch (spec.type) {
          case "blob":
