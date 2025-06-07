@@ -391,7 +391,7 @@ function EntityField({
                            allowDeselect={false}
                            control={control}
                            size="xs"
-                           className="w-20"
+                           className="w-22"
                         />
                      </>
                   ) : (

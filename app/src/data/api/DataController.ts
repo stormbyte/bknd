@@ -344,7 +344,6 @@ export class DataController extends Controller {
             if (!this.entityExists(entity)) {
                return this.notFound(c);
             }
-            console.log("id", id);
             const options = c.req.valid("query") as RepoQuery;
             const result = await this.em.repository(entity).findId(id, options);
 
