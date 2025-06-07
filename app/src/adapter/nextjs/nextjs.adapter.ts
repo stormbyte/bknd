@@ -3,7 +3,6 @@ import { isNode } from "bknd/utils";
 import type { NextApiRequest } from "next";
 
 type NextjsEnv = NextApiRequest["env"];
-
 export type NextjsBkndConfig<Env = NextjsEnv> = FrameworkBkndConfig<Env> & {
    cleanRequest?: { searchParams?: string[] };
 };
