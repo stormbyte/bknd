@@ -12,6 +12,7 @@ export {
    type GetBindingType,
    type BindingMap,
 } from "./bindings";
+export { constants } from "./config";
 
 export function d1(config: D1ConnectionConfig) {
    return new D1Connection(config);

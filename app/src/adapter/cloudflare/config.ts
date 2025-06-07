@@ -14,6 +14,10 @@ export const constants = {
    exec_async_event_id: "cf_register_waituntil",
    cache_endpoint: "/__bknd/cache",
    do_endpoint: "/__bknd/do",
+   d1_session: {
+      cookie: "cf_d1_session",
+      header: "x-cf-d1-session",
+   },
 };
 
 export type CfMakeConfigArgs<Env extends CloudflareEnv = CloudflareEnv> = {
@@ -35,8 +39,8 @@ function getCookieValue(cookies: string | null, name: string) {
 }
 
 export function d1SessionHelper(config: CloudflareBkndConfig<any>) {
-   const headerKey = "x-cf-d1-session";
-   const cookieKey = "cf_d1_session";
+   const headerKey = constants.d1_session.header;
+   const cookieKey = constants.d1_session.cookie;
    const transport = config.d1?.transport;
 
    return {
