@@ -67,6 +67,10 @@ export class PrimaryField<Required extends true | false = false> extends Field<
    }
 
    override toJsonSchema() {
+      if (this.format === "uuid") {
+         return this.toSchemaWrapIfRequired(Type.String({ writeOnly: undefined }));
+      }
+
       return this.toSchemaWrapIfRequired(Type.Number({ writeOnly: undefined }));
    }
 
