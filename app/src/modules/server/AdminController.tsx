@@ -50,11 +50,11 @@ export class AdminController extends Controller {
    }
 
    get basepath() {
-      return this.options.basepath ?? "/";
+      return this.options.adminBasepath ?? "/";
    }
 
    private withBasePath(route: string = "") {
-      return (this.basepath + route).replace(/(?<!:)\/+/g, "/");
+      return (this.options.basepath + route).replace(/(?<!:)\/+/g, "/");
    }
 
    private withAdminBasePath(route: string = "") {
@@ -80,7 +80,7 @@ export class AdminController extends Controller {
          loggedOut: configs.auth.cookie.pathLoggedOut ?? this.withAdminBasePath("/"),
          login: this.withAdminBasePath("/auth/login"),
          register: this.withAdminBasePath("/auth/register"),
-         logout: this.withAdminBasePath("/auth/logout"),
+         logout: "/api/auth/logout",
       };
 
       const paths = ["/", "/data/*", "/auth/*", "/media/*", "/flows/*", "/settings/*"];
