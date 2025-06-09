@@ -23,7 +23,7 @@ const searchSchema = s.partialObject({
    perPage: s.number({ default: 10 }).optional(),
 });
 
-const PER_PAGE_OPTIONS = [5, 10, 25];
+const PER_PAGE_OPTIONS = [5, 10, 25, 50, 100];
 
 export function DataEntityList({ params }) {
    const { $data } = useBkndData();
@@ -61,19 +61,18 @@ export function DataEntityList({ params }) {
    }
 
    function handleClickPage(page: number) {
-      search.set("page", page);
+      search.set({ page });
    }
 
    function handleSortClick(name: string) {
       const sort = search.value.sort!;
       const newSort = { by: name, dir: sort.by === name && sort.dir === "asc" ? "desc" : "asc" };
 
-      search.set("sort", newSort as any);
+      search.set({ sort: newSort as any });
    }
 
    function handleClickPerPage(perPage: number) {
-      // @todo: also reset page to 1
-      search.set("perPage", perPage);
+      search.set({ perPage, page: 1 });
    }
 
    const isUpdating = $q.isLoading || $q.isValidating;

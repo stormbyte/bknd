@@ -50,7 +50,7 @@ export class AdminController extends Controller {
    }
 
    get basepath() {
-      return this.options.adminBasepath ?? "/";
+      return this.options.basepath ?? "/";
    }
 
    private withBasePath(route: string = "") {
@@ -93,10 +93,13 @@ export class AdminController extends Controller {
             path,
             permission(SystemPermissions.accessAdmin, {
                onDenied: async (c) => {
-                  addFlashMessage(c, "You are not authorized to access the Admin UI", "error");
+                  if (!path.startsWith("/auth")) {
+                     addFlashMessage(c, "You are not authorized to access the Admin UI", "error");
 
-                  $console.log("redirecting");
-                  return c.redirect(authRoutes.login);
+                     $console.log("redirecting", authRoutes.login);
+                     return c.redirect(authRoutes.login);
+                  }
+                  return;
                },
             }),
             permission(SystemPermissions.schemaRead, {
