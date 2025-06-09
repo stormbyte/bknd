@@ -1,13 +1,14 @@
 import { decodeSearch, encodeSearch, mergeObject, parseDecode } from "core/utils";
 import { isEqual, transform } from "lodash-es";
 import { useLocation, useSearch as useWouterSearch } from "wouter";
-import { type s, parse } from "core/object/schema";
+import { type s, parse, cloneSchema } from "core/object/schema";
 
 // @todo: migrate to Typebox
 export function useSearch<Schema extends s.TAnySchema = s.TAnySchema>(
-   schema: Schema,
+   _schema: Schema,
    defaultValue?: Partial<s.StaticCoerced<Schema>>,
 ) {
+   const schema = cloneSchema(_schema as any) as s.TSchema;
    const searchString = useWouterSearch();
    const [location, navigate] = useLocation();
    const initial = searchString.length > 0 ? decodeSearch(searchString) : (defaultValue ?? {});
