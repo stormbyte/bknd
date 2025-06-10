@@ -257,15 +257,20 @@ function EntityDetailInner({
 }) {
    const other = relation.other(entity);
    const [navigate] = useNavigate();
-
-   const search = {
+   const [search, setSearch] = useState({
       select: other.entity.getSelect(undefined, "table"),
+      sort: other.entity.getDefaultSort(),
       limit: 10,
       offset: 0,
-   };
+   });
+
    // @todo: add custom key for invalidation
-   const $q = useApiQuery((api) =>
-      api.data.readManyByReference(entity.name, id, other.reference, search),
+   const $q = useApiQuery(
+      (api) => api.data.readManyByReference(entity.name, id, other.reference, search),
+      {
+         keepPreviousData: true,
+         revalidateOnFocus: true,
+      },
    );
 
    function handleClickRow(row: Record<string, any>) {
@@ -300,11 +305,17 @@ function EntityDetailInner({
             select={search.select}
             data={$q.data ?? null}
             entity={other.entity}
+            sort={search.sort}
             onClickRow={handleClickRow}
             onClickNew={handleClickNew}
-            page={1}
+            page={Math.floor(search.offset / search.limit) + 1}
             total={$q.data?.body?.meta?.count ?? 1}
-            /*onClickPage={handleClickPage}*/
+            onClickPage={(page) => {
+               setSearch((s) => ({
+                  ...s,
+                  offset: (page - 1) * s.limit,
+               }));
+            }}
          />
       </div>
    );

@@ -1,32 +1,41 @@
-import { decodeSearch, encodeSearch, mergeObject, parseDecode } from "core/utils";
+import { decodeSearch, encodeSearch, mergeObject } from "core/utils";
 import { isEqual, transform } from "lodash-es";
 import { useLocation, useSearch as useWouterSearch } from "wouter";
-import { type s, parse, cloneSchema } from "core/object/schema";
+import { type s, parse } from "core/object/schema";
+import { useEffect, useState } from "react";
 
-// @todo: migrate to Typebox
+export type UseSearchOptions<Schema extends s.TAnySchema = s.TAnySchema> = {
+   defaultValue?: Partial<s.StaticCoerced<Schema>>;
+   beforeEncode?: (search: Partial<s.StaticCoerced<Schema>>) => object;
+};
+
 export function useSearch<Schema extends s.TAnySchema = s.TAnySchema>(
-   _schema: Schema,
-   defaultValue?: Partial<s.StaticCoerced<Schema>>,
+   schema: Schema,
+   options?: UseSearchOptions<Schema>,
 ) {
-   const schema = cloneSchema(_schema as any) as s.TSchema;
    const searchString = useWouterSearch();
    const [location, navigate] = useLocation();
-   const initial = searchString.length > 0 ? decodeSearch(searchString) : (defaultValue ?? {});
-   const value = parse(schema, initial, {
-      withDefaults: true,
-      clone: true,
-   }) as s.StaticCoerced<Schema>;
+   const [value, setValue] = useState<s.StaticCoerced<Schema>>(
+      options?.defaultValue ?? ({} as any),
+   );
+   const _defaults = mergeObject(
+      // @ts-ignore
+      schema.template({ withOptional: true }),
+      options?.defaultValue ?? {},
+   );
 
-   // @ts-ignore
-   const _defaults = mergeObject(schema.template({ withOptional: true }), defaultValue ?? {});
+   useEffect(() => {
+      const initial =
+         searchString.length > 0 ? decodeSearch(searchString) : (options?.defaultValue ?? {});
+      const v = parse(schema, Object.assign({}, _defaults, initial)) as any;
+      setValue(v);
+   }, [searchString, JSON.stringify(options?.defaultValue), location]);
 
    function set<Update extends Partial<s.StaticCoerced<Schema>>>(update: Update): void {
-      // @ts-ignore
-      if (schema.validate(update).valid) {
-         const search = getWithoutDefaults(mergeObject(value, update), _defaults);
-         const encoded = encodeSearch(search, { encode: false });
-         navigate(location + (encoded.length > 0 ? "?" + encoded : ""));
-      }
+      const search = getWithoutDefaults(Object.assign({}, value, update), _defaults);
+      const prepared = options?.beforeEncode?.(search) ?? search;
+      const encoded = encodeSearch(prepared, { encode: false });
+      navigate(location + (encoded.length > 0 ? "?" + encoded : ""));
    }
 
    return {

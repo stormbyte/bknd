@@ -35,8 +35,19 @@ export function DataEntityList({ params }) {
    useBrowserTitle(["Data", entity?.label ?? params.entity]);
    const [navigate] = useNavigate();
    const search = useSearch(searchSchema, {
-      select: entity.getSelect(undefined, "table"),
-      sort: entity.getDefaultSort(),
+      defaultValue: {
+         select: entity.getSelect(undefined, "table"),
+         sort: entity.getDefaultSort(),
+      },
+      beforeEncode: (v) => {
+         if ("sort" in v && v.sort) {
+            return {
+               ...v,
+               sort: `${v.sort.dir === "asc" ? "" : "-"}${v.sort.by}`,
+            };
+         }
+         return v;
+      },
    });
 
    const $q = useApiQuery(
