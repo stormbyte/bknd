@@ -114,12 +114,12 @@ Example using `@neondatabase/serverless`:
 import { createCustomPostgresConnection } from "@bknd/postgres";
 import { NeonDialect } from "kysely-neon";
 
-const connection = createCustomPostgresConnection(NeonDialect)({
-   connectionString: process.env.NEON,
-});
+const neon = createCustomPostgresConnection(NeonDialect);
 
 serve({
-   connection: connection,
+   connection: neon({
+      connectionString: process.env.NEON,
+   }),
 });
 ```
 
@@ -137,14 +137,14 @@ const xata = new client({
    branch: process.env.XATA_BRANCH,
 });
 
-const connection = createCustomPostgresConnection(XataDialect, {
+const xataConnection = createCustomPostgresConnection(XataDialect, {
    supports: {
       batching: false,
    },
-})({ xata });
+});
 
 serve({
-   connection: connection,
+   connection: xataConnection({ xata }),
 });
 ```
 
