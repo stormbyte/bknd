@@ -51,7 +51,7 @@ describe("[Repository]", async () => {
       //
       {
          const res = await em.repository(items).findMany();
-         expect(res.count).toBeUndefined();
+         expect(res.count).toBe(3);
       }
 
       {
