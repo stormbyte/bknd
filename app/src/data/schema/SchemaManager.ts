@@ -333,7 +333,7 @@ export class SchemaManager {
 
             if (config.force) {
                try {
-                  $console.log("[SchemaManager]", sql);
+                  $console.debug("[SchemaManager]", sql);
                   await qb.execute();
                } catch (e) {
                   throw new Error(`Failed to execute query: ${sql}: ${(e as any).message}`);
