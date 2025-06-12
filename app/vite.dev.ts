@@ -5,6 +5,9 @@ import { App, registries } from "./src";
 import { StorageLocalAdapter } from "./src/adapter/node";
 import { EntityManager, LibsqlConnection } from "data";
 import { __bknd } from "modules/ModuleManager";
+import { $console } from "core";
+//import { DatabaseSync } from "node:sqlite";
+//import { nodeSqlite } from "./src/adapter/node/connection/NodeSqliteConnection";
 
 registries.media.register("local", StorageLocalAdapter);
 
@@ -58,6 +61,7 @@ export default {
       if (!app || recreate) {
          app = App.create({
             connection: credentials,
+            //connection: nodeSqlite({ database: new DatabaseSync(":memory:") }),
          });
          app.emgr.onEvent(
             App.Events.AppBuiltEvent,

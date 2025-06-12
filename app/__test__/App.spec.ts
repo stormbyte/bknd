@@ -1,4 +1,4 @@
-import { afterAll, afterEach, describe, expect, test } from "bun:test";
+import { afterEach, describe, test } from "bun:test";
 import { App } from "../src";
 import { getDummyConnection } from "./helper";
 

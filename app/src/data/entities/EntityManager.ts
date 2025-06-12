@@ -207,8 +207,9 @@ export class EntityManager<TBD extends object = DefaultDB> {
 
    repository<E extends Entity | keyof TBD | string>(
       entity: E,
+      opts: Omit<RepositoryOptions, "emgr"> = {},
    ): Repository<TBD, EntitySchema<TBD, E>> {
-      return this.repo(entity);
+      return this.repo(entity, opts);
    }
 
    repo<E extends Entity | keyof TBD | string>(
