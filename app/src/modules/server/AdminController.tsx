@@ -50,7 +50,7 @@ export class AdminController extends Controller {
    }
 
    get basepath() {
-      return this.options.basepath ?? "/";
+      return this.withAdminBasePath();
    }
 
    private withBasePath(route: string = "") {
