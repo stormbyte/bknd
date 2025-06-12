@@ -1,18 +1,18 @@
 import type { App, AppPlugin } from "bknd";
 
-export type ImageOptimizationPluginOptions = {
+export type CloudflareImageOptimizationOptions = {
    accessUrl?: string;
    resolvePath?: string;
    autoFormat?: boolean;
    devBypass?: string;
 };
 
-export function ImageOptimizationPlugin({
+export function cloudflareImageOptimization({
    accessUrl = "/_plugin/image/optimize",
    resolvePath = "/api/media/file",
    autoFormat = true,
    devBypass,
-}: ImageOptimizationPluginOptions = {}): AppPlugin {
+}: CloudflareImageOptimizationOptions = {}): AppPlugin {
    const disallowedAccessUrls = ["/api", "/admin", "/_optimize"];
    if (disallowedAccessUrls.includes(accessUrl) || accessUrl.length < 2) {
       throw new Error(`Disallowed accessUrl: ${accessUrl}`);

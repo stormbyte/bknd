@@ -317,6 +317,7 @@ export class SystemController extends Controller {
                   local: datetimeStringLocal(),
                   utc: datetimeStringUTC(),
                },
+               plugins: this.app.plugins.map((p) => p.name),
             }),
       );
 

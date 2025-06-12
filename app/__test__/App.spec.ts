@@ -51,6 +51,9 @@ describe("App tests", async () => {
                            },
                         );
                      },
+                     onBoot: async () => {
+                        called.push("onBoot");
+                     },
                      beforeBuild: async () => {
                         called.push("beforeBuild");
                      },
@@ -90,6 +93,7 @@ describe("App tests", async () => {
          },
       ]);
       expect(called).toEqual([
+         "onBoot",
          "onServerInit",
          "beforeBuild",
          "onServerInit",

@@ -78,6 +78,7 @@ async function buildApi() {
          "src/core/utils/index.ts",
          "src/data/index.ts",
          "src/media/index.ts",
+         "src/plugins/index.ts",
       ],
       outDir: "dist",
       external: [...external],

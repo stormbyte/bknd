@@ -27,6 +27,7 @@ export type AppPluginConfig = {
    onBuilt?: () => MaybePromise<void>;
    onServerInit?: (server: Hono<ServerEnv>) => MaybePromise<void>;
    onFirstBoot?: () => MaybePromise<void>;
+   onBoot?: () => MaybePromise<void>;
 };
 export type AppPlugin = (app: App) => AppPluginConfig;
 
@@ -93,6 +94,7 @@ export class App {
       private options?: AppOptions,
    ) {
       this.plugins = (options?.plugins ?? []).map((plugin) => plugin(this));
+      this.runPlugins("onBoot");
       this.modules = new ModuleManager(connection, {
          ...(options?.manager ?? {}),
          initial: _initialConfig,
