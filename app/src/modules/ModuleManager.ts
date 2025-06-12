@@ -34,6 +34,7 @@ import { AppMedia } from "../media/AppMedia";
 import type { ServerEnv } from "./Controller";
 import { Module, type ModuleBuildContext } from "./Module";
 import * as tbbox from "@sinclair/typebox";
+import { ModuleHelper } from "./ModuleHelper";
 const { Type } = tbbox;
 
 export type { ModuleBuildContext };
@@ -92,6 +93,8 @@ export type ModuleManagerOptions = {
    trustFetched?: boolean;
    // runs when initial config provided on a fresh database
    seed?: (ctx: ModuleBuildContext) => Promise<void>;
+   // called right after modules are built, before finish
+   onModulesBuilt?: (ctx: ModuleBuildContext) => Promise<void>;
    /** @deprecated */
    verbosity?: Verbosity;
 };
@@ -267,7 +270,7 @@ export class ModuleManager {
          this.guard = new Guard();
       }
 
-      return {
+      const ctx = {
          connection: this.connection,
          server: this.server,
          em: this.em,
@@ -275,6 +278,11 @@ export class ModuleManager {
          guard: this.guard,
          flags: Module.ctx_flags,
          logger: this.logger,
+      };
+
+      return {
+         ...ctx,
+         helper: new ModuleHelper(ctx),
       };
    }
 
@@ -548,6 +556,10 @@ export class ModuleManager {
 
       this._built = state.built = true;
       this.logger.log("modules built", ctx.flags);
+
+      if (this.options?.onModulesBuilt) {
+         await this.options.onModulesBuilt(ctx);
+      }
 
       if (options?.ignoreFlags !== true) {
          if (ctx.flags.sync_required) {

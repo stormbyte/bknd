@@ -297,6 +297,6 @@ export class MediaController extends Controller {
          },
       );
 
-      return hono.all("*", (c) => c.notFound());
+      return hono;
    }
 }

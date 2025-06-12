@@ -18,6 +18,8 @@ export {
    type InitialModuleConfigs,
 } from "./modules/ModuleManager";
 
+export type { ServerEnv } from "modules/Controller";
+
 export * as middlewares from "modules/middlewares";
 export { registries } from "modules/registries";
 
