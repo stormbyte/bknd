@@ -1,4 +1,5 @@
 import { D1Connection, type D1ConnectionConfig } from "./connection/D1Connection";
+import { ImageOptimizationPlugin } from "./plugins/image-optimization.plugin";
 
 export * from "./cloudflare-workers.adapter";
 export { makeApp, getFresh } from "./modes/fresh";
@@ -13,6 +14,9 @@ export {
    type BindingMap,
 } from "./bindings";
 export { constants } from "./config";
+export const plugins = {
+   imageOptimization: ImageOptimizationPlugin,
+};
 
 export function d1(config: D1ConnectionConfig) {
    return new D1Connection(config);
