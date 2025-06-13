@@ -11,7 +11,9 @@ import { Connection, type DbFunctions, type FieldSpec, type SchemaResponse } fro
 import type { Constructor } from "core";
 import { customIntrospector } from "../Connection";
 import { SqliteIntrospector } from "./SqliteIntrospector";
+import type { Field } from "data/fields/Field";
 
+// @todo: add pragmas
 export type SqliteConnectionConfig<
    CustomDialect extends Constructor<Dialect> = Constructor<Dialect>,
 > = {
@@ -79,5 +81,25 @@ export abstract class SqliteConnection<Client = unknown> extends Connection<Clie
             return col;
          },
       ] as const;
+   }
+
+   override toDriver(value: unknown, field: Field): unknown {
+      if (field.type === "boolean") {
+         return value ? 1 : 0;
+      }
+      if (typeof value === "undefined") {
+         return null;
+      }
+      return value;
+   }
+
+   override fromDriver(value: any, field: Field): unknown {
+      if (field.type === "boolean" && typeof value === "number") {
+         return value === 1;
+      }
+      if (value === null) {
+         return undefined;
+      }
+      return value;
    }
 }

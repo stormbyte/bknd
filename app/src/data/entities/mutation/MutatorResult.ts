@@ -5,6 +5,7 @@ import { Result, type ResultJSON, type ResultOptions } from "../Result";
 
 export type MutatorResultOptions = ResultOptions & {
    silent?: boolean;
+   logParams?: boolean;
 };
 
 export type MutatorResultJSON<T = EntityData[]> = ResultJSON<T>;
@@ -19,7 +20,10 @@ export class MutatorResult<T = EntityData[]> extends Result<T> {
          hydrator: (rows) => em.hydrate(entity.name, rows as any),
          beforeExecute: (compiled) => {
             if (!options?.silent) {
-               $console.debug(`[Mutation]\n${compiled.sql}\n`);
+               $console.debug(
+                  `[Mutation]\n${compiled.sql}\n`,
+                  options?.logParams ? compiled.parameters : undefined,
+               );
             }
          },
          onError: (error) => {

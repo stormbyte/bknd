@@ -20,6 +20,7 @@ import {
 import type { BaseIntrospector, BaseIntrospectorConfig } from "./BaseIntrospector";
 import type { Constructor, DB } from "core";
 import { KyselyPluginRunner } from "data/plugins/KyselyPluginRunner";
+import type { Field } from "data/fields/Field";
 
 export type QB = SelectQueryBuilder<any, any, any>;
 
@@ -199,6 +200,14 @@ export abstract class Connection<Client = unknown> {
    }
 
    abstract getFieldSchema(spec: FieldSpec, strict?: boolean): SchemaResponse;
+
+   toDriver(value: unknown, field: Field): unknown {
+      return value;
+   }
+
+   fromDriver(value: any, field: Field): unknown {
+      return value;
+   }
 
    async close(): Promise<void> {
       // no-op by default

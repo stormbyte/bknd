@@ -73,6 +73,7 @@ type MakeAppConfig = {
 async function makeApp(config: MakeAppConfig) {
    return await createRuntimeApp({
       serveStatic: await serveStatic(config.server?.platform ?? "node"),
+      ...config,
    });
 }
 
@@ -99,7 +100,7 @@ export async function makeAppFromEnv(options: Partial<RunOptions> = {}) {
    let app: App | undefined = undefined;
    // first start from arguments if given
    if (options.dbUrl) {
-      console.info("Using connection from", c.cyan("--db-url"));
+      console.info("Using connection from", c.cyan("--db-url"), c.cyan(options.dbUrl));
       const connection = options.dbUrl ? { url: options.dbUrl } : undefined;
       app = await makeApp({ connection, server: { platform: options.server } });
 

@@ -246,8 +246,10 @@ export class Repository<TBD extends object = DefaultDB, TB extends keyof TBD = a
          qb = WhereBuilder.addClause(qb, options.where);
       }
 
-      if (!ignore.includes("limit")) qb = qb.limit(options.limit ?? defaults.limit);
-      if (!ignore.includes("offset")) qb = qb.offset(options.offset ?? defaults.offset);
+      if (!ignore.includes("limit")) {
+         qb = qb.limit(options.limit ?? defaults.limit);
+         if (!ignore.includes("offset")) qb = qb.offset(options.offset ?? defaults.offset);
+      }
 
       // sorting
       if (!ignore.includes("sort")) {

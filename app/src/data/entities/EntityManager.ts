@@ -278,6 +278,10 @@ export class EntityManager<TBD extends object = DefaultDB> {
                   row[key] = field.getDefault();
                }
 
+               // transform from driver
+               value = this.connection.fromDriver(value, field);
+
+               // transform from field
                row[key] = field.transformRetrieve(value as any);
             } catch (e: any) {
                throw new TransformRetrieveFailedException(

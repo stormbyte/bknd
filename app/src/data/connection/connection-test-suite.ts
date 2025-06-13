@@ -1,6 +1,8 @@
 import type { TestRunner } from "core/test";
 import { Connection, type FieldSpec } from "./Connection";
 
+// @todo: add various datatypes: string, number, boolean, object, array, null, undefined, date, etc.
+
 export function connectionTestSuite(
    testRunner: TestRunner,
    {

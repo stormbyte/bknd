@@ -1,13 +1,15 @@
-import { $console, type DB as DefaultDB, type PrimaryFieldType } from "core";
+import type { DB as DefaultDB, PrimaryFieldType } from "core";
 import { type EmitsEvents, EventManager } from "core/events";
 import type { DeleteQueryBuilder, InsertQueryBuilder, UpdateQueryBuilder } from "kysely";
-import { type TActionContext, WhereBuilder } from "../..";
+import type { TActionContext } from "../..";
+import { WhereBuilder } from "../query/WhereBuilder";
 import type { Entity, EntityData, EntityManager } from "../../entities";
 import { InvalidSearchParamsException } from "../../errors";
 import { MutatorEvents } from "../../events";
 import { RelationMutator } from "../../relations";
 import type { RepoQuery } from "../../server/query";
 import { MutatorResult, type MutatorResultOptions } from "./MutatorResult";
+import { transformObject } from "core/utils";
 
 type MutatorQB =
    | InsertQueryBuilder<any, any, any>
@@ -86,7 +88,11 @@ export class Mutator<
             throw new Error(`Field "${key}" is not fillable on entity "${entity.name}"`);
          }
 
+         // transform from field
          validatedData[key] = await field.transformPersist(data[key], this.em, context);
+
+         // transform to driver
+         validatedData[key] = this.em.connection.toDriver(validatedData[key], field);
       }
 
       if (Object.keys(validatedData).length === 0) {
@@ -283,6 +289,10 @@ export class Mutator<
    ): Promise<MutatorResult<Output[]>> {
       const entity = this.entity;
       const validatedData = await this.getValidatedData(data, "update");
+      console.log("updateWhere", {
+         entity,
+         validatedData,
+      });
 
       // @todo: add a way to delete all by adding force?
       if (!where || typeof where !== "object" || Object.keys(where).length === 0) {

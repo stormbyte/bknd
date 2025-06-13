@@ -57,6 +57,6 @@ export class LibsqlConnection extends SqliteConnection<Client> {
    }
 }
 
-export function libsql(credentials: LibSqlCredentials): LibsqlConnection {
+export function libsql(credentials: Client | LibSqlCredentials): LibsqlConnection {
    return new LibsqlConnection(credentials);
 }

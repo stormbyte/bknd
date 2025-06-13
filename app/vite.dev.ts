@@ -8,25 +8,39 @@ import { __bknd } from "modules/ModuleManager";
 import { nodeSqlite } from "./src/adapter/node/connection/NodeSqliteConnection";
 import { libsql } from "./src/data/connection/sqlite/LibsqlConnection";
 import { $console } from "core";
+import { createClient } from "@libsql/client";
 
 registries.media.register("local", StorageLocalAdapter);
 
 const example = import.meta.env.VITE_EXAMPLE;
-const dbUrl = example ? `file:.configs/${example}.db` : import.meta.env.VITE_DB_URL;
 
 let connection: Connection;
-if (dbUrl) {
-   connection = nodeSqlite({ url: dbUrl });
-   $console.debug("Using node-sqlite connection", dbUrl);
-} else if (import.meta.env.VITE_DB_LIBSQL_URL) {
-   connection = libsql({
-      url: import.meta.env.VITE_DB_LIBSQL_URL!,
-      authToken: import.meta.env.VITE_DB_LIBSQL_TOKEN!,
-   });
+
+if (import.meta.env.VITE_DB_LIBSQL_URL) {
+   connection = libsql(
+      createClient({
+         url: import.meta.env.VITE_DB_LIBSQL_URL!,
+         authToken: import.meta.env.VITE_DB_LIBSQL_TOKEN!,
+      }),
+   );
    $console.debug("Using libsql connection", import.meta.env.VITE_DB_URL);
 } else {
-   connection = nodeSqlite();
-   $console.debug("No connection provided, using in-memory database");
+   const dbUrl = example ? `file:.configs/${example}.db` : import.meta.env.VITE_DB_URL;
+   if (dbUrl) {
+      connection = nodeSqlite({ url: dbUrl });
+      $console.debug("Using node-sqlite connection", dbUrl);
+   } else if (import.meta.env.VITE_DB_LIBSQL_URL) {
+      connection = libsql(
+         createClient({
+            url: import.meta.env.VITE_DB_LIBSQL_URL!,
+            authToken: import.meta.env.VITE_DB_LIBSQL_TOKEN!,
+         }),
+      );
+      $console.debug("Using libsql connection", import.meta.env.VITE_DB_URL);
+   } else {
+      connection = nodeSqlite();
+      $console.debug("No connection provided, using in-memory database");
+   }
 }
 
 /* if (example) {
