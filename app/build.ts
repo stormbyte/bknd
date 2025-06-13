@@ -244,7 +244,11 @@ async function buildAdapters() {
 
    // specific adatpers
    await tsup.build(baseConfig("react-router"));
-   await tsup.build(baseConfig("bun"));
+   await tsup.build(
+      baseConfig("bun", {
+         external: [/^bun\:.*/],
+      }),
+   );
    await tsup.build(baseConfig("astro"));
    await tsup.build(baseConfig("aws"));
    await tsup.build(
@@ -266,6 +270,29 @@ async function buildAdapters() {
    await tsup.build({
       ...baseConfig("node"),
       platform: "node",
+   });
+
+   await tsup.build({
+      ...baseConfig("sqlite/edge"),
+      entry: ["src/adapter/sqlite/edge.ts"],
+      outDir: "dist/adapter/sqlite",
+      metafile: false,
+   });
+
+   await tsup.build({
+      ...baseConfig("sqlite/node"),
+      entry: ["src/adapter/sqlite/node.ts"],
+      outDir: "dist/adapter/sqlite",
+      platform: "node",
+      metafile: false,
+   });
+
+   await tsup.build({
+      ...baseConfig("sqlite/bun"),
+      entry: ["src/adapter/sqlite/bun.ts"],
+      outDir: "dist/adapter/sqlite",
+      metafile: false,
+      external: [/^bun\:.*/],
    });
 }
 

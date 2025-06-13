@@ -11,16 +11,9 @@ import {
    stripMark,
    transformObject,
 } from "core/utils";
-import {
-   type Connection,
-   EntityManager,
-   type Schema,
-   datetime,
-   entity,
-   enumm,
-   jsonSchema,
-   number,
-} from "data";
+import type { Connection, Schema } from "data";
+import { EntityManager } from "data/entities/EntityManager";
+import * as proto from "data/prototype";
 import { TransformPersistFailedException } from "data/errors";
 import { Hono } from "hono";
 import type { Kysely } from "kysely";
@@ -116,12 +109,12 @@ const configJsonSchema = Type.Union([
       }),
    ),
 ]);
-export const __bknd = entity(TABLE_NAME, {
-   version: number().required(),
-   type: enumm({ enum: ["config", "diff", "backup"] }).required(),
-   json: jsonSchema({ schema: configJsonSchema }).required(),
-   created_at: datetime(),
-   updated_at: datetime(),
+export const __bknd = proto.entity(TABLE_NAME, {
+   version: proto.number().required(),
+   type: proto.enumm({ enum: ["config", "diff", "backup"] }).required(),
+   json: proto.jsonSchema({ schema: configJsonSchema }).required(),
+   created_at: proto.datetime(),
+   updated_at: proto.datetime(),
 });
 type ConfigTable2 = Schema<typeof __bknd>;
 interface T_INTERNAL_EM {
@@ -234,7 +227,8 @@ export class ModuleManager {
    }
 
    private get db() {
-      return this.connection.kysely as Kysely<{ table: ConfigTable }>;
+      // @todo: check why this is neccessary
+      return this.connection.kysely as unknown as Kysely<{ table: ConfigTable }>;
    }
 
    // @todo: add indices for: version, type

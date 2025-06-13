@@ -1,6 +1,6 @@
 import { describe, expect, mock, test } from "bun:test";
 import type { ModuleBuildContext } from "../../src";
-import { App, createApp } from "../../src/App";
+import { App, createApp } from "core/test/utils";
 import * as proto from "../../src/data/prototype";
 
 describe("App", () => {
