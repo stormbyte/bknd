@@ -4,7 +4,7 @@ import {
    parseBigInt,
    type IGenericSqlite,
 } from "../../../data/connection/sqlite/GenericSqliteConnection";
-import type { DatabaseSync } from "node:sqlite";
+import { DatabaseSync } from "node:sqlite";
 
 export type NodeSqliteConnectionConfig = {
    database: DatabaseSync;
@@ -39,8 +39,19 @@ function nodeSqliteExecutor(db: DatabaseSync): IGenericSqlite<DatabaseSync> {
    };
 }
 
-export function nodeSqlite(config: NodeSqliteConnectionConfig) {
-   return new GenericSqliteConnection(config.database, () => nodeSqliteExecutor(config.database), {
+export function nodeSqlite(config?: NodeSqliteConnectionConfig | { url: string }) {
+   let database: DatabaseSync;
+   if (config) {
+      if ("database" in config) {
+         database = config.database;
+      } else {
+         database = new DatabaseSync(config.url);
+      }
+   } else {
+      database = new DatabaseSync(":memory:");
+   }
+
+   return new GenericSqliteConnection(database, () => nodeSqliteExecutor(database), {
       name: "node-sqlite",
    });
 }
