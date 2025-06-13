@@ -44,11 +44,10 @@ export const run: CliCommand = (program) => {
       )
       .addOption(new Option("-c, --config <config>", "config file"))
       .addOption(
-         new Option("--db-url <db>", "database url, can be any valid libsql url").conflicts(
+         new Option("--db-url <db>", "database url, can be any valid sqlite url").conflicts(
             "config",
          ),
       )
-      .addOption(new Option("--db-token <db>", "database token").conflicts("config"))
       .addOption(
          new Option("--server <server>", "server type")
             .choices(PLATFORMS)
@@ -90,7 +89,6 @@ type RunOptions = {
    memory?: boolean;
    config?: string;
    dbUrl?: string;
-   dbToken?: string;
    server: Platform;
    open?: boolean;
 };
@@ -102,9 +100,7 @@ export async function makeAppFromEnv(options: Partial<RunOptions> = {}) {
    // first start from arguments if given
    if (options.dbUrl) {
       console.info("Using connection from", c.cyan("--db-url"));
-      const connection = options.dbUrl
-         ? { url: options.dbUrl, authToken: options.dbToken }
-         : undefined;
+      const connection = options.dbUrl ? { url: options.dbUrl } : undefined;
       app = await makeApp({ connection, server: { platform: options.server } });
 
       // check configuration file to be present
