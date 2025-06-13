@@ -19,7 +19,7 @@ export class MutatorResult<T = EntityData[]> extends Result<T> {
          hydrator: (rows) => em.hydrate(entity.name, rows as any),
          beforeExecute: (compiled) => {
             if (!options?.silent) {
-               $console.debug(`[Mutation]\n${compiled.sql}\n`, compiled.parameters);
+               $console.debug(`[Mutation]\n${compiled.sql}\n`);
             }
          },
          onError: (error) => {

@@ -5,11 +5,13 @@ export {
    type IndexSpec,
    type DbFunctions,
    type SchemaResponse,
+   type ConnQuery,
+   type ConnQueryResults,
    customIntrospector,
 } from "./Connection";
 
 // sqlite
-export { LibsqlConnection, type LibSqlCredentials } from "./sqlite/LibsqlConnection";
+//export { libsql, LibsqlConnection, type LibSqlCredentials } from "./sqlite/LibsqlConnection";
 export { SqliteConnection } from "./sqlite/SqliteConnection";
 export { SqliteIntrospector } from "./sqlite/SqliteIntrospector";
 export { SqliteLocalConnection } from "./sqlite/SqliteLocalConnection";

@@ -1,14 +1,28 @@
-import { createClient, type Client, type Config, type InStatement } from "@libsql/client";
+import type { Client, Config, InStatement } from "@libsql/client";
+import { createClient } from "libsql-stateless-easy";
 import { LibsqlDialect } from "@libsql/kysely-libsql";
-import { $console } from "core";
 import { FilterNumericKeysPlugin } from "data/plugins/FilterNumericKeysPlugin";
-import type { ConnQuery, ConnQueryResults } from "../Connection";
-import { SqliteConnection } from "./SqliteConnection";
+import { type ConnQuery, type ConnQueryResults, SqliteConnection } from "bknd/data";
 
 export const LIBSQL_PROTOCOLS = ["wss", "https", "libsql"] as const;
 export type LibSqlCredentials = Config & {
    protocol?: (typeof LIBSQL_PROTOCOLS)[number];
 };
+
+function getClient(clientOrCredentials: Client | LibSqlCredentials): Client {
+   if (clientOrCredentials && "url" in clientOrCredentials) {
+      let { url, authToken, protocol } = clientOrCredentials;
+      if (protocol && LIBSQL_PROTOCOLS.includes(protocol)) {
+         console.info("changing protocol to", protocol);
+         const [, rest] = url.split("://");
+         url = `${protocol}://${rest}`;
+      }
+
+      return createClient({ url, authToken });
+   }
+
+   return clientOrCredentials as Client;
+}
 
 export class LibsqlConnection extends SqliteConnection<Client> {
    override name = "libsql";
@@ -17,22 +31,8 @@ export class LibsqlConnection extends SqliteConnection<Client> {
       softscans: true,
    };
 
-   constructor(client: Client);
-   constructor(credentials: LibSqlCredentials);
    constructor(clientOrCredentials: Client | LibSqlCredentials) {
-      let client: Client;
-      if (clientOrCredentials && "url" in clientOrCredentials) {
-         let { url, authToken, protocol } = clientOrCredentials;
-         if (protocol && LIBSQL_PROTOCOLS.includes(protocol)) {
-            $console.log("changing protocol to", protocol);
-            const [, rest] = url.split("://");
-            url = `${protocol}://${rest}`;
-         }
-
-         client = createClient({ url, authToken });
-      } else {
-         client = clientOrCredentials;
-      }
+      const client = getClient(clientOrCredentials);
 
       super({
          excludeTables: ["libsql_wasm_func_table"],
@@ -55,4 +55,8 @@ export class LibsqlConnection extends SqliteConnection<Client> {
 
       return this.withTransformedRows(await this.client.batch(stms)) as any;
    }
+}
+
+export function libsql(credentials: LibSqlCredentials): LibsqlConnection {
+   return new LibsqlConnection(credentials);
 }

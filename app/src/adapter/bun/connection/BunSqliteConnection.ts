@@ -1,4 +1,4 @@
-import type { Database } from "bun:sqlite";
+import { Database } from "bun:sqlite";
 import {
    buildQueryFn,
    GenericSqliteConnection,
@@ -30,12 +30,19 @@ function bunSqliteExecutor(db: Database, cache: boolean): IGenericSqlite<Databas
    };
 }
 
-export function bunSqlite(config: BunSqliteConnectionConfig) {
-   return new GenericSqliteConnection(
-      config.database,
-      () => bunSqliteExecutor(config.database, false),
-      {
-         name: "bun-sqlite",
-      },
-   );
+export function bunSqlite(config?: BunSqliteConnectionConfig | { url: string }) {
+   let database: Database;
+   if (config) {
+      if ("database" in config) {
+         database = config.database;
+      } else {
+         database = new Database(config.url);
+      }
+   } else {
+      database = new Database(":memory:");
+   }
+
+   return new GenericSqliteConnection(database, () => bunSqliteExecutor(database, false), {
+      name: "bun-sqlite",
+   });
 }

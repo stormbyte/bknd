@@ -234,7 +234,8 @@ export class ModuleManager {
    }
 
    private get db() {
-      return this.connection.kysely as Kysely<{ table: ConfigTable }>;
+      // @todo: check why this is neccessary
+      return this.connection.kysely as unknown as Kysely<{ table: ConfigTable }>;
    }
 
    // @todo: add indices for: version, type

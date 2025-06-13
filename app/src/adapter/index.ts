@@ -3,6 +3,8 @@ import { config as $config } from "bknd/core";
 import type { MiddlewareHandler } from "hono";
 import type { AdminControllerOptions } from "modules/server/AdminController";
 
+export { Connection } from "bknd/data";
+
 export type BkndConfig<Args = any> = CreateAppConfig & {
    app?: CreateAppConfig | ((args: Args) => CreateAppConfig);
    onBuilt?: (app: App) => Promise<void>;
