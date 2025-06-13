@@ -1,7 +1,8 @@
 import type { CreateUserPayload } from "auth/AppAuth";
 import { $console } from "core";
 import { Event } from "core/events";
-import { Connection, type LibSqlCredentials, LibsqlConnection, type em as prototypeEm } from "data";
+import type { em as prototypeEm } from "data/prototype";
+import { Connection } from "data/connection/Connection";
 import type { Hono } from "hono";
 import {
    ModuleManager,
@@ -61,15 +62,8 @@ export type AppOptions = {
    manager?: Omit<ModuleManagerOptions, "initial" | "onUpdated" | "seed">;
    asyncEventsMode?: "sync" | "async" | "none";
 };
-export type CreateAppConfig = {
-   connection?:
-      | Connection
-      | {
-           // @deprecated
-           type: "libsql";
-           config: LibSqlCredentials;
-        }
-      | LibSqlCredentials;
+export type CreateAppConfig<C extends Connection = Connection> = {
+   connection?: C | { url: string };
    initialConfig?: InitialModuleConfigs;
    options?: AppOptions;
 };
@@ -77,7 +71,7 @@ export type CreateAppConfig = {
 export type AppConfig = InitialModuleConfigs;
 export type LocalApiOptions = Request | ApiOptions;
 
-export class App {
+export class App<C extends Connection = Connection> {
    static readonly Events = AppEvents;
 
    modules: ModuleManager;
@@ -89,7 +83,7 @@ export class App {
    private _building: boolean = false;
 
    constructor(
-      private connection: Connection,
+      public connection: C,
       _initialConfig?: InitialModuleConfigs,
       private options?: AppOptions,
    ) {
@@ -317,31 +311,9 @@ export class App {
 }
 
 export function createApp(config: CreateAppConfig = {}) {
-   let connection: Connection | undefined = undefined;
-
-   try {
-      if (Connection.isConnection(config.connection)) {
-         connection = config.connection;
-      } else if (typeof config.connection === "object") {
-         if ("type" in config.connection) {
-            $console.warn(
-               "Using deprecated connection type 'libsql', use the 'config' object directly.",
-            );
-            connection = new LibsqlConnection(config.connection.config);
-         } else {
-            connection = new LibsqlConnection(config.connection);
-         }
-      } else {
-         connection = new LibsqlConnection({ url: ":memory:" });
-         $console.warn("No connection provided, using in-memory database");
-      }
-   } catch (e) {
-      $console.error("Could not create connection", e);
-   }
-
-   if (!connection) {
+   if (!config.connection || !Connection.isConnection(config.connection)) {
       throw new Error("Invalid connection");
    }
 
-   return new App(connection, config.initialConfig, config.options);
+   return new App(config.connection, config.initialConfig, config.options);
 }
