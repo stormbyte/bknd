@@ -1,7 +1,8 @@
 import { App, type CreateAppConfig } from "bknd";
-import { config as $config } from "bknd/core";
+import { config as $config, $console } from "bknd/core";
 import type { MiddlewareHandler } from "hono";
 import type { AdminControllerOptions } from "modules/server/AdminController";
+import { Connection } from "bknd/data";
 
 export { Connection } from "bknd/data";
 
@@ -61,7 +62,20 @@ export async function createAdapterApp<Config extends BkndConfig = BkndConfig, A
    const id = opts?.id ?? "app";
    let app = apps.get(id);
    if (!app || opts?.force) {
-      app = App.create(makeConfig(config, args));
+      const appConfig = makeConfig(config, args);
+      if (!appConfig.connection || !Connection.isConnection(appConfig.connection)) {
+         let connection: Connection | undefined;
+         if (Connection.isConnection(config.connection)) {
+            connection = config.connection;
+         } else {
+            const sqlite = (await import("bknd/adapter/sqlite")).sqlite;
+            connection = sqlite(config.connection ?? { url: ":memory:" });
+            $console.info(`Using ${connection.name} connection`);
+         }
+         appConfig.connection = connection;
+      }
+
+      app = App.create(appConfig);
       apps.set(id, app);
    }
    return app;

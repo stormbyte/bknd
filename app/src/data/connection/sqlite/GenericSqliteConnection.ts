@@ -8,12 +8,14 @@ import {
    GenericSqliteDialect,
 } from "kysely-generic-sqlite";
 import { SqliteConnection } from "./SqliteConnection";
+import type { Features } from "../Connection";
 
 export type GenericSqliteConnectionConfig = {
    name: string;
    additionalPlugins?: KyselyPlugin[];
    excludeTables?: string[];
    onCreateConnection?: OnCreateConnection;
+   supports?: Partial<Features>;
 };
 
 export { parseBigInt, buildQueryFn, GenericSqliteDialect, type IGenericSqlite };
@@ -33,5 +35,15 @@ export class GenericSqliteConnection<DB = unknown> extends SqliteConnection<DB> 
          excludeTables: config?.excludeTables,
       });
       this.client = db;
+      if (config?.name) {
+         this.name = config.name;
+      }
+      if (config?.supports) {
+         for (const [key, value] of Object.entries(config.supports)) {
+            if (value) {
+               this.supported[key] = value;
+            }
+         }
+      }
    }
 }

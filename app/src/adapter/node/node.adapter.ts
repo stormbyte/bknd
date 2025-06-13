@@ -1,16 +1,10 @@
 import path from "node:path";
 import { serve as honoServe } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
-import { registerLocalMediaAdapter } from "adapter/node/index";
-import {
-   type RuntimeBkndConfig,
-   createRuntimeApp,
-   type RuntimeOptions,
-   Connection,
-} from "bknd/adapter";
+import { registerLocalMediaAdapter } from "adapter/node/storage";
+import { type RuntimeBkndConfig, createRuntimeApp, type RuntimeOptions } from "bknd/adapter";
 import { config as $config } from "bknd/core";
 import { $console } from "core";
-import { sqlite } from "bknd/adapter/sqlite";
 import type { App } from "App";
 
 type NodeEnv = NodeJS.ProcessEnv;
@@ -35,18 +29,10 @@ export async function createApp<Env = NodeEnv>(
       console.warn("relativeDistPath is deprecated, please use distPath instead");
    }
 
-   let connection: Connection | undefined;
-   if (Connection.isConnection(config.connection)) {
-      connection = config.connection;
-   } else {
-      connection = sqlite(config.connection ?? { url: ":memory:" });
-   }
-
    registerLocalMediaAdapter();
    return await createRuntimeApp(
       {
          ...config,
-         connection,
          serveStatic: serveStatic({ root }),
       },
       // @ts-ignore
