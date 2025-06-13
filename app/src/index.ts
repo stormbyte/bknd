@@ -19,6 +19,7 @@ export {
 } from "./modules/ModuleManager";
 
 export type { ServerEnv } from "modules/Controller";
+export type { BkndConfig } from "bknd/adapter";
 
 export * as middlewares from "modules/middlewares";
 export { registries } from "modules/registries";

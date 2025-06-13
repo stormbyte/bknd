@@ -4,14 +4,12 @@ export type CloudflareImageOptimizationOptions = {
    accessUrl?: string;
    resolvePath?: string;
    autoFormat?: boolean;
-   devBypass?: string;
 };
 
 export function cloudflareImageOptimization({
    accessUrl = "/_plugin/image/optimize",
    resolvePath = "/api/media/file",
    autoFormat = true,
-   devBypass,
 }: CloudflareImageOptimizationOptions = {}): AppPlugin {
    const disallowedAccessUrls = ["/api", "/admin", "/_optimize"];
    if (disallowedAccessUrls.includes(accessUrl) || accessUrl.length < 2) {
@@ -24,10 +22,6 @@ export function cloudflareImageOptimization({
          app.server.get(`${accessUrl}/:path{.+$}`, async (c) => {
             const request = c.req.raw;
             const url = new URL(request.url);
-
-            if (devBypass) {
-               return c.redirect(devBypass + url.pathname + url.search, 302);
-            }
 
             const storage = app.module.media?.storage;
             if (!storage) {
