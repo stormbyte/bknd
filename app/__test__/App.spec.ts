@@ -1,5 +1,5 @@
-import { afterEach, describe, test } from "bun:test";
-import { App } from "../src";
+import { afterEach, describe, test, expect } from "bun:test";
+import { App, createApp } from "core/test/utils";
 import { getDummyConnection } from "./helper";
 import { Hono } from "hono";
 import * as proto from "../src/data/prototype";
@@ -18,7 +18,7 @@ describe("App tests", async () => {
 
    test("plugins", async () => {
       const called: string[] = [];
-      const app = App.create({
+      const app = createApp({
          initialConfig: {
             auth: {
                enabled: true,
