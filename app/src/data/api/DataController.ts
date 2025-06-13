@@ -196,7 +196,7 @@ export class DataController extends Controller {
          },
       );
 
-      return hono.all("*", (c) => c.notFound());
+      return hono;
    }
 
    private getEntityRoutes() {
