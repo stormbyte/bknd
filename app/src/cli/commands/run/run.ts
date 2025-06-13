@@ -1,6 +1,6 @@
 import type { Config } from "@libsql/client/node";
-import { App, type CreateAppConfig } from "App";
-import { StorageLocalAdapter } from "adapter/node";
+import type { App, CreateAppConfig } from "App";
+import { StorageLocalAdapter } from "adapter/node/storage";
 import type { CliBkndConfig, CliCommand } from "cli/types";
 import { Option } from "commander";
 import { colorizeConsole, config } from "core";
@@ -11,19 +11,19 @@ import path from "node:path";
 import {
    PLATFORMS,
    type Platform,
-   attachServeStatic,
    getConfigPath,
    getConnectionCredentialsFromEnv,
+   serveStatic,
    startServer,
 } from "./platform";
-import { makeConfig } from "adapter";
-import { isBun as $isBun } from "cli/utils/sys";
+import { createRuntimeApp, makeConfig } from "adapter";
+import { isBun } from "core/utils";
 
 const env_files = [".env", ".dev.vars"];
 dotenv.config({
    path: env_files.map((file) => path.resolve(process.cwd(), file)),
 });
-const isBun = $isBun();
+const is_bun = isBun();
 
 export const run: CliCommand = (program) => {
    program
@@ -52,7 +52,7 @@ export const run: CliCommand = (program) => {
       .addOption(
          new Option("--server <server>", "server type")
             .choices(PLATFORMS)
-            .default(isBun ? "bun" : "node"),
+            .default(is_bun ? "bun" : "node"),
       )
       .addOption(new Option("--no-open", "don't open browser window on start"))
       .action(action);
@@ -72,23 +72,9 @@ type MakeAppConfig = {
 };
 
 async function makeApp(config: MakeAppConfig) {
-   const app = App.create({ connection: config.connection });
-
-   app.emgr.onEvent(
-      App.Events.AppBuiltEvent,
-      async () => {
-         if (config.onBuilt) {
-            await config.onBuilt(app);
-         }
-
-         await attachServeStatic(app, config.server?.platform ?? "node");
-         app.registerAdminController();
-      },
-      "sync",
-   );
-
-   await app.build();
-   return app;
+   return await createRuntimeApp({
+      serveStatic: await serveStatic(config.server?.platform ?? "node"),
+   });
 }
 
 export async function makeConfigApp(_config: CliBkndConfig, platform?: Platform) {
