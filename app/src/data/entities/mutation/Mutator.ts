@@ -125,10 +125,13 @@ export class Mutator<
 
       // if listener returned, take what's returned
       const _data = result.returned ? result.params.data : data;
-      let validatedData = {
-         ...entity.getDefaultObject(),
-         ...(await this.getValidatedData(_data, "create")),
-      };
+      let validatedData = await this.getValidatedData(
+         {
+            ...entity.getDefaultObject(),
+            ..._data,
+         },
+         "create",
+      );
 
       // check if required fields are present
       const required = entity.getRequiredFields();
@@ -289,10 +292,6 @@ export class Mutator<
    ): Promise<MutatorResult<Output[]>> {
       const entity = this.entity;
       const validatedData = await this.getValidatedData(data, "update");
-      console.log("updateWhere", {
-         entity,
-         validatedData,
-      });
 
       // @todo: add a way to delete all by adding force?
       if (!where || typeof where !== "object" || Object.keys(where).length === 0) {

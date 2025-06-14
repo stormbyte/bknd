@@ -2,6 +2,7 @@ import { $console } from "core/console";
 import type { Entity, EntityData } from "../Entity";
 import type { EntityManager } from "../EntityManager";
 import { Result, type ResultJSON, type ResultOptions } from "../Result";
+import { isDebug } from "core";
 
 export type MutatorResultOptions = ResultOptions & {
    silent?: boolean;
@@ -16,13 +17,15 @@ export class MutatorResult<T = EntityData[]> extends Result<T> {
       public entity: Entity,
       options?: MutatorResultOptions,
    ) {
+      const logParams = options?.logParams === undefined ? isDebug() : options.logParams;
+
       super(em.connection, {
          hydrator: (rows) => em.hydrate(entity.name, rows as any),
          beforeExecute: (compiled) => {
             if (!options?.silent) {
                $console.debug(
                   `[Mutation]\n${compiled.sql}\n`,
-                  options?.logParams ? compiled.parameters : undefined,
+                  logParams ? compiled.parameters : undefined,
                );
             }
          },
