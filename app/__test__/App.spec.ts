@@ -101,7 +101,7 @@ describe("App tests", async () => {
          "onFirstBoot",
          "onBuilt",
       ]);
-      expect(app.plugins).toHaveLength(1);
-      expect(app.plugins.map((p) => p.name)).toEqual(["test"]);
+      expect(app.plugins.size).toBe(1);
+      expect(Array.from(app.plugins.keys())).toEqual(["test"]);
    });
 });

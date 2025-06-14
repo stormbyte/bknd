@@ -6,6 +6,7 @@ import {
    type IGenericSqlite,
 } from "data/connection/sqlite/GenericSqliteConnection";
 
+export type BunSqliteConnection = GenericSqliteConnection<Database>;
 export type BunSqliteConnectionConfig = {
    database: Database;
 };

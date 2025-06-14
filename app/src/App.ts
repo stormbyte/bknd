@@ -62,8 +62,8 @@ export type AppOptions = {
    manager?: Omit<ModuleManagerOptions, "initial" | "onUpdated" | "seed">;
    asyncEventsMode?: "sync" | "async" | "none";
 };
-export type CreateAppConfig<C extends Connection = Connection> = {
-   connection?: C | { url: string };
+export type CreateAppConfig = {
+   connection?: Connection | { url: string };
    initialConfig?: InitialModuleConfigs;
    options?: AppOptions;
 };
@@ -71,23 +71,26 @@ export type CreateAppConfig<C extends Connection = Connection> = {
 export type AppConfig = InitialModuleConfigs;
 export type LocalApiOptions = Request | ApiOptions;
 
-export class App<C extends Connection = Connection> {
+export class App {
    static readonly Events = AppEvents;
 
    modules: ModuleManager;
    adminController?: AdminController;
    _id: string = crypto.randomUUID();
-   plugins: AppPluginConfig[];
+   plugins: Map<string, AppPluginConfig> = new Map();
 
    private trigger_first_boot = false;
    private _building: boolean = false;
 
    constructor(
-      public connection: C,
+      public connection: Connection,
       _initialConfig?: InitialModuleConfigs,
       private options?: AppOptions,
    ) {
-      this.plugins = (options?.plugins ?? []).map((plugin) => plugin(this));
+      for (const plugin of options?.plugins ?? []) {
+         const config = plugin(this);
+         this.plugins.set(config.name, config);
+      }
       this.runPlugins("onBoot");
       this.modules = new ModuleManager(connection, {
          ...(options?.manager ?? {}),
@@ -109,22 +112,22 @@ export class App<C extends Connection = Connection> {
       ...args: any[]
    ): Promise<{ name: string; result: any }[]> {
       const results: { name: string; result: any }[] = [];
-      for (const plugin of this.plugins) {
+      for (const [name, config] of this.plugins) {
          try {
-            if (key in plugin && plugin[key]) {
-               const fn = plugin[key];
+            if (key in config && config[key]) {
+               const fn = config[key];
                if (fn && typeof fn === "function") {
-                  $console.debug(`[Plugin:${plugin.name}] ${key}`);
+                  $console.debug(`[Plugin:${name}] ${key}`);
                   // @ts-expect-error
                   const result = await fn(...args);
                   results.push({
-                     name: plugin.name,
+                     name,
                      result,
                   });
                }
             }
          } catch (e) {
-            $console.warn(`[Plugin:${plugin.name}] error running "${key}"`, String(e));
+            $console.warn(`[Plugin:${name}] error running "${key}"`, String(e));
          }
       }
       return results as any;
