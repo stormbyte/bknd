@@ -11,7 +11,6 @@ export {
 } from "./Connection";
 
 // sqlite
-//export { libsql, LibsqlConnection, type LibSqlCredentials } from "./sqlite/LibsqlConnection";
 export { SqliteConnection } from "./sqlite/SqliteConnection";
 export { SqliteIntrospector } from "./sqlite/SqliteIntrospector";
 export { SqliteLocalConnection } from "./sqlite/SqliteLocalConnection";

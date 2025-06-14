@@ -10,6 +10,7 @@ import {
 import { SqliteConnection } from "./SqliteConnection";
 import type { Features } from "../Connection";
 
+export type { IGenericSqlite };
 export type GenericSqliteConnectionConfig = {
    name: string;
    additionalPlugins?: KyselyPlugin[];
@@ -17,8 +18,6 @@ export type GenericSqliteConnectionConfig = {
    onCreateConnection?: OnCreateConnection;
    supports?: Partial<Features>;
 };
-
-export { parseBigInt, buildQueryFn, GenericSqliteDialect, type IGenericSqlite };
 
 export class GenericSqliteConnection<DB = unknown> extends SqliteConnection<DB> {
    override name = "generic-sqlite";
@@ -47,3 +46,20 @@ export class GenericSqliteConnection<DB = unknown> extends SqliteConnection<DB> 
       }
    }
 }
+
+export function genericSqlite<DB>(
+   name: string,
+   db: DB,
+   executor: (utils: typeof genericSqliteUtils) => Promisable<IGenericSqlite<DB>>,
+   config?: GenericSqliteConnectionConfig,
+) {
+   return new GenericSqliteConnection(db, () => executor(genericSqliteUtils), {
+      name,
+      ...config,
+   });
+}
+
+export const genericSqliteUtils = {
+   parseBigInt,
+   buildQueryFn,
+};

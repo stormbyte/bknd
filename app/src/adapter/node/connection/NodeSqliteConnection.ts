@@ -1,57 +1,48 @@
-import {
-   buildQueryFn,
-   GenericSqliteConnection,
-   parseBigInt,
-   type IGenericSqlite,
-} from "../../../data/connection/sqlite/GenericSqliteConnection";
+import { genericSqlite } from "data/connection/sqlite/GenericSqliteConnection";
 import { DatabaseSync } from "node:sqlite";
 
 export type NodeSqliteConnectionConfig = {
    database: DatabaseSync;
 };
 
-function nodeSqliteExecutor(db: DatabaseSync): IGenericSqlite<DatabaseSync> {
-   const getStmt = (sql: string) => {
-      const stmt = db.prepare(sql);
-      //stmt.setReadBigInts(true);
-      return stmt;
-   };
-
-   return {
-      db,
-      query: buildQueryFn({
-         all: (sql, parameters = []) => getStmt(sql).all(...parameters),
-         run: (sql, parameters = []) => {
-            const { changes, lastInsertRowid } = getStmt(sql).run(...parameters);
-            return {
-               insertId: parseBigInt(lastInsertRowid),
-               numAffectedRows: parseBigInt(changes),
-            };
-         },
-      }),
-      close: () => db.close(),
-      iterator: (isSelect, sql, parameters = []) => {
-         if (!isSelect) {
-            throw new Error("Only support select in stream()");
-         }
-         return getStmt(sql).iterate(...parameters) as any;
-      },
-   };
-}
-
 export function nodeSqlite(config?: NodeSqliteConnectionConfig | { url: string }) {
-   let database: DatabaseSync;
+   let db: DatabaseSync;
    if (config) {
       if ("database" in config) {
-         database = config.database;
+         db = config.database;
       } else {
-         database = new DatabaseSync(config.url);
+         db = new DatabaseSync(config.url);
       }
    } else {
-      database = new DatabaseSync(":memory:");
+      db = new DatabaseSync(":memory:");
    }
 
-   return new GenericSqliteConnection(database, () => nodeSqliteExecutor(database), {
-      name: "node-sqlite",
+   return genericSqlite("node-sqlite", db, (utils) => {
+      const getStmt = (sql: string) => {
+         const stmt = db.prepare(sql);
+         //stmt.setReadBigInts(true);
+         return stmt;
+      };
+
+      return {
+         db,
+         query: utils.buildQueryFn({
+            all: (sql, parameters = []) => getStmt(sql).all(...parameters),
+            run: (sql, parameters = []) => {
+               const { changes, lastInsertRowid } = getStmt(sql).run(...parameters);
+               return {
+                  insertId: utils.parseBigInt(lastInsertRowid),
+                  numAffectedRows: utils.parseBigInt(changes),
+               };
+            },
+         }),
+         close: () => db.close(),
+         iterator: (isSelect, sql, parameters = []) => {
+            if (!isSelect) {
+               throw new Error("Only support select in stream()");
+            }
+            return getStmt(sql).iterate(...parameters) as any;
+         },
+      };
    });
 }
