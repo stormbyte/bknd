@@ -97,9 +97,6 @@ export abstract class SqliteConnection<Client = unknown> extends Connection<Clie
       if (field.type === "boolean" && typeof value === "number") {
          return value === 1;
       }
-      if (value === null) {
-         return undefined;
-      }
       return value;
    }
 }
