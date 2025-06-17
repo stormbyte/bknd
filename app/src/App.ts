@@ -76,24 +76,30 @@ export type CreateAppConfig = {
 export type AppConfig = InitialModuleConfigs;
 export type LocalApiOptions = Request | ApiOptions;
 
-export class App {
+export class App<C extends Connection = Connection, Options extends AppOptions = AppOptions> {
    static readonly Events = AppEvents;
 
    modules: ModuleManager;
    adminController?: AdminController;
    _id: string = crypto.randomUUID();
    plugins: Map<string, AppPluginConfig> = new Map();
+   drivers: Options["drivers"] = {};
 
    private trigger_first_boot = false;
    private _building: boolean = false;
 
    constructor(
-      public connection: Connection,
+      public connection: C,
       _initialConfig?: InitialModuleConfigs,
-      private options?: AppOptions,
+      private options?: Options,
    ) {
+      this.drivers = options?.drivers ?? {};
+
       for (const plugin of options?.plugins ?? []) {
          const config = plugin(this);
+         if (this.plugins.has(config.name)) {
+            throw new Error(`Plugin ${config.name} already registered`);
+         }
          this.plugins.set(config.name, config);
       }
       this.runPlugins("onBoot");

@@ -104,4 +104,42 @@ describe("App tests", async () => {
       expect(app.plugins.size).toBe(1);
       expect(Array.from(app.plugins.keys())).toEqual(["test"]);
    });
+
+   test.only("drivers", async () => {
+      const called: string[] = [];
+      const app = new App(dummyConnection, undefined, {
+         drivers: {
+            email: {
+               send: async (to, subject, body) => {
+                  called.push("email.send");
+                  return {
+                     id: "",
+                  };
+               },
+            },
+            cache: {
+               get: async (key) => {
+                  called.push("cache.get");
+                  return "";
+               },
+               set: async (key, value, ttl) => {
+                  called.push("cache.set");
+               },
+               del: async (key) => {
+                  called.push("cache.del");
+               },
+            },
+         },
+      });
+      await app.build();
+
+      expect(app.drivers.cache).toBeDefined();
+      expect(app.drivers.email).toBeDefined();
+      await app.drivers.email.send("", "", "");
+      await app.drivers.cache.get("");
+      await app.drivers.cache.set("", "", 0);
+      await app.drivers.cache.del("");
+
+      expect(called).toEqual(["email.send", "cache.get", "cache.set", "cache.del"]);
+   });
 });

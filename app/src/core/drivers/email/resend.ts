@@ -62,11 +62,11 @@ export const resendEmail = (
             body: JSON.stringify({ ...payload, ...options }),
          });
 
-         if (res.ok) {
-            const data = (await res.json()) as ResendEmailResponse;
-            return { success: true, data };
+         if (!res.ok) {
+            throw new Error(await res.text());
          }
-         return { success: false };
+
+         return (await res.json()) as ResendEmailResponse;
       },
    };
 };

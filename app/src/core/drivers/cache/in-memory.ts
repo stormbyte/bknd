@@ -118,6 +118,6 @@ export class InMemoryCacheDriver implements ICacheDriver {
    }
 }
 
-export const cacheMemory = (options?: InMemoryCacheOptions) => {
+export const memoryCache = (options?: InMemoryCacheOptions) => {
    return new InMemoryCacheDriver(options);
 };

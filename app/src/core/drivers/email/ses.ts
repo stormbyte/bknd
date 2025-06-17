@@ -15,7 +15,7 @@ export type SesSendOptions = {
 };
 
 export type SesEmailResponse = {
-   MessageId?: string;
+   MessageId: string;
    status: number;
    body: string;
 };
@@ -23,7 +23,7 @@ export type SesEmailResponse = {
 export const sesEmail = (
    config: SesEmailOptions,
 ): IEmailDriver<SesEmailResponse, SesSendOptions> => {
-   const endpoint = `https://email.${config.region}.amazonaws.com/`;
+   const endpoint = `https://email.${config.region}.amazonaws.com/v2/email/outbound-emails`;
    const from = config.from;
    const aws = new AwsClient({
       accessKeyId: config.accessKeyId,
@@ -38,52 +38,56 @@ export const sesEmail = (
          body: string | { text: string; html: string },
          options?: SesSendOptions,
       ) => {
-         // build SES SendEmail params (x-www-form-urlencoded)
-         const params: Record<string, string> = {
-            Action: "SendEmail",
-            Version: "2010-12-01",
-            Source: from,
-            "Destination.ToAddresses.member.1": to,
-            "Message.Subject.Data": subject,
+         // SES v2 SendEmail JSON payload
+         const payload: any = {
+            FromEmailAddress: from,
+            Destination: {
+               ToAddresses: [to],
+            },
+            Content: {
+               Simple: {
+                  Subject: { Data: subject, Charset: "UTF-8" },
+                  Body: {},
+               },
+            },
          };
          if (typeof body === "string") {
-            params["Message.Body.Html.Data"] = body;
+            payload.Content.Simple.Body.Html = { Data: body, Charset: "UTF-8" };
          } else {
-            params["Message.Body.Html.Data"] = body.html;
-            params["Message.Body.Text.Data"] = body.text;
+            if (body.html) payload.Content.Simple.Body.Html = { Data: body.html, Charset: "UTF-8" };
+            if (body.text) payload.Content.Simple.Body.Text = { Data: body.text, Charset: "UTF-8" };
          }
-         if (options?.cc) {
-            options.cc.forEach((cc, i) => {
-               params[`Destination.CcAddresses.member.${i + 1}`] = cc;
-            });
+         if (options?.cc && options.cc.length > 0) {
+            payload.Destination.CcAddresses = options.cc;
          }
-         if (options?.bcc) {
-            options.bcc.forEach((bcc, i) => {
-               params[`Destination.BccAddresses.member.${i + 1}`] = bcc;
-            });
+         if (options?.bcc && options.bcc.length > 0) {
+            payload.Destination.BccAddresses = options.bcc;
          }
-         if (options?.replyTo) {
-            options.replyTo.forEach((reply, i) => {
-               params[`ReplyToAddresses.member.${i + 1}`] = reply;
-            });
+         if (options?.replyTo && options.replyTo.length > 0) {
+            payload.ReplyToAddresses = options.replyTo;
          }
-         const formBody = Object.entries(params)
-            .map(([k, v]) => encodeURIComponent(k) + "=" + encodeURIComponent(v))
-            .join("&");
          const res = await aws.fetch(endpoint, {
             method: "POST",
-            headers: { "content-type": "application/x-www-form-urlencoded" },
-            body: formBody,
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(payload),
          });
          const text = await res.text();
-         // try to extract MessageId from XML response
-         let MessageId: string | undefined = undefined;
-         const match = text.match(/<MessageId>([^<]+)<\/MessageId>/);
-         if (match) MessageId = match[1];
-         return {
-            success: res.ok,
-            data: { MessageId, status: res.status, body: text },
-         };
+         if (!res.ok) {
+            // SES v2 returns JSON error body
+            let errorMsg = text;
+            try {
+               const err = JSON.parse(text);
+               errorMsg = err.message || err.Message || text;
+            } catch {}
+            throw new Error(`SES SendEmail failed: ${errorMsg}`);
+         }
+         // parse MessageId from JSON response
+         let MessageId: string = "";
+         try {
+            const data = JSON.parse(text);
+            MessageId = data.MessageId;
+         } catch {}
+         return { MessageId, status: res.status, body: text };
       },
    };
 };

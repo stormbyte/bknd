@@ -1,5 +1,5 @@
 import { cacheDriverTestSuite } from "./cache-driver-test-suite";
-import { cacheMemory } from "./in-memory";
+import { memoryCache } from "./in-memory";
 import { bunTestRunner } from "adapter/bun/test";
 import { setSystemTime, afterAll, beforeAll, test, expect, describe } from "bun:test";
 
@@ -16,7 +16,7 @@ afterAll(() => {
 
 describe("InMemoryCacheDriver", () => {
    cacheDriverTestSuite(bunTestRunner, {
-      makeCache: () => cacheMemory(),
+      makeCache: () => memoryCache(),
       setTime: (ms: number) => {
          setSystemTime(new Date(baseTime + ms));
       },
@@ -24,7 +24,7 @@ describe("InMemoryCacheDriver", () => {
 
    test("evicts least recently used entries by byte size", async () => {
       // maxSize = 20 bytes for this test
-      const cache = cacheMemory({ maxSize: 20 });
+      const cache = memoryCache({ maxSize: 20 });
       // each key and value is 1 char = 1 byte (ASCII)
       // totals to 2 bytes each
       await cache.set("a", "1");
@@ -45,7 +45,7 @@ describe("InMemoryCacheDriver", () => {
    });
 
    test("throws if entry is too large to ever fit", async () => {
-      const cache = cacheMemory({ maxSize: 5 });
+      const cache = memoryCache({ maxSize: 5 });
       // key: 3, value: 10 = 13 bytes
       expect(cache.set("big", "1234567890")).rejects.toThrow();
    });

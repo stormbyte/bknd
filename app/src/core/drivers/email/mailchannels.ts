@@ -94,7 +94,7 @@ export const mailchannelsEmail = (
                   },
                ],
             },
-            options,
+            options ?? {},
          );
 
          const res = await fetch(host, {
@@ -103,14 +103,15 @@ export const mailchannelsEmail = (
                "Content-Type": "application/json",
                "X-Api-Key": config.apiKey,
             },
-            body: JSON.stringify({ ...payload, ...options }),
+            body: JSON.stringify(payload),
          });
+         const data = (await res.json()) as MailchannelsEmailResponse;
 
-         if (res.ok) {
-            const data = (await res.json()) as MailchannelsEmailResponse;
-            return { success: true, data };
+         if (data?.results.length === 0 || data.results?.[0]?.status !== "sent") {
+            throw new Error(data.results?.[0]?.reason ?? "Unknown error");
          }
-         return { success: false };
+
+         return (await res.json()) as MailchannelsEmailResponse;
       },
    };
 };
