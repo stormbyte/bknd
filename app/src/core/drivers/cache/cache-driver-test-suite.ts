@@ -17,7 +17,7 @@ export function cacheDriverTestSuite(
    },
 ) {
    const { test, expect } = testRunner;
-   const minTTL = options?.minTTL ?? 0;
+   const minTTL = options?.minTTL ?? 1;
 
    test("get within ttl", async () => {
       const cache = makeCache();
