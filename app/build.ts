@@ -229,6 +229,7 @@ function baseConfig(adapter: string, overrides: Partial<tsup.Options> = {}): tsu
          /^@?(hono|libsql).*?/,
          /^(bknd|react|next|node).*?/,
          /.*\.(html)$/,
+         ...external,
          ...(Array.isArray(overrides.external) ? overrides.external : []),
       ],
    };
