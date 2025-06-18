@@ -66,9 +66,14 @@ export class ModuleHelper {
    }
 
    ensureRelation(relation: EntityRelation) {
-      if (!this.em.relations.exists(relation)) {
+      try {
+         // most reliable way at the moment
          this.em.addRelation(relation);
          this.flags.sync_required = true;
+      } catch (e) {}
+
+      // @todo: improve this function, seems like it still doesn't catch all cases
+      if (!this.em.relations.exists(relation)) {
       }
    }
 
