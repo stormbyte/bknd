@@ -12,7 +12,9 @@ export type D1ConnectionConfig<DB extends D1Database | D1DatabaseSession = D1Dat
    binding: DB;
 };
 
-export function d1Sqlite(config: D1ConnectionConfig<D1Database>) {
+export function d1Sqlite<DB extends D1Database | D1DatabaseSession = D1Database>(
+   config: D1ConnectionConfig<DB>,
+) {
    const db = config.binding;
 
    return genericSqlite(
