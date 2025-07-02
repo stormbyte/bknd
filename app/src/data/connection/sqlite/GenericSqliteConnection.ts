@@ -61,7 +61,7 @@ export class GenericSqliteConnection<DB = unknown> extends SqliteConnection<DB> 
    override async executeQueries<O extends ConnQuery[]>(...qbs: O): Promise<ConnQueryResults<O>> {
       const executor = await this.getExecutor();
       if (!executor.batch) {
-         console.warn("Batching is not supported by this database");
+         //$console.debug("Batching is not supported by this database");
          return super.executeQueries(...qbs);
       }
 

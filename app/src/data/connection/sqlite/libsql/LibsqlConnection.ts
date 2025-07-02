@@ -1,9 +1,13 @@
-import type { Client, Config, InStatement } from "@libsql/client";
+import type { Client, Config, ResultSet } from "@libsql/client";
 import { createClient } from "libsql-stateless-easy";
-import { LibsqlDialect } from "./LibsqlDialect";
 import { FilterNumericKeysPlugin } from "data/plugins/FilterNumericKeysPlugin";
-import { type ConnQuery, type ConnQueryResults, SqliteConnection } from "bknd/data";
+import {
+   genericSqlite,
+   type GenericSqliteConnection,
+} from "data/connection/sqlite/GenericSqliteConnection";
+import type { QueryResult } from "kysely";
 
+export type LibsqlConnection = GenericSqliteConnection<Client>;
 export type LibSqlCredentials = Config;
 
 function getClient(clientOrCredentials: Client | LibSqlCredentials): Client {
@@ -15,39 +19,50 @@ function getClient(clientOrCredentials: Client | LibSqlCredentials): Client {
    return clientOrCredentials as Client;
 }
 
-export class LibsqlConnection extends SqliteConnection<Client> {
-   override name = "libsql";
-   protected override readonly supported = {
-      batching: true,
-      softscans: true,
-   };
+export function libsql(config: LibSqlCredentials | Client) {
+   const db = getClient(config);
 
-   constructor(clientOrCredentials: Client | LibSqlCredentials) {
-      const client = getClient(clientOrCredentials);
-
-      super({
-         excludeTables: ["libsql_wasm_func_table"],
-         dialect: LibsqlDialect,
-         dialectArgs: [{ client }],
-         additionalPlugins: [new FilterNumericKeysPlugin()],
-      });
-
-      this.client = client;
-   }
-
-   override async executeQueries<O extends ConnQuery[]>(...qbs: O): Promise<ConnQueryResults<O>> {
-      const compiled = this.getCompiled(...qbs);
-      const stms: InStatement[] = compiled.map((q) => {
-         return {
-            sql: q.sql,
-            args: q.parameters as any[],
+   return genericSqlite(
+      "libsql",
+      db,
+      (utils) => {
+         const mapResult = (result: ResultSet): QueryResult<any> => ({
+            insertId: result.lastInsertRowid,
+            numAffectedRows: BigInt(result.rowsAffected),
+            rows: result.rows,
+         });
+         const execute = async (sql: string, parameters?: any[] | readonly any[]) => {
+            const result = await db.execute({ sql, args: [...(parameters || [])] });
+            return mapResult(result);
          };
-      });
 
-      return this.withTransformedRows(await this.client.batch(stms)) as any;
-   }
-}
-
-export function libsql(credentials: Client | LibSqlCredentials): LibsqlConnection {
-   return new LibsqlConnection(credentials);
+         return {
+            db,
+            batch: async (stmts) => {
+               const results = await db.batch(
+                  stmts.map(({ sql, parameters }) => ({
+                     sql,
+                     args: parameters as any[],
+                  })),
+               );
+               return results.map(mapResult);
+            },
+            query: utils.buildQueryFn({
+               all: async (sql, parameters) => {
+                  return (await execute(sql, parameters)).rows;
+               },
+               run: execute,
+            }),
+            close: () => db.close(),
+         };
+      },
+      {
+         supports: {
+            batching: true,
+            softscans: true,
+         },
+         additionalPlugins: [new FilterNumericKeysPlugin()],
+         excludeTables: ["libsql_wasm_func_table"],
+      },
+   );
 }
