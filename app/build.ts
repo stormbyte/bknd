@@ -233,7 +233,7 @@ function baseConfig(adapter: string, overrides: Partial<tsup.Options> = {}): tsu
       },
       external: [
          /^cloudflare*/,
-         /^@?(hono|libsql).*?/,
+         /^@?(hono).*?/,
          /^(bknd|react|next|node).*?/,
          /.*\.(html)$/,
          ...external,
@@ -260,11 +260,7 @@ async function buildAdapters() {
    );
    await tsup.build(baseConfig("astro"));
    await tsup.build(baseConfig("aws"));
-   await tsup.build(
-      baseConfig("cloudflare", {
-         external: [/^kysely/],
-      }),
-   );
+   await tsup.build(baseConfig("cloudflare"));
 
    await tsup.build({
       ...baseConfig("vite"),

@@ -128,14 +128,14 @@ export function makeConfig<Env extends CloudflareEnv = CloudflareEnv>(
 
       // if db is given in bindings, use it
       if (bindings?.db) {
-         $console.log("Using database from bindings");
+         $console.debug("Using database from bindings");
          db = bindings.db;
 
          // scan for D1Database in args
       } else {
          const binding = getBinding(args.env, "D1Database");
          if (binding) {
-            $console.log(`Using database from env "${binding.key}"`);
+            $console.debug(`Using database from env "${binding.key}"`);
             db = binding.value;
          }
       }

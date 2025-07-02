@@ -1,4 +1,4 @@
-import { genericSqlite } from "data/connection/sqlite/GenericSqliteConnection";
+import { genericSqlite } from "bknd/data";
 import { DatabaseSync } from "node:sqlite";
 
 export type NodeSqliteConnectionConfig = {
