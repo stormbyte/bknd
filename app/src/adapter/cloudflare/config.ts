@@ -93,8 +93,12 @@ export function makeConfig<Env extends CloudflareEnv = CloudflareEnv>(
    config: CloudflareBkndConfig<Env>,
    args?: CfMakeConfigArgs<Env>,
 ) {
-   if (!media_registered) {
-      registerMedia(args?.env as any);
+   if (!media_registered && config.registerMedia !== false) {
+      if (typeof config.registerMedia === "function") {
+         config.registerMedia(args?.env as any);
+      } else {
+         registerMedia(args?.env as any);
+      }
       media_registered = true;
    }
 
