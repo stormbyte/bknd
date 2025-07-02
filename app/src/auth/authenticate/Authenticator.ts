@@ -1,6 +1,7 @@
-import { $console, type DB, Exception } from "core";
+import { type DB, Exception } from "core";
 import { addFlashMessage } from "core/server/flash";
 import {
+   $console,
    type Static,
    StringEnum,
    type TObject,

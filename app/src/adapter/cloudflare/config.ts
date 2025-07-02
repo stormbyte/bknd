@@ -2,12 +2,13 @@
 
 import { registerMedia } from "./storage/StorageR2Adapter";
 import { getBinding } from "./bindings";
-import { D1Connection } from "./connection/D1Connection";
+import { d1Sqlite } from "./connection/D1Connection";
+import { Connection } from "bknd/data";
 import type { CloudflareBkndConfig, CloudflareEnv } from ".";
 import { App } from "bknd";
 import { makeConfig as makeAdapterConfig } from "bknd/adapter";
 import type { Context, ExecutionContext } from "hono";
-import { $console } from "core";
+import { $console } from "core/utils";
 import { setCookie } from "hono/cookie";
 import { sqlite } from "bknd/adapter/sqlite";
 
@@ -101,7 +102,7 @@ export function makeConfig<Env extends CloudflareEnv = CloudflareEnv>(
 
    // if connection instance is given, don't do anything
    // other than checking if D1 session is defined
-   if (D1Connection.isConnection(appConfig.connection)) {
+   if (Connection.isConnection(appConfig.connection)) {
       if (config.d1?.session) {
          // we cannot guarantee that db was opened with session
          throw new Error(
@@ -139,8 +140,11 @@ export function makeConfig<Env extends CloudflareEnv = CloudflareEnv>(
       if (db) {
          if (config.d1?.session) {
             session = db.withSession(sessionId ?? config.d1?.first);
+            if (!session) {
+               throw new Error("Couldn't create session");
+            }
 
-            appConfig.connection = new D1Connection({ binding: session });
+            appConfig.connection = d1Sqlite({ binding: session });
             appConfig.options = {
                ...appConfig.options,
                manager: {
@@ -154,12 +158,12 @@ export function makeConfig<Env extends CloudflareEnv = CloudflareEnv>(
                },
             };
          } else {
-            appConfig.connection = new D1Connection({ binding: db });
+            appConfig.connection = d1Sqlite({ binding: db });
          }
       }
    }
 
-   if (!D1Connection.isConnection(appConfig.connection)) {
+   if (!Connection.isConnection(appConfig.connection)) {
       throw new Error("Couldn't find database connection");
    }
 

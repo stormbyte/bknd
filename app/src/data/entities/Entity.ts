@@ -1,5 +1,6 @@
-import { $console, config } from "core";
+import { config } from "core";
 import {
+   $console,
    type Static,
    StringEnum,
    parse,

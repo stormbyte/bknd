@@ -16,6 +16,7 @@ export {
    type ModuleManagerOptions,
    type ModuleBuildContext,
    type InitialModuleConfigs,
+   ModuleManagerEvents,
 } from "./modules/ModuleManager";
 
 export type { ServerEnv } from "modules/Controller";

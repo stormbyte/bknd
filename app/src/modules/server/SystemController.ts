@@ -1,9 +1,8 @@
 /// <reference types="@cloudflare/workers-types" />
 
 import type { App } from "App";
-import { $console, tbValidator as tb } from "core";
 import {
-   StringEnum,
+   $console,
    TypeInvalidError,
    datetimeStringLocal,
    datetimeStringUTC,

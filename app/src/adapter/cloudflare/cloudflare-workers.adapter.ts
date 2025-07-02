@@ -7,7 +7,7 @@ import { getFresh } from "./modes/fresh";
 import { getCached } from "./modes/cached";
 import { getDurable } from "./modes/durable";
 import type { App } from "bknd";
-import { $console } from "core";
+import { $console } from "core/utils";
 
 declare global {
    namespace Cloudflare {
