@@ -1,5 +1,5 @@
 import type { DB as DefaultDB, PrimaryFieldType } from "core";
-import { $console } from "core";
+import { $console } from "core/utils";
 import { type EmitsEvents, EventManager } from "core/events";
 import { type SelectQueryBuilder, sql } from "kysely";
 import { InvalidSearchParamsException } from "../../errors";

@@ -1,7 +1,6 @@
 import { s } from "core/object/schema";
 import { WhereBuilder, type WhereQuery } from "data/entities/query/WhereBuilder";
-import { $console } from "core";
-import { isObject } from "core/utils";
+import { isObject, $console } from "core/utils";
 import type { CoercionOptions, TAnyOf } from "jsonv-ts";
 
 // -------

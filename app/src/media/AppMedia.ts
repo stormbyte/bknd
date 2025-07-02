@@ -1,4 +1,5 @@
-import { $console, type AppEntity } from "core";
+import type { AppEntity } from "core";
+import { $console } from "core/utils";
 import type { Entity, EntityManager } from "data";
 import { type FileUploadedEventData, Storage, type StorageAdapter, MediaPermissions } from "media";
 import { Module } from "modules/Module";

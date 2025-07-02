@@ -1,7 +1,7 @@
 import { Authenticator, AuthPermissions, Role, type Strategy } from "auth";
 import type { PasswordStrategy } from "auth/authenticate/strategies";
-import { $console, type DB } from "core";
-import { secureRandomString, transformObject } from "core/utils";
+import type { DB } from "core";
+import { $console, secureRandomString, transformObject } from "core/utils";
 import type { Entity, EntityManager } from "data";
 import { em, entity, enumm, type FieldSchema, text } from "data/prototype";
 import { Module } from "modules/Module";

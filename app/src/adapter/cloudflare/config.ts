@@ -8,7 +8,7 @@ import type { CloudflareBkndConfig, CloudflareEnv } from ".";
 import { App } from "bknd";
 import { makeConfig as makeAdapterConfig } from "bknd/adapter";
 import type { Context, ExecutionContext } from "hono";
-import { $console } from "core";
+import { $console } from "core/utils";
 import { setCookie } from "hono/cookie";
 import { sqlite } from "bknd/adapter/sqlite";
 

@@ -60,7 +60,14 @@ function banner(title: string) {
 }
 
 // collection of always-external packages
-const external = ["bun:test", "node:test", "node:assert/strict", "@libsql/client"] as const;
+const external = [
+   "bun:test",
+   "node:test",
+   "node:assert/strict",
+   "@libsql/client",
+   "bknd",
+   /^bknd\/.*/,
+] as const;
 
 /**
  * Building backend and general API
