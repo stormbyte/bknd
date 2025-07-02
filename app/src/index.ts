@@ -1,3 +1,14 @@
+try {
+   /**
+    * Adding this to avoid warnings from node:sqlite being experimental
+    */
+   const { emitWarning } = process;
+   process.emitWarning = (warning: string, ...args: any[]) => {
+      if (warning.includes("SQLite is an experimental feature")) return;
+      return emitWarning(warning, ...args);
+   };
+} catch (e) {}
+
 export {
    App,
    createApp,
