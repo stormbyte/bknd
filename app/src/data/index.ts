@@ -36,3 +36,10 @@ export {
    genericSqliteUtils,
    type GenericSqliteConnection,
 } from "./connection/sqlite/GenericSqliteConnection";
+
+export {
+   EntityTypescript,
+   type EntityTypescriptOptions,
+   type TEntityTSType,
+   type TFieldTSType,
+} from "./entities/EntityTypescript";
