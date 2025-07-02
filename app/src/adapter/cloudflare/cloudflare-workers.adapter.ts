@@ -33,6 +33,7 @@ export type CloudflareBkndConfig<Env = CloudflareEnv> = RuntimeBkndConfig<Env> &
    keepAliveSeconds?: number;
    forceHttps?: boolean;
    manifest?: string;
+   registerMedia?: boolean | ((env: Env) => void);
 };
 
 export type Context<Env = CloudflareEnv> = {
