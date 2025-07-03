@@ -195,7 +195,7 @@ export class AdminController extends Controller {
       if (isProd) {
          let manifest: any;
          if (this.options.assetsPath.startsWith("http")) {
-            manifest = await fetch(this.options.assetsPath + "manifest.json", {
+            manifest = await fetch(this.options.assetsPath + ".vite/manifest.json", {
                headers: {
                   Accept: "application/json",
                },
