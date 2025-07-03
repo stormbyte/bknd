@@ -48,8 +48,7 @@ docker run -p 1337:1337 -v /path/to/data:/data bknd
 
 If you want to use docker compose and build the image directly from the git repository.
 
-`compose.yml`
-```yaml
+```yaml compose.yml
 services:
   bknd:
     pull_policy: build
@@ -62,13 +61,12 @@ services:
       - ${DATA_DIR:-.}/data:/data
 ```
 
-The docker compose can be extended to build a specific version of bknd.
-Extend the build command with `args` and `labels`.
-Within the args you can pass a `VERSION` build argument.
-and labels will ensure that the image that has been build a unique identifier has.
 
-`compose.yml`
-```yaml
+The docker compose file can be extended to build a specific version of bknd.
+Extend the `build` section with `args` and `labels`.
+Inside `args`, you can pass a `VERSION` build argument, and use `labels` so the built image receives a unique identifier.
+
+```yaml compose.yml
 services:
   bknd:
     pull_policy: build
