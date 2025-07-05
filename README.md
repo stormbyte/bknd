@@ -14,7 +14,7 @@ bknd simplifies app development by providing a fully functional backend for data
   * SQLite: LibSQL, Node SQLite, Bun SQLite, Cloudflare D1, Cloudflare Durable Objects SQLite, SQLocal
   * Postgres: Vanilla Postgres, Supabase, Neon, Xata
 * **Frameworks**: React, Next.js, React Router, Astro, Vite, Waku
-* **Storage**: AWS S3, S3-compatible (Tigris, R2, Minio, etc.), Cloudflare R2 (binding), Cloudinary
+* **Storage**: AWS S3, S3-compatible (Tigris, R2, Minio, etc.), Cloudflare R2 (binding), Cloudinary, Filesystem
 
 **For documentation and examples, please visit https://docs.bknd.io.**
 
