@@ -19,6 +19,10 @@ import { EntityTable2 } from "ui/modules/data/components/EntityTable2";
 import { useEntityForm } from "ui/modules/data/hooks/useEntityForm";
 
 export function DataEntityUpdate({ params }) {
+   return <DataEntityUpdateImpl params={params} key={params.entity} />;
+}
+
+function DataEntityUpdateImpl({ params }) {
    const { $data, relations } = useBkndData();
    const entity = $data.entity(params.entity as string);
    if (!entity) {
@@ -27,7 +31,7 @@ export function DataEntityUpdate({ params }) {
 
    const entityId = params.id as PrimaryFieldType;
    const [error, setError] = useState<string | null>(null);
-   const [navigate] = useNavigate();
+   const [navigate, _, _goBack] = useNavigate();
    useBrowserTitle(["Data", entity.label, `#${entityId}`]);
    const targetRelations = relations.listableRelationsOf(entity);
 
@@ -48,9 +52,8 @@ export function DataEntityUpdate({ params }) {
       },
    );
 
-   function goBack() {
-      window.history.go(-1);
-   }
+   const backHref = routes.data.entity.list(entity.name);
+   const goBack = () => _goBack({ fallback: backHref });
 
    async function onSubmitted(changeSet?: EntityData) {
       //return;
@@ -158,10 +161,8 @@ export function DataEntityUpdate({ params }) {
             className="pl-3"
          >
             <Breadcrumbs2
-               path={[
-                  { label: entity.label, href: routes.data.entity.list(entity.name) },
-                  { label: `Edit #${entityId}` },
-               ]}
+               backTo={backHref}
+               path={[{ label: entity.label, href: backHref }, { label: `Edit #${entityId}` }]}
             />
          </AppShell.SectionHeader>
          {$q.isLoading ? (
@@ -240,7 +241,12 @@ function EntityDetailRelations({
             })}
          />
          <div className="flex flex-grow flex-col gap-3 p-3">
-            <EntityDetailInner id={id} entity={entity} relation={selected} />
+            <EntityDetailInner
+               id={id}
+               entity={entity}
+               relation={selected}
+               key={JSON.stringify(selected?.toJSON())}
+            />
          </div>
       </div>
    );
@@ -257,6 +263,7 @@ function EntityDetailInner({
 }) {
    const other = relation.other(entity);
    const [navigate] = useNavigate();
+
    const [search, setSearch] = useState({
       select: other.entity.getSelect(undefined, "table"),
       sort: other.entity.getDefaultSort(),
