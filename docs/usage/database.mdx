@@ -69,6 +69,11 @@ Throughout the documentation, it is assumed you use `bknd.config.ts` to define y
 ## SQLite
 ### Using config object
 
+
+<Warning>
+   When run with Node.js, a version of 22 (LTS) or higher is required. Please verify your version by running `node -v`, and [upgrade](https://nodejs.org/en/download/) if necessary.
+</Warning>
+
 The `sqlite` adapter is automatically resolved based on the runtime. 
 
 | Runtime | Adapter | In-Memory | File | Remote |
