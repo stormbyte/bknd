@@ -16,3 +16,38 @@ on your environment).
 
 The media tools are designed to integrate effortlessly into your workflows, offering scalability
 and control without added complexity.
+
+### Pre-built support for S3
+
+There are two ways to enable S3 or S3 compatible storage in bknd. 
+
+1. Enable via the admin UI.
+
+Simply navigate to the **Media** tab of the bknd admin UI and enable the S3 media support. 
+Enter your AWS S3-compatible storage Access Key, Secret Access Key, and URL. 
+This will automatically configure the S3 adapter for you. 
+
+2. Enable programatically.
+
+To enable using a code-first approach, create an [Initial Structure](/usage/database#initial-structure) using the 
+`initialConfig` option in your `bknd.config.ts` file. 
+
+```typscript bknd.config.ts
+import type { BkndConfig } from "bknd/adapter";
+
+export default {
+   initialConfig: {
+      media: {
+         enabled: true,
+         adapter: {
+            type: "s3",
+            config: {
+               access_key: "<key>",
+               secret_access_key: "<secret key>",
+               url: "<bucket url>"
+            }
+         }
+      }
+  }
+} satisfies BkndConfig;
+```
