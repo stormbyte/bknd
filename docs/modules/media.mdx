@@ -51,3 +51,30 @@ export default {
    }
 } satisfies BkndConfig;
 ```
+
+### Local adapter for development
+
+For local development and testing, you can use the local file system adapter. This is particularly useful when working with Node.js environments.
+
+```typescript bknd.config.ts
+import { registerLocalMediaAdapter } from "bknd/adapter/node";
+import type { BkndConfig } from "bknd/adapter";
+
+// Register the local media adapter
+const local = registerLocalMediaAdapter();
+
+export default {
+   initialConfig: {
+      media: {
+         enabled: true,
+         adapter: local({
+            path: "./public/uploads", // Files will be stored in this directory
+         }),
+      }
+   }
+} satisfies BkndConfig;
+```
+
+This configuration will store uploaded files in the specified directory, 
+making them accessible through your application's public path or whever 
+you choose.
