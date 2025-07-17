@@ -27,12 +27,12 @@ Simply navigate to the **Media** tab of the bknd admin UI and enable the S3 medi
 Enter your AWS S3-compatible storage Access Key, Secret Access Key, and URL. 
 This will automatically configure the S3 adapter for you. 
 
-2. Enable programatically.
+2. Enable programmatically.
 
 To enable using a code-first approach, create an [Initial Structure](/usage/database#initial-structure) using the 
 `initialConfig` option in your `bknd.config.ts` file. 
 
-```typscript bknd.config.ts
+```typescript bknd.config.ts
 import type { BkndConfig } from "bknd/adapter";
 
 export default {
@@ -48,6 +48,6 @@ export default {
             }
          }
       }
-  }
+   }
 } satisfies BkndConfig;
 ```
