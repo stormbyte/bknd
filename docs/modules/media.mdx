@@ -23,18 +23,17 @@ There are two ways to enable S3 or S3 compatible storage in bknd.
 
 1. Enable via the admin UI.
 
-Simply navigate to the **Media** tab of the bknd admin UI and enable the S3 media support. 
-Enter your AWS S3-compatible storage Access Key, Secret Access Key, and URL. 
-This will automatically configure the S3 adapter for you.
+   Simply navigate to the **Media** tab of the bknd admin UI and enable the S3 media support.
+   Enter your AWS S3-compatible storage Access Key, Secret Access Key, and URL.
+   This will automatically configure the S3 adapter for you.
 
-**URL Format Examples:**
-- **S3**: `https://{bucket}.s3.{region}.amazonaws.com`
-- **R2 (Cloudflare)**: `https://{account_id}.r2.cloudflarestorage.com/{bucket}` 
+   **URL Format Examples:**
+   - **S3**: `https://{bucket}.s3.{region}.amazonaws.com`
+   - **R2 (Cloudflare)**: `https://{account_id}.r2.cloudflarestorage.com/{bucket}`
 
 2. Enable programmatically.
 
-To enable using a code-first approach, create an [Initial Structure](/usage/database#initial-structure) using the 
-`initialConfig` option in your `bknd.config.ts` file. 
+   To enable using a code-first approach, create an [Initial Structure](/usage/database#initial-structure) using the `initialConfig` option in your `bknd.config.ts` file.
 
 ```typescript bknd.config.ts
 import type { BkndConfig } from "bknd/adapter";
@@ -80,5 +79,5 @@ export default {
 ```
 
 This configuration will store uploaded files in the specified directory, 
-making them accessible through your application's public path or wherever 
-you choose.
+making them accessible through your application's public path (in this case)
+or at `/api/media/file/{filename}`.
