@@ -21,6 +21,7 @@ import { AppMedia } from "../media/AppMedia";
 import type { ServerEnv } from "./Controller";
 import { Module, type ModuleBuildContext } from "./Module";
 import { ModuleHelper } from "./ModuleHelper";
+import { McpServer, type Resource, type Tool } from "jsonv-ts/mcp";
 
 export type { ModuleBuildContext };
 
@@ -144,6 +145,7 @@ export class ModuleManager {
    server!: Hono<ServerEnv>;
    emgr!: EventManager;
    guard!: Guard;
+   mcp!: ModuleBuildContext["mcp"];
 
    private _version: number = 0;
    private _built = false;
@@ -271,6 +273,9 @@ export class ModuleManager {
             ? this.em.clear()
             : new EntityManager([], this.connection, [], [], this.emgr);
          this.guard = new Guard();
+         this.mcp = new McpServer(undefined as any, {
+            ctx: () => this.ctx(),
+         });
       }
 
       const ctx = {
@@ -281,6 +286,7 @@ export class ModuleManager {
          guard: this.guard,
          flags: Module.ctx_flags,
          logger: this.logger,
+         mcp: this.mcp,
       };
 
       return {
@@ -702,7 +708,7 @@ export class ModuleManager {
       return {
          version: this.version(),
          ...schemas,
-      };
+      } as { version: number } & ModuleSchemas;
    }
 
    toJSON(secrets?: boolean): { version: number } & ModuleConfigs {
