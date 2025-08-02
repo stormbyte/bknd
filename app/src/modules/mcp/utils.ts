@@ -1,5 +1,4 @@
-import * as s from "jsonv-ts";
-import { isPlainObject, transformObject } from "bknd/utils";
+import { isPlainObject, transformObject, s } from "bknd/utils";
 
 export function rescursiveClean(
    input: s.Schema,

@@ -1,10 +1,9 @@
 import type { CliCommand } from "cli/types";
 import { makeAppFromEnv } from "../run";
-import { s } from "bknd/utils";
+import { s, mcp as mcpMiddleware, McpServer } from "bknd/utils";
 import { ObjectToolSchema } from "modules/mcp";
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
-import { mcp as mcpMiddleware, McpServer, Resource } from "jsonv-ts/mcp";
 import type { Module } from "modules/Module";
 
 export const mcp: CliCommand = (program) =>

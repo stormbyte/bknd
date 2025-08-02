@@ -1,7 +1,13 @@
-import * as s from "jsonv-ts";
-import { type Resource, Tool, type ToolAnnotation, type ToolHandlerCtx } from "jsonv-ts/mcp";
 import { excludePropertyTypes, rescursiveClean } from "./utils";
-import { autoFormatString, getPath } from "bknd/utils";
+import {
+   type Resource,
+   Tool,
+   type ToolAnnotation,
+   type ToolHandlerCtx,
+   autoFormatString,
+   getPath,
+   s,
+} from "bknd/utils";
 import type { App } from "App";
 import type { ModuleBuildContext } from "modules";
 

@@ -1,4 +1,4 @@
-import { mark, stripMark, $console, s, objectEach, transformObject } from "bknd/utils";
+import { mark, stripMark, $console, s, objectEach, transformObject, McpServer } from "bknd/utils";
 import { Guard } from "auth/authorize/Guard";
 import { env } from "core/env";
 import { BkndError } from "core/errors";
@@ -21,7 +21,6 @@ import { AppMedia } from "../media/AppMedia";
 import type { ServerEnv } from "./Controller";
 import { Module, type ModuleBuildContext } from "./Module";
 import { ModuleHelper } from "./ModuleHelper";
-import { McpServer, type Resource, type Tool } from "jsonv-ts/mcp";
 
 export type { ModuleBuildContext };
 
