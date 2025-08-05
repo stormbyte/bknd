@@ -189,6 +189,30 @@ export function objectDepth(object: object): number {
    return level;
 }
 
+export function limitObjectDepth<T>(obj: T, maxDepth: number): T {
+   function _limit(current: any, depth: number): any {
+      if (isPlainObject(current)) {
+         if (depth > maxDepth) {
+            return undefined;
+         }
+         const result: any = {};
+         for (const key in current) {
+            if (Object.prototype.hasOwnProperty.call(current, key)) {
+               result[key] = _limit(current[key], depth + 1);
+            }
+         }
+         return result;
+      }
+      if (Array.isArray(current)) {
+         // Arrays themselves are not limited, but their object elements are
+         return current.map((item) => _limit(item, depth));
+      }
+      // Primitives are always returned, regardless of depth
+      return current;
+   }
+   return _limit(obj, 1);
+}
+
 export function objectCleanEmpty<Obj extends { [key: string]: any }>(obj: Obj): Obj {
    if (!obj) return obj;
    return Object.entries(obj).reduce((acc, [key, value]) => {

@@ -5,6 +5,7 @@ import { RelationClassMap, RelationFieldClassMap } from "data/relations";
 import { entityConfigSchema, entityTypes } from "data/entities";
 import { primaryFieldTypes } from "./fields";
 import { s } from "bknd/utils";
+import { $object, $record } from "modules/mcp";
 
 export const FIELDS = {
    ...FieldClassMap,
@@ -61,12 +62,14 @@ export const indicesSchema = s.strictObject({
    unique: s.boolean({ default: false }).optional(),
 });
 
-export const dataConfigSchema = s.strictObject({
+export const dataConfigSchema = $object("config_data", {
    basepath: s.string({ default: "/api/data" }).optional(),
    default_primary_format: s.string({ enum: primaryFieldTypes, default: "integer" }).optional(),
-   entities: s.record(entitiesSchema, { default: {} }).optional(),
-   relations: s.record(s.anyOf(relationsSchema), { default: {} }).optional(),
-   indices: s.record(indicesSchema, { default: {} }).optional(),
+   entities: $record("config_data_entities", entitiesSchema, { default: {} }).optional(),
+   relations: $record("config_data_relations", s.anyOf(relationsSchema), {
+      default: {},
+   }).optional(),
+   indices: $record("config_data_indices", indicesSchema, { default: {} }).optional(),
 });
 
 export type AppDataConfig = s.Static<typeof dataConfigSchema>;

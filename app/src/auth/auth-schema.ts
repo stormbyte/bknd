@@ -1,7 +1,7 @@
 import { cookieConfig, jwtConfig } from "auth/authenticate/Authenticator";
 import { CustomOAuthStrategy, OAuthStrategy, PasswordStrategy } from "auth/authenticate/strategies";
 import { objectTransform, s } from "bknd/utils";
-import { $object } from "modules/mcp";
+import { $object, $record } from "modules/mcp";
 
 export const Strategies = {
    password: {
@@ -37,7 +37,7 @@ export type AppAuthStrategies = s.Static<typeof strategiesSchema>;
 export type AppAuthOAuthStrategy = s.Static<typeof STRATEGIES.oauth.schema>;
 export type AppAuthCustomOAuthStrategy = s.Static<typeof STRATEGIES.custom_oauth.schema>;
 
-const guardConfigSchema = $object("config_auth_guard", {
+const guardConfigSchema = s.object({
    enabled: s.boolean({ default: false }).optional(),
 });
 export const guardRoleSchema = s.strictObject({
@@ -55,20 +55,28 @@ export const authConfigSchema = $object(
       allow_register: s.boolean({ default: true }).optional(),
       jwt: jwtConfig,
       cookie: cookieConfig,
-      strategies: s.record(strategiesSchema, {
-         title: "Strategies",
-         default: {
-            password: {
-               type: "password",
-               enabled: true,
-               config: {
-                  hashing: "sha256",
+      strategies: $record(
+         "config_auth_strategies",
+         strategiesSchema,
+         {
+            title: "Strategies",
+            default: {
+               password: {
+                  type: "password",
+                  enabled: true,
+                  config: {
+                     hashing: "sha256",
+                  },
                },
             },
          },
-      }),
+         s.strictObject({
+            type: s.string(),
+            config: s.object({}),
+         }),
+      ),
       guard: guardConfigSchema.optional(),
-      roles: s.record(guardRoleSchema, { default: {} }).optional(),
+      roles: $record("config_auth_roles", guardRoleSchema, { default: {} }).optional(),
    },
    { title: "Authentication" },
 );

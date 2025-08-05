@@ -26,6 +26,7 @@ import {
 } from "modules/ModuleManager";
 import * as SystemPermissions from "modules/permissions";
 import { getVersion } from "core/env";
+import type { Module } from "modules/Module";
 
 export type ConfigUpdate<Key extends ModuleKey = ModuleKey> = {
    success: true;
@@ -356,5 +357,47 @@ export class SystemController extends Controller {
       hono.get("/swagger", swaggerUI({ url: "/api/system/openapi.json" }));
 
       return hono;
+   }
+
+   override registerMcp() {
+      const { mcp } = this.app.modules.ctx();
+      const { version, ...appConfig } = this.app.toJSON();
+
+      mcp.resource("system_config", "bknd://system/config", (c) =>
+         c.json(this.app.toJSON(), {
+            title: "System Config",
+         }),
+      )
+         .resource(
+            "system_config_module",
+            "bknd://system/config/{module}",
+            (c, { module }) => {
+               const m = this.app.modules.get(module as any) as Module;
+               return c.json(m.toJSON(), {
+                  title: `Config for ${module}`,
+               });
+            },
+            {
+               list: Object.keys(appConfig),
+            },
+         )
+         .resource("system_schema", "bknd://system/schema", (c) =>
+            c.json(this.app.getSchema(), {
+               title: "System Schema",
+            }),
+         )
+         .resource(
+            "system_schema_module",
+            "bknd://system/schema/{module}",
+            (c, { module }) => {
+               const m = this.app.modules.get(module as any);
+               return c.json(m.getSchema().toJSON(), {
+                  title: `Schema for ${module}`,
+               });
+            },
+            {
+               list: Object.keys(this.app.getSchema()),
+            },
+         );
    }
 }

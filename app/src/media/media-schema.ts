@@ -1,7 +1,7 @@
 import { MediaAdapters } from "media/media-registry";
 import { registries } from "modules/registries";
 import { s, objectTransform } from "bknd/utils";
-import { $object } from "modules/mcp";
+import { $object, $record } from "modules/mcp";
 
 export const ADAPTERS = {
    ...MediaAdapters,
@@ -39,7 +39,9 @@ export function buildMediaSchema() {
             },
             { default: {} },
          ),
-         adapter: s.anyOf(Object.values(adapterSchemaObject)).optional(),
+         adapter: $record("config_media_adapter", s.anyOf(Object.values(adapterSchemaObject)), {
+            maxProperties: 1,
+         }).optional(),
       },
       {
          default: {},

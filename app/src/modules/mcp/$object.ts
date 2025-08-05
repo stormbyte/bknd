@@ -1,99 +1,71 @@
-import { excludePropertyTypes, rescursiveClean } from "./utils";
+import { Tool, getPath, limitObjectDepth, s } from "bknd/utils";
 import {
-   type Resource,
-   Tool,
-   type ToolAnnotation,
-   type ToolHandlerCtx,
-   autoFormatString,
-   getPath,
-   s,
-} from "bknd/utils";
-import type { App } from "App";
-import type { ModuleBuildContext } from "modules";
+   McpSchemaHelper,
+   mcpSchemaSymbol,
+   type AppToolHandlerCtx,
+   type McpSchema,
+   type SchemaWithMcpOptions,
+} from "./McpSchemaHelper";
 
-export interface McpToolOptions {
-   title?: string;
-   description?: string;
-   annotations?: ToolAnnotation;
-   tools?: Tool<any, any, any>[];
-   resources?: Resource<any, any, any, any>[];
-}
-
-export interface ObjectToolSchemaOptions extends s.IObjectOptions {
-   mcp?: McpToolOptions;
-}
-
-type AppToolContext = {
-   app: App;
-   ctx: () => ModuleBuildContext;
-};
-type AppToolHandlerCtx = ToolHandlerCtx<AppToolContext>;
+export interface ObjectToolSchemaOptions extends s.IObjectOptions, SchemaWithMcpOptions {}
 
 export class ObjectToolSchema<
-   const P extends s.TProperties = s.TProperties,
-   const O extends s.IObjectOptions = s.IObjectOptions,
-> extends s.ObjectSchema<P, O> {
-   public readonly mcp: McpToolOptions;
-   private cleanSchema: s.ObjectSchema<P, O>;
-
-   constructor(
-      public name: string,
-      properties: P,
-      options?: ObjectToolSchemaOptions,
-   ) {
+      const P extends s.TProperties = s.TProperties,
+      const O extends ObjectToolSchemaOptions = ObjectToolSchemaOptions,
+   >
+   extends s.ObjectSchema<P, O>
+   implements McpSchema
+{
+   constructor(name: string, properties: P, options?: ObjectToolSchemaOptions) {
       const { mcp, ...rest } = options || {};
 
       super(properties, rest as any);
-      this.name = name;
-      this.mcp = mcp || {};
-      this.cleanSchema = this.getCleanSchema();
+      this[mcpSchemaSymbol] = new McpSchemaHelper(this, name, mcp || {});
    }
 
-   private getMcpOptions(action: "get" | "update") {
-      const { tools, resources, ...rest } = this.mcp;
-      const label = (text?: string) =>
-         text && [autoFormatString(action), text].filter(Boolean).join(" ");
-      return {
-         title: label(this.title ?? this.mcp.title),
-         description: label(this.description ?? this.mcp.description),
-         annotations: {
-            destructiveHint: true,
-            idempotentHint: true,
-            ...rest.annotations,
-         },
-      };
-   }
-
-   private getCleanSchema() {
-      const props = excludePropertyTypes(this as any, [ObjectToolSchema]);
-      const schema = s.strictObject(props);
-      return rescursiveClean(schema, {
-         removeRequired: true,
-         removeDefault: false,
-      }) as s.ObjectSchema<P, O>;
+   get mcp(): McpSchemaHelper {
+      return this[mcpSchemaSymbol];
    }
 
    private toolGet(node: s.Node<ObjectToolSchema>) {
       return new Tool(
-         [this.name, "get"].join("_"),
+         [this.mcp.name, "get"].join("_"),
          {
-            ...this.getMcpOptions("get"),
+            ...this.mcp.getToolOptions("get"),
             inputSchema: s.strictObject({
                path: s
                   .string({
                      pattern: /^[a-zA-Z0-9_.]{0,}$/,
-                     description: "(optional) path to the property to get, e.g. `key.subkey`",
+                     title: "Path",
+                     description: "Path to the property to get, e.g. `key.subkey`",
                   })
                   .optional(),
-               include_secrets: s.boolean({ default: false }).optional(),
+               depth: s
+                  .number({
+                     description: "Limit the depth of the response",
+                  })
+                  .optional(),
+               secrets: s
+                  .boolean({
+                     default: false,
+                     description: "Include secrets in the response config",
+                  })
+                  .optional(),
             }),
          },
          async (params, ctx: AppToolHandlerCtx) => {
-            const configs = ctx.context.app.toJSON(params.include_secrets);
+            const configs = ctx.context.app.toJSON(params.secrets);
             const config = getPath(configs, node.instancePath);
-            const value = getPath(config, params.path ?? []);
+            let value = getPath(config, params.path ?? []);
+
+            if (params.depth) {
+               value = limitObjectDepth(value, params.depth);
+            }
+
             return ctx.json({
                path: params.path ?? "",
+               secrets: params.secrets ?? false,
+               partial: !!params.depth,
                value: value ?? null,
             });
          },
@@ -101,11 +73,11 @@ export class ObjectToolSchema<
    }
 
    private toolUpdate(node: s.Node<ObjectToolSchema>) {
-      const schema = this.cleanSchema;
+      const schema = this.mcp.cleanSchema;
       return new Tool(
-         [this.name, "update"].join("_"),
+         [this.mcp.name, "update"].join("_"),
          {
-            ...this.getMcpOptions("update"),
+            ...this.mcp.getToolOptions("update"),
             inputSchema: s.strictObject({
                full: s.boolean({ default: false }).optional(),
                value: s
@@ -120,13 +92,8 @@ export class ObjectToolSchema<
    }
 
    getTools(node: s.Node<ObjectToolSchema>): Tool<any, any, any>[] {
-      const { tools = [] } = this.mcp;
+      const { tools = [] } = this.mcp.options;
       return [this.toolGet(node), this.toolUpdate(node), ...tools];
-   }
-
-   override toJSON(): s.JSONSchemaDefinition {
-      const { toJSON, "~standard": _, mcp, cleanSchema, name, ...rest } = this;
-      return JSON.parse(JSON.stringify(rest));
    }
 }
 

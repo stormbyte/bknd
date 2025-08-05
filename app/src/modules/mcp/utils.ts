@@ -35,16 +35,15 @@ export function rescursiveClean(
 
 export function excludePropertyTypes(
    input: s.ObjectSchema<any, any>,
-   props: (new (...args: any[]) => s.Schema)[],
+   props: (instance: s.Schema | unknown) => boolean,
 ): s.TProperties {
    const properties = { ...input.properties };
 
    return transformObject(properties, (value, key) => {
-      for (const prop of props) {
-         if (value instanceof prop) {
-            return undefined;
-         }
+      if (props(value)) {
+         return undefined;
       }
+
       return value;
    });
 }

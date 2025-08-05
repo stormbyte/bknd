@@ -172,7 +172,9 @@ export class App<C extends Connection = Connection, Options extends AppOptions =
 
       // load system controller
       guard.registerPermissions(Object.values(SystemPermissions));
-      server.route("/api/system", new SystemController(this).getController());
+      const systemController = new SystemController(this);
+      systemController.registerMcp();
+      server.route("/api/system", systemController.getController());
 
       // emit built event
       $console.log("App built");
