@@ -5,7 +5,7 @@ import { s } from "../../core/utils/schema";
 describe("rescursiveOptional", () => {
    it("should make all properties optional", () => {
       const schema = s.strictObject({
-         a: s.string(),
+         a: s.string({ default: "a" }),
          b: s.number(),
          nested: s.strictObject({
             c: s.string().optional(),
@@ -15,14 +15,16 @@ describe("rescursiveOptional", () => {
       });
 
       //console.log(schema.toJSON());
-      console.log(
-         rescursiveClean(schema, {
-            removeRequired: true,
-            removeDefault: true,
-         }).toJSON(),
-      );
-      /* const result = rescursiveOptional(schema);
-      expect(result.properties.a.optional).toBe(true); */
+      const result = rescursiveClean(schema, {
+         removeRequired: true,
+         removeDefault: true,
+      });
+      const json = result.toJSON();
+
+      expect(json.required).toBeUndefined();
+      expect(json.properties.a.default).toBeUndefined();
+      expect(json.properties.nested.required).toBeUndefined();
+      expect(json.properties.nested.properties.nested2.required).toBeUndefined();
    });
 
    it("should exclude properties", () => {
@@ -31,6 +33,7 @@ describe("rescursiveOptional", () => {
          b: s.number(),
       });
 
-      console.log(excludePropertyTypes(schema, [s.StringSchema]));
+      const result = excludePropertyTypes(schema, (instance) => instance instanceof s.StringSchema);
+      expect(Object.keys(result).length).toBe(1);
    });
 });

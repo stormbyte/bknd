@@ -39,9 +39,7 @@ export function buildMediaSchema() {
             },
             { default: {} },
          ),
-         adapter: $record("config_media_adapter", s.anyOf(Object.values(adapterSchemaObject)), {
-            maxProperties: 1,
-         }).optional(),
+         adapter: s.anyOf(Object.values(adapterSchemaObject)).optional(),
       },
       {
          default: {},

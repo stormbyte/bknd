@@ -26,6 +26,20 @@ export function omitKeys<T extends object, K extends keyof T>(
    return result;
 }
 
+export function pickKeys<T extends object, K extends keyof T>(
+   obj: T,
+   keys_: readonly K[],
+): Pick<T, Extract<K, keyof T>> {
+   const keys = new Set(keys_);
+   const result = {} as Pick<T, Extract<K, keyof T>>;
+   for (const [key, value] of Object.entries(obj) as [keyof T, T[keyof T]][]) {
+      if (keys.has(key as K)) {
+         (result as any)[key] = value;
+      }
+   }
+   return result;
+}
+
 export function safelyParseObjectValues<T extends { [key: string]: any }>(obj: T): T {
    return Object.entries(obj).reduce((acc, [key, value]) => {
       try {

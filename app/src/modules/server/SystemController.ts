@@ -8,12 +8,12 @@ import {
    getTimezoneOffset,
    $console,
    getRuntimeKey,
-   SecretSchema,
    jsc,
    s,
    describeRoute,
    InvalidSchemaError,
    openAPISpecs,
+   mcpTool,
 } from "bknd/utils";
 import type { Context, Hono } from "hono";
 import { Controller } from "modules/Controller";
@@ -78,6 +78,7 @@ export class SystemController extends Controller {
             summary: "Get the config for a module",
             tags: ["system"],
          }),
+         mcpTool("system_config"), // @todo: ":module" gets not removed
          jsc("param", s.object({ module: s.string({ enum: MODULE_NAMES }).optional() })),
          jsc("query", s.object({ secrets: s.boolean().optional() })),
          async (c) => {
@@ -284,6 +285,7 @@ export class SystemController extends Controller {
             summary: "Build the app",
             tags: ["system"],
          }),
+         mcpTool("system_build"),
          jsc("query", s.object({ sync: s.boolean().optional(), fetch: s.boolean().optional() })),
          async (c) => {
             const options = c.req.valid("query") as Record<string, boolean>;
@@ -299,6 +301,7 @@ export class SystemController extends Controller {
 
       hono.get(
          "/ping",
+         mcpTool("system_ping"),
          describeRoute({
             summary: "Ping the server",
             tags: ["system"],
@@ -308,6 +311,7 @@ export class SystemController extends Controller {
 
       hono.get(
          "/info",
+         mcpTool("system_info"),
          describeRoute({
             summary: "Get the server info",
             tags: ["system"],
@@ -329,19 +333,6 @@ export class SystemController extends Controller {
                },
                origin: new URL(c.req.raw.url).origin,
                plugins: Array.from(this.app.plugins.keys()),
-               walk: {
-                  auth: [
-                     ...c
-                        .get("app")
-                        .getSchema()
-                        .auth.walk({ data: c.get("app").toJSON(true).auth }),
-                  ]
-                     .filter((n) => n.schema instanceof SecretSchema)
-                     .map((n) => ({
-                        ...n,
-                        schema: n.schema.constructor.name,
-                     })),
-               },
             }),
       );
 

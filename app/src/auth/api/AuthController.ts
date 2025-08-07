@@ -5,7 +5,15 @@ import * as AuthPermissions from "auth/auth-permissions";
 import * as DataPermissions from "data/permissions";
 import type { Hono } from "hono";
 import { Controller, type ServerEnv } from "modules/Controller";
-import { describeRoute, jsc, s, parse, InvalidSchemaError, transformObject } from "bknd/utils";
+import {
+   describeRoute,
+   jsc,
+   s,
+   parse,
+   InvalidSchemaError,
+   transformObject,
+   mcpTool,
+} from "bknd/utils";
 
 export type AuthActionResponse = {
    success: boolean;
@@ -118,6 +126,9 @@ export class AuthController extends Controller {
             summary: "Get the current user",
             tags: ["auth"],
          }),
+         mcpTool("auth_me", {
+            noErrorCodes: [403],
+         }),
          auth(),
          async (c) => {
             const claims = c.get("auth")?.user;
@@ -159,6 +170,7 @@ export class AuthController extends Controller {
             summary: "Get the available authentication strategies",
             tags: ["auth"],
          }),
+         mcpTool("auth_strategies"),
          jsc("query", s.object({ include_disabled: s.boolean().optional() })),
          async (c) => {
             const { include_disabled } = c.req.valid("query");

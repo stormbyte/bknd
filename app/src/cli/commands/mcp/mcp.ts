@@ -1,6 +1,6 @@
 import type { CliCommand } from "cli/types";
 import { makeAppFromEnv } from "../run";
-import { s, mcp as mcpMiddleware, McpServer, isObject } from "bknd/utils";
+import { s, mcp as mcpMiddleware, McpServer, isObject, getMcpServer } from "bknd/utils";
 import type { McpSchema } from "modules/mcp";
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
@@ -19,6 +19,10 @@ async function action(options: { port: string; path: string }) {
       server: "node",
    });
 
+   //console.log(info(app.server));
+
+   const middlewareServer = getMcpServer(app.server);
+
    const appConfig = app.modules.configs();
    const { version, ...appSchema } = app.getSchema();
 
@@ -27,8 +31,12 @@ async function action(options: { port: string; path: string }) {
    const nodes = [...schema.walk({ data: appConfig })].filter(
       (n) => isObject(n.schema) && mcpSchemaSymbol in n.schema,
    ) as s.Node<McpSchema>[];
-   const tools = [...nodes.flatMap((n) => n.schema.getTools(n)), ...app.modules.ctx().mcp.tools];
-   const resources = [...app.modules.ctx().mcp.resources];
+   const tools = [
+      ...middlewareServer.tools,
+      ...nodes.flatMap((n) => n.schema.getTools(n)),
+      ...app.modules.ctx().mcp.tools,
+   ];
+   const resources = [...middlewareServer.resources, ...app.modules.ctx().mcp.resources];
 
    const server = new McpServer(
       {
@@ -43,6 +51,9 @@ async function action(options: { port: string; path: string }) {
    const hono = new Hono().use(
       mcpMiddleware({
          server,
+         debug: {
+            explainEndpoint: true,
+         },
          endpoint: {
             path: String(options.path) as any,
          },

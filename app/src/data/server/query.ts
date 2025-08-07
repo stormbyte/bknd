@@ -5,7 +5,7 @@ import { WhereBuilder, type WhereQuery } from "data/entities/query/WhereBuilder"
 // helpers
 const stringIdentifier = s.string({
    // allow "id", "id,title" – but not "id," or "not allowed"
-   pattern: "^(?:[a-zA-Z_$][\\w$]*)(?:,[a-zA-Z_$][\\w$]*)*$",
+   //pattern: "^(?:[a-zA-Z_$][\\w$]*)(?:,[a-zA-Z_$][\\w$]*)*$",
 });
 const stringArray = s.anyOf(
    [
@@ -23,7 +23,7 @@ const stringArray = s.anyOf(
             if (v.includes(",")) {
                return v.split(",");
             }
-            return [v];
+            return [v].filter(Boolean);
          }
          return [];
       },
@@ -78,6 +78,8 @@ const where = s.anyOf([s.string(), s.object({})], {
       },
    ],
    coerce: (value: unknown) => {
+      if (value === undefined || value === null || value === "") return {};
+
       const q = typeof value === "string" ? JSON.parse(value) : value;
       return WhereBuilder.convert(q);
    },
