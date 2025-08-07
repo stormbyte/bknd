@@ -236,6 +236,8 @@ export class AuthController extends Controller {
             }),
          },
          async (params, c) => {
+            await c.context.ctx().helper.throwUnlessGranted(AuthPermissions.createUser, c);
+
             return c.json(await this.auth.createUser(params));
          },
       );
@@ -251,6 +253,8 @@ export class AuthController extends Controller {
             }),
          },
          async (params, c) => {
+            await c.context.ctx().helper.throwUnlessGranted(AuthPermissions.createToken, c);
+
             const user = await getUser(params);
             return c.json({ user, token: await this.auth.authenticator.jwt(user) });
          },
@@ -268,6 +272,8 @@ export class AuthController extends Controller {
             }),
          },
          async (params, c) => {
+            await c.context.ctx().helper.throwUnlessGranted(AuthPermissions.changePassword, c);
+
             const user = await getUser(params);
             if (!(await this.auth.changePassword(user.id, params.password))) {
                throw new Error("Failed to change password");
@@ -287,6 +293,8 @@ export class AuthController extends Controller {
             }),
          },
          async (params, c) => {
+            await c.context.ctx().helper.throwUnlessGranted(AuthPermissions.testPassword, c);
+
             const pw = this.auth.authenticator.strategy("password") as PasswordStrategy;
             const controller = pw.getController(this.auth.authenticator);
 

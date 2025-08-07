@@ -354,15 +354,19 @@ export class SystemController extends Controller {
       const { mcp } = this.app.modules.ctx();
       const { version, ...appConfig } = this.app.toJSON();
 
-      mcp.resource("system_config", "bknd://system/config", (c) =>
-         c.json(this.app.toJSON(), {
+      mcp.resource("system_config", "bknd://system/config", async (c) => {
+         await c.context.ctx().helper.throwUnlessGranted(SystemPermissions.configRead, c);
+
+         return c.json(this.app.toJSON(), {
             title: "System Config",
-         }),
-      )
+         });
+      })
          .resource(
             "system_config_module",
             "bknd://system/config/{module}",
-            (c, { module }) => {
+            async (c, { module }) => {
+               await this.ctx.helper.throwUnlessGranted(SystemPermissions.configRead, c);
+
                const m = this.app.modules.get(module as any) as Module;
                return c.json(m.toJSON(), {
                   title: `Config for ${module}`,
@@ -372,15 +376,19 @@ export class SystemController extends Controller {
                list: Object.keys(appConfig),
             },
          )
-         .resource("system_schema", "bknd://system/schema", (c) =>
-            c.json(this.app.getSchema(), {
+         .resource("system_schema", "bknd://system/schema", async (c) => {
+            await this.ctx.helper.throwUnlessGranted(SystemPermissions.schemaRead, c);
+
+            return c.json(this.app.getSchema(), {
                title: "System Schema",
-            }),
-         )
+            });
+         })
          .resource(
             "system_schema_module",
             "bknd://system/schema/{module}",
-            (c, { module }) => {
+            async (c, { module }) => {
+               await this.ctx.helper.throwUnlessGranted(SystemPermissions.schemaRead, c);
+
                const m = this.app.modules.get(module as any);
                return c.json(m.getSchema().toJSON(), {
                   title: `Schema for ${module}`,

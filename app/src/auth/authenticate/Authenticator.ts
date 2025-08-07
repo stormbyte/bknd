@@ -42,27 +42,25 @@ export interface UserPool {
 }
 
 const defaultCookieExpires = 60 * 60 * 24 * 7; // 1 week in seconds
-export const cookieConfig = $object("config_auth_cookie", {
-   path: s.string({ default: "/" }),
-   sameSite: s.string({ enum: ["strict", "lax", "none"], default: "lax" }),
-   secure: s.boolean({ default: true }),
-   httpOnly: s.boolean({ default: true }),
-   expires: s.number({ default: defaultCookieExpires }), // seconds
-   partitioned: s.boolean({ default: false }),
-   renew: s.boolean({ default: true }),
-   pathSuccess: s.string({ default: "/" }),
-   pathLoggedOut: s.string({ default: "/" }),
-})
-   .partial()
-   .strict();
+export const cookieConfig = s
+   .strictObject({
+      path: s.string({ default: "/" }),
+      sameSite: s.string({ enum: ["strict", "lax", "none"], default: "lax" }),
+      secure: s.boolean({ default: true }),
+      httpOnly: s.boolean({ default: true }),
+      expires: s.number({ default: defaultCookieExpires }), // seconds
+      partitioned: s.boolean({ default: false }),
+      renew: s.boolean({ default: true }),
+      pathSuccess: s.string({ default: "/" }),
+      pathLoggedOut: s.string({ default: "/" }),
+   })
+   .partial();
 
 // @todo: maybe add a config to not allow cookie/api tokens to be used interchangably?
 // see auth.integration test for further details
 
-export const jwtConfig = $object(
-   "config_auth_jwt",
+export const jwtConfig = s.strictObject(
    {
-      // @todo: autogenerate a secret if not present. But it must be persisted from AppAuth
       secret: secret({ default: "" }),
       alg: s.string({ enum: ["HS256", "HS384", "HS512"], default: "HS256" }).optional(),
       expires: s.number().optional(), // seconds
@@ -72,7 +70,7 @@ export const jwtConfig = $object(
    {
       default: {},
    },
-).strict();
+);
 
 export const authenticatorConfig = s.object({
    jwt: jwtConfig,
@@ -378,13 +376,24 @@ export class Authenticator<
    }
 
    // @todo: don't extract user from token, but from the database or cache
-   async resolveAuthFromRequest(c: Context): Promise<SafeUser | undefined> {
-      let token: string | undefined;
-      if (c.req.raw.headers.has("Authorization")) {
-         const bearerHeader = String(c.req.header("Authorization"));
-         token = bearerHeader.replace("Bearer ", "");
+   async resolveAuthFromRequest(c: Context | Request | Headers): Promise<SafeUser | undefined> {
+      let headers: Headers;
+      let is_context = false;
+      if (c instanceof Headers) {
+         headers = c;
+      } else if (c instanceof Request) {
+         headers = c.headers;
       } else {
-         token = await this.getAuthCookie(c);
+         is_context = true;
+         headers = c.req.raw.headers;
+      }
+
+      let token: string | undefined;
+      if (headers.has("Authorization")) {
+         const bearerHeader = String(headers.get("Authorization"));
+         token = bearerHeader.replace("Bearer ", "");
+      } else if (is_context) {
+         token = await this.getAuthCookie(c as Context);
       }
 
       if (token) {

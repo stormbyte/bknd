@@ -29,15 +29,15 @@ export const fieldsSchemaObject = objectTransform(FIELDS, (field, name) => {
    );
 });
 export const fieldsSchema = s.anyOf(Object.values(fieldsSchemaObject));
-export const entityFields = s.record(fieldsSchema);
+export const entityFields = s.record(fieldsSchema, { default: {} });
 export type TAppDataField = s.Static<typeof fieldsSchema>;
 export type TAppDataEntityFields = s.Static<typeof entityFields>;
 
 export const entitiesSchema = s.strictObject({
    name: s.string().optional(), // @todo: verify, old schema wasn't strict (req in UI)
-   type: s.string({ enum: entityTypes, default: "regular" }),
-   config: entityConfigSchema,
-   fields: entityFields,
+   type: s.string({ enum: entityTypes, default: "regular" }).optional(),
+   config: entityConfigSchema.optional(),
+   fields: entityFields.optional(),
 });
 export type TAppDataEntity = s.Static<typeof entitiesSchema>;
 

@@ -273,6 +273,11 @@ export class ModuleManager {
             : new EntityManager([], this.connection, [], [], this.emgr);
          this.guard = new Guard();
          this.mcp = new McpServer(undefined as any, {
+            app: new Proxy(this, {
+               get: () => {
+                  throw new Error("app is not available in mcp context");
+               },
+            }) as any,
             ctx: () => this.ctx(),
          });
       }

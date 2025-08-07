@@ -11,6 +11,9 @@ export const mcp: CliCommand = (program) =>
    program
       .command("mcp")
       .description("mcp server")
+      .option("--verbose", "verbose output")
+      .option("--config <config>", "config file")
+      .option("--db-url <db>", "database url, can be any valid sqlite url")
       .option("--port <port>", "port to listen on", "3000")
       .option("--path <path>", "path to listen on", "/mcp")
       .option(
@@ -21,12 +24,17 @@ export const mcp: CliCommand = (program) =>
       .action(action);
 
 async function action(options: {
+   verbose?: boolean;
+   config?: string;
+   dbUrl?: string;
    port?: string;
    path?: string;
    token?: string;
    logLevel?: string;
 }) {
    const app = await makeAppFromEnv({
+      config: options.config,
+      dbUrl: options.dbUrl,
       server: "node",
    });
 
@@ -83,11 +91,14 @@ async function action(options: {
       fetch: hono.fetch,
       port: Number(options.port) || 3000,
    });
-   console.info(`Server is running on http://localhost:${options.port}${options.path}`);
-   console.info(
-      `⚙️  Tools (${server.tools.length}):\n${server.tools.map((t) => `- ${t.name}`).join("\n")}\n`,
-   );
-   console.info(
-      `📚 Resources (${server.resources.length}):\n${server.resources.map((r) => `- ${r.name}`).join("\n")}`,
-   );
+
+   if (options.verbose) {
+      console.info(`Server is running on http://localhost:${options.port}${options.path}`);
+      console.info(
+         `⚙️  Tools (${server.tools.length}):\n${server.tools.map((t) => `- ${t.name}`).join("\n")}\n`,
+      );
+      console.info(
+         `📚 Resources (${server.resources.length}):\n${server.resources.map((r) => `- ${r.name}`).join("\n")}`,
+      );
+   }
 }

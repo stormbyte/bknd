@@ -78,9 +78,7 @@ export class DataController extends Controller {
          ),
          async (c) => {
             const { force, drop } = c.req.valid("query");
-            //console.log("force", force);
             const tables = await this.em.schema().introspect();
-            //console.log("tables", tables);
             const changes = await this.em.schema().sync({
                force,
                drop,

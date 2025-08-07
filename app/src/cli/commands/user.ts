@@ -20,11 +20,15 @@ export const user: CliCommand = (program) => {
       .addArgument(
          new Argument("<action>", "action to perform").choices(["create", "update", "token"]),
       )
+      .option("--config <config>", "config file")
+      .option("--db-url <db>", "database url, can be any valid sqlite url")
       .action(action);
 };
 
 async function action(action: "create" | "update" | "token", options: any) {
    const app = await makeAppFromEnv({
+      config: options.config,
+      dbUrl: options.dbUrl,
       server: "node",
    });
 
