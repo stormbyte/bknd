@@ -1,4 +1,4 @@
-import type { SafeUser } from "bknd";
+import type { DB, SafeUser } from "bknd";
 import type { AuthStrategy } from "auth/authenticate/strategies/Strategy";
 import type { AppAuth } from "auth/AppAuth";
 import * as AuthPermissions from "auth/auth-permissions";
@@ -14,6 +14,7 @@ import {
    transformObject,
    mcpTool,
 } from "bknd/utils";
+import type { PasswordStrategy } from "auth/authenticate/strategies";
 
 export type AuthActionResponse = {
    success: boolean;
@@ -199,5 +200,111 @@ export class AuthController extends Controller {
       }
 
       return hono;
+   }
+
+   override registerMcp(): void {
+      const { mcp } = this.auth.ctx;
+
+      const getUser = async (params: { id?: string | number; email?: string }) => {
+         let user: DB["users"] | undefined = undefined;
+         if (params.id) {
+            const { data } = await this.userRepo.findId(params.id);
+            user = data;
+         } else if (params.email) {
+            const { data } = await this.userRepo.findOne({ email: params.email });
+            user = data;
+         }
+         if (!user) {
+            throw new Error("User not found");
+         }
+         return user;
+      };
+
+      mcp.tool(
+         // @todo: needs permission
+         "auth_user_create",
+         {
+            description: "Create a new user",
+            inputSchema: s.object({
+               email: s.string({ format: "email" }),
+               password: s.string({ minLength: 8 }),
+               role: s
+                  .string({
+                     enum: Object.keys(this.auth.config.roles ?? {}),
+                  })
+                  .optional(),
+            }),
+         },
+         async (params, c) => {
+            return c.json(await this.auth.createUser(params));
+         },
+      );
+
+      mcp.tool(
+         // @todo: needs permission
+         "auth_user_token",
+         {
+            description: "Get a user token",
+            inputSchema: s.object({
+               id: s.anyOf([s.string(), s.number()]).optional(),
+               email: s.string({ format: "email" }).optional(),
+            }),
+         },
+         async (params, c) => {
+            const user = await getUser(params);
+            return c.json({ user, token: await this.auth.authenticator.jwt(user) });
+         },
+      );
+
+      mcp.tool(
+         // @todo: needs permission
+         "auth_user_password_change",
+         {
+            description: "Change a user's password",
+            inputSchema: s.object({
+               id: s.anyOf([s.string(), s.number()]).optional(),
+               email: s.string({ format: "email" }).optional(),
+               password: s.string({ minLength: 8 }),
+            }),
+         },
+         async (params, c) => {
+            const user = await getUser(params);
+            if (!(await this.auth.changePassword(user.id, params.password))) {
+               throw new Error("Failed to change password");
+            }
+            return c.json({ changed: true });
+         },
+      );
+
+      mcp.tool(
+         // @todo: needs permission
+         "auth_user_password_test",
+         {
+            description: "Test a user's password",
+            inputSchema: s.object({
+               email: s.string({ format: "email" }),
+               password: s.string({ minLength: 8 }),
+            }),
+         },
+         async (params, c) => {
+            const pw = this.auth.authenticator.strategy("password") as PasswordStrategy;
+            const controller = pw.getController(this.auth.authenticator);
+
+            const res = await controller.request(
+               new Request("https://localhost/login", {
+                  method: "POST",
+                  headers: {
+                     "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                     email: params.email,
+                     password: params.password,
+                  }),
+               }),
+            );
+
+            return c.json({ valid: res.ok });
+         },
+      );
    }
 }

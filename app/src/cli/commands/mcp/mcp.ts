@@ -5,6 +5,7 @@ import type { McpSchema } from "modules/mcp";
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { mcpSchemaSymbol } from "modules/mcp/McpSchemaHelper";
+import { getVersion } from "cli/utils/sys";
 
 export const mcp: CliCommand = (program) =>
    program
@@ -12,15 +13,24 @@ export const mcp: CliCommand = (program) =>
       .description("mcp server")
       .option("--port <port>", "port to listen on", "3000")
       .option("--path <path>", "path to listen on", "/mcp")
+      .option(
+         "--token <token>",
+         "token to authenticate requests, if not provided, uses BEARER_TOKEN environment variable",
+      )
+      .option("--log-level <level>", "log level")
       .action(action);
 
-async function action(options: { port: string; path: string }) {
+async function action(options: {
+   port?: string;
+   path?: string;
+   token?: string;
+   logLevel?: string;
+}) {
    const app = await makeAppFromEnv({
       server: "node",
    });
 
-   //console.log(info(app.server));
-
+   const token = options.token || process.env.BEARER_TOKEN;
    const middlewareServer = getMcpServer(app.server);
 
    const appConfig = app.modules.configs();
@@ -33,25 +43,34 @@ async function action(options: { port: string; path: string }) {
    ) as s.Node<McpSchema>[];
    const tools = [
       ...middlewareServer.tools,
-      ...nodes.flatMap((n) => n.schema.getTools(n)),
       ...app.modules.ctx().mcp.tools,
+      ...nodes.flatMap((n) => n.schema.getTools(n)),
    ];
    const resources = [...middlewareServer.resources, ...app.modules.ctx().mcp.resources];
 
    const server = new McpServer(
       {
          name: "bknd",
-         version: "0.0.1",
+         version: await getVersion(),
       },
       { app, ctx: () => app.modules.ctx() },
       tools,
       resources,
    );
 
+   if (token) {
+      server.setAuthentication({
+         type: "bearer",
+         token,
+      });
+   }
+
    const hono = new Hono().use(
       mcpMiddleware({
          server,
+         sessionsEnabled: true,
          debug: {
+            logLevel: options.logLevel as any,
             explainEndpoint: true,
          },
          endpoint: {
