@@ -75,6 +75,7 @@
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.758.0",
     "@bluwy/giget-core": "^0.1.2",
+    "@clack/prompts": "^0.11.0",
     "@cloudflare/vitest-pool-workers": "^0.8.38",
     "@cloudflare/workers-types": "^4.20250606.0",
     "@dagrejs/dagre": "^1.1.4",
