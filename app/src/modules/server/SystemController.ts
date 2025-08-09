@@ -64,6 +64,25 @@ export class SystemController extends Controller {
       this.registerMcp();
 
       const mcpServer = getSystemMcp(app);
+      mcpServer.onNotification((message) => {
+         if (message.method === "notification/message") {
+            const consoleMap = {
+               emergency: "error",
+               alert: "error",
+               critical: "error",
+               error: "error",
+               warning: "warn",
+               notice: "log",
+               info: "info",
+               debug: "debug",
+            };
+
+            const level = consoleMap[message.params.level];
+            if (!level) return;
+
+            $console[level](message.params.message);
+         }
+      });
 
       app.server.use(
          mcpMiddleware({

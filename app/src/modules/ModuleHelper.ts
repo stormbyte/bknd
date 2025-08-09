@@ -121,9 +121,10 @@ export class ModuleHelper {
       invariant(c.context.app, "app is not available in mcp context");
       invariant(c.raw instanceof Request, "request is not available in mcp context");
 
-      const user = await c.context.app.module.auth.authenticator.resolveAuthFromRequest(
-         c.raw as Request,
-      );
+      const auth = c.context.app.module.auth;
+      if (!auth.enabled) return;
+
+      const user = await auth.authenticator?.resolveAuthFromRequest(c.raw as Request);
 
       if (!this.ctx.guard.granted(permission, user)) {
          throw new Exception(
