@@ -1,3 +1,5 @@
+/// <reference types="@types/bun" />
+
 import type { Tool, Resource } from "jsonv-ts/mcp";
 import { rimraf } from "rimraf";
 import { writeFile, readFile } from "node:fs/promises";
@@ -9,6 +11,13 @@ const config = {
 
 async function generate() {
    console.info("Generating MCP documentation...");
+
+   try {
+      console.log("bun version", Bun.version);
+   } catch (e) {
+      console.log("bun failed");
+   }
+
    await cleanup();
    const mcpConfig = JSON.parse(await readFile(config.mcpConfig, "utf-8"));
    const document = await generateDocument(mcpConfig);
@@ -35,7 +44,7 @@ import { JsonSchemaTypeTable } from '@/components/McpTool';
 ${tools
    .map(
       (t) => `
-### ${t.name}
+### \`${t.name}\`
 
 ${t.description ?? ""}
 
@@ -50,7 +59,7 @@ ${resources
    .map(
       (r) => `
 
-### ${r.name}
+### \`${r.name}\`
 
 ${r.description ?? ""}
 `,
