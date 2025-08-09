@@ -116,12 +116,14 @@ export class ModuleHelper {
 
    async throwUnlessGranted(
       permission: Permission | string,
-      c: { context: ModuleBuildContextMcpContext; request: Request },
+      c: { context: ModuleBuildContextMcpContext; raw?: unknown },
    ) {
       invariant(c.context.app, "app is not available in mcp context");
-      invariant(c.request instanceof Request, "request is not available in mcp context");
+      invariant(c.raw instanceof Request, "request is not available in mcp context");
 
-      const user = await c.context.app.module.auth.authenticator.resolveAuthFromRequest(c.request);
+      const user = await c.context.app.module.auth.authenticator.resolveAuthFromRequest(
+         c.raw as Request,
+      );
 
       if (!this.ctx.guard.granted(permission, user)) {
          throw new Exception(

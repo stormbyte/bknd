@@ -1,104 +1,85 @@
 import type { CliCommand } from "cli/types";
 import { makeAppFromEnv } from "../run";
-import { s, mcp as mcpMiddleware, McpServer, isObject, getMcpServer } from "bknd/utils";
-import type { McpSchema } from "modules/mcp";
-import { serve } from "@hono/node-server";
-import { Hono } from "hono";
-import { mcpSchemaSymbol } from "modules/mcp/McpSchemaHelper";
-import { getVersion } from "cli/utils/sys";
+import { getSystemMcp } from "modules/server/system-mcp";
+import { $console } from "bknd/utils";
+import { stdioTransport } from "jsonv-ts/mcp";
 
 export const mcp: CliCommand = (program) =>
    program
       .command("mcp")
-      .description("mcp server")
-      .option("--verbose", "verbose output")
+      .description("mcp server stdio transport")
       .option("--config <config>", "config file")
       .option("--db-url <db>", "database url, can be any valid sqlite url")
-      .option("--port <port>", "port to listen on", "3000")
-      .option("--path <path>", "path to listen on", "/mcp")
       .option(
          "--token <token>",
          "token to authenticate requests, if not provided, uses BEARER_TOKEN environment variable",
       )
+      .option("--verbose", "verbose output")
       .option("--log-level <level>", "log level")
+      .option("--force", "force enable mcp")
       .action(action);
 
 async function action(options: {
    verbose?: boolean;
    config?: string;
    dbUrl?: string;
-   port?: string;
-   path?: string;
    token?: string;
    logLevel?: string;
+   force?: boolean;
 }) {
+   const verbose = !!options.verbose;
+   const __oldConsole = { ...console };
+
+   // disable console
+   if (!verbose) {
+      $console.disable();
+      Object.entries(console).forEach(([key]) => {
+         console[key] = () => null;
+      });
+   }
+
    const app = await makeAppFromEnv({
       config: options.config,
       dbUrl: options.dbUrl,
       server: "node",
    });
 
-   const token = options.token || process.env.BEARER_TOKEN;
-   const middlewareServer = getMcpServer(app.server);
-
-   const appConfig = app.modules.configs();
-   const { version, ...appSchema } = app.getSchema();
-
-   const schema = s.strictObject(appSchema);
-
-   const nodes = [...schema.walk({ data: appConfig })].filter(
-      (n) => isObject(n.schema) && mcpSchemaSymbol in n.schema,
-   ) as s.Node<McpSchema>[];
-   const tools = [
-      ...middlewareServer.tools,
-      ...app.modules.ctx().mcp.tools,
-      ...nodes.flatMap((n) => n.schema.getTools(n)),
-   ];
-   const resources = [...middlewareServer.resources, ...app.modules.ctx().mcp.resources];
-
-   const server = new McpServer(
-      {
-         name: "bknd",
-         version: await getVersion(),
-      },
-      { app, ctx: () => app.modules.ctx() },
-      tools,
-      resources,
-   );
-
-   if (token) {
-      server.setAuthentication({
-         type: "bearer",
-         token,
-      });
+   if (!app.modules.get("server").config.mcp.enabled && !options.force) {
+      $console.enable();
+      Object.assign(console, __oldConsole);
+      console.error("MCP is not enabled in the config, use --force to enable it");
+      process.exit(1);
    }
 
-   const hono = new Hono().use(
-      mcpMiddleware({
-         server,
-         sessionsEnabled: true,
-         debug: {
-            logLevel: options.logLevel as any,
-            explainEndpoint: true,
-         },
-         endpoint: {
-            path: String(options.path) as any,
-         },
-      }),
-   );
+   const token = options.token || process.env.BEARER_TOKEN;
+   const server = getSystemMcp(app);
 
-   serve({
-      fetch: hono.fetch,
-      port: Number(options.port) || 3000,
-   });
-
-   if (options.verbose) {
-      console.info(`Server is running on http://localhost:${options.port}${options.path}`);
+   if (verbose) {
       console.info(
-         `⚙️  Tools (${server.tools.length}):\n${server.tools.map((t) => `- ${t.name}`).join("\n")}\n`,
+         `\n⚙️  Tools (${server.tools.length}):\n${server.tools.map((t) => `- ${t.name}`).join("\n")}\n`,
       );
       console.info(
          `📚 Resources (${server.resources.length}):\n${server.resources.map((r) => `- ${r.name}`).join("\n")}`,
       );
+      console.info("\nMCP server is running on STDIO transport");
+   }
+
+   if (options.logLevel) {
+      server.setLogLevel(options.logLevel as any);
+   }
+
+   const stdout = process.stdout;
+   const stdin = process.stdin;
+   const stderr = process.stderr;
+
+   {
+      using transport = stdioTransport(server, {
+         stdin,
+         stdout,
+         stderr,
+         raw: new Request("https://localhost", {
+            headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+         }),
+      });
    }
 }

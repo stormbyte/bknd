@@ -14,6 +14,7 @@ import {
    InvalidSchemaError,
    openAPISpecs,
    mcpTool,
+   mcp as mcpMiddleware,
 } from "bknd/utils";
 import type { Context, Hono } from "hono";
 import { Controller } from "modules/Controller";
@@ -27,6 +28,7 @@ import {
 import * as SystemPermissions from "modules/permissions";
 import { getVersion } from "core/env";
 import type { Module } from "modules/Module";
+import { getSystemMcp } from "./system-mcp";
 
 export type ConfigUpdate<Key extends ModuleKey = ModuleKey> = {
    success: true;
@@ -50,6 +52,32 @@ export class SystemController extends Controller {
 
    get ctx() {
       return this.app.modules.ctx();
+   }
+
+   register(app: App) {
+      app.server.route("/api/system", this.getController());
+
+      if (!this.app.modules.get("server").config.mcp.enabled) {
+         return;
+      }
+
+      this.registerMcp();
+
+      const mcpServer = getSystemMcp(app);
+
+      app.server.use(
+         mcpMiddleware({
+            server: mcpServer,
+            sessionsEnabled: true,
+            debug: {
+               logLevel: "debug",
+               explainEndpoint: true,
+            },
+            endpoint: {
+               path: "/mcp",
+            },
+         }),
+      );
    }
 
    private registerConfigController(client: Hono<any>): void {

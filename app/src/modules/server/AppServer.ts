@@ -22,6 +22,9 @@ export const serverConfigSchema = $object(
          }),
          allow_credentials: s.boolean({ default: true }),
       }),
+      mcp: s.strictObject({
+         enabled: s.boolean({ default: false }),
+      }),
    },
    {
       description: "Server configuration",

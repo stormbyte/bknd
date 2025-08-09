@@ -168,13 +168,12 @@ export class App<C extends Connection = Connection, Options extends AppOptions =
       if (options?.sync) this.modules.ctx().flags.sync_required = true;
       await this.modules.build({ fetch: options?.fetch });
 
-      const { guard, server } = this.modules.ctx();
+      const { guard } = this.modules.ctx();
 
       // load system controller
       guard.registerPermissions(Object.values(SystemPermissions));
       const systemController = new SystemController(this);
-      systemController.registerMcp();
-      server.route("/api/system", systemController.getController());
+      systemController.register(this);
 
       // emit built event
       $console.log("App built");

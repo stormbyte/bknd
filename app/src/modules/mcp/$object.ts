@@ -6,6 +6,7 @@ import {
    type McpSchema,
    type SchemaWithMcpOptions,
 } from "./McpSchemaHelper";
+import type { Module } from "modules/Module";
 
 export interface ObjectToolSchemaOptions extends s.IObjectOptions, SchemaWithMcpOptions {}
 
@@ -80,13 +81,36 @@ export class ObjectToolSchema<
             ...this.mcp.getToolOptions("update"),
             inputSchema: s.strictObject({
                full: s.boolean({ default: false }).optional(),
-               value: s
-                  .strictObject(schema.properties as any)
-                  .partial() as unknown as s.ObjectSchema<P, O>,
+               return_config: s
+                  .boolean({
+                     default: false,
+                     description: "If the new configuration should be returned",
+                  })
+                  .optional(),
+               value: s.strictObject(schema.properties as {}).partial(),
             }),
          },
          async (params, ctx: AppToolHandlerCtx) => {
-            return ctx.json(params);
+            const { full, value, return_config } = params;
+            const [module_name] = node.instancePath;
+
+            if (full) {
+               await ctx.context.app.mutateConfig(module_name as any).set(value);
+            } else {
+               await ctx.context.app.mutateConfig(module_name as any).patch("", value);
+            }
+
+            let config: any = undefined;
+            if (return_config) {
+               const configs = ctx.context.app.toJSON();
+               config = getPath(configs, node.instancePath);
+            }
+
+            return ctx.json({
+               success: true,
+               module: module_name,
+               config,
+            });
          },
       );
    }
