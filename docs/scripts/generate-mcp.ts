@@ -1,5 +1,6 @@
 import type { Tool, Resource } from "jsonv-ts/mcp";
 import { rimraf } from "rimraf";
+import { writeFile, readFile } from "node:fs/promises";
 
 const config = {
    mcpConfig: "./mcp.json",
@@ -9,9 +10,9 @@ const config = {
 async function generate() {
    console.info("Generating MCP documentation...");
    await cleanup();
-   const mcpConfig = await Bun.file(config.mcpConfig).json();
+   const mcpConfig = JSON.parse(await readFile(config.mcpConfig, "utf-8"));
    const document = await generateDocument(mcpConfig);
-   await Bun.write(config.outFile, document);
+   await writeFile(config.outFile, document, "utf-8");
    console.info("MCP documentation generated.");
 }
 
