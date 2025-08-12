@@ -32,6 +32,10 @@ export class RecordToolSchema<
       return this[mcpSchemaSymbol];
    }
 
+   private getNewSchema(fallback: s.Schema = this.additionalProperties) {
+      return this[opts].new_schema ?? fallback;
+   }
+
    private toolGet(node: s.Node<RecordToolSchema<AP, O>>) {
       return new Tool(
          [this.mcp.name, "get"].join("_"),
@@ -60,8 +64,10 @@ export class RecordToolSchema<
          async (params, ctx: AppToolHandlerCtx) => {
             const configs = ctx.context.app.toJSON(params.secrets);
             const config = getPath(configs, node.instancePath);
+            const [module_name] = node.instancePath;
 
             // @todo: add schema to response
+            const schema = params.schema ? this.getNewSchema().toJSON() : undefined;
 
             if (params.key) {
                if (!(params.key in config)) {
@@ -70,15 +76,19 @@ export class RecordToolSchema<
                const value = getPath(config, params.key);
                return ctx.json({
                   secrets: params.secrets ?? false,
+                  module: module_name,
                   key: params.key,
                   value: value ?? null,
+                  schema,
                });
             }
 
             return ctx.json({
                secrets: params.secrets ?? false,
+               module: module_name,
                key: null,
                value: config ?? null,
+               schema,
             });
          },
       );
@@ -93,20 +103,26 @@ export class RecordToolSchema<
                key: s.string({
                   description: "key to add",
                }),
-               value: this[opts].new_schema ?? this.additionalProperties,
+               value: this.getNewSchema(),
             }),
          },
          async (params, ctx: AppToolHandlerCtx) => {
             const configs = ctx.context.app.toJSON();
             const config = getPath(configs, node.instancePath);
+            const [module_name, ...rest] = node.instancePath;
 
             if (params.key in config) {
                throw new Error(`Key "${params.key}" already exists in config`);
             }
 
+            await ctx.context.app
+               .mutateConfig(module_name as any)
+               .patch([...rest, params.key], params.value);
+
             return ctx.json({
-               key: params.key,
-               value: params.value ?? null,
+               success: true,
+               module: module_name,
+               config: ctx.context.app.module[module_name as any].config,
             });
          },
       );
@@ -121,22 +137,26 @@ export class RecordToolSchema<
                key: s.string({
                   description: "key to update",
                }),
-               value: this[opts].new_schema ?? s.object({}),
+               value: this.getNewSchema(s.object({})),
             }),
          },
          async (params, ctx: AppToolHandlerCtx) => {
             const configs = ctx.context.app.toJSON(params.secrets);
             const config = getPath(configs, node.instancePath);
+            const [module_name, ...rest] = node.instancePath;
 
             if (!(params.key in config)) {
                throw new Error(`Key "${params.key}" not found in config`);
             }
 
-            const value = getPath(config, params.key);
+            await ctx.context.app
+               .mutateConfig(module_name as any)
+               .patch([...rest, params.key], params.value);
+
             return ctx.json({
-               updated: false,
-               key: params.key,
-               value: value ?? null,
+               success: true,
+               module: module_name,
+               config: ctx.context.app.module[module_name as any].config,
             });
          },
       );
@@ -156,14 +176,20 @@ export class RecordToolSchema<
          async (params, ctx: AppToolHandlerCtx) => {
             const configs = ctx.context.app.toJSON();
             const config = getPath(configs, node.instancePath);
+            const [module_name, ...rest] = node.instancePath;
 
             if (!(params.key in config)) {
                throw new Error(`Key "${params.key}" not found in config`);
             }
 
+            await ctx.context.app
+               .mutateConfig(module_name as any)
+               .remove([...rest, params.key].join("."));
+
             return ctx.json({
-               removed: false,
-               key: params.key,
+               success: true,
+               module: module_name,
+               config: ctx.context.app.module[module_name as any].config,
             });
          },
       );

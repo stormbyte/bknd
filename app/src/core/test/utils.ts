@@ -24,6 +24,7 @@ export function createMcpToolCaller() {
       });
 
       if ((res.result as any)?.isError) {
+         console.dir(res.result, { depth: null });
          throw new Error((res.result as any)?.content?.[0]?.text ?? "Unknown error");
       }
 

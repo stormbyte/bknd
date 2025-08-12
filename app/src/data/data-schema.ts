@@ -3,7 +3,7 @@ import { MediaField, mediaFieldConfigSchema } from "../media/MediaField";
 import { FieldClassMap } from "data/fields";
 import { RelationClassMap, RelationFieldClassMap } from "data/relations";
 import { entityConfigSchema, entityTypes } from "data/entities";
-import { primaryFieldTypes } from "./fields";
+import { primaryFieldTypes, baseFieldConfigSchema } from "./fields";
 import { s } from "bknd/utils";
 import { $object, $record } from "modules/mcp";
 
@@ -12,6 +12,7 @@ export const FIELDS = {
    ...RelationFieldClassMap,
    media: { schema: mediaFieldConfigSchema, field: MediaField },
 };
+export const FIELD_TYPES = Object.keys(FIELDS);
 export type FieldType = keyof typeof FIELDS;
 
 export const RELATIONS = RelationClassMap;
@@ -40,6 +41,19 @@ export const entitiesSchema = s.strictObject({
    fields: entityFields.optional(),
 });
 export type TAppDataEntity = s.Static<typeof entitiesSchema>;
+export const simpleEntitiesSchema = s.strictObject({
+   type: s.string({ enum: entityTypes, default: "regular" }).optional(),
+   config: entityConfigSchema.optional(),
+   fields: s
+      .record(
+         s.object({
+            type: s.anyOf([s.string({ enum: FIELD_TYPES }), s.string()]),
+            config: baseFieldConfigSchema.optional(),
+         }),
+         { default: {} },
+      )
+      .optional(),
+});
 
 export const relationsSchema = Object.entries(RelationClassMap).map(([name, relationClass]) => {
    return s.strictObject(
@@ -70,6 +84,6 @@ export const dataConfigSchema = $object("config_data", {
       default: {},
    }).optional(),
    indices: $record("config_data_indices", indicesSchema, { default: {} }).optional(),
-});
+}).strict();
 
 export type AppDataConfig = s.Static<typeof dataConfigSchema>;
