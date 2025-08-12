@@ -177,7 +177,6 @@ export class SchemaObject<Schema extends TSchema = TSchema> {
 
       this.throwIfRestricted(partial);
 
-      // overwrite arrays and primitives, only deep merge objects
       // @ts-ignore
       const config = set(current, path, value);
 

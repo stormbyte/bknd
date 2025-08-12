@@ -39,6 +39,7 @@ export function buildMediaSchema() {
             },
             { default: {} },
          ),
+         // @todo: currently cannot be updated partially using mcp
          adapter: $schema(
             "config_media_adapter",
             s.anyOf(Object.values(adapterSchemaObject)),

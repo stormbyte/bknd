@@ -50,12 +50,28 @@ export const $schema = <
          {
             ...mcp.getToolOptions("update"),
             inputSchema: s.strictObject({
-               full: s.boolean({ default: false }).optional(),
                value: schema as any,
+               return_config: s.boolean({ default: false }).optional(),
+               secrets: s.boolean({ default: false }).optional(),
             }),
          },
          async (params, ctx: AppToolHandlerCtx) => {
-            return ctx.json(params);
+            const { value, return_config, secrets } = params;
+            const [module_name, ...rest] = node.instancePath;
+
+            await ctx.context.app.mutateConfig(module_name as any).overwrite(rest, value);
+
+            let config: any = undefined;
+            if (return_config) {
+               const configs = ctx.context.app.toJSON(secrets);
+               config = getPath(configs, node.instancePath);
+            }
+
+            return ctx.json({
+               success: true,
+               module: module_name,
+               config,
+            });
          },
       );
    };

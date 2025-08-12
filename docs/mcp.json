@@ -2910,10 +2910,6 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "full": {
-            "type": "boolean",
-            "default": false
-          },
           "value": {
             "anyOf": [
               {
@@ -3028,6 +3024,14 @@
                 ]
               }
             ]
+          },
+          "return_config": {
+            "type": "boolean",
+            "default": false
+          },
+          "secrets": {
+            "type": "boolean",
+            "default": false
           }
         }
       },
