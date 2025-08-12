@@ -1,5 +1,5 @@
 # Stage 1: Build stage
-FROM node:20 as builder
+FROM node:24 as builder
 
 WORKDIR /app
 
@@ -12,7 +12,7 @@ RUN npm install --omit=dev bknd@${VERSION}
 RUN mkdir /output && cp -r node_modules/bknd/dist /output/dist
 
 # Stage 2: Final minimal image
-FROM node:20-alpine
+FROM node:24-alpine
 
 WORKDIR /app
 
