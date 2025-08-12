@@ -22,6 +22,11 @@ export function createMcpToolCaller() {
             arguments: args,
          },
       });
+
+      if ((res.result as any)?.isError) {
+         throw new Error((res.result as any)?.content?.[0]?.text ?? "Unknown error");
+      }
+
       return JSON.parse((res.result as any)?.content?.[0]?.text ?? "null");
    };
 }
