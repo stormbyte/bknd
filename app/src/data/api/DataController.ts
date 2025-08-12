@@ -445,7 +445,15 @@ export class DataController extends Controller {
             tags: ["data"],
          }),
          permission(DataPermissions.entityUpdate),
-         mcpTool("data_entity_update_many"),
+         mcpTool("data_entity_update_many", {
+            inputSchema: {
+               param: s.object({ entity: entitiesEnum }),
+               json: s.object({
+                  update: s.object({}),
+                  where: s.object({}),
+               }),
+            },
+         }),
          jsc("param", s.object({ entity: entitiesEnum })),
          jsc(
             "json",
@@ -521,7 +529,12 @@ export class DataController extends Controller {
             tags: ["data"],
          }),
          permission(DataPermissions.entityDelete),
-         mcpTool("data_entity_delete_many"),
+         mcpTool("data_entity_delete_many", {
+            inputSchema: {
+               param: s.object({ entity: entitiesEnum }),
+               json: s.object({}),
+            },
+         }),
          jsc("param", s.object({ entity: entitiesEnum })),
          jsc("json", repoQuery.properties.where),
          async (c) => {

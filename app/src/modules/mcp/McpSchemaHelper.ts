@@ -21,9 +21,9 @@ export interface McpToolOptions {
    resources?: Resource<any, any, any, any>[];
 }
 
-export interface SchemaWithMcpOptions {
-   mcp?: McpToolOptions;
-}
+export type SchemaWithMcpOptions<AdditionalOptions = {}> = {
+   mcp?: McpToolOptions & AdditionalOptions;
+};
 
 export type AppToolContext = {
    app: App;
@@ -35,13 +35,13 @@ export interface McpSchema extends s.Schema {
    getTools(node: s.Node<any>): Tool<any, any, any>[];
 }
 
-export class McpSchemaHelper {
+export class McpSchemaHelper<AdditionalOptions = {}> {
    cleanSchema: s.ObjectSchema<any, any>;
 
    constructor(
       public schema: s.Schema,
       public name: string,
-      public options: McpToolOptions,
+      public options: McpToolOptions & AdditionalOptions,
    ) {
       this.cleanSchema = this.getCleanSchema();
    }

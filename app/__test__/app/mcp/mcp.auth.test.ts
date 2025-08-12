@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from "bun:test";
+import { describe, beforeAll } from "bun:test";
 import { type App, createApp } from "core/test/utils";
 import { getSystemMcp } from "modules/mcp/system-mcp";
 

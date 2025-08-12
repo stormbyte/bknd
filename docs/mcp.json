@@ -52,6 +52,7 @@
                 "properties": {}
               }
             ],
+            "$synthetic": true,
             "$target": "json"
           }
         }
@@ -92,6 +93,7 @@
                 "properties": {}
               }
             ],
+            "$synthetic": true,
             "$target": "json"
           }
         }
@@ -196,6 +198,7 @@
                 "properties": {}
               }
             ],
+            "$synthetic": true,
             "$target": "json"
           },
           "select": {
@@ -252,6 +255,7 @@
                 }
               }
             ],
+            "$synthetic": true,
             "$target": "json"
           }
         }
@@ -264,7 +268,8 @@
         "type": "object",
         "required": [
           "entity",
-          "update"
+          "update",
+          "where"
         ],
         "properties": {
           "entity": {
@@ -281,24 +286,9 @@
             "properties": {}
           },
           "where": {
-            "examples": [
-              {
-                "attribute": {
-                  "$eq": 1
-                }
-              }
-            ],
-            "default": {},
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "object",
-                "properties": {}
-              }
-            ],
-            "$target": "json"
+            "type": "object",
+            "$target": "json",
+            "properties": {}
           }
         }
       }
@@ -310,7 +300,8 @@
         "type": "object",
         "required": [
           "entity",
-          "id"
+          "id",
+          "json"
         ],
         "properties": {
           "entity": {
@@ -331,6 +322,12 @@
               }
             ],
             "$target": "param"
+          },
+          "json": {
+            "type": "object",
+            "$synthetic": true,
+            "$target": "json",
+            "properties": {}
           }
         }
       }
@@ -373,7 +370,8 @@
       "inputSchema": {
         "type": "object",
         "required": [
-          "entity"
+          "entity",
+          "json"
         ],
         "properties": {
           "entity": {
@@ -385,24 +383,10 @@
             "$target": "param"
           },
           "json": {
-            "examples": [
-              {
-                "attribute": {
-                  "$eq": 1
-                }
-              }
-            ],
-            "default": {},
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "object",
-                "properties": {}
-              }
-            ],
-            "$target": "json"
+            "type": "object",
+            "$synthetic": true,
+            "$target": "json",
+            "properties": {}
           }
         }
       }
@@ -1907,6 +1891,11 @@
                 }
               }
             }
+          },
+          "return_config": {
+            "type": "boolean",
+            "description": "If the new configuration should be returned",
+            "default": false
           }
         },
         "required": [
@@ -1932,6 +1921,11 @@
           "value": {
             "type": "object",
             "properties": {}
+          },
+          "return_config": {
+            "type": "boolean",
+            "description": "If the new configuration should be returned",
+            "default": false
           }
         },
         "required": [
@@ -1953,6 +1947,11 @@
           "key": {
             "type": "string",
             "description": "key to remove"
+          },
+          "return_config": {
+            "type": "boolean",
+            "description": "If the new configuration should be returned",
+            "default": false
           }
         },
         "required": [
@@ -2193,6 +2192,11 @@
                 ]
               }
             ]
+          },
+          "return_config": {
+            "type": "boolean",
+            "description": "If the new configuration should be returned",
+            "default": false
           }
         },
         "required": [
@@ -2218,6 +2222,11 @@
           "value": {
             "type": "object",
             "properties": {}
+          },
+          "return_config": {
+            "type": "boolean",
+            "description": "If the new configuration should be returned",
+            "default": false
           }
         },
         "required": [
@@ -2239,6 +2248,11 @@
           "key": {
             "type": "string",
             "description": "key to remove"
+          },
+          "return_config": {
+            "type": "boolean",
+            "description": "If the new configuration should be returned",
+            "default": false
           }
         },
         "required": [
@@ -2310,31 +2324,11 @@
               "entity",
               "fields"
             ]
-          }
-        },
-        "required": [
-          "key",
-          "value"
-        ]
-      },
-      "annotations": {
-        "destructiveHint": true,
-        "idempotentHint": true
-      }
-    },
-    {
-      "name": "config_data_indices_update",
-      "inputSchema": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "key": {
-            "type": "string",
-            "description": "key to update"
           },
-          "value": {
-            "type": "object",
-            "properties": {}
+          "return_config": {
+            "type": "boolean",
+            "description": "If the new configuration should be returned",
+            "default": false
           }
         },
         "required": [
@@ -2356,6 +2350,11 @@
           "key": {
             "type": "string",
             "description": "key to remove"
+          },
+          "return_config": {
+            "type": "boolean",
+            "description": "If the new configuration should be returned",
+            "default": false
           }
         },
         "required": [
@@ -2592,6 +2591,11 @@
               "type",
               "config"
             ]
+          },
+          "return_config": {
+            "type": "boolean",
+            "description": "If the new configuration should be returned",
+            "default": false
           }
         },
         "required": [
@@ -2631,6 +2635,11 @@
               "type",
               "config"
             ]
+          },
+          "return_config": {
+            "type": "boolean",
+            "description": "If the new configuration should be returned",
+            "default": false
           }
         },
         "required": [
@@ -2653,6 +2662,11 @@
           "key": {
             "type": "string",
             "description": "key to remove"
+          },
+          "return_config": {
+            "type": "boolean",
+            "description": "If the new configuration should be returned",
+            "default": false
           }
         },
         "required": [
@@ -2718,6 +2732,11 @@
                 "type": "boolean"
               }
             }
+          },
+          "return_config": {
+            "type": "boolean",
+            "description": "If the new configuration should be returned",
+            "default": false
           }
         },
         "required": [
@@ -2743,6 +2762,11 @@
           "value": {
             "type": "object",
             "properties": {}
+          },
+          "return_config": {
+            "type": "boolean",
+            "description": "If the new configuration should be returned",
+            "default": false
           }
         },
         "required": [
@@ -2764,6 +2788,11 @@
           "key": {
             "type": "string",
             "description": "key to remove"
+          },
+          "return_config": {
+            "type": "boolean",
+            "description": "If the new configuration should be returned",
+            "default": false
           }
         },
         "required": [

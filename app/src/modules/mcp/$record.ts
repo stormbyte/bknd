@@ -7,7 +7,16 @@ import {
    type SchemaWithMcpOptions,
 } from "./McpSchemaHelper";
 
-export interface RecordToolSchemaOptions extends s.IRecordOptions, SchemaWithMcpOptions {}
+type RecordToolAdditionalOptions = {
+   get?: boolean;
+   add?: boolean;
+   update?: boolean;
+   remove?: boolean;
+};
+
+export interface RecordToolSchemaOptions
+   extends s.IRecordOptions,
+      SchemaWithMcpOptions<RecordToolAdditionalOptions> {}
 
 const opts = Symbol.for("bknd-mcp-record-opts");
 
@@ -28,7 +37,7 @@ export class RecordToolSchema<
       };
    }
 
-   get mcp(): McpSchemaHelper {
+   get mcp(): McpSchemaHelper<RecordToolAdditionalOptions> {
       return this[mcpSchemaSymbol];
    }
 
@@ -104,6 +113,12 @@ export class RecordToolSchema<
                   description: "key to add",
                }),
                value: this.getNewSchema(),
+               return_config: s
+                  .boolean({
+                     default: false,
+                     description: "If the new configuration should be returned",
+                  })
+                  .optional(),
             }),
          },
          async (params, ctx: AppToolHandlerCtx) => {
@@ -122,7 +137,9 @@ export class RecordToolSchema<
             return ctx.json({
                success: true,
                module: module_name,
-               config: ctx.context.app.module[module_name as any].config,
+               config: params.return_config
+                  ? ctx.context.app.module[module_name as any].config
+                  : undefined,
             });
          },
       );
@@ -138,6 +155,12 @@ export class RecordToolSchema<
                   description: "key to update",
                }),
                value: this.getNewSchema(s.object({})),
+               return_config: s
+                  .boolean({
+                     default: false,
+                     description: "If the new configuration should be returned",
+                  })
+                  .optional(),
             }),
          },
          async (params, ctx: AppToolHandlerCtx) => {
@@ -156,7 +179,9 @@ export class RecordToolSchema<
             return ctx.json({
                success: true,
                module: module_name,
-               config: ctx.context.app.module[module_name as any].config,
+               config: params.return_config
+                  ? ctx.context.app.module[module_name as any].config
+                  : undefined,
             });
          },
       );
@@ -171,6 +196,12 @@ export class RecordToolSchema<
                key: s.string({
                   description: "key to remove",
                }),
+               return_config: s
+                  .boolean({
+                     default: false,
+                     description: "If the new configuration should be returned",
+                  })
+                  .optional(),
             }),
          },
          async (params, ctx: AppToolHandlerCtx) => {
@@ -189,20 +220,22 @@ export class RecordToolSchema<
             return ctx.json({
                success: true,
                module: module_name,
-               config: ctx.context.app.module[module_name as any].config,
+               config: params.return_config
+                  ? ctx.context.app.module[module_name as any].config
+                  : undefined,
             });
          },
       );
    }
 
    getTools(node: s.Node<RecordToolSchema<AP, O>>): Tool<any, any, any>[] {
-      const { tools = [] } = this.mcp.options;
+      const { tools = [], get = true, add = true, update = true, remove = true } = this.mcp.options;
 
       return [
-         this.toolGet(node),
-         this.toolAdd(node),
-         this.toolUpdate(node),
-         this.toolRemove(node),
+         get && this.toolGet(node),
+         add && this.toolAdd(node),
+         update && this.toolUpdate(node),
+         remove && this.toolRemove(node),
          ...tools,
       ].filter(Boolean) as Tool<any, any, any>[];
    }

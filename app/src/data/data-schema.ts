@@ -83,7 +83,10 @@ export const dataConfigSchema = $object("config_data", {
    relations: $record("config_data_relations", s.anyOf(relationsSchema), {
       default: {},
    }).optional(),
-   indices: $record("config_data_indices", indicesSchema, { default: {} }).optional(),
+   indices: $record("config_data_indices", indicesSchema, {
+      default: {},
+      mcp: { update: false },
+   }).optional(),
 }).strict();
 
 export type AppDataConfig = s.Static<typeof dataConfigSchema>;
