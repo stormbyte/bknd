@@ -1920,7 +1920,1084 @@
           },
           "value": {
             "type": "object",
-            "properties": {}
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "regular",
+                  "system",
+                  "generated"
+                ],
+                "default": "regular"
+              },
+              "config": {
+                "type": "object",
+                "default": {},
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "name_singular": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "sort_field": {
+                    "type": "string",
+                    "default": "id"
+                  },
+                  "sort_dir": {
+                    "type": "string",
+                    "enum": [
+                      "asc",
+                      "desc"
+                    ],
+                    "default": "asc"
+                  },
+                  "primary_format": {
+                    "type": "string",
+                    "enum": [
+                      "integer",
+                      "uuid"
+                    ]
+                  }
+                }
+              },
+              "fields": {
+                "type": "object",
+                "default": {},
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "title": "primary",
+                      "additionalProperties": false,
+                      "required": [
+                        "type"
+                      ],
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "const": "primary"
+                        },
+                        "config": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "format": {
+                              "type": "string",
+                              "enum": [
+                                "integer",
+                                "uuid"
+                              ],
+                              "default": "integer"
+                            },
+                            "required": {
+                              "type": "boolean",
+                              "default": false
+                            },
+                            "label": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            },
+                            "fillable": {
+                              "anyOf": [
+                                {
+                                  "type": "boolean",
+                                  "title": "Boolean"
+                                },
+                                {
+                                  "type": "array",
+                                  "title": "Context",
+                                  "uniqueItems": true,
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "create",
+                                      "read",
+                                      "update",
+                                      "delete"
+                                    ]
+                                  }
+                                }
+                              ]
+                            },
+                            "hidden": {
+                              "anyOf": [
+                                {
+                                  "type": "boolean",
+                                  "title": "Boolean"
+                                },
+                                {
+                                  "type": "array",
+                                  "title": "Context",
+                                  "uniqueItems": true,
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "create",
+                                      "read",
+                                      "update",
+                                      "delete",
+                                      "form",
+                                      "table",
+                                      "submit"
+                                    ]
+                                  }
+                                }
+                              ]
+                            },
+                            "virtual": {
+                              "type": "boolean"
+                            },
+                            "default_value": {}
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "title": "text",
+                      "additionalProperties": false,
+                      "required": [
+                        "type"
+                      ],
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "const": "text"
+                        },
+                        "config": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "default_value": {
+                              "type": "string"
+                            },
+                            "minLength": {
+                              "type": "number"
+                            },
+                            "maxLength": {
+                              "type": "number"
+                            },
+                            "pattern": {
+                              "type": "string"
+                            },
+                            "html_config": {
+                              "type": "object",
+                              "properties": {
+                                "element": {
+                                  "type": "string"
+                                },
+                                "props": {
+                                  "type": "object",
+                                  "additionalProperties": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "title": "String"
+                                      },
+                                      {
+                                        "type": "number",
+                                        "title": "Number"
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            },
+                            "label": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            },
+                            "required": {
+                              "type": "boolean",
+                              "default": false
+                            },
+                            "fillable": {
+                              "anyOf": [
+                                {
+                                  "type": "boolean",
+                                  "title": "Boolean"
+                                },
+                                {
+                                  "type": "array",
+                                  "title": "Context",
+                                  "uniqueItems": true,
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "create",
+                                      "read",
+                                      "update",
+                                      "delete"
+                                    ]
+                                  }
+                                }
+                              ]
+                            },
+                            "hidden": {
+                              "anyOf": [
+                                {
+                                  "type": "boolean",
+                                  "title": "Boolean"
+                                },
+                                {
+                                  "type": "array",
+                                  "title": "Context",
+                                  "uniqueItems": true,
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "create",
+                                      "read",
+                                      "update",
+                                      "delete",
+                                      "form",
+                                      "table",
+                                      "submit"
+                                    ]
+                                  }
+                                }
+                              ]
+                            },
+                            "virtual": {
+                              "type": "boolean"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "title": "number",
+                      "additionalProperties": false,
+                      "required": [
+                        "type"
+                      ],
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "const": "number"
+                        },
+                        "config": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "default_value": {
+                              "type": "number"
+                            },
+                            "minimum": {
+                              "type": "number"
+                            },
+                            "maximum": {
+                              "type": "number"
+                            },
+                            "exclusiveMinimum": {
+                              "type": "number"
+                            },
+                            "exclusiveMaximum": {
+                              "type": "number"
+                            },
+                            "multipleOf": {
+                              "type": "number"
+                            },
+                            "label": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            },
+                            "required": {
+                              "type": "boolean",
+                              "default": false
+                            },
+                            "fillable": {
+                              "anyOf": [
+                                {
+                                  "type": "boolean",
+                                  "title": "Boolean"
+                                },
+                                {
+                                  "type": "array",
+                                  "title": "Context",
+                                  "uniqueItems": true,
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "create",
+                                      "read",
+                                      "update",
+                                      "delete"
+                                    ]
+                                  }
+                                }
+                              ]
+                            },
+                            "hidden": {
+                              "anyOf": [
+                                {
+                                  "type": "boolean",
+                                  "title": "Boolean"
+                                },
+                                {
+                                  "type": "array",
+                                  "title": "Context",
+                                  "uniqueItems": true,
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "create",
+                                      "read",
+                                      "update",
+                                      "delete",
+                                      "form",
+                                      "table",
+                                      "submit"
+                                    ]
+                                  }
+                                }
+                              ]
+                            },
+                            "virtual": {
+                              "type": "boolean"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "title": "boolean",
+                      "additionalProperties": false,
+                      "required": [
+                        "type"
+                      ],
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "const": "boolean"
+                        },
+                        "config": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "default_value": {
+                              "type": "boolean"
+                            },
+                            "label": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            },
+                            "required": {
+                              "type": "boolean",
+                              "default": false
+                            },
+                            "fillable": {
+                              "anyOf": [
+                                {
+                                  "type": "boolean",
+                                  "title": "Boolean"
+                                },
+                                {
+                                  "type": "array",
+                                  "title": "Context",
+                                  "uniqueItems": true,
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "create",
+                                      "read",
+                                      "update",
+                                      "delete"
+                                    ]
+                                  }
+                                }
+                              ]
+                            },
+                            "hidden": {
+                              "anyOf": [
+                                {
+                                  "type": "boolean",
+                                  "title": "Boolean"
+                                },
+                                {
+                                  "type": "array",
+                                  "title": "Context",
+                                  "uniqueItems": true,
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "create",
+                                      "read",
+                                      "update",
+                                      "delete",
+                                      "form",
+                                      "table",
+                                      "submit"
+                                    ]
+                                  }
+                                }
+                              ]
+                            },
+                            "virtual": {
+                              "type": "boolean"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "title": "date",
+                      "additionalProperties": false,
+                      "required": [
+                        "type"
+                      ],
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "const": "date"
+                        },
+                        "config": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "date",
+                                "datetime",
+                                "week"
+                              ],
+                              "default": "date"
+                            },
+                            "timezone": {
+                              "type": "string"
+                            },
+                            "min_date": {
+                              "type": "string"
+                            },
+                            "max_date": {
+                              "type": "string"
+                            },
+                            "label": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            },
+                            "required": {
+                              "type": "boolean",
+                              "default": false
+                            },
+                            "fillable": {
+                              "anyOf": [
+                                {
+                                  "type": "boolean",
+                                  "title": "Boolean"
+                                },
+                                {
+                                  "type": "array",
+                                  "title": "Context",
+                                  "uniqueItems": true,
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "create",
+                                      "read",
+                                      "update",
+                                      "delete"
+                                    ]
+                                  }
+                                }
+                              ]
+                            },
+                            "hidden": {
+                              "anyOf": [
+                                {
+                                  "type": "boolean",
+                                  "title": "Boolean"
+                                },
+                                {
+                                  "type": "array",
+                                  "title": "Context",
+                                  "uniqueItems": true,
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "create",
+                                      "read",
+                                      "update",
+                                      "delete",
+                                      "form",
+                                      "table",
+                                      "submit"
+                                    ]
+                                  }
+                                }
+                              ]
+                            },
+                            "virtual": {
+                              "type": "boolean"
+                            },
+                            "default_value": {}
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "title": "enum",
+                      "additionalProperties": false,
+                      "required": [
+                        "type"
+                      ],
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "const": "enum"
+                        },
+                        "config": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "default_value": {
+                              "type": "string"
+                            },
+                            "options": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "required": [
+                                    "type",
+                                    "values"
+                                  ],
+                                  "properties": {
+                                    "type": {
+                                      "const": "strings"
+                                    },
+                                    "values": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "object",
+                                  "required": [
+                                    "type",
+                                    "values"
+                                  ],
+                                  "properties": {
+                                    "type": {
+                                      "const": "objects"
+                                    },
+                                    "values": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "required": [
+                                          "label",
+                                          "value"
+                                        ],
+                                        "properties": {
+                                          "label": {
+                                            "type": "string"
+                                          },
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            "label": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            },
+                            "required": {
+                              "type": "boolean",
+                              "default": false
+                            },
+                            "fillable": {
+                              "anyOf": [
+                                {
+                                  "type": "boolean",
+                                  "title": "Boolean"
+                                },
+                                {
+                                  "type": "array",
+                                  "title": "Context",
+                                  "uniqueItems": true,
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "create",
+                                      "read",
+                                      "update",
+                                      "delete"
+                                    ]
+                                  }
+                                }
+                              ]
+                            },
+                            "hidden": {
+                              "anyOf": [
+                                {
+                                  "type": "boolean",
+                                  "title": "Boolean"
+                                },
+                                {
+                                  "type": "array",
+                                  "title": "Context",
+                                  "uniqueItems": true,
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "create",
+                                      "read",
+                                      "update",
+                                      "delete",
+                                      "form",
+                                      "table",
+                                      "submit"
+                                    ]
+                                  }
+                                }
+                              ]
+                            },
+                            "virtual": {
+                              "type": "boolean"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "title": "json",
+                      "additionalProperties": false,
+                      "required": [
+                        "type"
+                      ],
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "const": "json"
+                        },
+                        "config": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "default_value": {},
+                            "label": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            },
+                            "required": {
+                              "type": "boolean",
+                              "default": false
+                            },
+                            "fillable": {
+                              "anyOf": [
+                                {
+                                  "type": "boolean",
+                                  "title": "Boolean"
+                                },
+                                {
+                                  "type": "array",
+                                  "title": "Context",
+                                  "uniqueItems": true,
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "create",
+                                      "read",
+                                      "update",
+                                      "delete"
+                                    ]
+                                  }
+                                }
+                              ]
+                            },
+                            "hidden": {
+                              "anyOf": [
+                                {
+                                  "type": "boolean",
+                                  "title": "Boolean"
+                                },
+                                {
+                                  "type": "array",
+                                  "title": "Context",
+                                  "uniqueItems": true,
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "create",
+                                      "read",
+                                      "update",
+                                      "delete",
+                                      "form",
+                                      "table",
+                                      "submit"
+                                    ]
+                                  }
+                                }
+                              ]
+                            },
+                            "virtual": {
+                              "type": "boolean"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "title": "jsonschema",
+                      "additionalProperties": false,
+                      "required": [
+                        "type"
+                      ],
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "const": "jsonschema"
+                        },
+                        "config": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "schema": {
+                              "type": "object"
+                            },
+                            "ui_schema": {
+                              "type": "object"
+                            },
+                            "default_from_schema": {
+                              "type": "boolean"
+                            },
+                            "label": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            },
+                            "required": {
+                              "type": "boolean",
+                              "default": false
+                            },
+                            "fillable": {
+                              "anyOf": [
+                                {
+                                  "type": "boolean",
+                                  "title": "Boolean"
+                                },
+                                {
+                                  "type": "array",
+                                  "title": "Context",
+                                  "uniqueItems": true,
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "create",
+                                      "read",
+                                      "update",
+                                      "delete"
+                                    ]
+                                  }
+                                }
+                              ]
+                            },
+                            "hidden": {
+                              "anyOf": [
+                                {
+                                  "type": "boolean",
+                                  "title": "Boolean"
+                                },
+                                {
+                                  "type": "array",
+                                  "title": "Context",
+                                  "uniqueItems": true,
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "create",
+                                      "read",
+                                      "update",
+                                      "delete",
+                                      "form",
+                                      "table",
+                                      "submit"
+                                    ]
+                                  }
+                                }
+                              ]
+                            },
+                            "virtual": {
+                              "type": "boolean"
+                            },
+                            "default_value": {}
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "title": "relation",
+                      "additionalProperties": false,
+                      "required": [
+                        "type"
+                      ],
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "const": "relation"
+                        },
+                        "config": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "reference",
+                            "target"
+                          ],
+                          "properties": {
+                            "reference": {
+                              "type": "string"
+                            },
+                            "target": {
+                              "type": "string"
+                            },
+                            "target_field": {
+                              "type": "string",
+                              "default": "id"
+                            },
+                            "target_field_type": {
+                              "type": "string",
+                              "enum": [
+                                "text",
+                                "integer"
+                              ],
+                              "default": "integer"
+                            },
+                            "on_delete": {
+                              "type": "string",
+                              "enum": [
+                                "cascade",
+                                "set null",
+                                "set default",
+                                "restrict",
+                                "no action"
+                              ],
+                              "default": "set null"
+                            },
+                            "label": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            },
+                            "required": {
+                              "type": "boolean",
+                              "default": false
+                            },
+                            "fillable": {
+                              "anyOf": [
+                                {
+                                  "type": "boolean",
+                                  "title": "Boolean"
+                                },
+                                {
+                                  "type": "array",
+                                  "title": "Context",
+                                  "uniqueItems": true,
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "create",
+                                      "read",
+                                      "update",
+                                      "delete"
+                                    ]
+                                  }
+                                }
+                              ]
+                            },
+                            "hidden": {
+                              "anyOf": [
+                                {
+                                  "type": "boolean",
+                                  "title": "Boolean"
+                                },
+                                {
+                                  "type": "array",
+                                  "title": "Context",
+                                  "uniqueItems": true,
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "create",
+                                      "read",
+                                      "update",
+                                      "delete",
+                                      "form",
+                                      "table",
+                                      "submit"
+                                    ]
+                                  }
+                                }
+                              ]
+                            },
+                            "virtual": {
+                              "type": "boolean"
+                            },
+                            "default_value": {}
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "title": "media",
+                      "additionalProperties": false,
+                      "required": [
+                        "type"
+                      ],
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "const": "media"
+                        },
+                        "config": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "entity": {
+                              "type": "string"
+                            },
+                            "min_items": {
+                              "type": "number"
+                            },
+                            "max_items": {
+                              "type": "number"
+                            },
+                            "mime_types": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "label": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            },
+                            "required": {
+                              "type": "boolean",
+                              "default": false
+                            },
+                            "fillable": {
+                              "anyOf": [
+                                {
+                                  "type": "boolean",
+                                  "title": "Boolean"
+                                },
+                                {
+                                  "type": "array",
+                                  "title": "Context",
+                                  "uniqueItems": true,
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "create",
+                                      "read",
+                                      "update",
+                                      "delete"
+                                    ]
+                                  }
+                                }
+                              ]
+                            },
+                            "hidden": {
+                              "anyOf": [
+                                {
+                                  "type": "boolean",
+                                  "title": "Boolean"
+                                },
+                                {
+                                  "type": "array",
+                                  "title": "Context",
+                                  "uniqueItems": true,
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "create",
+                                      "read",
+                                      "update",
+                                      "delete",
+                                      "form",
+                                      "table",
+                                      "submit"
+                                    ]
+                                  }
+                                }
+                              ]
+                            },
+                            "virtual": {
+                              "type": "boolean"
+                            },
+                            "default_value": {}
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
           },
           "return_config": {
             "type": "boolean",
@@ -2001,196 +3078,33 @@
             "description": "key to add"
           },
           "value": {
-            "anyOf": [
-              {
-                "type": "object",
-                "title": "1:1",
-                "additionalProperties": false,
-                "properties": {
-                  "type": {
-                    "const": "1:1"
-                  },
-                  "source": {
-                    "type": "string"
-                  },
-                  "target": {
-                    "type": "string"
-                  },
-                  "config": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                      "sourceCardinality": {
-                        "type": "number"
-                      },
-                      "with_limit": {
-                        "type": "number",
-                        "default": 5
-                      },
-                      "fieldConfig": {
-                        "type": "object",
-                        "properties": {
-                          "label": {
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "label"
-                        ]
-                      },
-                      "mappedBy": {
-                        "type": "string"
-                      },
-                      "inversedBy": {
-                        "type": "string"
-                      },
-                      "required": {
-                        "type": "boolean"
-                      }
-                    }
-                  }
-                },
-                "required": [
-                  "type",
-                  "source",
-                  "target"
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "1:1",
+                  "n:1",
+                  "m:n",
+                  "poly"
                 ]
               },
-              {
-                "type": "object",
-                "title": "n:1",
-                "additionalProperties": false,
-                "properties": {
-                  "type": {
-                    "const": "n:1"
-                  },
-                  "source": {
-                    "type": "string"
-                  },
-                  "target": {
-                    "type": "string"
-                  },
-                  "config": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                      "sourceCardinality": {
-                        "type": "number"
-                      },
-                      "with_limit": {
-                        "type": "number",
-                        "default": 5
-                      },
-                      "fieldConfig": {
-                        "type": "object",
-                        "properties": {
-                          "label": {
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "label"
-                        ]
-                      },
-                      "mappedBy": {
-                        "type": "string"
-                      },
-                      "inversedBy": {
-                        "type": "string"
-                      },
-                      "required": {
-                        "type": "boolean"
-                      }
-                    }
-                  }
-                },
-                "required": [
-                  "type",
-                  "source",
-                  "target"
-                ]
+              "source": {
+                "type": "string"
               },
-              {
-                "type": "object",
-                "title": "m:n",
-                "additionalProperties": false,
-                "properties": {
-                  "type": {
-                    "const": "m:n"
-                  },
-                  "source": {
-                    "type": "string"
-                  },
-                  "target": {
-                    "type": "string"
-                  },
-                  "config": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                      "connectionTable": {
-                        "type": "string"
-                      },
-                      "connectionTableMappedName": {
-                        "type": "string"
-                      },
-                      "mappedBy": {
-                        "type": "string"
-                      },
-                      "inversedBy": {
-                        "type": "string"
-                      },
-                      "required": {
-                        "type": "boolean"
-                      }
-                    }
-                  }
-                },
-                "required": [
-                  "type",
-                  "source",
-                  "target"
-                ]
+              "target": {
+                "type": "string"
               },
-              {
+              "config": {
                 "type": "object",
-                "title": "poly",
-                "additionalProperties": false,
-                "properties": {
-                  "type": {
-                    "const": "poly"
-                  },
-                  "source": {
-                    "type": "string"
-                  },
-                  "target": {
-                    "type": "string"
-                  },
-                  "config": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                      "targetCardinality": {
-                        "type": "number"
-                      },
-                      "mappedBy": {
-                        "type": "string"
-                      },
-                      "inversedBy": {
-                        "type": "string"
-                      },
-                      "required": {
-                        "type": "boolean"
-                      }
-                    }
-                  }
-                },
-                "required": [
-                  "type",
-                  "source",
-                  "target"
-                ]
+                "properties": {}
               }
+            },
+            "required": [
+              "type",
+              "source",
+              "target"
             ]
           },
           "return_config": {
@@ -2221,7 +3135,28 @@
           },
           "value": {
             "type": "object",
-            "properties": {}
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "1:1",
+                  "n:1",
+                  "m:n",
+                  "poly"
+                ]
+              },
+              "source": {
+                "type": "string"
+              },
+              "target": {
+                "type": "string"
+              },
+              "config": {
+                "type": "object",
+                "properties": {}
+              }
+            }
           },
           "return_config": {
             "type": "boolean",
@@ -2582,6 +3517,10 @@
               "type": {
                 "type": "string"
               },
+              "enabled": {
+                "type": "boolean",
+                "default": true
+              },
               "config": {
                 "type": "object",
                 "properties": {}
@@ -2626,15 +3565,15 @@
               "type": {
                 "type": "string"
               },
+              "enabled": {
+                "type": "boolean",
+                "default": true
+              },
               "config": {
                 "type": "object",
                 "properties": {}
               }
-            },
-            "required": [
-              "type",
-              "config"
-            ]
+            }
           },
           "return_config": {
             "type": "boolean",
@@ -2761,7 +3700,21 @@
           },
           "value": {
             "type": "object",
-            "properties": {}
+            "additionalProperties": false,
+            "properties": {
+              "permissions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "is_default": {
+                "type": "boolean"
+              },
+              "implicit_allow": {
+                "type": "boolean"
+              }
+            }
           },
           "return_config": {
             "type": "boolean",

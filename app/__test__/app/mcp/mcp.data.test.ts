@@ -66,7 +66,7 @@ describe("mcp data", async () => {
       });
       expect(result.success).toBe(true);
       expect(result.module).toBe("data");
-      expect(result.config.entities.test.type).toEqual("regular");
+      expect(result.config.test?.type).toEqual("regular");
 
       const entities = Object.keys(app.toJSON().data.entities ?? {});
       expect(entities).toContain("test");
@@ -94,7 +94,7 @@ describe("mcp data", async () => {
          });
          expect(result.success).toBe(true);
          expect(result.module).toBe("data");
-         expect(result.config.entities.test.config?.name).toEqual("Test");
+         expect(result.config.test.config?.name).toEqual("Test");
          expect(app.toJSON().data.entities?.test?.config?.name).toEqual("Test");
       }
 

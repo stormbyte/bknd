@@ -13,15 +13,18 @@ export function createApp({ connection, ...config }: CreateAppConfig = {}) {
 }
 
 export function createMcpToolCaller() {
-   return async (server: ReturnType<typeof getSystemMcp>, name: string, args: any) => {
-      const res = await server.handle({
-         jsonrpc: "2.0",
-         method: "tools/call",
-         params: {
-            name,
-            arguments: args,
+   return async (server: ReturnType<typeof getSystemMcp>, name: string, args: any, raw?: any) => {
+      const res = await server.handle(
+         {
+            jsonrpc: "2.0",
+            method: "tools/call",
+            params: {
+               name,
+               arguments: args,
+            },
          },
-      });
+         raw,
+      );
 
       if ((res.result as any)?.isError) {
          console.dir(res.result, { depth: null });

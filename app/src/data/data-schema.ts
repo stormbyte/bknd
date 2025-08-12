@@ -80,9 +80,19 @@ export const dataConfigSchema = $object("config_data", {
    basepath: s.string({ default: "/api/data" }).optional(),
    default_primary_format: s.string({ enum: primaryFieldTypes, default: "integer" }).optional(),
    entities: $record("config_data_entities", entitiesSchema, { default: {} }).optional(),
-   relations: $record("config_data_relations", s.anyOf(relationsSchema), {
-      default: {},
-   }).optional(),
+   relations: $record(
+      "config_data_relations",
+      s.anyOf(relationsSchema),
+      {
+         default: {},
+      },
+      s.strictObject({
+         type: s.string({ enum: Object.keys(RelationClassMap) }),
+         source: s.string(),
+         target: s.string(),
+         config: s.object({}).optional(),
+      }),
+   ).optional(),
    indices: $record("config_data_indices", indicesSchema, {
       default: {},
       mcp: { update: false },

@@ -7,7 +7,7 @@ import type { ModuleBuildContext, ModuleBuildContextMcpContext } from "./Module"
 import type { EntityRelation } from "data/relations";
 import type { Permission } from "core/security/Permission";
 import { Exception } from "core/errors";
-import { invariant } from "bknd/utils";
+import { invariant, isPlainObject } from "bknd/utils";
 
 export class ModuleHelper {
    constructor(protected ctx: Omit<ModuleBuildContext, "helper">) {}
@@ -119,12 +119,14 @@ export class ModuleHelper {
       c: { context: ModuleBuildContextMcpContext; raw?: unknown },
    ) {
       invariant(c.context.app, "app is not available in mcp context");
-      invariant(c.raw instanceof Request, "request is not available in mcp context");
-
       const auth = c.context.app.module.auth;
       if (!auth.enabled) return;
 
-      const user = await auth.authenticator?.resolveAuthFromRequest(c.raw as Request);
+      if (c.raw === undefined || c.raw === null) {
+         throw new Exception("Request/Headers/Context is not available in mcp context", 400);
+      }
+
+      const user = await auth.authenticator?.resolveAuthFromRequest(c.raw as any);
 
       if (!this.ctx.guard.granted(permission, user)) {
          throw new Exception(

@@ -385,7 +385,11 @@ export class Authenticator<
          headers = c.headers;
       } else {
          is_context = true;
-         headers = c.req.raw.headers;
+         try {
+            headers = c.req.raw.headers;
+         } catch (e) {
+            throw new Exception("Request/Headers/Context is required to resolve auth", 400);
+         }
       }
 
       let token: string | undefined;

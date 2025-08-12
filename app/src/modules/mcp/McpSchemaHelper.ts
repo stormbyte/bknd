@@ -43,16 +43,18 @@ export class McpSchemaHelper<AdditionalOptions = {}> {
       public name: string,
       public options: McpToolOptions & AdditionalOptions,
    ) {
-      this.cleanSchema = this.getCleanSchema();
+      this.cleanSchema = this.getCleanSchema(this.schema as s.ObjectSchema);
    }
 
-   private getCleanSchema() {
+   getCleanSchema(schema: s.ObjectSchema) {
+      if (schema.type !== "object") return schema;
+
       const props = excludePropertyTypes(
-         this.schema as any,
+         schema as any,
          (i) => isPlainObject(i) && mcpSchemaSymbol in i,
       );
-      const schema = s.strictObject(props);
-      return rescursiveClean(schema, {
+      const _schema = s.strictObject(props);
+      return rescursiveClean(_schema, {
          removeRequired: true,
          removeDefault: false,
       }) as s.ObjectSchema<any, any>;

@@ -42,7 +42,7 @@ export class RecordToolSchema<
    }
 
    private getNewSchema(fallback: s.Schema = this.additionalProperties) {
-      return this[opts].new_schema ?? fallback;
+      return this[opts].new_schema ?? this.additionalProperties ?? fallback;
    }
 
    private toolGet(node: s.Node<RecordToolSchema<AP, O>>) {
@@ -122,7 +122,7 @@ export class RecordToolSchema<
             }),
          },
          async (params, ctx: AppToolHandlerCtx) => {
-            const configs = ctx.context.app.toJSON();
+            const configs = ctx.context.app.toJSON(true);
             const config = getPath(configs, node.instancePath);
             const [module_name, ...rest] = node.instancePath;
 
@@ -134,12 +134,16 @@ export class RecordToolSchema<
                .mutateConfig(module_name as any)
                .patch([...rest, params.key], params.value);
 
+            const newConfig = getPath(ctx.context.app.toJSON(), node.instancePath);
+
             return ctx.json({
                success: true,
                module: module_name,
-               config: params.return_config
-                  ? ctx.context.app.module[module_name as any].config
-                  : undefined,
+               action: {
+                  type: "add",
+                  key: params.key,
+               },
+               config: params.return_config ? newConfig : undefined,
             });
          },
       );
@@ -154,7 +158,7 @@ export class RecordToolSchema<
                key: s.string({
                   description: "key to update",
                }),
-               value: this.getNewSchema(s.object({})),
+               value: this.mcp.getCleanSchema(this.getNewSchema(s.object({}))),
                return_config: s
                   .boolean({
                      default: false,
@@ -164,7 +168,7 @@ export class RecordToolSchema<
             }),
          },
          async (params, ctx: AppToolHandlerCtx) => {
-            const configs = ctx.context.app.toJSON(params.secrets);
+            const configs = ctx.context.app.toJSON(true);
             const config = getPath(configs, node.instancePath);
             const [module_name, ...rest] = node.instancePath;
 
@@ -176,12 +180,16 @@ export class RecordToolSchema<
                .mutateConfig(module_name as any)
                .patch([...rest, params.key], params.value);
 
+            const newConfig = getPath(ctx.context.app.toJSON(), node.instancePath);
+
             return ctx.json({
                success: true,
                module: module_name,
-               config: params.return_config
-                  ? ctx.context.app.module[module_name as any].config
-                  : undefined,
+               action: {
+                  type: "update",
+                  key: params.key,
+               },
+               config: params.return_config ? newConfig : undefined,
             });
          },
       );
@@ -205,7 +213,7 @@ export class RecordToolSchema<
             }),
          },
          async (params, ctx: AppToolHandlerCtx) => {
-            const configs = ctx.context.app.toJSON();
+            const configs = ctx.context.app.toJSON(true);
             const config = getPath(configs, node.instancePath);
             const [module_name, ...rest] = node.instancePath;
 
@@ -217,12 +225,16 @@ export class RecordToolSchema<
                .mutateConfig(module_name as any)
                .remove([...rest, params.key].join("."));
 
+            const newConfig = getPath(ctx.context.app.toJSON(), node.instancePath);
+
             return ctx.json({
                success: true,
                module: module_name,
-               config: params.return_config
-                  ? ctx.context.app.module[module_name as any].config
-                  : undefined,
+               action: {
+                  type: "remove",
+                  key: params.key,
+               },
+               config: params.return_config ? newConfig : undefined,
             });
          },
       );

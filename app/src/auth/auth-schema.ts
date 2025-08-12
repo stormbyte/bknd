@@ -72,6 +72,7 @@ export const authConfigSchema = $object(
          },
          s.strictObject({
             type: s.string(),
+            enabled: s.boolean({ default: true }).optional(),
             config: s.object({}),
          }),
       ),
