@@ -15,6 +15,7 @@ import {
    openAPISpecs,
    mcpTool,
    mcp as mcpMiddleware,
+   isNode,
 } from "bknd/utils";
 import type { Context, Hono } from "hono";
 import { Controller } from "modules/Controller";
@@ -28,7 +29,7 @@ import {
 import * as SystemPermissions from "modules/permissions";
 import { getVersion } from "core/env";
 import type { Module } from "modules/Module";
-import { getSystemMcp } from "./system-mcp";
+import { getSystemMcp } from "modules/mcp/system-mcp";
 
 export type ConfigUpdate<Key extends ModuleKey = ModuleKey> = {
    success: true;
@@ -94,6 +95,8 @@ export class SystemController extends Controller {
             },
             endpoint: {
                path: "/mcp",
+               // @ts-ignore
+               _init: isNode() ? { duplex: "half" } : {},
             },
          }),
       );
@@ -365,7 +368,10 @@ export class SystemController extends Controller {
          }),
          (c) =>
             c.json({
-               version: c.get("app")?.version(),
+               version: {
+                  config: c.get("app")?.version(),
+                  bknd: getVersion(),
+               },
                runtime: getRuntimeKey(),
                connection: {
                   name: this.app.em.connection.name,

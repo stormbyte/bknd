@@ -1,6 +1,6 @@
 import type { CliCommand } from "cli/types";
 import { makeAppFromEnv } from "../run";
-import { getSystemMcp } from "modules/server/system-mcp";
+import { getSystemMcp } from "modules/mcp/system-mcp";
 import { $console } from "bknd/utils";
 import { stdioTransport } from "jsonv-ts/mcp";
 
