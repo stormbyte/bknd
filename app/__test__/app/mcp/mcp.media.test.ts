@@ -4,6 +4,7 @@ import { getSystemMcp } from "modules/mcp/system-mcp";
 import { registries } from "index";
 import { StorageLocalAdapter } from "adapter/node/storage/StorageLocalAdapter";
 import { disableConsoleLog, enableConsoleLog } from "core/utils";
+import type { McpServer } from "bknd/utils";
 
 beforeAll(disableConsoleLog);
 afterAll(enableConsoleLog);
@@ -16,7 +17,7 @@ afterAll(enableConsoleLog);
  */
 describe("mcp media", async () => {
    let app: App;
-   let server: ReturnType<typeof getSystemMcp>;
+   let server: McpServer;
    beforeEach(async () => {
       registries.media.register("local", StorageLocalAdapter);
       app = createApp({
@@ -38,7 +39,7 @@ describe("mcp media", async () => {
          },
       });
       await app.build();
-      server = getSystemMcp(app);
+      server = app.mcp!;
       server.setLogLevel("error");
       server.onNotification((message) => {
          console.dir(message, { depth: null });

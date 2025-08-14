@@ -1,7 +1,7 @@
 import { extension, guess, isMimeType } from "media/storage/mime-types-tiny";
-import { randomString } from "core/utils/strings";
+import { randomString } from "./strings";
 import type { Context } from "hono";
-import { invariant } from "core/utils/runtime";
+import { invariant } from "./runtime";
 import { $console } from "./console";
 
 export function getContentName(request: Request): string | undefined;

@@ -14,3 +14,4 @@ export * from "./test";
 export * from "./runtime";
 export * from "./numbers";
 export * from "./schema";
+export { DebugLogger } from "./DebugLogger";

@@ -1,7 +1,7 @@
 import { describe, test, expect, beforeEach, beforeAll, afterAll } from "bun:test";
 import { type App, createApp, createMcpToolCaller } from "core/test/utils";
 import { getSystemMcp } from "modules/mcp/system-mcp";
-import { pickKeys } from "bknd/utils";
+import { pickKeys, type McpServer } from "bknd/utils";
 import { entity, text } from "bknd";
 import { disableConsoleLog, enableConsoleLog } from "core/utils";
 
@@ -37,8 +37,9 @@ afterAll(enableConsoleLog);
  */
 describe("mcp data", async () => {
    let app: App;
-   let server: ReturnType<typeof getSystemMcp>;
+   let server: McpServer;
    beforeEach(async () => {
+      const time = performance.now();
       app = createApp({
          initialConfig: {
             server: {
@@ -49,7 +50,7 @@ describe("mcp data", async () => {
          },
       });
       await app.build();
-      server = getSystemMcp(app);
+      server = app.mcp!;
       server.setLogLevel("error");
       server.onNotification((message) => {
          console.dir(message, { depth: null });

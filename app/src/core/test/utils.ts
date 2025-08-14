@@ -1,19 +1,20 @@
-import { createApp as createAppInternal, type CreateAppConfig } from "App";
-import { bunSqlite } from "adapter/bun/connection/BunSqliteConnection";
-import { Connection } from "data/connection/Connection";
-import type { getSystemMcp } from "modules/mcp/system-mcp";
+import { Connection, createApp as createAppInternal, type CreateAppConfig } from "bknd";
+import { bunSqlite } from "bknd/adapter/bun";
+import type { McpServer } from "bknd/utils";
 
-export { App } from "App";
+export { App } from "bknd";
 
 export function createApp({ connection, ...config }: CreateAppConfig = {}) {
    return createAppInternal({
       ...config,
-      connection: Connection.isConnection(connection) ? connection : bunSqlite(connection as any),
+      connection: Connection.isConnection(connection)
+         ? connection
+         : (bunSqlite(connection as any) as any),
    });
 }
 
 export function createMcpToolCaller() {
-   return async (server: ReturnType<typeof getSystemMcp>, name: string, args: any, raw?: any) => {
+   return async (server: McpServer, name: string, args: any, raw?: any) => {
       const res = await server.handle(
          {
             jsonrpc: "2.0",

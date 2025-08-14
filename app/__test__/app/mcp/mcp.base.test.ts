@@ -1,6 +1,5 @@
 import { describe, it, expect } from "bun:test";
 import { createApp } from "core/test/utils";
-import { getSystemMcp } from "modules/mcp/system-mcp";
 import { registries } from "index";
 import { StorageLocalAdapter } from "adapter/node/storage/StorageLocalAdapter";
 
@@ -22,11 +21,15 @@ describe("mcp", () => {
                   },
                },
             },
+            server: {
+               mcp: {
+                  enabled: true,
+               },
+            },
          },
       });
       await app.build();
 
-      const server = getSystemMcp(app);
-      expect(server.tools.length).toBeGreaterThan(0);
+      expect(app.mcp?.tools.length).toBeGreaterThan(0);
    });
 });

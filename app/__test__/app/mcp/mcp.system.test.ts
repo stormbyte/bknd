@@ -1,9 +1,7 @@
 import { AppEvents } from "App";
 import { describe, test, expect, beforeAll, mock } from "bun:test";
 import { type App, createApp, createMcpToolCaller } from "core/test/utils";
-import { getSystemMcp } from "modules/mcp/system-mcp";
-import { inspect } from "node:util";
-inspect.defaultOptions.depth = 10;
+import type { McpServer } from "bknd/utils";
 
 /**
  * - [x] system_config
@@ -13,7 +11,7 @@ inspect.defaultOptions.depth = 10;
  */
 describe("mcp system", async () => {
    let app: App;
-   let server: ReturnType<typeof getSystemMcp>;
+   let server: McpServer;
    beforeAll(async () => {
       app = createApp({
          initialConfig: {
@@ -25,7 +23,7 @@ describe("mcp system", async () => {
          },
       });
       await app.build();
-      server = getSystemMcp(app);
+      server = app.mcp!;
    });
 
    const tool = createMcpToolCaller();

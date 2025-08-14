@@ -1,7 +1,7 @@
 import { describe, test, expect, beforeEach, beforeAll, afterAll } from "bun:test";
 import { type App, createApp, createMcpToolCaller } from "core/test/utils";
-import { getSystemMcp } from "modules/mcp/system-mcp";
 import { disableConsoleLog, enableConsoleLog } from "core/utils";
+import type { McpServer } from "bknd/utils";
 
 beforeAll(disableConsoleLog);
 afterAll(enableConsoleLog);
@@ -26,7 +26,7 @@ afterAll(enableConsoleLog);
  */
 describe("mcp auth", async () => {
    let app: App;
-   let server: ReturnType<typeof getSystemMcp>;
+   let server: McpServer;
    beforeEach(async () => {
       app = createApp({
          initialConfig: {
@@ -44,7 +44,7 @@ describe("mcp auth", async () => {
          },
       });
       await app.build();
-      server = getSystemMcp(app);
+      server = app.mcp!;
       server.setLogLevel("error");
       server.onNotification((message) => {
          console.dir(message, { depth: null });

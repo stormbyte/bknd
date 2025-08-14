@@ -10,6 +10,7 @@ export {
    mcpTool,
    mcpResource,
    getMcpServer,
+   stdioTransport,
    type ToolAnnotation,
    type ToolHandlerCtx,
 } from "jsonv-ts/mcp";

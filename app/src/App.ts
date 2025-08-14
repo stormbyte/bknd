@@ -96,6 +96,7 @@ export class App<C extends Connection = Connection, Options extends AppOptions =
 
    private trigger_first_boot = false;
    private _building: boolean = false;
+   private _systemController: SystemController | null = null;
 
    constructor(
       public connection: C,
@@ -172,8 +173,8 @@ export class App<C extends Connection = Connection, Options extends AppOptions =
 
       // load system controller
       guard.registerPermissions(Object.values(SystemPermissions));
-      const systemController = new SystemController(this);
-      systemController.register(this);
+      this._systemController = new SystemController(this);
+      this._systemController.register(this);
 
       // emit built event
       $console.log("App built");
@@ -203,6 +204,10 @@ export class App<C extends Connection = Connection, Options extends AppOptions =
 
    get em() {
       return this.modules.ctx().em;
+   }
+
+   get mcp() {
+      return this._systemController?._mcpServer;
    }
 
    get fetch(): Hono["fetch"] {

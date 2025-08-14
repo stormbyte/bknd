@@ -69,6 +69,8 @@ const external = [
    "@libsql/client",
    "bknd",
    /^bknd\/.*/,
+   "jsonv-ts",
+   /^jsonv-ts\/.*/,
 ] as const;
 
 /**

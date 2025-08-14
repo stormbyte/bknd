@@ -1,8 +1,16 @@
-import { mark, stripMark, $console, s, objectEach, transformObject, McpServer } from "bknd/utils";
+import {
+   mark,
+   stripMark,
+   $console,
+   s,
+   objectEach,
+   transformObject,
+   McpServer,
+   DebugLogger,
+} from "bknd/utils";
 import { Guard } from "auth/authorize/Guard";
 import { env } from "core/env";
 import { BkndError } from "core/errors";
-import { DebugLogger } from "core/utils/DebugLogger";
 import { EventManager, Event } from "core/events";
 import * as $diff from "core/object/diff";
 import type { Connection } from "data/connection";

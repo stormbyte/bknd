@@ -8,12 +8,9 @@ export function getSystemMcp(app: App) {
 
    const appConfig = app.modules.configs();
    const { version, ...appSchema } = app.getSchema();
-
    const schema = s.strictObject(appSchema);
-
-   const nodes = [...schema.walk({ data: appConfig })].filter(
-      (n) => isObject(n.schema) && mcpSchemaSymbol in n.schema,
-   ) as s.Node<McpSchema>[];
+   const result = [...schema.walk({ maxDepth: 3 })];
+   const nodes = result.filter((n) => mcpSchemaSymbol in n.schema) as s.Node<McpSchema>[];
    const tools = [
       // tools from hono routes
       ...middlewareServer.tools,

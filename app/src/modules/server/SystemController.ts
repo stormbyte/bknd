@@ -16,6 +16,7 @@ import {
    mcpTool,
    mcp as mcpMiddleware,
    isNode,
+   type McpServer,
 } from "bknd/utils";
 import type { Context, Hono } from "hono";
 import { Controller } from "modules/Controller";
@@ -47,6 +48,8 @@ export type SchemaResponse = {
 };
 
 export class SystemController extends Controller {
+   _mcpServer: McpServer | null = null;
+
    constructor(private readonly app: App) {
       super();
    }
@@ -64,8 +67,8 @@ export class SystemController extends Controller {
 
       this.registerMcp();
 
-      const mcpServer = getSystemMcp(app);
-      mcpServer.onNotification((message) => {
+      this._mcpServer = getSystemMcp(app);
+      this._mcpServer.onNotification((message) => {
          if (message.method === "notification/message") {
             const consoleMap = {
                emergency: "error",
@@ -87,7 +90,7 @@ export class SystemController extends Controller {
 
       app.server.use(
          mcpMiddleware({
-            server: mcpServer,
+            server: this._mcpServer,
             sessionsEnabled: true,
             debug: {
                logLevel: "debug",

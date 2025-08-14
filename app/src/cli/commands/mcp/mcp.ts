@@ -1,8 +1,7 @@
 import type { CliCommand } from "cli/types";
 import { makeAppFromEnv } from "../run";
 import { getSystemMcp } from "modules/mcp/system-mcp";
-import { $console } from "bknd/utils";
-import { stdioTransport } from "jsonv-ts/mcp";
+import { $console, stdioTransport } from "bknd/utils";
 
 export const mcp: CliCommand = (program) =>
    program
