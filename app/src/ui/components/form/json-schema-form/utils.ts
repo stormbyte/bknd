@@ -73,7 +73,6 @@ export function isRequired(lib: Draft, pointer: string, schema: JsonSchema, data
       }
 
       const parentPointer = getParentPointer(pointer);
-      if (parentPointer === "" || parentPointer === "#") return false;
       const parentSchema = lib.getSchema({ pointer: parentPointer, data });
       const required = parentSchema?.required?.includes(pointer.split("/").pop()!);
 
