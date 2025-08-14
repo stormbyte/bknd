@@ -201,7 +201,9 @@ export class DataController extends Controller {
 
       const entitiesEnum = this.getEntitiesEnum(this.em);
       // @todo: make dynamic based on entity
-      const idType = s.anyOf([s.number(), s.string()], { coerce: (v) => v as number | string });
+      const idType = s.anyOf([s.number({ title: "Integer" }), s.string({ title: "UUID" })], {
+         coerce: (v) => v as number | string,
+      });
 
       /**
        * Function endpoints

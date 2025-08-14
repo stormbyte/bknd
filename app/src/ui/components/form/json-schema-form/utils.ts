@@ -62,20 +62,26 @@ export function getParentPointer(pointer: string) {
 }
 
 export function isRequired(lib: Draft, pointer: string, schema: JsonSchema, data?: any) {
-   if (pointer === "#/" || !schema) {
+   try {
+      if (pointer === "#/" || !schema) {
+         return false;
+      }
+
+      const childSchema = lib.getSchema({ pointer, data, schema });
+      if (typeof childSchema === "object" && "const" in childSchema) {
+         return true;
+      }
+
+      const parentPointer = getParentPointer(pointer);
+      if (parentPointer === "" || parentPointer === "#") return false;
+      const parentSchema = lib.getSchema({ pointer: parentPointer, data });
+      const required = parentSchema?.required?.includes(pointer.split("/").pop()!);
+
+      return !!required;
+   } catch (e) {
+      console.error("isRequired", { pointer, schema, data, e });
       return false;
    }
-
-   const childSchema = lib.getSchema({ pointer, data, schema });
-   if (typeof childSchema === "object" && "const" in childSchema) {
-      return true;
-   }
-
-   const parentPointer = getParentPointer(pointer);
-   const parentSchema = lib.getSchema({ pointer: parentPointer, data });
-   const required = parentSchema?.required?.includes(pointer.split("/").pop()!);
-
-   return !!required;
 }
 
 export type IsTypeType =

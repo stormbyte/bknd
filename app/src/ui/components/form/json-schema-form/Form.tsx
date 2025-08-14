@@ -46,6 +46,7 @@ type FormState<Data = any> = {
 type FormOptions = {
    debug?: boolean;
    keepEmpty?: boolean;
+   anyOfNoneSelectedMode?: "none" | "first";
 };
 
 export type FormContext<Data> = {
@@ -190,7 +191,7 @@ export function Form<
          root: "",
          path: "",
       }),
-      [schema, initialValues],
+      [schema, initialValues, options],
    ) as any;
 
    return (
