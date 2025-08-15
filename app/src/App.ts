@@ -1,5 +1,5 @@
 import type { CreateUserPayload } from "auth/AppAuth";
-import { $console } from "bknd/utils";
+import { $console, McpClient } from "bknd/utils";
 import { Event } from "core/events";
 import type { em as prototypeEm } from "data/prototype";
 import { Connection } from "data/connection/Connection";
@@ -266,6 +266,17 @@ export class App<C extends Connection = Connection, Options extends AppOptions =
       }
 
       return new Api({ host: "http://localhost", ...(options ?? {}), fetcher });
+   }
+
+   getMcpClient() {
+      if (!this.mcp) {
+         throw new Error("MCP is not enabled");
+      }
+
+      return new McpClient({
+         url: "http://localhost/mcp",
+         fetch: this.server.request,
+      });
    }
 
    async onUpdated<Module extends keyof Modules>(module: Module, config: ModuleConfigs[Module]) {
