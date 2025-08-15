@@ -131,7 +131,11 @@ export class SystemController extends Controller {
             summary: "Get the config for a module",
             tags: ["system"],
          }),
-         mcpTool("system_config"), // @todo: ":module" gets not removed
+         mcpTool("system_config", {
+            annotations: {
+               readOnlyHint: true,
+            },
+         }), // @todo: ":module" gets not removed
          jsc("param", s.object({ module: s.string({ enum: MODULE_NAMES }).optional() })),
          jsc("query", s.object({ secrets: s.boolean().optional() })),
          async (c) => {

@@ -62,7 +62,11 @@ export class DataController extends Controller {
       hono.get(
          "/sync",
          permission(DataPermissions.databaseSync),
-         mcpTool("data_sync"),
+         mcpTool("data_sync", {
+            annotations: {
+               destructiveHint: true,
+            },
+         }),
          describeRoute({
             summary: "Sync database schema",
             tags: ["data"],

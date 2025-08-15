@@ -19,15 +19,9 @@ import { appShellStore } from "ui/store";
 import { useLocation } from "wouter";
 
 export function Root({ children }: { children: React.ReactNode }) {
-   const sidebarWidth = appShellStore((store) => store.sidebarWidth);
    return (
       <AppShellProvider>
-         <div
-            id="app-shell"
-            data-shell="root"
-            className="flex flex-1 flex-col select-none h-dvh"
-            style={{ "--sidebar-width": `${sidebarWidth}px` } as React.CSSProperties}
-         >
+         <div id="app-shell" data-shell="root" className="flex flex-1 flex-col select-none h-dvh">
             {children}
          </div>
       </AppShellProvider>
@@ -97,10 +91,24 @@ export function Main({ children }) {
    );
 }
 
-export function Sidebar({ children }) {
-   const open = appShellStore((store) => store.sidebarOpen);
-   const close = appShellStore((store) => store.closeSidebar);
+export function Sidebar({
+   children,
+   name = "default",
+   handle = "right",
+   minWidth,
+   maxWidth,
+}: {
+   children: React.ReactNode;
+   name?: string;
+   handle?: "right" | "left";
+   minWidth?: number;
+   maxWidth?: number;
+}) {
+   const open = appShellStore((store) => store.sidebars[name]?.open);
+   const close = appShellStore((store) => store.closeSidebar(name));
+   const width = appShellStore((store) => store.sidebars[name]?.width ?? 350);
    const ref = useClickOutside(close, ["mouseup", "touchend"]); //, [document.getElementById("header")]);
+   const sidebarRef = useRef<HTMLDivElement>(null!);
    const [location] = useLocation();
 
    const closeHandler = () => {
@@ -115,16 +123,35 @@ export function Sidebar({ children }) {
 
    return (
       <>
+         {handle === "left" && (
+            <SidebarResize
+               name={name}
+               handle={handle}
+               sidebarRef={sidebarRef}
+               minWidth={minWidth}
+               maxWidth={maxWidth}
+            />
+         )}
          <aside
             data-shell="sidebar"
-            className="hidden md:flex flex-col basis-[var(--sidebar-width)] flex-shrink-0 flex-grow-0 h-full bg-muted/10"
+            ref={sidebarRef}
+            className="hidden md:flex flex-col flex-shrink-0 flex-grow-0 h-full bg-muted/10"
+            style={{ width }}
          >
             {children}
          </aside>
-         <SidebarResize />
+         {handle === "right" && (
+            <SidebarResize
+               name={name}
+               handle={handle}
+               sidebarRef={sidebarRef}
+               minWidth={minWidth}
+               maxWidth={maxWidth}
+            />
+         )}
          <div
             data-open={open}
-            className="absolute w-full md:hidden data-[open=true]:translate-x-0 translate-x-[-100%] transition-transform z-10 backdrop-blur-sm"
+            className="absolute w-full md:hidden data-[open=true]:translate-x-0 translate-x-[-100%] transition-transform z-10 backdrop-blur-sm max-w-[90%]"
          >
             <aside
                ref={ref}
@@ -138,30 +165,36 @@ export function Sidebar({ children }) {
    );
 }
 
-const SidebarResize = () => {
-   const setSidebarWidth = appShellStore((store) => store.setSidebarWidth);
+const SidebarResize = ({
+   name = "default",
+   handle = "right",
+   sidebarRef,
+   minWidth = 250,
+   maxWidth = window.innerWidth * 0.5,
+}: {
+   name?: string;
+   handle?: "right" | "left";
+   sidebarRef: React.RefObject<HTMLDivElement>;
+   minWidth?: number;
+   maxWidth?: number;
+}) => {
+   const setSidebarWidth = appShellStore((store) => store.setSidebarWidth(name));
    const [isResizing, setIsResizing] = useState(false);
-   const [startX, setStartX] = useState(0);
-   const [startWidth, setStartWidth] = useState(0);
+   const [start, setStart] = useState(0);
+   const [startWidth, setStartWidth] = useState(sidebarRef.current?.offsetWidth ?? 0);
 
    const handleMouseDown = (e: React.MouseEvent) => {
       e.preventDefault();
       setIsResizing(true);
-      setStartX(e.clientX);
-      setStartWidth(
-         Number.parseInt(
-            getComputedStyle(document.getElementById("app-shell")!)
-               .getPropertyValue("--sidebar-width")
-               .replace("px", ""),
-         ),
-      );
+      setStart(e.clientX);
+      setStartWidth(sidebarRef.current?.offsetWidth ?? 0);
    };
 
    const handleMouseMove = (e: MouseEvent) => {
       if (!isResizing) return;
 
-      const diff = e.clientX - startX;
-      const newWidth = clampNumber(startWidth + diff, 250, window.innerWidth * 0.5);
+      const diff = handle === "right" ? e.clientX - start : start - e.clientX;
+      const newWidth = clampNumber(startWidth + diff, minWidth, maxWidth);
       setSidebarWidth(newWidth);
    };
 
@@ -179,7 +212,7 @@ const SidebarResize = () => {
          window.removeEventListener("mousemove", handleMouseMove);
          window.removeEventListener("mouseup", handleMouseUp);
       };
-   }, [isResizing, startX, startWidth]);
+   }, [isResizing, start, startWidth, minWidth, maxWidth]);
 
    return (
       <div

@@ -53,6 +53,10 @@ export class ObjectToolSchema<
                   })
                   .optional(),
             }),
+            annotations: {
+               readOnlyHint: true,
+               destructiveHint: false,
+            },
          },
          async (params, ctx: AppToolHandlerCtx) => {
             const configs = ctx.context.app.toJSON(params.secrets);

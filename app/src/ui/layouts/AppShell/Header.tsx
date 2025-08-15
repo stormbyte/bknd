@@ -25,6 +25,7 @@ import { NavLink } from "./AppShell";
 import { autoFormatString } from "core/utils";
 import { appShellStore } from "ui/store";
 import { getVersion } from "core/env";
+import { McpIcon } from "ui/routes/tools/mcp/components/mcp-icon";
 
 export function HeaderNavigation() {
    const [location, navigate] = useLocation();
@@ -105,9 +106,9 @@ export function HeaderNavigation() {
    );
 }
 
-function SidebarToggler() {
-   const toggle = appShellStore((store) => store.toggleSidebar);
-   const open = appShellStore((store) => store.sidebarOpen);
+function SidebarToggler({ name = "default" }: { name?: string }) {
+   const toggle = appShellStore((store) => store.toggleSidebar(name));
+   const open = appShellStore((store) => store.sidebars[name]?.open);
    return <IconButton id="toggle-sidebar" size="lg" Icon={open ? TbX : TbMenu2} onClick={toggle} />;
 }
 
@@ -132,7 +133,7 @@ export function Header({ hasSidebar = true }) {
          <HeaderNavigation />
          <div className="flex flex-grow" />
          <div className="flex md:hidden flex-row items-center pr-2 gap-2">
-            <SidebarToggler />
+            <SidebarToggler name="default" />
             <UserMenu />
          </div>
          <div className="hidden md:flex flex-row items-center px-4 gap-2">
@@ -171,6 +172,14 @@ function UserMenu() {
          icon: IconBook,
       },
    ];
+
+   if (config.server.mcp.enabled) {
+      items.push({
+         label: "MCP",
+         onClick: () => navigate("/tools/mcp"),
+         icon: McpIcon,
+      });
+   }
 
    if (config.auth.enabled) {
       if (!auth.user) {

@@ -26,11 +26,9 @@ import SchemaTest from "./tests/schema-test";
 import SortableTest from "./tests/sortable-test";
 import { SqlAiTest } from "./tests/sql-ai-test";
 import Themes from "./tests/themes";
-import MCPTest from "./tests/mcp/mcp-test";
 import ErrorBoundary from "ui/components/display/ErrorBoundary";
 
 const tests = {
-   MCPTest,
    DropdownTest,
    Themes,
    ModalTest,
