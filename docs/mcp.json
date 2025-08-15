@@ -15,6 +15,9 @@
             "$target": "query"
           }
         }
+      },
+      "annotations": {
+        "destructiveHint": true
       }
     },
     {
@@ -120,10 +123,12 @@
           "id": {
             "anyOf": [
               {
-                "type": "number"
+                "type": "number",
+                "title": "Integer"
               },
               {
-                "type": "string"
+                "type": "string",
+                "title": "UUID"
               }
             ],
             "$target": "param"
@@ -315,10 +320,12 @@
           "id": {
             "anyOf": [
               {
-                "type": "number"
+                "type": "number",
+                "title": "Integer"
               },
               {
-                "type": "string"
+                "type": "string",
+                "title": "UUID"
               }
             ],
             "$target": "param"
@@ -353,10 +360,12 @@
           "id": {
             "anyOf": [
               {
-                "type": "number"
+                "type": "number",
+                "title": "Integer"
               },
               {
-                "type": "string"
+                "type": "string",
+                "title": "UUID"
               }
             ],
             "$target": "param"
@@ -453,6 +462,9 @@
             "$target": "query"
           }
         }
+      },
+      "annotations": {
+        "readOnlyHint": true
       }
     },
     {
@@ -610,8 +622,8 @@
         }
       },
       "annotations": {
-        "destructiveHint": true,
-        "idempotentHint": true
+        "readOnlyHint": true,
+        "destructiveHint": false
       }
     },
     {
@@ -727,8 +739,8 @@
         }
       },
       "annotations": {
-        "destructiveHint": true,
-        "idempotentHint": true
+        "readOnlyHint": true,
+        "destructiveHint": false
       }
     },
     {
@@ -797,8 +809,8 @@
         }
       },
       "annotations": {
-        "destructiveHint": true,
-        "idempotentHint": true
+        "readOnlyHint": true,
+        "destructiveHint": false
       }
     },
     {
@@ -3063,8 +3075,8 @@
         }
       },
       "annotations": {
-        "destructiveHint": true,
-        "idempotentHint": true
+        "readOnlyHint": true,
+        "destructiveHint": false
       }
     },
     {
@@ -3222,8 +3234,8 @@
         }
       },
       "annotations": {
-        "destructiveHint": true,
-        "idempotentHint": true
+        "readOnlyHint": true,
+        "destructiveHint": false
       }
     },
     {
@@ -3326,8 +3338,8 @@
         }
       },
       "annotations": {
-        "destructiveHint": true,
-        "idempotentHint": true
+        "readOnlyHint": true,
+        "destructiveHint": false
       }
     },
     {
@@ -3495,8 +3507,8 @@
         }
       },
       "annotations": {
-        "destructiveHint": true,
-        "idempotentHint": true
+        "readOnlyHint": true,
+        "destructiveHint": false
       }
     },
     {
@@ -3640,8 +3652,8 @@
         }
       },
       "annotations": {
-        "destructiveHint": true,
-        "idempotentHint": true
+        "readOnlyHint": true,
+        "destructiveHint": false
       }
     },
     {
@@ -3781,8 +3793,8 @@
         }
       },
       "annotations": {
-        "destructiveHint": true,
-        "idempotentHint": true
+        "readOnlyHint": true,
+        "destructiveHint": false
       }
     },
     {
