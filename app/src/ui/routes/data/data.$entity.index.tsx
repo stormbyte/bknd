@@ -124,7 +124,7 @@ function DataEntityListImpl({ params }) {
                </>
             }
          >
-            {entity.label}
+            <AppShell.SectionHeaderTitle>{entity.label}</AppShell.SectionHeaderTitle>
          </AppShell.SectionHeader>
          <AppShell.Scrollable key={entity.name}>
             <div className="flex flex-col flex-grow p-3 gap-3">

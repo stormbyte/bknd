@@ -5,11 +5,15 @@ import { TbWorld } from "react-icons/tb";
 import { McpIcon } from "./components/mcp-icon";
 import { useBknd } from "ui/client/bknd";
 import { Empty } from "ui/components/display/Empty";
+import { Button } from "ui/components/buttons/Button";
+import { appShellStore } from "ui/store";
 
 export default function ToolsMcp() {
    const { config, options } = useBknd();
    const feature = useMcpStore((state) => state.feature);
    const setFeature = useMcpStore((state) => state.setFeature);
+   const content = useMcpStore((state) => state.content);
+   const openSidebar = appShellStore((store) => store.toggleSidebar("default"));
 
    if (!config.server.mcp.enabled) {
       return (
@@ -25,15 +29,20 @@ export default function ToolsMcp() {
          <AppShell.SectionHeader>
             <div className="flex flex-row gap-4 items-center">
                <McpIcon />
-               <AppShell.SectionHeaderTitle>MCP UI</AppShell.SectionHeaderTitle>
-               <div className="flex flex-row gap-2 items-center bg-primary/5 rounded-full px-3 pr-3.5 py-2">
+               <AppShell.SectionHeaderTitle className="whitespace-nowrap truncate">
+                  MCP UI
+               </AppShell.SectionHeaderTitle>
+               <div className="hidden md:flex flex-row gap-2 items-center bg-primary/5 rounded-full px-3 pr-3.5 py-2">
                   <TbWorld />
-                  <span className="text-sm font-mono leading-none">
-                     {window.location.origin + "/mcp"}
-                  </span>
+                  <div className="min-w-0 flex-1">
+                     <span className="block truncate text-sm font-mono leading-none">
+                        {window.location.origin + "/mcp"}
+                     </span>
+                  </div>
                </div>
             </div>
          </AppShell.SectionHeader>
+
          <div className="flex h-full">
             <AppShell.Sidebar>
                <AppShell.MaxHeightContainer className="overflow-y-scroll md:overflow-auto">
@@ -50,6 +59,18 @@ export default function ToolsMcp() {
                </AppShell.MaxHeightContainer>
             </AppShell.Sidebar>
             {feature === "tools" && <Tools.Content />}
+
+            {!content && (
+               <Empty title="No tool selected" description="Please select a tool to continue.">
+                  <Button
+                     variant="primary"
+                     onClick={() => openSidebar()}
+                     className="block md:hidden"
+                  >
+                     Open Tools
+                  </Button>
+               </Empty>
+            )}
          </div>
       </div>
    );

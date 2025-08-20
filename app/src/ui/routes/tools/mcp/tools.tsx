@@ -6,15 +6,14 @@ import { TbHistory, TbHistoryOff, TbRefresh } from "react-icons/tb";
 import { IconButton } from "ui/components/buttons/IconButton";
 import { JsonViewer, JsonViewerTabs, type JsonViewerTabsRef } from "ui/components/code/JsonViewer";
 import { twMerge } from "ui/elements/mocks/tailwind-merge";
-import {
-   Form,
-} from "ui/components/form/json-schema-form";
+import { Form } from "ui/components/form/json-schema-form";
 import { Button } from "ui/components/buttons/Button";
 import * as Formy from "ui/components/form/Formy";
-import { JsonEditor } from "ui/components/code/JsonEditor";
+import { appShellStore } from "ui/store";
 
 export function Sidebar({ open, toggle }) {
    const client = getClient();
+   const closeSidebar = appShellStore((store) => store.closeSidebar("default"));
    const tools = useMcpStore((state) => state.tools);
    const setTools = useMcpStore((state) => state.setTools);
    const setContent = useMcpStore((state) => state.setContent);
@@ -56,7 +55,7 @@ export function Sidebar({ open, toggle }) {
             />
             <nav className="flex flex-col flex-1 gap-1">
                {tools
-                  .filter((tool) => tool.name.includes(query))
+                  .filter((tool) => tool.name.toLowerCase().includes(query.toLowerCase()))
                   .map((tool) => {
                      return (
                         <AppShell.SidebarLink
@@ -65,7 +64,10 @@ export function Sidebar({ open, toggle }) {
                               "flex flex-col items-start h-auto py-3 gap-px",
                               content?.name === tool.name ? "active" : "",
                            )}
-                           onClick={() => setContent(tool)}
+                           onClick={() => {
+                              setContent(tool);
+                              closeSidebar();
+                           }}
                         >
                            <span className="font-mono">{tool.name}</span>
                            <span className="text-sm text-primary/50">{tool.description}</span>
@@ -124,6 +126,7 @@ export function Content() {
    return (
       <div className="flex flex-grow flex-col">
          <AppShell.SectionHeader
+            className="max-w-full min-w-0 debug"
             right={
                <div className="flex flex-row gap-2">
                   <IconButton
@@ -135,17 +138,18 @@ export function Content() {
                      disabled={!content?.name}
                      variant="primary"
                      onClick={handleSubmit}
+                     className="whitespace-nowrap"
                   >
                      Call Tool
                   </Button>
                </div>
             }
          >
-            <AppShell.SectionHeaderTitle className="">
+            <AppShell.SectionHeaderTitle className="leading-tight">
                <span className="opacity-50">
                   Tools <span className="opacity-70">/</span>
                </span>{" "}
-               {content?.name}
+               <span className="truncate">{content?.name}</span>
             </AppShell.SectionHeaderTitle>
          </AppShell.SectionHeader>
          <div className="flex flex-grow flex-row w-full">

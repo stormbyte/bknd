@@ -25,7 +25,7 @@ const result = await Bun.build({
    target: "node",
    outdir: "./dist/cli",
    env: "PUBLIC_*",
-   minify: false,
+   minify: true,
    external: ["jsonv-ts", "jsonv-ts/*"],
    define: {
       __isDev: "0",

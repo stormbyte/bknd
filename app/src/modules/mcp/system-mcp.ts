@@ -16,9 +16,13 @@ export function getSystemMcp(app: App) {
       ...middlewareServer.tools,
       // tools added from ctx
       ...app.modules.ctx().mcp.tools,
-      // tools from app schema
-      ...nodes.flatMap((n) => n.schema.getTools(n)),
-   ];
+   ].sort((a, b) => a.name.localeCompare(b.name));
+
+   // tools from app schema
+   tools.push(
+      ...nodes.flatMap((n) => n.schema.getTools(n)).sort((a, b) => a.name.localeCompare(b.name)),
+   );
+
    const resources = [...middlewareServer.resources, ...app.modules.ctx().mcp.resources];
 
    return new McpServer(
