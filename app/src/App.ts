@@ -1,5 +1,5 @@
 import type { CreateUserPayload } from "auth/AppAuth";
-import { $console } from "bknd/utils";
+import { $console, McpClient } from "bknd/utils";
 import { Event } from "core/events";
 import type { em as prototypeEm } from "data/prototype";
 import { Connection } from "data/connection/Connection";
@@ -96,6 +96,7 @@ export class App<C extends Connection = Connection, Options extends AppOptions =
 
    private trigger_first_boot = false;
    private _building: boolean = false;
+   private _systemController: SystemController | null = null;
 
    constructor(
       public connection: C,
@@ -168,11 +169,12 @@ export class App<C extends Connection = Connection, Options extends AppOptions =
       if (options?.sync) this.modules.ctx().flags.sync_required = true;
       await this.modules.build({ fetch: options?.fetch });
 
-      const { guard, server } = this.modules.ctx();
+      const { guard } = this.modules.ctx();
 
       // load system controller
       guard.registerPermissions(Object.values(SystemPermissions));
-      server.route("/api/system", new SystemController(this).getController());
+      this._systemController = new SystemController(this);
+      this._systemController.register(this);
 
       // emit built event
       $console.log("App built");
@@ -202,6 +204,10 @@ export class App<C extends Connection = Connection, Options extends AppOptions =
 
    get em() {
       return this.modules.ctx().em;
+   }
+
+   get mcp() {
+      return this._systemController?._mcpServer;
    }
 
    get fetch(): Hono["fetch"] {
@@ -260,6 +266,17 @@ export class App<C extends Connection = Connection, Options extends AppOptions =
       }
 
       return new Api({ host: "http://localhost", ...(options ?? {}), fetcher });
+   }
+
+   getMcpClient() {
+      if (!this.mcp) {
+         throw new Error("MCP is not enabled");
+      }
+
+      return new McpClient({
+         url: "http://localhost/mcp",
+         fetch: this.server.request,
+      });
    }
 
    async onUpdated<Module extends keyof Modules>(module: Module, config: ModuleConfigs[Module]) {

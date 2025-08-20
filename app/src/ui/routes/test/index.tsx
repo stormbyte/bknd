@@ -26,6 +26,7 @@ import SchemaTest from "./tests/schema-test";
 import SortableTest from "./tests/sortable-test";
 import { SqlAiTest } from "./tests/sql-ai-test";
 import Themes from "./tests/themes";
+import ErrorBoundary from "ui/components/display/ErrorBoundary";
 
 const tests = {
    DropdownTest,
@@ -88,7 +89,9 @@ function TestRoot({ children }) {
                </div>
             </AppShell.Scrollable>
          </AppShell.Sidebar>
-         <AppShell.Main>{children}</AppShell.Main>
+         <AppShell.Main key={window.location.href}>
+            <ErrorBoundary key={window.location.href}>{children}</ErrorBoundary>
+         </AppShell.Main>
       </>
    );
 }

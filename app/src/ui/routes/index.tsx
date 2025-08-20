@@ -12,6 +12,7 @@ import { FlashMessage } from "ui/modules/server/FlashMessage";
 import { AuthRegister } from "ui/routes/auth/auth.register";
 import { BkndModalsProvider } from "ui/modals";
 import { useBkndWindowContext } from "ui/client";
+import ToolsRoutes from "./tools";
 
 // @ts-ignore
 const TestRoutes = lazy(() => import("./test"));
@@ -67,6 +68,11 @@ export function Routes({
                               <Route path="/settings" nest>
                                  <Suspense fallback={null}>
                                     <SettingsRoutes />
+                                 </Suspense>
+                              </Route>
+                              <Route path="/tools" nest>
+                                 <Suspense fallback={null}>
+                                    <ToolsRoutes />
                                  </Suspense>
                               </Route>
 

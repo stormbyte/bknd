@@ -91,7 +91,7 @@ export class AdminController extends Controller {
          logout: "/api/auth/logout",
       };
 
-      const paths = ["/", "/data/*", "/auth/*", "/media/*", "/flows/*", "/settings/*"];
+      const paths = ["/", "/data/*", "/auth/*", "/media/*", "/flows/*", "/settings/*", "/tools/*"];
       if (isDebug()) {
          paths.push("/test/*");
       }

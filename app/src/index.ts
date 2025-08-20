@@ -35,6 +35,7 @@ export type { BkndConfig } from "bknd/adapter";
 
 export * as middlewares from "modules/middlewares";
 export { registries } from "modules/registries";
+export { getSystemMcp } from "modules/mcp/system-mcp";
 
 /**
  * Core
@@ -131,6 +132,7 @@ export {
    BaseIntrospector,
    Connection,
    customIntrospector,
+   DummyConnection,
    type FieldSpec,
    type IndexSpec,
    type DbFunctions,

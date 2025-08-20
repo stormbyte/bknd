@@ -20,6 +20,7 @@ describe("App", () => {
                   "guard",
                   "flags",
                   "logger",
+                  "mcp",
                   "helper",
                ]);
             },
@@ -134,5 +135,22 @@ describe("App", () => {
 
       // expect async listeners to be executed sync after request
       expect(called).toHaveBeenCalled();
+   });
+
+   test("getMcpClient", async () => {
+      const app = createApp({
+         initialConfig: {
+            server: {
+               mcp: {
+                  enabled: true,
+               },
+            },
+         },
+      });
+      await app.build();
+      const client = app.getMcpClient();
+      const res = await client.listTools();
+      expect(res).toBeDefined();
+      expect(res?.tools.length).toBeGreaterThan(0);
    });
 });
