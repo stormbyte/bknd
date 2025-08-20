@@ -367,6 +367,34 @@ export const SectionHeaderTabs = ({ title, items }: SectionHeaderTabsProps) => {
    );
 };
 
+export function MaxHeightContainer(props: ComponentPropsWithoutRef<"div">) {
+   const scrollRef = useRef<React.ElementRef<"div">>(null);
+   const [offset, setOffset] = useState(0);
+   const [height, setHeight] = useState(window.innerHeight);
+
+   function updateHeaderHeight() {
+      if (scrollRef.current) {
+         // get offset to top of window
+         const offset = scrollRef.current.getBoundingClientRect().top;
+         const height = window.innerHeight;
+         setOffset(offset);
+         setHeight(height);
+      }
+   }
+
+   useEffect(updateHeaderHeight, []);
+
+   if (typeof window !== "undefined") {
+      window.addEventListener("resize", throttle(updateHeaderHeight, 500));
+   }
+
+   return (
+      <div ref={scrollRef} style={{ height: `${height - offset}px` }} {...props}>
+         {props.children}
+      </div>
+   );
+}
+
 export function Scrollable({
    children,
    initialOffset = 64,
@@ -379,7 +407,9 @@ export function Scrollable({
 
    function updateHeaderHeight() {
       if (scrollRef.current) {
-         setOffset(scrollRef.current.offsetTop);
+         // get offset to top of window
+         const offset = scrollRef.current.getBoundingClientRect().top;
+         setOffset(offset);
       }
    }
 
