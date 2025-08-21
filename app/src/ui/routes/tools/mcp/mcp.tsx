@@ -25,7 +25,7 @@ export default function ToolsMcp() {
    }
 
    return (
-      <div className="flex flex-col flex-grow">
+      <div className="flex flex-col flex-grow max-w-screen">
          <AppShell.SectionHeader>
             <div className="flex flex-row gap-4 items-center">
                <McpIcon />
@@ -45,18 +45,16 @@ export default function ToolsMcp() {
 
          <div className="flex h-full">
             <AppShell.Sidebar>
-               <AppShell.MaxHeightContainer className="overflow-y-scroll md:overflow-auto">
-                  <Tools.Sidebar open={feature === "tools"} toggle={() => setFeature("tools")} />
-                  <AppShell.SectionHeaderAccordionItem
-                     title="Resources"
-                     open={feature === "resources"}
-                     toggle={() => setFeature("resources")}
-                  >
-                     <div className="flex flex-col flex-grow p-3 gap-3 justify-center items-center opacity-40">
-                        <i>Resources</i>
-                     </div>
-                  </AppShell.SectionHeaderAccordionItem>
-               </AppShell.MaxHeightContainer>
+               <Tools.Sidebar open={feature === "tools"} toggle={() => setFeature("tools")} />
+               <AppShell.SectionHeaderAccordionItem
+                  title="Resources"
+                  open={feature === "resources"}
+                  toggle={() => setFeature("resources")}
+               >
+                  <div className="flex flex-col flex-grow p-3 gap-3 justify-center items-center opacity-40">
+                     <i>Resources</i>
+                  </div>
+               </AppShell.SectionHeaderAccordionItem>
             </AppShell.Sidebar>
             {feature === "tools" && <Tools.Content />}
 

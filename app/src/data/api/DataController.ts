@@ -316,6 +316,7 @@ export class DataController extends Controller {
                param: s.object({ entity: entitiesEnum, id: idType }),
                query: saveRepoQuerySchema(["offset", "sort", "select"]),
             },
+            noErrorCodes: [404],
          }),
          jsc(
             "param",

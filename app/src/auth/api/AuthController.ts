@@ -204,6 +204,7 @@ export class AuthController extends Controller {
 
    override registerMcp(): void {
       const { mcp } = this.auth.ctx;
+      const idType = s.anyOf([s.number({ title: "Integer" }), s.string({ title: "UUID" })]);
 
       const getUser = async (params: { id?: string | number; email?: string }) => {
          let user: DB["users"] | undefined = undefined;
@@ -248,7 +249,7 @@ export class AuthController extends Controller {
          {
             description: "Get a user token",
             inputSchema: s.object({
-               id: s.anyOf([s.string(), s.number()]).optional(),
+               id: idType.optional(),
                email: s.string({ format: "email" }).optional(),
             }),
          },
@@ -266,7 +267,7 @@ export class AuthController extends Controller {
          {
             description: "Change a user's password",
             inputSchema: s.object({
-               id: s.anyOf([s.string(), s.number()]).optional(),
+               id: idType.optional(),
                email: s.string({ format: "email" }).optional(),
                password: s.string({ minLength: 8 }),
             }),

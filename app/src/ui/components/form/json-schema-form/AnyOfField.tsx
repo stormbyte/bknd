@@ -13,7 +13,6 @@ import {
    useFormValue,
 } from "./Form";
 import { getLabel, getMultiSchemaMatched } from "./utils";
-import { FieldWrapper } from "ui/components/form/json-schema-form/FieldWrapper";
 
 export type AnyOfFieldRootProps = {
    path?: string;

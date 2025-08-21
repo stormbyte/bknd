@@ -101,25 +101,25 @@ export const JsonViewerTabs = forwardRef<JsonViewerTabsRef, JsonViewerTabsProps>
       }));
 
       return (
-         <div className="flex flex-col bg-primary/5 rounded-md">
-            <div className="flex flex-row gap-4 border-b px-3 border-primary/10">
+         <div className="flex flex-col bg-primary/5 rounded-md flex-shrink-0">
+            <div className="flex flex-row gap-4 border-b px-3 border-primary/10 min-w-0">
                {Object.keys(tabs).map((key) => (
                   <button
                      key={key}
                      type="button"
                      className={twMerge(
-                        "flex flex-row text-sm cursor-pointer py-3 pt-3.5 px-1 border-b border-transparent -mb-px transition-opacity",
+                        "flex flex-row text-sm cursor-pointer py-3 pt-3.5 px-1 border-b border-transparent -mb-px transition-opacity flex-shrink-0",
                         selected === key ? "border-primary" : "opacity-50 hover:opacity-70",
                      )}
                      onClick={() => setSelected(key)}
                   >
-                     <span className="font-mono leading-none">{key}</span>
+                     <span className="font-mono leading-none truncate">{key}</span>
                   </button>
                ))}
             </div>
             {/* @ts-ignore */}
             <JsonViewer
-               className="bg-transparent"
+               className="bg-transparent overflow-x-auto"
                {...defaultProps}
                {...tabs[selected as any]}
                title={undefined}

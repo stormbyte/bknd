@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { getClient, getTemplate } from "./utils";
 import { useMcpStore } from "./state";
 import { AppShell } from "ui/layouts/AppShell";
@@ -6,7 +6,7 @@ import { TbHistory, TbHistoryOff, TbRefresh } from "react-icons/tb";
 import { IconButton } from "ui/components/buttons/IconButton";
 import { JsonViewer, JsonViewerTabs, type JsonViewerTabsRef } from "ui/components/code/JsonViewer";
 import { twMerge } from "ui/elements/mocks/tailwind-merge";
-import { Form } from "ui/components/form/json-schema-form";
+import { Field, Form } from "ui/components/form/json-schema-form";
 import { Button } from "ui/components/buttons/Button";
 import * as Formy from "ui/components/form/Formy";
 import { appShellStore } from "ui/store";
@@ -52,6 +52,7 @@ export function Sidebar({ open, toggle }) {
                placeholder="Search tools"
                value={query}
                onChange={(e) => setQuery(e.target.value)}
+               autoCapitalize="none"
             />
             <nav className="flex flex-col flex-1 gap-1">
                {tools
@@ -91,6 +92,7 @@ export function Content() {
    const jsonViewerTabsRef = useRef<JsonViewerTabsRef>(null);
    const hasInputSchema =
       content?.inputSchema && Object.keys(content.inputSchema.properties ?? {}).length > 0;
+   const [isPending, startTransition] = useTransition();
 
    useEffect(() => {
       setPayload(getTemplate(content?.inputSchema));
@@ -103,13 +105,15 @@ export function Content() {
          name: content.name,
          arguments: payload,
       };
-      addHistory("request", request);
-      const res = await client.callTool(request);
-      if (res) {
-         setResult(res);
-         addHistory("response", res);
-         jsonViewerTabsRef.current?.setSelected("Result");
-      }
+      startTransition(async () => {
+         addHistory("request", request);
+         const res = await client.callTool(request);
+         if (res) {
+            setResult(res);
+            addHistory("response", res);
+            jsonViewerTabsRef.current?.setSelected("Result");
+         }
+      });
    }, [payload]);
 
    if (!content) return null;
@@ -124,76 +128,82 @@ export function Content() {
    } catch (e) {}
 
    return (
-      <div className="flex flex-grow flex-col">
-         <AppShell.SectionHeader
-            className="max-w-full min-w-0 debug"
-            right={
-               <div className="flex flex-row gap-2">
-                  <IconButton
-                     Icon={historyVisible ? TbHistoryOff : TbHistory}
-                     onClick={() => setHistoryVisible(!historyVisible)}
-                  />
-                  <Button
-                     type="button"
-                     disabled={!content?.name}
-                     variant="primary"
-                     onClick={handleSubmit}
-                     className="whitespace-nowrap"
-                  >
-                     Call Tool
-                  </Button>
-               </div>
-            }
+      <div className="flex flex-grow flex-col max-w-screen">
+         <Form
+            key={content.name}
+            schema={{
+               title: "InputSchema",
+               ...content?.inputSchema,
+            }}
+            validateOn="submit"
+            initialValues={payload}
+            hiddenSubmit={false}
+            onChange={(value) => {
+               setPayload(value);
+            }}
+            onSubmit={handleSubmit}
          >
-            <AppShell.SectionHeaderTitle className="leading-tight">
-               <span className="opacity-50">
-                  Tools <span className="opacity-70">/</span>
-               </span>{" "}
-               <span className="truncate">{content?.name}</span>
-            </AppShell.SectionHeaderTitle>
-         </AppShell.SectionHeader>
-         <div className="flex flex-grow flex-row w-full">
-            <div className="flex flex-grow flex-col w-full">
-               <AppShell.Scrollable>
-                  <div key={JSON.stringify(content)} className="flex flex-col py-4 px-5  gap-4">
-                     <p className="text-primary/80">{content?.description}</p>
+            <AppShell.SectionHeader
+               className="max-w-full min-w-0"
+               right={
+                  <div className="flex flex-row gap-2">
+                     <IconButton
+                        Icon={historyVisible ? TbHistory : TbHistoryOff}
+                        onClick={() => setHistoryVisible(!historyVisible)}
+                     />
+                     <Button
+                        type="submit"
+                        disabled={!content?.name || isPending}
+                        variant="primary"
+                        className="whitespace-nowrap"
+                     >
+                        Call Tool
+                     </Button>
+                  </div>
+               }
+            >
+               <AppShell.SectionHeaderTitle className="leading-tight">
+                  <span className="opacity-50">
+                     Tools <span className="opacity-70">/</span>
+                  </span>{" "}
+                  <span className="truncate">{content?.name}</span>
+               </AppShell.SectionHeaderTitle>
+            </AppShell.SectionHeader>
+            <div className="flex flex-grow flex-row w-vw">
+               <div className="flex flex-grow flex-col w-full">
+                  <AppShell.Scrollable>
+                     <div key={JSON.stringify(content)} className="flex flex-col py-4 px-5  gap-4">
+                        <p className="text-primary/80">{content?.description}</p>
 
-                     {hasInputSchema && (
-                        <Form
-                           schema={{
-                              title: "InputSchema",
-                              ...content?.inputSchema,
-                           }}
-                           initialValues={payload}
-                           hiddenSubmit={false}
-                           onChange={(value) => {
-                              setPayload(value);
+                        {hasInputSchema && <Field name="" />}
+                        <JsonViewerTabs
+                           ref={jsonViewerTabsRef}
+                           expand={9}
+                           showCopy
+                           showSize
+                           tabs={{
+                              Arguments: {
+                                 json: payload,
+                                 title: "Payload",
+                                 enabled: hasInputSchema,
+                              },
+                              Result: { json: readableResult, title: "Result" },
+                              Configuration: {
+                                 json: content ?? null,
+                                 title: "Configuration",
+                              },
                            }}
                         />
-                     )}
-                     <JsonViewerTabs
-                        ref={jsonViewerTabsRef}
-                        expand={9}
-                        showCopy
-                        showSize
-                        tabs={{
-                           Arguments: { json: payload, title: "Payload", enabled: hasInputSchema },
-                           Result: { json: readableResult, title: "Result" },
-                           "Tool Configuration": {
-                              json: content ?? null,
-                              title: "Tool Configuration",
-                           },
-                        }}
-                     />
-                  </div>
-               </AppShell.Scrollable>
+                     </div>
+                  </AppShell.Scrollable>
+               </div>
+               {historyVisible && (
+                  <AppShell.Sidebar name="right" handle="left" maxWidth={window.innerWidth * 0.4}>
+                     <History />
+                  </AppShell.Sidebar>
+               )}
             </div>
-            {historyVisible && (
-               <AppShell.Sidebar name="right" handle="left" maxWidth={window.innerWidth * 0.25}>
-                  <History />
-               </AppShell.Sidebar>
-            )}
-         </div>
+         </Form>
       </div>
    );
 }
@@ -211,7 +221,7 @@ const History = () => {
                      key={`${item.type}-${i}`}
                      json={item.data}
                      title={item.type}
-                     expand={1}
+                     expand={2}
                   />
                ))}
             </div>

@@ -67,7 +67,7 @@ export function Content({ children, center }: { children: React.ReactNode; cente
       <main
          data-shell="content"
          className={twMerge(
-            "flex flex-1 flex-row w-dvw h-full",
+            "flex flex-1 flex-row max-w-screen h-full",
             center && "justify-center items-center",
          )}
       >
@@ -158,7 +158,9 @@ export function Sidebar({
                data-shell="sidebar"
                className="flex-col w-[var(--sidebar-width)] flex-shrink-0 flex-grow-0 h-full border-muted border-r bg-background"
             >
-               {children}
+               <MaxHeightContainer className="overflow-y-scroll md:overflow-y-hidden">
+                  {children}
+               </MaxHeightContainer>
             </aside>
          </div>
       </>
