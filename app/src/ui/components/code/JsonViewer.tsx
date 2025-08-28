@@ -4,6 +4,7 @@ import { twMerge } from "tailwind-merge";
 import { IconButton } from "../buttons/IconButton";
 import ErrorBoundary from "ui/components/display/ErrorBoundary";
 import { forwardRef, useImperativeHandle, useState } from "react";
+import { formatNumber } from "bknd/utils";
 
 export type JsonViewerProps = {
    json: object | null;
@@ -41,7 +42,8 @@ export const JsonViewer = ({
    copyIconProps = {},
    className,
 }: JsonViewerProps) => {
-   const size = showSize ? (json === null ? 0 : (JSON.stringify(json)?.length ?? 0)) : undefined;
+   const size = showSize ? (json === null ? 0 : JSON.stringify(json).length) : undefined;
+   const formattedSize = formatNumber.fileSize(size ?? 0);
    const showContext = size || title || showCopy;
 
    function onCopy() {
@@ -55,7 +57,7 @@ export const JsonViewer = ({
                {(title || size !== undefined) && (
                   <div className="flex flex-row">
                      {title && <span>{title}</span>}{" "}
-                     {size !== undefined && <span>({size} Bytes)</span>}
+                     {size !== undefined && <span>({formattedSize})</span>}
                   </div>
                )}
                {showCopy && (
