@@ -224,8 +224,9 @@ const History = () => {
                   <JsonViewer
                      key={`${item.type}-${i}`}
                      json={item.data}
-                     title={item.type}
+                     title={item.type.substring(0, 3)}
                      expand={2}
+                     showCopy
                   />
                ))}
             </div>
