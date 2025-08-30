@@ -52,6 +52,7 @@ Creating digital products always requires developing both the backend (the logic
   * using a React framework (Next.js, React Router, Astro)
 * 📦 Official API and React SDK with type-safety
 * ⚛️ React elements for auto-configured authentication and media components
+* 🛠️ MCP server, client and UI built-in to control your backend
 
 ## Structure
 The package is mainly split into 4 parts, each serving a specific purpose:
