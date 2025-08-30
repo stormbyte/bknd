@@ -24,6 +24,7 @@ export const serverConfigSchema = $object(
       }),
       mcp: s.strictObject({
          enabled: s.boolean({ default: false }),
+         path: s.string({ default: "/api/system/mcp" }),
       }),
    },
    {

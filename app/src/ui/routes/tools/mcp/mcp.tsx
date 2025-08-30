@@ -17,6 +17,7 @@ export default function ToolsMcp() {
    const setFeature = useMcpStore((state) => state.setFeature);
    const content = useMcpStore((state) => state.content);
    const openSidebar = appShellStore((store) => store.toggleSidebar("default"));
+   const mcpPath = config.server.mcp.path;
 
    if (!config.server.mcp.enabled) {
       return (
@@ -39,7 +40,7 @@ export default function ToolsMcp() {
                   <TbWorld />
                   <div className="min-w-0 flex-1">
                      <span className="block truncate text-sm font-mono leading-none">
-                        {window.location.origin + "/mcp"}
+                        {window.location.origin + mcpPath}
                      </span>
                   </div>
                </div>

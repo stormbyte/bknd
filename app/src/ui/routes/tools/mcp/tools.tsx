@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
-import { getClient, getTemplate } from "./utils";
+import { getTemplate } from "./utils";
 import { useMcpStore } from "./state";
 import { AppShell } from "ui/layouts/AppShell";
 import { TbHistory, TbHistoryOff, TbRefresh } from "react-icons/tb";
@@ -10,9 +10,11 @@ import { Field, Form } from "ui/components/form/json-schema-form";
 import { Button } from "ui/components/buttons/Button";
 import * as Formy from "ui/components/form/Formy";
 import { appShellStore } from "ui/store";
+import { Icon } from "ui/components/display/Icon";
+import { useMcpClient } from "./hooks/use-mcp-client";
 
 export function Sidebar({ open, toggle }) {
-   const client = getClient();
+   const client = useMcpClient();
    const closeSidebar = appShellStore((store) => store.closeSidebar("default"));
    const tools = useMcpStore((state) => state.tools);
    const setTools = useMcpStore((state) => state.setTools);
@@ -20,11 +22,18 @@ export function Sidebar({ open, toggle }) {
    const content = useMcpStore((state) => state.content);
    const [loading, setLoading] = useState(false);
    const [query, setQuery] = useState<string>("");
+   const [error, setError] = useState<string | null>(null);
 
    const handleRefresh = useCallback(async () => {
       setLoading(true);
-      const res = await client.listTools();
-      if (res) setTools(res.tools);
+      setError(null);
+      try {
+         const res = await client.listTools();
+         if (res) setTools(res.tools);
+      } catch (e) {
+         console.error(e);
+         setError(String(e));
+      }
       setLoading(false);
    }, []);
 
@@ -39,6 +48,7 @@ export function Sidebar({ open, toggle }) {
          toggle={toggle}
          renderHeaderRight={() => (
             <div className="flex flex-row gap-2 items-center">
+               {error && <Icon.Err title={error} className="size-5 pointer-events-auto" />}
                <span className="flex-inline bg-primary/10 px-2 py-1.5 rounded-xl text-sm font-mono leading-none">
                   {tools.length}
                </span>
@@ -88,7 +98,7 @@ export function Content() {
    const [result, setResult] = useState<object | null>(null);
    const historyVisible = useMcpStore((state) => state.historyVisible);
    const setHistoryVisible = useMcpStore((state) => state.setHistoryVisible);
-   const client = getClient();
+   const client = useMcpClient();
    const jsonViewerTabsRef = useRef<JsonViewerTabsRef>(null);
    const hasInputSchema =
       content?.inputSchema && Object.keys(content.inputSchema.properties ?? {}).length > 0;

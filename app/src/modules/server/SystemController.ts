@@ -60,8 +60,9 @@ export class SystemController extends Controller {
 
    register(app: App) {
       app.server.route("/api/system", this.getController());
+      const config = app.modules.get("server").config;
 
-      if (!this.app.modules.get("server").config.mcp.enabled) {
+      if (!config.mcp.enabled) {
          return;
       }
 
@@ -97,7 +98,7 @@ export class SystemController extends Controller {
                explainEndpoint: true,
             },
             endpoint: {
-               path: "/mcp",
+               path: config.mcp.path as any,
                // @ts-ignore
                _init: isNode() ? { duplex: "half" } : {},
             },

@@ -24,7 +24,7 @@ bknd includes a fully featured MCP server that can be used to interact with the 
    <source src="/content/mcp/v0.17_mcp_o.mp4" type="video/mp4" />
 </video>
 
-Once enabled, you can access the MCP UI at `/mcp` or choose "MCP" from the top right user menu.
+Once enabled, you can access the MCP UI at `/mcp`, or choose "MCP" from the top right user menu.
 
 ## Enable MCP
 
@@ -54,7 +54,7 @@ The implementation is closely following the [MCP spec 2025-06-18](https://modelc
 import { McpClient } from "bknd/utils";
 
 const client = new McpClient({
-   url: "http://localhost:1337/mcp",
+   url: "http://localhost:1337/api/system/mcp",
 });
 ```
 
@@ -128,7 +128,7 @@ Pasting the following config into your Cursor `~/.cursor/mcp.json` file is the r
 {
   "mcpServers": {
     "bknd": {
-      "url": "http://localhost:1337/mcp"
+      "url": "http://localhost:1337/api/system/mcp"
     }
   }
 }
@@ -155,7 +155,7 @@ Add this to your VS Code MCP config. See [VS Code MCP docs](https://code.visuals
   "servers": {
     "bknd": {
       "type": "http",
-      "url": "http://localhost:1337/mcp"
+      "url": "http://localhost:1337/api/system/mcp"
     }
   }
 }
@@ -188,7 +188,7 @@ When using the Streamable HTTP transport, you can pass the `Authorization` heade
 
 ```typescript
 const client = new McpClient({
-   url: "http://localhost:1337/mcp",
+   url: "http://localhost:1337/api/system/mcp",
    headers: {
       Authorization: `Bearer ${token}`,
    },

@@ -2,7 +2,7 @@ import type { CloudflareBkndConfig } from "bknd/adapter/cloudflare";
 import { syncTypes } from "bknd/plugins";
 import { writeFile } from "node:fs/promises";
 
-const isDev = !import.meta.env.PROD;
+const isDev = import.meta.env && !import.meta.env.PROD;
 
 export default {
    d1: {
