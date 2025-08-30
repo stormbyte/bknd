@@ -27,8 +27,8 @@ bknd simplifies app development by providing a fully functional backend for data
 ## Size
 ![gzipped size of bknd](https://img.shields.io/bundlejs/size/bknd?label=bknd)
 ![gzipped size of bknd/client](https://img.badgesize.io/https://unpkg.com/bknd@latest/dist/ui/client/index.js?compression=gzip&label=bknd/client)
-![gzipped size of bknd/elements](https://img.badgesize.io/https://unpkg.com/bknd@latest/dist/ui/elements/index.js?compression=gzip&label=bknd/elements)
-![gzipped size of bknd/ui](https://img.badgesize.io/https://unpkg.com/bknd@latest/dist/ui/index.js?compression=gzip&label=bknd/ui)
+![gzipped size of bknd/elements](https://img.badgesize.io/https://unpkg.com/bknd@latest/dist/ui/elements/index.js?compression=gzip&label=bknd/elements&t=1)
+![gzipped size of bknd/ui](https://img.badgesize.io/https://unpkg.com/bknd@latest/dist/ui/index.js?compression=gzip&label=bknd/ui&t=1)
 
 The size on npm is misleading, as the `bknd` package includes the backend, the ui components as well as the whole backend bundled into the cli including static assets. 
 
