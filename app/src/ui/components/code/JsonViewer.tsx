@@ -20,8 +20,9 @@ const style = {
    basicChildStyle: "pl-5 ml-1 border-l border-muted hover:border-primary/20",
    container: "ml-[-10px]",
    label: "text-primary/90 font-bold font-mono mr-2",
-   stringValue: "text-emerald-600 dark:text-emerald-500 font-mono select-text",
-   numberValue: "text-sky-500 dark:text-sky-400 font-mono",
+   stringValue:
+      "text-emerald-600 dark:text-emerald-500 font-mono select-text text-wrap whitespace-wrap break-words",
+   numberValue: "text-sky-500 dark:text-sky-400 font-mono select-text",
    nullValue: "text-zinc-400 font-mono",
    undefinedValue: "text-zinc-400 font-mono",
    otherValue: "text-zinc-400 font-mono",

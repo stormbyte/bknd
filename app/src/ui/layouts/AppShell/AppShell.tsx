@@ -1,6 +1,6 @@
 import { useClickOutside, useHotkeys } from "@mantine/hooks";
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
-import { clampNumber } from "core/utils/numbers";
+import { transformObject, clampNumber } from "bknd/utils";
 import { throttle } from "lodash-es";
 import { ScrollArea } from "radix-ui";
 import {
@@ -19,9 +19,21 @@ import { appShellStore } from "ui/store";
 import { useLocation } from "wouter";
 
 export function Root({ children }: { children: React.ReactNode }) {
+   const sidebarWidths = appShellStore((store) => store.sidebars);
+   const style = transformObject(sidebarWidths, (value) => value.width);
    return (
       <AppShellProvider>
-         <div id="app-shell" data-shell="root" className="flex flex-1 flex-col select-none h-dvh">
+         <div
+            id="app-shell"
+            data-shell="root"
+            className="flex flex-1 flex-col select-none h-dvh"
+            style={Object.fromEntries(
+               Object.entries(style).map(([key, value]) => [
+                  `--sidebar-width-${key}`,
+                  `${value}px`,
+               ]),
+            )}
+         >
             {children}
          </div>
       </AppShellProvider>

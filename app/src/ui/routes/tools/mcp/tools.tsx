@@ -129,7 +129,7 @@ export function Content() {
 
    return (
       <Form
-         className="flex flex-grow flex-col max-w-screen"
+         className="flex flex-grow flex-col min-w-0 max-w-screen"
          key={content.name}
          schema={{
             title: "InputSchema",
@@ -170,7 +170,12 @@ export function Content() {
             </AppShell.SectionHeaderTitle>
          </AppShell.SectionHeader>
          <div className="flex flex-grow flex-row w-vw">
-            <div className="flex flex-grow flex-col w-full">
+            <div
+               className="flex flex-grow flex-col max-w-full"
+               style={{
+                  width: "calc(100% - var(--sidebar-width-right) - 1px)",
+               }}
+            >
                <AppShell.Scrollable>
                   <div key={JSON.stringify(content)} className="flex flex-col py-4 px-5  gap-4">
                      <p className="text-primary/80">{content?.description}</p>
