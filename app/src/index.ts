@@ -35,10 +35,12 @@ export type { BkndConfig } from "bknd/adapter";
 
 export * as middlewares from "modules/middlewares";
 export { registries } from "modules/registries";
+export { getSystemMcp } from "modules/mcp/system-mcp";
 
 /**
  * Core
  */
+export type { MaybePromise } from "core/types";
 export { Exception, BkndError } from "core/errors";
 export { isDebug, env } from "core/env";
 export { type PrimaryFieldType, config, type DB, type AppEntity } from "core/config";
@@ -130,6 +132,7 @@ export {
    BaseIntrospector,
    Connection,
    customIntrospector,
+   DummyConnection,
    type FieldSpec,
    type IndexSpec,
    type DbFunctions,
@@ -154,6 +157,7 @@ export {
    medium,
    make,
    entity,
+   systemEntity,
    relation,
    index,
    em,

@@ -18,7 +18,7 @@
    --color-success-foreground: var(--color-green-800);
    --color-info: var(--color-blue-100);
    --color-info-foreground: var(--color-blue-800);
-   
+
    --color-resize: var(--color-blue-300);
 
    @mixin light {
@@ -74,7 +74,7 @@
    @apply bg-background text-primary overflow-hidden h-dvh w-dvw;
 
    ::selection {
-      @apply bg-muted;
+      @apply bg-primary/15;
    }
 
    input {
@@ -114,4 +114,11 @@ body,
    & *::-webkit-scrollbar-thumb {
       @apply bg-primary/25;
    }
+}
+
+@utility debug {
+   @apply border-red-500 border;
+}
+@utility debug-blue {
+   @apply border-blue-500 border;
 }

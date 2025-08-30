@@ -13,6 +13,10 @@ describe("AppServer", () => {
                allow_methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
                allow_headers: ["Content-Type", "Content-Length", "Authorization", "Accept"],
             },
+            mcp: {
+               enabled: false,
+               path: "/api/system/mcp",
+            },
          });
       }
 
@@ -30,6 +34,10 @@ describe("AppServer", () => {
                origin: "https",
                allow_methods: ["GET", "POST"],
                allow_headers: ["Content-Type", "Content-Length", "Authorization", "Accept"],
+            },
+            mcp: {
+               enabled: false,
+               path: "/api/system/mcp",
             },
          });
       }

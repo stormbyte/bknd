@@ -69,6 +69,8 @@ const external = [
    "@libsql/client",
    "bknd",
    /^bknd\/.*/,
+   "jsonv-ts",
+   /^jsonv-ts\/.*/,
 ] as const;
 
 /**
@@ -256,7 +258,19 @@ async function buildAdapters() {
       ),
       tsup.build(baseConfig("astro")),
       tsup.build(baseConfig("aws")),
-      tsup.build(baseConfig("cloudflare")),
+      tsup.build(
+         baseConfig("cloudflare", {
+            external: ["wrangler", "node:process"],
+         }),
+      ),
+      tsup.build(
+         baseConfig("cloudflare/proxy", {
+            entry: ["src/adapter/cloudflare/proxy.ts"],
+            outDir: "dist/adapter/cloudflare",
+            metafile: false,
+            external: [/bknd/, "wrangler", "node:process"],
+         }),
+      ),
 
       tsup.build({
          ...baseConfig("vite"),

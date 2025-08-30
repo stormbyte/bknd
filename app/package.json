@@ -3,7 +3,7 @@
   "type": "module",
   "sideEffects": false,
   "bin": "./dist/cli/index.js",
-  "version": "0.16.1",
+  "version": "0.17.0-rc.2",
   "description": "Lightweight Firebase/Supabase alternative built to run anywhere — incl. Next.js, React Router, Astro, Cloudflare, Bun, Node, AWS Lambda & more.",
   "homepage": "https://bknd.io",
   "repository": {
@@ -39,11 +39,12 @@
     "test:adapters": "bun test src/adapter/**/*.adapter.spec.ts --bail",
     "test:coverage": "ALL_TESTS=1 bun test --bail --coverage",
     "test:vitest:coverage": "vitest run --coverage",
-    "test:e2e": "playwright test",
-    "test:e2e:adapters": "bun run e2e/adapters.ts",
-    "test:e2e:ui": "playwright test --ui",
-    "test:e2e:debug": "playwright test --debug",
-    "test:e2e:report": "playwright show-report"
+    "test:e2e": "VITE_DB_URL=:memory: playwright test",
+    "test:e2e:adapters": "VITE_DB_URL=:memory: bun run e2e/adapters.ts",
+    "test:e2e:ui": "VITE_DB_URL=:memory: playwright test --ui",
+    "test:e2e:debug": "VITE_DB_URL=:memory: playwright test --debug",
+    "test:e2e:report": "VITE_DB_URL=:memory: playwright show-report",
+    "docs:build-assets": "bun internal/docs.build-assets.ts"
   },
   "license": "FSL-1.1-MIT",
   "dependencies": {
@@ -64,7 +65,7 @@
     "hono": "4.8.3",
     "json-schema-library": "10.0.0-rc7",
     "json-schema-to-ts": "^3.1.1",
-    "jsonv-ts": "0.3.2",
+    "jsonv-ts": "0.8.2",
     "kysely": "0.27.6",
     "lodash-es": "^4.17.21",
     "oauth4webapi": "^2.11.1",
@@ -195,6 +196,11 @@
       "types": "./dist/types/adapter/cloudflare/index.d.ts",
       "import": "./dist/adapter/cloudflare/index.js",
       "require": "./dist/adapter/cloudflare/index.js"
+    },
+    "./adapter/cloudflare/proxy": {
+      "types": "./dist/types/adapter/cloudflare/proxy.d.ts",
+      "import": "./dist/adapter/cloudflare/proxy.js",
+      "require": "./dist/adapter/cloudflare/proxy.js"
     },
     "./adapter": {
       "types": "./dist/types/adapter/index.d.ts",

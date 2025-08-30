@@ -5,7 +5,7 @@ import { format as sqlFormat } from "sql-formatter";
 import type { em as protoEm } from "../src/data/prototype";
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { slugify } from "core/utils/strings";
+import { slugify } from "bknd/utils";
 import { type Connection, SqliteLocalConnection } from "data/connection";
 import { EntityManager } from "data/entities/EntityManager";
 

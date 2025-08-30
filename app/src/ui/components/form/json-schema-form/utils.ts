@@ -1,9 +1,9 @@
-import { autoFormatString, omitKeys } from "core/utils";
+import { autoFormatString, omitKeys } from "bknd/utils";
 import { type Draft, Draft2019, type JsonSchema } from "json-schema-library";
 import type { JSONSchema } from "json-schema-to-ts";
 import type { JSONSchemaType } from "json-schema-to-ts/lib/types/definitions/jsonSchema";
 
-export { isEqual, getPath } from "core/utils/objects";
+export { isEqual, getPath } from "bknd/utils";
 
 export function isNotDefined(value: any) {
    return value === null || value === undefined || value === "";
@@ -62,20 +62,25 @@ export function getParentPointer(pointer: string) {
 }
 
 export function isRequired(lib: Draft, pointer: string, schema: JsonSchema, data?: any) {
-   if (pointer === "#/" || !schema) {
+   try {
+      if (pointer === "#/" || !schema) {
+         return false;
+      }
+
+      const childSchema = lib.getSchema({ pointer, data, schema });
+      if (typeof childSchema === "object" && "const" in childSchema) {
+         return true;
+      }
+
+      const parentPointer = getParentPointer(pointer);
+      const parentSchema = lib.getSchema({ pointer: parentPointer, data });
+      const required = parentSchema?.required?.includes(pointer.split("/").pop()!);
+
+      return !!required;
+   } catch (e) {
+      console.error("isRequired", { pointer, schema, data, e });
       return false;
    }
-
-   const childSchema = lib.getSchema({ pointer, data, schema });
-   if (typeof childSchema === "object" && "const" in childSchema) {
-      return true;
-   }
-
-   const parentPointer = getParentPointer(pointer);
-   const parentSchema = lib.getSchema({ pointer: parentPointer, data });
-   const required = parentSchema?.required?.includes(pointer.split("/").pop()!);
-
-   return !!required;
 }
 
 export type IsTypeType =

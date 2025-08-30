@@ -1,5 +1,5 @@
 import type { AppEntity, FileUploadedEventData, StorageAdapter } from "bknd";
-import { $console } from "core/utils";
+import { $console } from "bknd/utils";
 import type { Entity, EntityManager } from "data/entities";
 import { Storage } from "media/storage/Storage";
 import { Module } from "modules/Module";
@@ -9,6 +9,7 @@ import { buildMediaSchema, registry, type TAppMediaConfig } from "./media-schema
 import { mediaFields } from "./media-entities";
 import * as MediaPermissions from "media/media-permissions";
 
+export type MediaFields = typeof AppMedia.mediaFields;
 export type MediaFieldSchema = FieldSchema<typeof AppMedia.mediaFields>;
 declare module "bknd" {
    interface Media extends AppEntity, MediaFieldSchema {}

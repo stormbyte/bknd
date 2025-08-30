@@ -1,5 +1,5 @@
 import type { CreateUserPayload } from "auth/AppAuth";
-import { $console } from "core/utils";
+import { $console, McpClient } from "bknd/utils";
 import { Event } from "core/events";
 import type { em as prototypeEm } from "data/prototype";
 import { Connection } from "data/connection/Connection";
@@ -23,13 +23,34 @@ import type { IEmailDriver, ICacheDriver } from "core/drivers";
 import { Api, type ApiOptions } from "Api";
 
 export type AppPluginConfig = {
+   /**
+    * The name of the plugin.
+    */
    name: string;
+   /**
+    * The schema of the plugin.
+    */
    schema?: () => MaybePromise<ReturnType<typeof prototypeEm> | void>;
+   /**
+    * Called before the app is built.
+    */
    beforeBuild?: () => MaybePromise<void>;
+   /**
+    * Called after the app is built.
+    */
    onBuilt?: () => MaybePromise<void>;
+   /**
+    * Called when the server is initialized.
+    */
    onServerInit?: (server: Hono<ServerEnv>) => MaybePromise<void>;
-   onFirstBoot?: () => MaybePromise<void>;
+   /**
+    * Called when the app is booted.
+    */
    onBoot?: () => MaybePromise<void>;
+   /**
+    * Called when the app is first booted.
+    */
+   onFirstBoot?: () => MaybePromise<void>;
 };
 export type AppPlugin = (app: App) => AppPluginConfig;
 
@@ -96,6 +117,7 @@ export class App<C extends Connection = Connection, Options extends AppOptions =
 
    private trigger_first_boot = false;
    private _building: boolean = false;
+   private _systemController: SystemController | null = null;
 
    constructor(
       public connection: C,
@@ -168,11 +190,12 @@ export class App<C extends Connection = Connection, Options extends AppOptions =
       if (options?.sync) this.modules.ctx().flags.sync_required = true;
       await this.modules.build({ fetch: options?.fetch });
 
-      const { guard, server } = this.modules.ctx();
+      const { guard } = this.modules.ctx();
 
       // load system controller
       guard.registerPermissions(Object.values(SystemPermissions));
-      server.route("/api/system", new SystemController(this).getController());
+      this._systemController = new SystemController(this);
+      this._systemController.register(this);
 
       // emit built event
       $console.log("App built");
@@ -202,6 +225,10 @@ export class App<C extends Connection = Connection, Options extends AppOptions =
 
    get em() {
       return this.modules.ctx().em;
+   }
+
+   get mcp() {
+      return this._systemController?._mcpServer;
    }
 
    get fetch(): Hono["fetch"] {
@@ -260,6 +287,18 @@ export class App<C extends Connection = Connection, Options extends AppOptions =
       }
 
       return new Api({ host: "http://localhost", ...(options ?? {}), fetcher });
+   }
+
+   getMcpClient() {
+      if (!this.mcp) {
+         throw new Error("MCP is not enabled");
+      }
+      const mcpPath = this.modules.get("server").config.mcp.path;
+
+      return new McpClient({
+         url: "http://localhost" + mcpPath,
+         fetch: this.server.request,
+      });
    }
 
    async onUpdated<Module extends keyof Modules>(module: Module, config: ModuleConfigs[Module]) {
