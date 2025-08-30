@@ -27,7 +27,7 @@ async function generateDocument({
    resources: ReturnType<Resource["toJSON"]>[];
 }) {
    return `---
-title: "MCP"
+title: "Tools & Resources"
 description: "Tools & Resources of the built-in full featured MCP server."
 tags: ["documentation"]
 ---
