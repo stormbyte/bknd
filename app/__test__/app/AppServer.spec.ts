@@ -15,6 +15,7 @@ describe("AppServer", () => {
             },
             mcp: {
                enabled: false,
+               path: "/api/system/mcp",
             },
          });
       }
@@ -36,6 +37,7 @@ describe("AppServer", () => {
             },
             mcp: {
                enabled: false,
+               path: "/api/system/mcp",
             },
          });
       }

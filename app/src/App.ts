@@ -293,9 +293,10 @@ export class App<C extends Connection = Connection, Options extends AppOptions =
       if (!this.mcp) {
          throw new Error("MCP is not enabled");
       }
+      const mcpPath = this.modules.get("server").config.mcp.path;
 
       return new McpClient({
-         url: "http://localhost/mcp",
+         url: "http://localhost" + mcpPath,
          fetch: this.server.request,
       });
    }
