@@ -3,7 +3,7 @@
 ![bknd](https://raw.githubusercontent.com/bknd-io/bknd/refs/heads/main/docs/public/assets/poster.png)
 
 <p align="center" width="100%">
-<a href="https://stackblitz.com/github/bknd-io/bknd-examples?hideExplorer=1&embed=1&view=preview&startScript=example-admin-rich&initialPath=%2Fdata%2Fschema" target="_blank">
+<a href="https://stackblitz.com/github/bknd-io/bknd-demo?hideExplorer=1&embed=1&view=preview&initialPath=%2Fdata%2Fschema" target="_blank">
 <strong>⭐ Live Demo</strong>
 </a>
 </p>
