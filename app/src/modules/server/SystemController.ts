@@ -84,7 +84,7 @@ export class SystemController extends Controller {
             const level = consoleMap[message.params.level];
             if (!level) return;
 
-            $console[level](message.params.message);
+            $console[level]("MCP notification", message.params.message ?? message.params);
          }
       });
 
